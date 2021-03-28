@@ -32,7 +32,6 @@ class PlayerView:AVPlayerViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        showsPlaybackControls = false
         initDanmuView()
         refreshRoomsID(){
             self.initWebsocket()
