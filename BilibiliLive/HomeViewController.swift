@@ -28,17 +28,22 @@ class HomeViewController: UIViewController {
     }
     
     @IBAction func actionReload(_ sender: Any) {
+        rooms.removeAll()
         loadData()
     }
     
-    @objc func loadData() {
-        AF.request("https://api.live.bilibili.com/xlive/web-ucenter/v1/xfetter/GetWebList").responseJSON {
+    @objc func loadData(page:Int = 1) {
+        AF.request("https://api.live.bilibili.com/xlive/web-ucenter/v1/xfetter/GetWebList?page_size=10&page=\(page)").responseJSON {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {
             case .success(let data):
                 let json = JSON(data)
                 self.process(json: json)
+                let totalCount = json["data"]["count"].intValue
+                if self.rooms.count < totalCount, page < 5 {
+                    self.loadData(page: page+1)
+                }
             case .failure(let err):
                 print(err)
             }
@@ -46,12 +51,13 @@ class HomeViewController: UIViewController {
     }
     
     func process(json: JSON) {
-        rooms = json["data"]["rooms"].arrayValue.map { room in
+        let newRooms = json["data"]["rooms"].arrayValue.map { room in
             LiveRoom(name: room["title"].stringValue,
                      roomID: room["room_id"].intValue,
                      up: room["uname"].stringValue,
                      cover: room["keyframe"].url)
         }
+        rooms.append(contentsOf: newRooms)
         collectionView.reloadData()
     }
 }
