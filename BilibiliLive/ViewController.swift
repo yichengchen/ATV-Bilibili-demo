@@ -26,9 +26,10 @@ class PlayerView:AVPlayerViewController {
     
     var websocket: WebSocket?
     var heartBeatTimer: Timer?
-    var roomID = 11367
+    var roomID = 528
     let parser = WSParser()
     let danMuView = DanmakuView()
+    var url: URL?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,6 +41,26 @@ class PlayerView:AVPlayerViewController {
         parser.onDanmu = {
             [weak self] string in
             self?.displayDanMu(str: string)
+        }
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.pause), name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.play), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+    
+    @objc func pause() {
+        websocket?.disconnect()
+        heartBeatTimer?.fireDate = Date.distantFuture
+        danMuView.stop()
+        self.player?.pause()
+    }
+    
+    @objc func play() {
+        if let url = self.url {
+            websocket?.connect()
+            heartBeatTimer?.fireDate = Date()
+            danMuView.play()
+            self.player?.replaceCurrentItem(with: AVPlayerItem(url: url))
+            self.player?.playImmediately(atRate: 1)
         }
     }
     
@@ -105,7 +126,8 @@ class PlayerView:AVPlayerViewController {
             case .success(let object):
                 let json = JSON(object)
                 if let playUrl = json["data"]["durl"].arrayValue.first?["url"].string {
-                    self.player = AVPlayer(url: URL(string: playUrl)!)
+                    self.url = URL(string: playUrl)!
+                    self.player = AVPlayer(url: self.url!)
                     self.player?.playImmediately(atRate: 1)
                 } else {
                     dismiss(animated: true, completion: nil)
