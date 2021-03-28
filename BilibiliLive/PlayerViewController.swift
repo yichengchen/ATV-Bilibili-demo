@@ -21,8 +21,7 @@ class PlayerViewController:AVPlayerViewController {
     
     var websocket: WebSocket?
     var heartBeatTimer: Timer?
-    var roomID = 528
-    var updateRoomID = true
+    var roomID = 0
     let parser = WSParser()
     let danMuView = DanmakuView()
     var url: URL?
@@ -70,14 +69,14 @@ class PlayerViewController:AVPlayerViewController {
     }
     
     func endWithError(err: Error) {
-        dismiss(animated: true, completion: nil)
+        let alert = UIAlertController(title: "播放失败", message: "\(err)", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: {
+            [weak self] _ in
+            self?.dismiss(animated: true, completion: nil)
+        }))
     }
     
     func refreshRoomsID(complete:(()->Void)?=nil) {
-        if !updateRoomID {
-            complete?()
-            return
-        }
         let url = "https://api.live.bilibili.com/room/v1/Room/room_init?id=\(roomID)"
         AF.request(url).responseJSON {
             [weak self] resp in
@@ -109,13 +108,14 @@ class PlayerViewController:AVPlayerViewController {
             danMuView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
         danMuView.play()
-        
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         danMuView.recaculateTracks()
-        danMuView.paddingTop = 20
+        danMuView.paddingTop = 5
+        danMuView.trackHeight = 50
+        danMuView.displayArea = 0.8
     }
     
     func initPlayer() {

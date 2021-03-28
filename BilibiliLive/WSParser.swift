@@ -96,6 +96,11 @@ class WSParser {
         default:
             print("get",operatorType?.rawValue ?? 0)
         }
+        
+        let nextData = data.dropFirst(Int(header.size))
+        if nextData.count > header.headerSize {
+            parseData(data: Data(nextData))
+        }
     }
     
     private func parseNormalData(data: Data) {
@@ -105,7 +110,6 @@ class WSParser {
         }
         let jsons = dataStr.components(separatedBy: CharacterSet.controlCharacters)
             .map{ JSON(parseJSON: $0) }
-        
         getDanMu(data: jsons).forEach{
             print($0)
             onDanmu?($0)

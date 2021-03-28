@@ -68,7 +68,6 @@ extension HomeViewController: UICollectionViewDelegate {
         let cid = room.roomID
         let playerVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "PlayerViewController") as! PlayerViewController
         playerVC.roomID = cid
-        playerVC.updateRoomID = false
         present(playerVC, animated: true, completion: nil)
     }
     
