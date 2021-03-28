@@ -8,35 +8,61 @@
 import UIKit
 import AVKit
 import Alamofire
+import SwiftyJSON
 import Starscream
 import Gzip
 
 class ViewController: UIViewController {
     let player = AVPlayer()
     override func viewDidLoad() {
+        super.viewDidLoad()
     }
-    
-    
 }
 
 class PlayerView:AVPlayerViewController {
     
     var websocket: WebSocket?
+    var heartBeatTimer: Timer?
+    var roomID = 16405
     
     override func viewDidLoad() {
         super.viewDidLoad()
         initWebsocket()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        websocket?.disconnect()
+        heartBeatTimer?.invalidate()
+    }
+    
+    func endWithError(err: Error) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func refreshRoomsID(complete:(()->Void)?=nil) {
+        let url = "http://api.live.bilibili.com/room/v1/Room/room_init?id=\(roomID)"
+        AF.request(url).responseJSON {
+            [weak self] resp in
+            guard let self = self else { return }
+            switch resp.result {
+            case .success(let object):
+                let json = JSON(object)
+                let isLive = json["live_status"].intValue == 1
+            case .failure(let error):
+                endWithError(err: error)
+            }
+        }
+    }
+    
     func initPlayer() {
-        let roomID = "16405"
         let requestUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=\(roomID)&platform=h5&otype=json&quality=10000"
         AF.request(requestUrl).responseJSON {
             [unowned self] resp in
             switch resp.result {
-            case .success(let json):
-                let durls = ((((json as? [String: Any])?["data"]) as? [String: Any])?["durl"]) as? [[String:Any]]
-                if let playUrl = durls?.first?["url"] as? String {
+            case .success(let object):
+                let json = JSON(object)
+                if let playUrl = json["data"]["durl"].arrayValue.first?["url"].string {
                     self.player = AVPlayer(url: URL(string: playUrl)!)
                     self.player?.play()
                 } else {
@@ -57,6 +83,21 @@ class PlayerView:AVPlayerViewController {
         websocket?.delegate = self
         websocket?.connect()
     }
+    
+    func setupHeartBeat() {
+        heartBeatTimer = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(sendHeartBeat), userInfo: nil, repeats: true)
+        sendHeartBeat()
+    }
+    
+    @objc func sendHeartBeat() {
+        let data = WSParser.getHeartbeatPackage()
+        websocket?.write(data: data)
+    }
+    
+    func sendJoinLiveRoom() {
+        let data = LiveWSHeader.encode(operatorType: .auth, data: AuthPackage(roomid: roomID).encode())
+        websocket?.write(data: data)
+    }
 }
 
 extension PlayerView: WebSocketDelegate {
@@ -64,9 +105,7 @@ extension PlayerView: WebSocketDelegate {
         print(event)
         switch event {
         case .connected(_):
-            print("connected")
-            let data = LiveWSHeader.encode(operatorType: .auth, data: AuthPackage().encode())
-            client.write(data: data)
+            sendJoinLiveRoom()
         case .disconnected(_, _):
             print("disconnect")
         case .binary(let data):

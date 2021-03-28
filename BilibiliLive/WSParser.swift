@@ -50,7 +50,7 @@ enum OperatorType: UInt32 {
 
 struct AuthPackage: Encodable {
     let uid = 0
-    let roomid = 5486320
+    let roomid:Int
     let protover = 2
     let platform = "web"
     let clientver = "2.6.38"
@@ -59,5 +59,13 @@ struct AuthPackage: Encodable {
     
     func encode() -> Data {
         try! JSONEncoder().encode(self)
+    }
+}
+
+struct WSParser {
+    static func getHeartbeatPackage() -> Data {
+        let data = "[object Object]".data(using: .utf8)!
+        let header = LiveWSHeader.encode(operatorType: .heartBeat, data: data)
+        return header
     }
 }
