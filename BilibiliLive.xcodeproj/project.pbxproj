@@ -9,6 +9,15 @@
 /* Begin PBXBuildFile section */
 		F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED64260F917D00EAB8E3 /* Gzip */; };
 		F927ED682610113A00EAB8E3 /* WSParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED672610113A00EAB8E3 /* WSParser.swift */; };
+		F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */; };
+		F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6D2610395300EAB8E3 /* DanmakuView.swift */; };
+		F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6E2610395300EAB8E3 /* DanmakuAsyncLayer.swift */; };
+		F927ED762610395300EAB8E3 /* .gitkeep in Resources */ = {isa = PBXBuildFile; fileRef = F927ED6F2610395300EAB8E3 /* .gitkeep */; };
+		F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED702610395300EAB8E3 /* DanmakuQueuePool.swift */; };
+		F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED712610395300EAB8E3 /* DanmakuTrack.swift */; };
+		F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED722610395300EAB8E3 /* DanmakuCellModel.swift */; };
+		F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8626103CFA00EAB8E3 /* DanmakuTextCell.swift */; };
+		F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8726103CFA00EAB8E3 /* DanmakuTextCellModel.swift */; };
 		F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57353260F5F7400771ED5 /* AppDelegate.swift */; };
 		F9B57356260F5F7400771ED5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57355260F5F7400771ED5 /* ViewController.swift */; };
 		F9B57359260F5F7400771ED5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B57357260F5F7400771ED5 /* Main.storyboard */; };
@@ -21,6 +30,15 @@
 
 /* Begin PBXFileReference section */
 		F927ED672610113A00EAB8E3 /* WSParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSParser.swift; sourceTree = "<group>"; };
+		F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCell.swift; sourceTree = "<group>"; };
+		F927ED6D2610395300EAB8E3 /* DanmakuView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuView.swift; sourceTree = "<group>"; };
+		F927ED6E2610395300EAB8E3 /* DanmakuAsyncLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuAsyncLayer.swift; sourceTree = "<group>"; };
+		F927ED6F2610395300EAB8E3 /* .gitkeep */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
+		F927ED702610395300EAB8E3 /* DanmakuQueuePool.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuQueuePool.swift; sourceTree = "<group>"; };
+		F927ED712610395300EAB8E3 /* DanmakuTrack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuTrack.swift; sourceTree = "<group>"; };
+		F927ED722610395300EAB8E3 /* DanmakuCellModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCellModel.swift; sourceTree = "<group>"; };
+		F927ED8626103CFA00EAB8E3 /* DanmakuTextCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuTextCell.swift; sourceTree = "<group>"; };
+		F927ED8726103CFA00EAB8E3 /* DanmakuTextCellModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuTextCellModel.swift; sourceTree = "<group>"; };
 		F9B57350260F5F7400771ED5 /* BilibiliLive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BilibiliLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9B57353260F5F7400771ED5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F9B57355260F5F7400771ED5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -45,6 +63,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F927ED6A2610391000EAB8E3 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+				F927ED6B2610395300EAB8E3 /* DanmakuKit */,
+			);
+			path = Vendor;
+			sourceTree = "<group>";
+		};
+		F927ED6B2610395300EAB8E3 /* DanmakuKit */ = {
+			isa = PBXGroup;
+			children = (
+				F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */,
+				F927ED6D2610395300EAB8E3 /* DanmakuView.swift */,
+				F927ED6E2610395300EAB8E3 /* DanmakuAsyncLayer.swift */,
+				F927ED6F2610395300EAB8E3 /* .gitkeep */,
+				F927ED702610395300EAB8E3 /* DanmakuQueuePool.swift */,
+				F927ED712610395300EAB8E3 /* DanmakuTrack.swift */,
+				F927ED722610395300EAB8E3 /* DanmakuCellModel.swift */,
+				F927ED8626103CFA00EAB8E3 /* DanmakuTextCell.swift */,
+				F927ED8726103CFA00EAB8E3 /* DanmakuTextCellModel.swift */,
+			);
+			path = DanmakuKit;
+			sourceTree = "<group>";
+		};
 		F9B57347260F5F7400771ED5 = {
 			isa = PBXGroup;
 			children = (
@@ -64,6 +106,7 @@
 		F9B57352260F5F7400771ED5 /* BilibiliLive */ = {
 			isa = PBXGroup;
 			children = (
+				F927ED6A2610391000EAB8E3 /* Vendor */,
 				F9B57353260F5F7400771ED5 /* AppDelegate.swift */,
 				F9B57355260F5F7400771ED5 /* ViewController.swift */,
 				F9B57357260F5F7400771ED5 /* Main.storyboard */,
@@ -147,6 +190,7 @@
 				F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */,
 				F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */,
 				F9B57359260F5F7400771ED5 /* Main.storyboard in Resources */,
+				F927ED762610395300EAB8E3 /* .gitkeep in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,9 +201,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				F927ED682610113A00EAB8E3 /* WSParser.swift in Sources */,
+				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,
+				F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */,
+				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
+				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
+				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,
 				F9B57356260F5F7400771ED5 /* ViewController.swift in Sources */,
 				F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */,
+				F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */,
+				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

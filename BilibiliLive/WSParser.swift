@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftyJSON
 
 struct LiveWSHeader {
     var size:UInt32
@@ -62,10 +63,61 @@ struct AuthPackage: Encodable {
     }
 }
 
-struct WSParser {
+class WSParser {
+    var onDanmu: ((String)->Void)? = nil
     static func getHeartbeatPackage() -> Data {
         let data = "[object Object]".data(using: .utf8)!
         let header = LiveWSHeader.encode(operatorType: .heartBeat, data: data)
         return header
     }
+    
+    func parseData(data: Data, decompressed: Bool = false) {
+        let header = LiveWSHeader.decode(data: data)
+        let contentData = data.subdata(in: Int(header.headerSize) ..< Int(header.size))
+        let operatorType = OperatorType(rawValue: header.operatorType)
+        switch operatorType {
+        case nil:
+            assertionFailure()
+            break
+        case .authReply:
+            print("get authReply")
+        case .heaerBeatReply:
+            print("get authReply")
+        case .normal:
+            do {
+                if decompressed {
+                    parseNormalData(data: contentData)
+                } else {
+                    parseData(data: try contentData.gunzipped())
+                }
+            } catch {
+                parseNormalData(data: contentData)
+            }
+        default:
+            print("get",operatorType?.rawValue ?? 0)
+        }
+    }
+    
+    private func parseNormalData(data: Data) {
+        guard let dataStr = String(data: data, encoding: .utf8) else {
+            print("decode fail")
+            return
+        }
+        let jsons = dataStr.components(separatedBy: CharacterSet.controlCharacters)
+            .map{ JSON(parseJSON: $0) }
+        
+        getDanMu(data: jsons).forEach{
+            print($0)
+            onDanmu?($0)
+        }
+    }
+    
+    private func getDanMu(data: [JSON]) -> [String] {
+        return data.filter {
+            $0["cmd"].stringValue == "DANMU_MSG"
+        }.compactMap { json in
+            json["info"][1].string
+        }
+    }
+    
 }

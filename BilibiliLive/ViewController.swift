@@ -20,20 +20,37 @@ class ViewController: UIViewController {
 }
 
 class PlayerView:AVPlayerViewController {
+    enum LiveError: Error {
+        case noLiving
+    }
     
     var websocket: WebSocket?
     var heartBeatTimer: Timer?
-    var roomID = 16405
+    var roomID = 11367
+    let parser = WSParser()
+    let danMuView = DanmakuView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        initWebsocket()
+        showsPlaybackControls = false
+        initDanmuView()
+        refreshRoomsID(){
+            self.initWebsocket()
+            self.initPlayer()
+        }
+        parser.onDanmu = {
+            [weak self] string in
+            self?.displayDanMu(str: string)
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
         websocket?.disconnect()
         heartBeatTimer?.invalidate()
+        danMuView.stop()
+        self.player?.pause()
+        self.player = nil
     }
     
     func endWithError(err: Error) {
@@ -41,18 +58,44 @@ class PlayerView:AVPlayerViewController {
     }
     
     func refreshRoomsID(complete:(()->Void)?=nil) {
-        let url = "http://api.live.bilibili.com/room/v1/Room/room_init?id=\(roomID)"
+        let url = "https://api.live.bilibili.com/room/v1/Room/room_init?id=\(roomID)"
         AF.request(url).responseJSON {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {
             case .success(let object):
                 let json = JSON(object)
-                let isLive = json["live_status"].intValue == 1
+                let isLive = json["data"]["live_status"].intValue == 1
+                if !isLive {
+                    self.endWithError(err: LiveError.noLiving)
+                    return
+                }
+                if let newID = json["data"]["room_id"].int {
+                    self.roomID = newID
+                }
+                complete?()
             case .failure(let error):
-                endWithError(err: error)
+                self.endWithError(err: error)
             }
         }
+    }
+    func initDanmuView() {
+        view.addSubview(danMuView)
+        danMuView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            danMuView.topAnchor.constraint(equalTo: view.topAnchor),
+            danMuView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            danMuView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            danMuView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+        danMuView.play()
+        
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        danMuView.recaculateTracks()
+        danMuView.paddingTop = 20
     }
     
     func initPlayer() {
@@ -64,7 +107,7 @@ class PlayerView:AVPlayerViewController {
                 let json = JSON(object)
                 if let playUrl = json["data"]["durl"].arrayValue.first?["url"].string {
                     self.player = AVPlayer(url: URL(string: playUrl)!)
-                    self.player?.play()
+                    self.player?.playImmediately(atRate: 1)
                 } else {
                     dismiss(animated: true, completion: nil)
                 }
@@ -85,7 +128,7 @@ class PlayerView:AVPlayerViewController {
     }
     
     func setupHeartBeat() {
-        heartBeatTimer = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(sendHeartBeat), userInfo: nil, repeats: true)
+        heartBeatTimer = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(sendHeartBeat), userInfo: nil, repeats: true)
         sendHeartBeat()
     }
     
@@ -98,6 +141,11 @@ class PlayerView:AVPlayerViewController {
         let data = LiveWSHeader.encode(operatorType: .auth, data: AuthPackage(roomid: roomID).encode())
         websocket?.write(data: data)
     }
+    
+    func displayDanMu(str:String) {
+        let model = DanmakuTextCellModel(str: str)
+        danMuView.shoot(danmaku: model)
+    }
 }
 
 extension PlayerView: WebSocketDelegate {
@@ -106,49 +154,17 @@ extension PlayerView: WebSocketDelegate {
         switch event {
         case .connected(_):
             sendJoinLiveRoom()
+            setupHeartBeat()
         case .disconnected(_, _):
             print("disconnect")
         case .binary(let data):
-            parseData(data: data)
+            parser.parseData(data: data)
         default:
             break
         }
     }
     
     
-    func parseData(data: Data, decompressed: Bool = false) {
-        let header = LiveWSHeader.decode(data: data)
-        let contentData = data.subdata(in: Int(header.headerSize) ..< Int(header.size))
-        let operatorType = OperatorType(rawValue: header.operatorType)
-        switch operatorType {
-        case nil:
-            assertionFailure()
-            break
-        case .authReply:
-            print("get authReply")
-        case .heaerBeatReply:
-            print("get authReply")
-        case .normal:
-            do {
-                if decompressed {
-                    parseNormalData(data: contentData)
-                } else {
-                    parseData(data: try contentData.gunzipped())
-                }
-            } catch {
-                parseNormalData(data: contentData)
-            }
-        default:
-            print("get",operatorType?.rawValue ?? 0)
-        }
-    }
     
-    func parseNormalData(data: Data) {
-        let content = String(data: data, encoding: .utf8)
-        print(String(data: data, encoding: .utf8) ?? "")
-        if content == nil {
-            print("000")
-        }
-    }
     
 }
