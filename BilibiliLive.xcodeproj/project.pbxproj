@@ -18,8 +18,12 @@
 		F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED722610395300EAB8E3 /* DanmakuCellModel.swift */; };
 		F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8626103CFA00EAB8E3 /* DanmakuTextCell.swift */; };
 		F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8726103CFA00EAB8E3 /* DanmakuTextCellModel.swift */; };
+		F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */; };
+		F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */; };
+		F927ED992610AD8D00EAB8E3 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */; };
+		F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED9E2610B5C300EAB8E3 /* Kingfisher */; };
 		F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57353260F5F7400771ED5 /* AppDelegate.swift */; };
-		F9B57356260F5F7400771ED5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57355260F5F7400771ED5 /* ViewController.swift */; };
+		F9B57356260F5F7400771ED5 /* PlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57355260F5F7400771ED5 /* PlayerViewController.swift */; };
 		F9B57359260F5F7400771ED5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B57357260F5F7400771ED5 /* Main.storyboard */; };
 		F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9B5735A260F5F7600771ED5 /* Assets.xcassets */; };
 		F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B5735C260F5F7600771ED5 /* LaunchScreen.storyboard */; };
@@ -39,9 +43,12 @@
 		F927ED722610395300EAB8E3 /* DanmakuCellModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCellModel.swift; sourceTree = "<group>"; };
 		F927ED8626103CFA00EAB8E3 /* DanmakuTextCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuTextCell.swift; sourceTree = "<group>"; };
 		F927ED8726103CFA00EAB8E3 /* DanmakuTextCellModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuTextCellModel.swift; sourceTree = "<group>"; };
+		F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieManager.swift; sourceTree = "<group>"; };
+		F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		F9B57350260F5F7400771ED5 /* BilibiliLive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BilibiliLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9B57353260F5F7400771ED5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		F9B57355260F5F7400771ED5 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		F9B57355260F5F7400771ED5 /* PlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewController.swift; sourceTree = "<group>"; };
 		F9B57358260F5F7400771ED5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		F9B5735A260F5F7600771ED5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F9B5735D260F5F7600771ED5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -57,6 +64,7 @@
 				F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */,
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
 				F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */,
+				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,12 +116,15 @@
 			children = (
 				F927ED6A2610391000EAB8E3 /* Vendor */,
 				F9B57353260F5F7400771ED5 /* AppDelegate.swift */,
-				F9B57355260F5F7400771ED5 /* ViewController.swift */,
+				F9B57355260F5F7400771ED5 /* PlayerViewController.swift */,
 				F9B57357260F5F7400771ED5 /* Main.storyboard */,
 				F9B5735A260F5F7600771ED5 /* Assets.xcassets */,
 				F9B5735C260F5F7600771ED5 /* LaunchScreen.storyboard */,
 				F9B5735F260F5F7600771ED5 /* Info.plist */,
 				F927ED672610113A00EAB8E3 /* WSParser.swift */,
+				F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */,
+				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
+				F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -139,6 +150,7 @@
 				F9B57372260F6B8E00771ED5 /* Starscream */,
 				F9B57377260F6BB400771ED5 /* SwiftyJSON */,
 				F927ED64260F917D00EAB8E3 /* Gzip */,
+				F927ED9E2610B5C300EAB8E3 /* Kingfisher */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -172,6 +184,7 @@
 				F9B57371260F6B8E00771ED5 /* XCRemoteSwiftPackageReference "Starscream" */,
 				F9B57376260F6BB400771ED5 /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
 				F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */,
+				F927ED9D2610B5C300EAB8E3 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -201,16 +214,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				F927ED682610113A00EAB8E3 /* WSParser.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,
 				F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */,
+				F927ED992610AD8D00EAB8E3 /* HomeViewController.swift in Sources */,
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
 				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,
-				F9B57356260F5F7400771ED5 /* ViewController.swift in Sources */,
+				F9B57356260F5F7400771ED5 /* PlayerViewController.swift in Sources */,
 				F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */,
 				F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */,
+				F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */,
 				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -369,7 +385,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 10.0;
+				TVOS_DEPLOYMENT_TARGET = 13.0;
 			};
 			name = Debug;
 		};
@@ -389,7 +405,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 10.0;
+				TVOS_DEPLOYMENT_TARGET = 13.0;
 			};
 			name = Release;
 		};
@@ -425,6 +441,14 @@
 				minimumVersion = 5.1.1;
 			};
 		};
+		F927ED9D2610B5C300EAB8E3 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.2.1;
+			};
+		};
 		F9B5736C260F652C00771ED5 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
@@ -456,6 +480,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */;
 			productName = Gzip;
+		};
+		F927ED9E2610B5C300EAB8E3 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F927ED9D2610B5C300EAB8E3 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
 		};
 		F9B5736D260F652C00771ED5 /* Alamofire */ = {
 			isa = XCSwiftPackageProductDependency;

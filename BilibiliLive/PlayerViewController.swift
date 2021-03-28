@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  PlayerViewController.swift
 //  BilibiliLive
 //
 //  Created by Etan on 2021/3/27.
@@ -12,14 +12,9 @@ import SwiftyJSON
 import Starscream
 import Gzip
 
-class ViewController: UIViewController {
-    let player = AVPlayer()
-    override func viewDidLoad() {
-        super.viewDidLoad()
-    }
-}
 
-class PlayerView:AVPlayerViewController {
+
+class PlayerViewController:AVPlayerViewController {
     enum LiveError: Error {
         case noLiving
     }
@@ -27,6 +22,7 @@ class PlayerView:AVPlayerViewController {
     var websocket: WebSocket?
     var heartBeatTimer: Timer?
     var roomID = 528
+    var updateRoomID = true
     let parser = WSParser()
     let danMuView = DanmakuView()
     var url: URL?
@@ -78,6 +74,10 @@ class PlayerView:AVPlayerViewController {
     }
     
     func refreshRoomsID(complete:(()->Void)?=nil) {
+        if !updateRoomID {
+            complete?()
+            return
+        }
         let url = "https://api.live.bilibili.com/room/v1/Room/room_init?id=\(roomID)"
         AF.request(url).responseJSON {
             [weak self] resp in
@@ -169,7 +169,7 @@ class PlayerView:AVPlayerViewController {
     }
 }
 
-extension PlayerView: WebSocketDelegate {
+extension PlayerViewController: WebSocketDelegate {
     func didReceive(event: WebSocketEvent, client: WebSocket) {
         print(event)
         switch event {
