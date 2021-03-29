@@ -74,6 +74,7 @@ class PlayerViewController:AVPlayerViewController {
             [weak self] _ in
             self?.dismiss(animated: true, completion: nil)
         }))
+        present(alert, animated: true, completion: nil)
     }
     
     func refreshRoomsID(complete:(()->Void)?=nil) {

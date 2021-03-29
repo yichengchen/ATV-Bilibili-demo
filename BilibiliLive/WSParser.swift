@@ -82,13 +82,13 @@ class WSParser {
         case .authReply:
             print("get authReply")
         case .heaerBeatReply:
-            print("get authReply")
+            print("get heaerBeatReply")
         case .normal:
             do {
                 if decompressed {
                     parseNormalData(data: contentData)
                 } else {
-                    parseData(data: try contentData.gunzipped())
+                    parseData(data: try contentData.gunzipped(), decompressed: true)
                 }
             } catch {
                 parseNormalData(data: contentData)
