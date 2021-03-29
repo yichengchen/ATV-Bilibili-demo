@@ -23,15 +23,15 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        initValidation()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        qrcodeImageView.image = nil
         stopValidationTimer()
     }
     
@@ -131,6 +131,10 @@ class LoginViewController: UIViewController {
                     break
                 }
             }
+    }
+    
+    @IBAction func actionStart(_ sender: Any) {
+        initValidation()
     }
 }
 

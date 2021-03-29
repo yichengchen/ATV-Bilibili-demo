@@ -71,6 +71,7 @@ extension HomeViewController: UICollectionViewDelegate {
         present(playerVC, animated: true, completion: nil)
     }
     
+    
 }
 
 extension HomeViewController: UICollectionViewDataSource {
@@ -88,6 +89,12 @@ extension HomeViewController: UICollectionViewDataSource {
         cell.setup(room: room)
         return cell
     }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath)
+        return header
+    }
+    
 }
 
 
@@ -98,16 +105,21 @@ class HomeCollectionViewCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        imageView.adjustsImageWhenAncestorFocused = true
-        clipsToBounds = false
-        layer.borderWidth = 4
+        contentView.clipsToBounds = false
+        contentView.layer.shadowOffset = CGSize(width: 10, height: 10)
+        contentView.layer.shadowColor = UIColor.gray.cgColor
+        contentView.layer.shadowRadius = 20
+        contentView.layer.shadowOpacity = 1
     }
+    
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        if isFocused {
-            layer.borderColor = UIColor.red.cgColor
-        } else {
-            layer.borderColor = UIColor.clear.cgColor
-        }
+        coordinator.addCoordinatedAnimations {
+            if self.isFocused {
+                self.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
+            } else {
+                self.transform = .identity
+            }
+        } completion: {}
     }
     
     func setup(room: LiveRoom) {

@@ -29,6 +29,6 @@
 		<string>arm64</string>
 	</array>
 	<key>UIUserInterfaceStyle</key>
-	<string>Automatic</string>
+	<string>light</string>
 </dict>
 </plist>
