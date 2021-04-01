@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED64260F917D00EAB8E3 /* Gzip */; };
-		F927ED682610113A00EAB8E3 /* WSParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED672610113A00EAB8E3 /* WSParser.swift */; };
+		F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */; };
 		F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */; };
 		F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6D2610395300EAB8E3 /* DanmakuView.swift */; };
 		F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6E2610395300EAB8E3 /* DanmakuAsyncLayer.swift */; };
@@ -33,7 +33,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		F927ED672610113A00EAB8E3 /* WSParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WSParser.swift; sourceTree = "<group>"; };
+		F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDanMuProvider.swift; sourceTree = "<group>"; };
 		F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCell.swift; sourceTree = "<group>"; };
 		F927ED6D2610395300EAB8E3 /* DanmakuView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuView.swift; sourceTree = "<group>"; };
 		F927ED6E2610395300EAB8E3 /* DanmakuAsyncLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuAsyncLayer.swift; sourceTree = "<group>"; };
@@ -121,7 +121,7 @@
 				F9B5735A260F5F7600771ED5 /* Assets.xcassets */,
 				F9B5735C260F5F7600771ED5 /* LaunchScreen.storyboard */,
 				F9B5735F260F5F7600771ED5 /* Info.plist */,
-				F927ED672610113A00EAB8E3 /* WSParser.swift */,
+				F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */,
 				F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */,
 				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
 				F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */,
@@ -216,7 +216,7 @@
 			files = (
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
-				F927ED682610113A00EAB8E3 /* WSParser.swift in Sources */,
+				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,
 				F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */,
 				F927ED992610AD8D00EAB8E3 /* HomeViewController.swift in Sources */,

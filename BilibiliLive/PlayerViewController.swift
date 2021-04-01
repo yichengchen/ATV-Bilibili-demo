@@ -9,20 +9,14 @@ import UIKit
 import AVKit
 import Alamofire
 import SwiftyJSON
-import Starscream
-import Gzip
-
-
 
 class PlayerViewController:AVPlayerViewController {
     enum LiveError: Error {
         case noLiving
     }
     
-    var websocket: WebSocket?
-    var heartBeatTimer: Timer?
     var roomID = 0
-    let parser = WSParser()
+    var danMuProvider: LiveDanMuProvider?
     let danMuView = DanmakuView()
     var url: URL?
     
@@ -30,42 +24,45 @@ class PlayerViewController:AVPlayerViewController {
         super.viewDidLoad()
         initDanmuView()
         refreshRoomsID(){
-            self.initWebsocket()
+            [weak self] in
+            guard let self = self else { return }
+            self.initDataSource()
             self.initPlayer()
-        }
-        parser.onDanmu = {
-            [weak self] string in
-            self?.displayDanMu(str: string)
         }
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.pause), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.play), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        danMuView.stop()
+        danMuProvider?.stop()
+        self.player?.pause()
+        self.player = nil
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        danMuView.recaculateTracks()
+        danMuView.paddingTop = 5
+        danMuView.trackHeight = 50
+        danMuView.displayArea = 0.8
+    }
+    
     @objc func pause() {
-        websocket?.disconnect()
-        heartBeatTimer?.fireDate = Date.distantFuture
+        danMuProvider?.stop()
         danMuView.stop()
         self.player?.pause()
     }
     
     @objc func play() {
         if let url = self.url {
-            websocket?.connect()
-            heartBeatTimer?.fireDate = Date()
+            danMuProvider?.start()
             danMuView.play()
             self.player?.replaceCurrentItem(with: AVPlayerItem(url: url))
             self.player?.playImmediately(atRate: 1)
         }
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        websocket?.disconnect()
-        heartBeatTimer?.invalidate()
-        danMuView.stop()
-        self.player?.pause()
-        self.player = nil
     }
     
     func endWithError(err: Error) {
@@ -99,6 +96,18 @@ class PlayerViewController:AVPlayerViewController {
             }
         }
     }
+    
+    func initDataSource() {
+        danMuProvider = LiveDanMuProvider(roomID: roomID)
+        danMuProvider?.onDanmu = {
+            [weak self] string in
+            let model = DanmakuTextCellModel(str: string)
+            self?.danMuView.shoot(danmaku: model)
+        }
+        danMuProvider?.start()
+    }
+    
+    
     func initDanmuView() {
         view.addSubview(danMuView)
         danMuView.translatesAutoresizingMaskIntoConstraints = false
@@ -111,14 +120,7 @@ class PlayerViewController:AVPlayerViewController {
         danMuView.play()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        danMuView.recaculateTracks()
-        danMuView.paddingTop = 5
-        danMuView.trackHeight = 50
-        danMuView.displayArea = 0.8
-    }
-    
+
     func initPlayer() {
         let requestUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=\(roomID)&platform=h5&otype=json&quality=10000"
         AF.request(requestUrl).responseJSON {
@@ -141,52 +143,5 @@ class PlayerViewController:AVPlayerViewController {
             }
         }
     }
-    
-    func initWebsocket() {
-        let request = URLRequest(url: URL(string: "ws://broadcastlv.chat.bilibili.com:2244/sub")!)
-        websocket = WebSocket(request: request)
-        websocket?.delegate = self
-        websocket?.connect()
-    }
-    
-    func setupHeartBeat() {
-        heartBeatTimer = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(sendHeartBeat), userInfo: nil, repeats: true)
-        sendHeartBeat()
-    }
-    
-    @objc func sendHeartBeat() {
-        let data = WSParser.getHeartbeatPackage()
-        websocket?.write(data: data)
-    }
-    
-    func sendJoinLiveRoom() {
-        let data = LiveWSHeader.encode(operatorType: .auth, data: AuthPackage(roomid: roomID).encode())
-        websocket?.write(data: data)
-    }
-    
-    func displayDanMu(str:String) {
-        let model = DanmakuTextCellModel(str: str)
-        danMuView.shoot(danmaku: model)
-    }
 }
 
-extension PlayerViewController: WebSocketDelegate {
-    func didReceive(event: WebSocketEvent, client: WebSocket) {
-        print(event)
-        switch event {
-        case .connected(_):
-            sendJoinLiveRoom()
-            setupHeartBeat()
-        case .disconnected(_, _):
-            print("disconnect")
-        case .binary(let data):
-            parser.parseData(data: data)
-        default:
-            break
-        }
-    }
-    
-    
-    
-    
-}

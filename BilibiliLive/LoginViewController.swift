@@ -10,10 +10,6 @@ import Alamofire
 import SwiftyJSON
 import Foundation
 
-extension Notification.Name {
-    static let loginStateChange = Notification.Name("loginStateChange")
-}
-
 class LoginViewController: UIViewController {
     
     @IBOutlet weak var qrcodeImageView: UIImageView!
@@ -90,7 +86,7 @@ class LoginViewController: UIViewController {
     }
     
     func didValidationSuccess() {
-        NotificationCenter.default.post(name: .loginStateChange, object: nil)
+        qrcodeImageView.image = nil
         let alert = UIAlertController()
         alert.addAction(UIAlertAction(title: "Success", style: .default, handler: { [weak self] _ in
             self?.dismiss(animated: true, completion: nil)

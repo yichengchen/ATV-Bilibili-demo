@@ -17,7 +17,6 @@ class HomeViewController: UIViewController {
     var rooms = [LiveRoom]()
     override func viewDidLoad() {
         super.viewDidLoad()
-        NotificationCenter.default.addObserver(self, selector: #selector(loadData), name: .loginStateChange, object: nil)
         loadData()
     }
     
@@ -32,33 +31,40 @@ class HomeViewController: UIViewController {
         loadData()
     }
     
-    @objc func loadData(page:Int = 1) {
+    func loadData(page:Int = 1, perviousPage:[LiveRoom] = []) {
+        var rooms = perviousPage
         AF.request("https://api.live.bilibili.com/xlive/web-ucenter/v1/xfetter/GetWebList?page_size=10&page=\(page)").responseJSON {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {
             case .success(let data):
                 let json = JSON(data)
-                self.process(json: json)
+                rooms.append(contentsOf: self.process(json: json))
                 let totalCount = json["data"]["count"].intValue
                 if self.rooms.count < totalCount, page < 5 {
-                    self.loadData(page: page+1)
+                    self.loadData(page: page+1,perviousPage: rooms)
+                } else {
+                    self.rooms = rooms
+                    self.collectionView.reloadData()
                 }
             case .failure(let err):
                 print(err)
+                if rooms.count > 0 {
+                    self.rooms = rooms
+                    self.collectionView.reloadData()
+                }
             }
         }
     }
     
-    func process(json: JSON) {
+    func process(json: JSON) -> [LiveRoom] {
         let newRooms = json["data"]["rooms"].arrayValue.map { room in
             LiveRoom(name: room["title"].stringValue,
                      roomID: room["room_id"].intValue,
                      up: room["uname"].stringValue,
                      cover: room["keyframe"].url)
         }
-        rooms.append(contentsOf: newRooms)
-        collectionView.reloadData()
+        return newRooms
     }
 }
 
@@ -135,4 +141,18 @@ struct LiveRoom {
     let roomID: Int
     let up: String
     let cover: URL?
+}
+
+
+class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        delegate = self
+    }
+    
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        if let homeVC = viewController as? HomeViewController {
+            homeVC.loadData()
+        }
+    }
 }

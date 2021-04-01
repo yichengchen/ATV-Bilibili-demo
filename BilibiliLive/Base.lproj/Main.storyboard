@@ -66,6 +66,7 @@
                                                 <constraint firstItem="7y1-Ax-4mF" firstAttribute="top" secondItem="0yF-pr-mrM" secondAttribute="bottom" constant="8" symbolic="YES" id="N7u-cN-bXm"/>
                                                 <constraint firstAttribute="trailing" secondItem="jR9-en-86e" secondAttribute="trailing" id="NCM-rp-ctY"/>
                                                 <constraint firstItem="7y1-Ax-4mF" firstAttribute="leading" secondItem="0yF-pr-mrM" secondAttribute="leading" id="sxg-Ai-51w"/>
+                                                <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="7y1-Ax-4mF" secondAttribute="trailing" constant="20" symbolic="YES" id="uqO-F7-ZBm"/>
                                                 <constraint firstItem="0yF-pr-mrM" firstAttribute="top" secondItem="jR9-en-86e" secondAttribute="bottom" constant="8" symbolic="YES" id="wik-yw-mCu"/>
                                             </constraints>
                                         </collectionViewCellContentView>
@@ -75,22 +76,6 @@
                                             <outlet property="titleLabel" destination="0yF-pr-mrM" id="wt9-Ek-NNa"/>
                                             <outlet property="upLabel" destination="7y1-Ax-4mF" id="RAZ-b1-Ubc"/>
                                         </connections>
-                                    </collectionViewCell>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="Qr6-mY-n4V">
-                                        <rect key="frame" x="711" y="119" width="500" height="400"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="fy1-Qy-0O3">
-                                            <rect key="frame" x="0.0" y="0.0" width="500" height="400"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                        </collectionViewCellContentView>
-                                    </collectionViewCell>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="WcW-Yn-Lsw">
-                                        <rect key="frame" x="1261" y="119" width="500" height="400"/>
-                                        <autoresizingMask key="autoresizingMask"/>
-                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="2qV-IL-OgH">
-                                            <rect key="frame" x="0.0" y="0.0" width="500" height="400"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                        </collectionViewCellContentView>
                                     </collectionViewCell>
                                 </cells>
                                 <collectionReusableView key="sectionHeaderView" opaque="NO" multipleTouchEnabled="YES" contentMode="top" reuseIdentifier="header" id="OEb-94-Uo9">
@@ -108,6 +93,7 @@
                                     <constraints>
                                         <constraint firstAttribute="bottom" secondItem="SNw-dw-WRJ" secondAttribute="bottom" constant="20" id="1Ma-cr-xqE"/>
                                         <constraint firstItem="SNw-dw-WRJ" firstAttribute="top" secondItem="OEb-94-Uo9" secondAttribute="top" constant="20" id="Khl-lA-dNG"/>
+                                        <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="SNw-dw-WRJ" secondAttribute="trailing" constant="20" symbolic="YES" id="cT8-rL-Xe3"/>
                                         <constraint firstItem="SNw-dw-WRJ" firstAttribute="leading" secondItem="OEb-94-Uo9" secondAttribute="leading" constant="100" id="l6O-0H-td4"/>
                                     </constraints>
                                 </collectionReusableView>
@@ -138,7 +124,7 @@
         <!--Login-->
         <scene sceneID="11u-Mq-xF4">
             <objects>
-                <viewController hidesBottomBarWhenPushed="YES" id="9Nq-28-bVW" customClass="LoginViewController" customModule="BilibiliLive" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="9Nq-28-bVW" customClass="LoginViewController" customModule="BilibiliLive" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="aZr-WT-3VC"/>
                         <viewControllerLayoutGuide type="bottom" id="NZK-r0-GVR"/>
@@ -192,12 +178,13 @@
             </objects>
             <point key="canvasLocation" x="-2591" y="1721"/>
         </scene>
-        <!--Tab Bar Controller-->
+        <!--Tab Bar View Controller-->
         <scene sceneID="gEC-ej-amD">
             <objects>
-                <tabBarController automaticallyAdjustsScrollViewInsets="NO" id="3WE-Ma-D9W" sceneMemberID="viewController">
+                <tabBarController automaticallyAdjustsScrollViewInsets="NO" id="3WE-Ma-D9W" customClass="BLTabBarViewController" customModule="BilibiliLive" customModuleProvider="target" sceneMemberID="viewController">
                     <toolbarItems/>
                     <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Bg5-xy-K8b">
+                        <rect key="frame" x="0.0" y="0.0" width="1000" height="1000"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </tabBar>
