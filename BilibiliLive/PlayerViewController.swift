@@ -128,6 +128,13 @@ class PlayerViewController:UIViewController {
             let model = DanmakuTextCellModel(str: string)
             self?.danMuView.shoot(danmaku: model)
         }
+        danMuProvider?.onSC = {
+            [weak self] string in
+            let model = DanmakuTextCellModel(str: string)
+            model.type = .top
+            model.displayTime = 60
+            self?.danMuView.shoot(danmaku: model)
+        }
         danMuProvider?.start()
     }
     
