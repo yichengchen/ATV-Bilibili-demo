@@ -1,0 +1,16 @@
+PODS:
+  - TVVLCKit (3.3.16)
+
+DEPENDENCIES:
+  - TVVLCKit
+
+SPEC REPOS:
+  https://cdn.cocoapods.org/:
+    - TVVLCKit
+
+SPEC CHECKSUMS:
+  TVVLCKit: a006a10734558712e8b4c20ef2c8b472d95ba990
+
+PODFILE CHECKSUM: 85bdb366b27dbce4cfccae6343ddf95b35aebd94
+
+COCOAPODS: 1.10.0

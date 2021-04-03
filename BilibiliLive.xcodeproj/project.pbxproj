@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F50FE664EF75537A1BC46005 /* Pods_BilibiliLive.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B892306AA70BC7C98A7C2C /* Pods_BilibiliLive.framework */; };
 		F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED64260F917D00EAB8E3 /* Gzip */; };
 		F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */; };
 		F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */; };
@@ -33,6 +34,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		93F8BE4875579938452499D0 /* Pods-BilibiliLive.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BilibiliLive.release.xcconfig"; path = "Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive.release.xcconfig"; sourceTree = "<group>"; };
+		D8B892306AA70BC7C98A7C2C /* Pods_BilibiliLive.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BilibiliLive.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E88FD5934B32EABE181E32E2 /* Pods-BilibiliLive.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BilibiliLive.debug.xcconfig"; path = "Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive.debug.xcconfig"; sourceTree = "<group>"; };
 		F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDanMuProvider.swift; sourceTree = "<group>"; };
 		F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCell.swift; sourceTree = "<group>"; };
 		F927ED6D2610395300EAB8E3 /* DanmakuView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuView.swift; sourceTree = "<group>"; };
@@ -46,6 +50,7 @@
 		F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieManager.swift; sourceTree = "<group>"; };
 		F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BilibiliLive-Bridging-Header.h"; sourceTree = "<group>"; };
 		F9B57350260F5F7400771ED5 /* BilibiliLive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BilibiliLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9B57353260F5F7400771ED5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F9B57355260F5F7400771ED5 /* PlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewController.swift; sourceTree = "<group>"; };
@@ -65,12 +70,30 @@
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
 				F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */,
 				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
+				F50FE664EF75537A1BC46005 /* Pods_BilibiliLive.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		298E9CB7865C6F0138891473 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				E88FD5934B32EABE181E32E2 /* Pods-BilibiliLive.debug.xcconfig */,
+				93F8BE4875579938452499D0 /* Pods-BilibiliLive.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		E1B726B8E50640D8E33C0BC8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D8B892306AA70BC7C98A7C2C /* Pods_BilibiliLive.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		F927ED6A2610391000EAB8E3 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
@@ -100,6 +123,8 @@
 			children = (
 				F9B57352260F5F7400771ED5 /* BilibiliLive */,
 				F9B57351260F5F7400771ED5 /* Products */,
+				298E9CB7865C6F0138891473 /* Pods */,
+				E1B726B8E50640D8E33C0BC8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -125,6 +150,7 @@
 				F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */,
 				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
 				F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */,
+				F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -136,9 +162,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F9B57362260F5F7600771ED5 /* Build configuration list for PBXNativeTarget "BilibiliLive" */;
 			buildPhases = (
+				9F1BD6588961ACB4FE40EA45 /* [CP] Check Pods Manifest.lock */,
 				F9B5734C260F5F7400771ED5 /* Sources */,
 				F9B5734D260F5F7400771ED5 /* Frameworks */,
 				F9B5734E260F5F7400771ED5 /* Resources */,
+				5840338E4214CD9A5E2AC407 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -167,6 +195,7 @@
 				TargetAttributes = {
 					F9B5734F260F5F7400771ED5 = {
 						CreatedOnToolsVersion = 12.4;
+						LastSwiftMigration = 1240;
 					};
 				};
 			};
@@ -208,6 +237,48 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5840338E4214CD9A5E2AC407 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		9F1BD6588961ACB4FE40EA45 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-BilibiliLive-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F9B5734C260F5F7400771ED5 /* Sources */ = {
@@ -371,9 +442,11 @@
 		};
 		F9B57363260F5F7600771ED5 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E88FD5934B32EABE181E32E2 /* Pods-BilibiliLive.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = MEWHFZ92DY;
 				INFOPLIST_FILE = BilibiliLive/Info.plist;
@@ -383,6 +456,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.etan.tv.BilibiliLive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "BilibiliLive/BilibiliLive-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 13.0;
@@ -391,9 +466,11 @@
 		};
 		F9B57364260F5F7600771ED5 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 93F8BE4875579938452499D0 /* Pods-BilibiliLive.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = MEWHFZ92DY;
 				INFOPLIST_FILE = BilibiliLive/Info.plist;
@@ -403,6 +480,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.etan.tv.BilibiliLive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "BilibiliLive/BilibiliLive-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 13.0;

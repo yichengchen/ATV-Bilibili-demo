@@ -6,11 +6,10 @@
 //
 
 import UIKit
-import AVKit
 import Alamofire
 import SwiftyJSON
 
-class PlayerViewController:AVPlayerViewController {
+class PlayerViewController:UIViewController {
     enum LiveError: Error {
         case noLiving
     }
@@ -18,10 +17,32 @@ class PlayerViewController:AVPlayerViewController {
     var roomID = 0
     var danMuProvider: LiveDanMuProvider?
     let danMuView = DanmakuView()
+    let playerContainerView = UIView()
     var url: URL?
-    
+    let mediaPlayer = VLCMediaPlayer()
+    let loading = UIActivityIndicatorView()
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = UIColor.black
+        view.addSubview(playerContainerView)
+        playerContainerView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            playerContainerView.topAnchor.constraint(equalTo: view.topAnchor),
+            playerContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            playerContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            playerContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+        loading.style = .large
+        loading.color = .white
+        view.addSubview(loading)
+        loading.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            loading.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            loading.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+        ])
+        loading.startAnimating()
+        mediaPlayer.drawable = playerContainerView
         initDanmuView()
         refreshRoomsID(){
             [weak self] in
@@ -30,16 +51,14 @@ class PlayerViewController:AVPlayerViewController {
             self.initPlayer()
         }
         
-        NotificationCenter.default.addObserver(self, selector: #selector(self.pause), name: UIApplication.willResignActiveNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.play), name: UIApplication.didBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(pause), name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(play), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
         danMuView.stop()
         danMuProvider?.stop()
-        self.player?.pause()
-        self.player = nil
     }
     
     override func viewDidLayoutSubviews() {
@@ -53,15 +72,20 @@ class PlayerViewController:AVPlayerViewController {
     @objc func pause() {
         danMuProvider?.stop()
         danMuView.stop()
-        self.player?.pause()
+        mediaPlayer.pause()
     }
     
     @objc func play() {
         if let url = self.url {
             danMuProvider?.start()
             danMuView.play()
-            self.player?.replaceCurrentItem(with: AVPlayerItem(url: url))
-            self.player?.playImmediately(atRate: 1)
+            let videoMedia = VLCMedia(url: url)
+            videoMedia.addOptions([
+                "http-user-agent": "Bilibili",
+                "http-referrer": "https://live.bilibili.com",
+            ])
+            mediaPlayer.media = videoMedia
+            mediaPlayer.play()
         }
     }
     
@@ -122,7 +146,8 @@ class PlayerViewController:AVPlayerViewController {
     
 
     func initPlayer() {
-        let requestUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=\(roomID)&platform=h5&otype=json&quality=10000"
+        mediaPlayer.delegate = self
+        let requestUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=\(roomID)&platform=web&otype=json&quality=10000"
         AF.request(requestUrl).responseJSON {
             [unowned self] resp in
             switch resp.result {
@@ -130,8 +155,7 @@ class PlayerViewController:AVPlayerViewController {
                 let json = JSON(object)
                 if let playUrl = json["data"]["durl"].arrayValue.first?["url"].string {
                     self.url = URL(string: playUrl)!
-                    self.player = AVPlayer(url: self.url!)
-                    self.player?.playImmediately(atRate: 1)
+                    self.play()
                 } else {
                     dismiss(animated: true, completion: nil)
                 }
@@ -145,3 +169,13 @@ class PlayerViewController:AVPlayerViewController {
     }
 }
 
+
+extension PlayerViewController: VLCMediaPlayerDelegate {
+    func mediaPlayerStateChanged(_ aNotification: Notification!) {
+        print("mediaPlayerStateChanged", mediaPlayer.state.rawValue)
+        if mediaPlayer.state == .playing || mediaPlayer.state == .esAdded {
+            loading.stopAnimating()
+            loading.removeFromSuperview()
+        }
+    }
+}
