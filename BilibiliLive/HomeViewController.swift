@@ -20,12 +20,6 @@ class HomeViewController: UIViewController {
         loadData()
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let source = sender as? UIButton, let dist = segue.destination as? PlayerViewController {
-            dist.roomID = source.tag
-        }
-    }
-    
     @IBAction func actionReload(_ sender: Any) {
         rooms.removeAll()
         loadData()
@@ -72,7 +66,7 @@ extension HomeViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let room = rooms[indexPath.item]
         let cid = room.roomID
-        let playerVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "PlayerViewController") as! PlayerViewController
+        let playerVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "PlayerViewController") as! LivePlayerViewController
         playerVC.roomID = cid
         present(playerVC, animated: true, completion: nil)
     }

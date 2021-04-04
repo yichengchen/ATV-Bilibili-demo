@@ -9,7 +9,7 @@ import UIKit
 import Alamofire
 import SwiftyJSON
 
-class PlayerViewController:UIViewController {
+class LivePlayerViewController:UIViewController {
     enum LiveError: Error {
         case noLiving
     }
@@ -177,7 +177,7 @@ class PlayerViewController:UIViewController {
 }
 
 
-extension PlayerViewController: VLCMediaPlayerDelegate {
+extension LivePlayerViewController: VLCMediaPlayerDelegate {
     func mediaPlayerStateChanged(_ aNotification: Notification!) {
         print("mediaPlayerStateChanged", mediaPlayer.state.rawValue)
         if mediaPlayer.state == .playing || mediaPlayer.state == .esAdded {

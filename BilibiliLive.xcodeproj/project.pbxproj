@@ -23,8 +23,13 @@
 		F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */; };
 		F927ED992610AD8D00EAB8E3 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */; };
 		F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED9E2610B5C300EAB8E3 /* Kingfisher */; };
+		F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */; };
+		F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */; };
+		F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28E926195EC200F8E66A /* UIView+Layout.swift */; };
+		F99D28EE2619F4E200F8E66A /* PlayerControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28ED2619F4E200F8E66A /* PlayerControlView.swift */; };
+		F99D28F72619F5F000F8E66A /* FeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28F62619F5F000F8E66A /* FeedViewController.swift */; };
 		F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57353260F5F7400771ED5 /* AppDelegate.swift */; };
-		F9B57356260F5F7400771ED5 /* PlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57355260F5F7400771ED5 /* PlayerViewController.swift */; };
+		F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */; };
 		F9B57359260F5F7400771ED5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B57357260F5F7400771ED5 /* Main.storyboard */; };
 		F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9B5735A260F5F7600771ED5 /* Assets.xcassets */; };
 		F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B5735C260F5F7600771ED5 /* LaunchScreen.storyboard */; };
@@ -50,10 +55,15 @@
 		F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieManager.swift; sourceTree = "<group>"; };
 		F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewController.swift; sourceTree = "<group>"; };
 		F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BilibiliLive-Bridging-Header.h"; sourceTree = "<group>"; };
+		F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPlayerViewController.swift; sourceTree = "<group>"; };
+		F99D28E926195EC200F8E66A /* UIView+Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Layout.swift"; sourceTree = "<group>"; };
+		F99D28ED2619F4E200F8E66A /* PlayerControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlView.swift; sourceTree = "<group>"; };
+		F99D28F62619F5F000F8E66A /* FeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewController.swift; sourceTree = "<group>"; };
 		F9B57350260F5F7400771ED5 /* BilibiliLive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BilibiliLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9B57353260F5F7400771ED5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		F9B57355260F5F7400771ED5 /* PlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewController.swift; sourceTree = "<group>"; };
+		F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePlayerViewController.swift; sourceTree = "<group>"; };
 		F9B57358260F5F7400771ED5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		F9B5735A260F5F7600771ED5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F9B5735D260F5F7600771ED5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -118,6 +128,15 @@
 			path = DanmakuKit;
 			sourceTree = "<group>";
 		};
+		F99D28EC2619F4D500F8E66A /* Player */ = {
+			isa = PBXGroup;
+			children = (
+				F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */,
+				F99D28ED2619F4E200F8E66A /* PlayerControlView.swift */,
+			);
+			path = Player;
+			sourceTree = "<group>";
+		};
 		F9B57347260F5F7400771ED5 = {
 			isa = PBXGroup;
 			children = (
@@ -139,9 +158,10 @@
 		F9B57352260F5F7400771ED5 /* BilibiliLive */ = {
 			isa = PBXGroup;
 			children = (
+				F99D28EC2619F4D500F8E66A /* Player */,
 				F927ED6A2610391000EAB8E3 /* Vendor */,
 				F9B57353260F5F7400771ED5 /* AppDelegate.swift */,
-				F9B57355260F5F7400771ED5 /* PlayerViewController.swift */,
+				F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */,
 				F9B57357260F5F7400771ED5 /* Main.storyboard */,
 				F9B5735A260F5F7600771ED5 /* Assets.xcassets */,
 				F9B5735C260F5F7600771ED5 /* LaunchScreen.storyboard */,
@@ -151,6 +171,9 @@
 				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
 				F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */,
 				F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */,
+				F99D28E926195EC200F8E66A /* UIView+Layout.swift */,
+				F99D28F62619F5F000F8E66A /* FeedViewController.swift */,
+				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -285,6 +308,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
+				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
@@ -294,11 +319,14 @@
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
 				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,
-				F9B57356260F5F7400771ED5 /* PlayerViewController.swift in Sources */,
+				F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */,
+				F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */,
+				F99D28F72619F5F000F8E66A /* FeedViewController.swift in Sources */,
 				F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */,
 				F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */,
 				F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */,
 				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,
+				F99D28EE2619F4E200F8E66A /* PlayerControlView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
