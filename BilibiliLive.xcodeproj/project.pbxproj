@@ -38,6 +38,8 @@
 		F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = F9B57377260F6BB400771ED5 /* SwiftyJSON */; };
 		F9B9EAE3261AA3400045C2C6 /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = F9B9EAE2261AA3400045C2C6 /* SwiftyXMLParser */; };
 		F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */; };
+		F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */; };
+		F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +73,8 @@
 		F9B5735D260F5F7600771ED5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F9B5735F260F5F7600771ED5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTabBarViewController.swift; sourceTree = "<group>"; };
+		F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCollectionViewController.swift; sourceTree = "<group>"; };
+		F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToViewViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -179,6 +183,8 @@
 				F99D28F62619F5F000F8E66A /* FeedViewController.swift */,
 				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
 				F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */,
+				F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */,
+				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -315,10 +321,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */,
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
 				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
+				F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,

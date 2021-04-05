@@ -1,15 +1,15 @@
 //
-//  F.swift
+//  ToViewViewController.swift
 //  BilibiliLive
 //
-//  Created by Etan Chen on 2021/4/4.
+//  Created by Etan Chen on 2021/4/5.
 //
 
 import UIKit
 import Alamofire
 import SwiftyJSON
 
-class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
+class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController.create()
     var feeds = [FeedData]() {
         didSet {
@@ -31,7 +31,7 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     }
     
     func loadData() {
-        AF.request("https://api.bilibili.com/x/web-feed/feed?ps=50&pn=1").responseJSON {
+        AF.request("http://api.bilibili.com/x/v2/history/toview").responseJSON {
             [weak self] response in
             guard let self = self else { return }
             switch(response.result) {
@@ -48,12 +48,12 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     }
     
     func progrssData(json:JSON) -> [FeedData] {
-        let datas = json["data"].arrayValue.map { data -> FeedData in
-            let title = data["archive"]["title"].stringValue
-            let cid = data["archive"]["cid"].intValue
-            let avid = data["id"].intValue
-            let owner = data["archive"]["owner"]["name"].stringValue
-            let pic = data["archive"]["pic"].url!
+        let datas = json["data"]["list"].arrayValue.map { data -> FeedData in
+            let title = data["title"].stringValue
+            let cid = data["cid"].intValue
+            let avid = data["aid"].intValue
+            let owner = data["owner"]["name"].stringValue
+            let pic = data["pic"].url!
             return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic)
         }
         return datas
@@ -66,14 +66,6 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
         player.cid = feed.cid
         present(player, animated: true, completion: nil)
     }
-}
-
-struct FeedData {
-    let title: String
-    let cid: Int
-    let aid: Int
-    let owner: String
-    let pic: URL
 }
 
 

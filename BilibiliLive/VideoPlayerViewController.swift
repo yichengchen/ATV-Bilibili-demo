@@ -25,10 +25,13 @@ class VideoPlayerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupPlayer()
-        fetchVideoData()
+        ensureCid {
+            [weak self] in
+            self?.fetchVideoData()
+            self?.fetchDanmuData()
+        }
         view.addSubview(danMuView)
         danMuView.makeConstraintsToBindToSuperview()
-        fetchDanmuData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -79,6 +82,25 @@ class VideoPlayerViewController: UIViewController {
                     print(error)
                 }
             }
+    }
+    
+    func ensureCid(callback:(()->Void)?=nil) {
+        if cid > 0 {
+            callback?()
+        }
+        AF.request("https://api.bilibili.com/x/player/pagelist?aid=\(aid!)&jsonp=jsonp").responseJSON {
+            [weak self] resp in
+            guard let self = self else { return }
+            switch resp.result {
+            case .success(let data):
+                let json = JSON(data)
+                let cid = json["data"][0]["cid"].intValue
+                self.cid = cid
+                callback?()
+            case .failure(let err):
+                print(err)
+            }
+        }
     }
     
     func fetchDanmuData() {
