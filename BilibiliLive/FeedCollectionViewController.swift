@@ -21,6 +21,7 @@ class FeedCollectionViewController: UIViewController {
         }
     }
     var didSelect: ((IndexPath)->Void)? = nil
+    var didLongPress: ((IndexPath)->Void)? = nil
     lazy var layout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
     var displayDatas = [DisplayData]() {
         didSet {
@@ -64,8 +65,12 @@ extension FeedCollectionViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! HomeCollectionViewCell
-        let room = displayDatas[indexPath.item]
-        cell.setup(data: room)
+        let item = displayDatas[indexPath.item]
+        cell.setup(data: item)
+        cell.onLongPress = {
+            [weak self] in
+            self?.didLongPress?(indexPath)
+        }
         return cell
     }
     
@@ -90,6 +95,8 @@ class HomeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var upLabel: UILabel!
     @IBOutlet weak var imageView: UIImageView!
     
+    var onLongPress: (()->Void)?=nil
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         contentView.clipsToBounds = false
@@ -97,6 +104,8 @@ class HomeCollectionViewCell: UICollectionViewCell {
         contentView.layer.shadowColor = UIColor.gray.cgColor
         contentView.layer.shadowRadius = 20
         contentView.layer.shadowOpacity = 1
+        let longpress = UILongPressGestureRecognizer(target: self, action: #selector(actionLongPress(sender:)))
+        addGestureRecognizer(longpress)
     }
     
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
@@ -113,5 +122,15 @@ class HomeCollectionViewCell: UICollectionViewCell {
         titleLabel.text = data.title
         upLabel.text = data.owner
         imageView.kf.setImage(with:data.pic)
+    }
+    
+    @objc private func actionLongPress(sender:UILongPressGestureRecognizer) {
+        guard sender.state == .began else { return }
+        onLongPress?()
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        onLongPress = nil
     }
 }

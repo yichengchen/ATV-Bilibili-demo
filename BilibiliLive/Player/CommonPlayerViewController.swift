@@ -16,6 +16,7 @@ class CommonPlayerViewController: UIViewController {
     var didSeek: ((TimeInterval)->Void)?=nil
     var didPause:(()->Void)?=nil
     var didPlay: (()->Void)?=nil
+    var didEnd: (()->Void)?=nil
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -113,6 +114,8 @@ extension CommonPlayerViewController: VLCMediaPlayerDelegate {
             loading?.stopAnimating()
             loading?.removeFromSuperview()
             loading = nil
+        case .ended:
+            didEnd?()
         default:
             break
         }

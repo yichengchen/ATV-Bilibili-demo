@@ -68,6 +68,11 @@ class VideoPlayerViewController: UIViewController {
             [weak self] in
             self?.danMuView.pause()
         }
+        
+        playerVC.didEnd = {
+            [weak self] in
+            self?.dismiss(animated: true, completion: nil)
+        }
     }
     
     func fetchVideoData() {

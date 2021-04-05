@@ -183,6 +183,8 @@ extension LivePlayerViewController: VLCMediaPlayerDelegate {
         if mediaPlayer.state == .playing || mediaPlayer.state == .esAdded {
             loading.stopAnimating()
             loading.removeFromSuperview()
+        } else if mediaPlayer.state == .ended {
+            dismiss(animated: true, completion: nil)
         }
     }
 }
