@@ -9,7 +9,7 @@ import UIKit
 import Alamofire
 import SwiftyJSON
 
-class FeedViewController: UIViewController {
+class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     @IBOutlet weak var collectionView: UICollectionView!
     
     var feeds = [FeedData]()
@@ -18,8 +18,12 @@ class FeedViewController: UIViewController {
         loadData()
     }
     
+    func reloadData() {
+        loadData()
+    }
+    
     func loadData() {
-        AF.request("https://api.bilibili.com/x/web-feed/feed?ps=20&pn=1").responseJSON {
+        AF.request("https://api.bilibili.com/x/web-feed/feed?ps=50&pn=1").responseJSON {
             [weak self] response in
             guard let self = self else { return }
             switch(response.result) {

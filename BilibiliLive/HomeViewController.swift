@@ -12,16 +12,15 @@ import Alamofire
 import SwiftyJSON
 import Kingfisher
 
-class HomeViewController: UIViewController {
+class HomeViewController: UIViewController, BLTabBarContentVCProtocol {
     @IBOutlet weak var collectionView: UICollectionView!
     var rooms = [LiveRoom]()
     override func viewDidLoad() {
         super.viewDidLoad()
         loadData()
     }
-    
-    @IBAction func actionReload(_ sender: Any) {
-        rooms.removeAll()
+
+    func reloadData() {
         loadData()
     }
     
@@ -138,15 +137,3 @@ struct LiveRoom {
 }
 
 
-class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        delegate = self
-    }
-    
-    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
-        if let homeVC = viewController as? HomeViewController {
-            homeVC.loadData()
-        }
-    }
-}

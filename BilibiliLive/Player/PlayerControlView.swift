@@ -19,7 +19,8 @@ class PlayerControlView: UIView {
     }
     weak var delegate: PlayerControlViewDelegate?
     
-    private let progressBackgoundView = UIView()
+    private var timer:Timer?
+    private let progressBackgoundView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
     private let indicatorView = UIView()
     private let adjustIndecatorView = UIView()
     private let currentTimeLabel = UILabel()
@@ -45,41 +46,23 @@ class PlayerControlView: UIView {
         setup()
     }
     
-    override var isHidden: Bool {
-        didSet {
-            if isHidden {
-                resignFirstResponder()
-            } else {
-                becomeFirstResponder()
-            }
-        }
-    }
     
-    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        if presses.first?.type == .select {
-            actionTap()
-        }
+    override open class var layerClass: AnyClass {
+        return CAGradientLayer.self
     }
     
     override func didMoveToWindow() {
-        becomeFirstResponder()
-    }
-    
-    override var canBecomeFirstResponder: Bool {
-        get {
-            return true
-        }
+        startHideTimer()
     }
     
     private func setup() {
         isUserInteractionEnabled = true
         setupView()
-        setupGesture()
     }
     
     private func setupView() {
+        (layer as? CAGradientLayer)?.colors = [UIColor.clear.cgColor, UIColor.black.withAlphaComponent(0.8).cgColor]
         addSubview(progressBackgoundView)
-        progressBackgoundView.backgroundColor = UIColor.lightGray
         progressBackgoundView.layer.cornerRadius = 5
         progressBackgoundView.clipsToBounds = true
         progressBackgoundView.makeConstraints {
@@ -94,7 +77,7 @@ class PlayerControlView: UIView {
         playbackIndicatorLeadingContstraint = indicatorView.leadingAnchor.constraint(equalTo: progressBackgoundView.leadingAnchor)
         indicatorView.makeConstraints {
             [$0.heightAnchor.constraint(equalTo: progressBackgoundView.heightAnchor),
-             $0.widthAnchor.constraint(equalToConstant: 1),
+             $0.widthAnchor.constraint(equalToConstant: 2),
              $0.bottomAnchor.constraint(equalTo: progressBackgoundView.bottomAnchor),
              playbackIndicatorLeadingContstraint!]
         }
@@ -127,15 +110,15 @@ class PlayerControlView: UIView {
     }
     
     
-    private func setupGesture() {
+    func setupGesture(with target:UIView) {
         let panGesture = UIPanGestureRecognizer()
-        panGesture.delegate = self
         panGesture.allowedTouchTypes = [UITouch.TouchType.direct,UITouch.TouchType.indirect].map({NSNumber(value: $0.rawValue)})
         panGesture.addTarget(self, action: #selector(actionPan(sender:)))
-        addGestureRecognizer(panGesture)
+        panGesture.delegate = self
+        target.addGestureRecognizer(panGesture)
     }
     
-    func updateProgress() {
+    private func updateProgress() {
         let length = CGFloat(current/duration) * progressBackgoundView.bounds.width
         playbackIndicatorLeadingContstraint!.constant = length
         if !adjusting {
@@ -143,7 +126,7 @@ class PlayerControlView: UIView {
         }
     }
     
-    func updateTimeLabel() {
+    private func updateTimeLabel() {
         let progress:CGFloat
         if adjusting {
             progress = adjustIndicatorLeadingContstraint!.constant/progressBackgoundView.bounds.width
@@ -154,10 +137,46 @@ class PlayerControlView: UIView {
         currentTimeLabel.text = "\(Int(seconds / 60)):\(Int(seconds.truncatingRemainder(dividingBy: 60)))"
     }
     
+    private func startHideTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true, block: {
+            [weak self] _ in
+            guard let self = self else { return }
+            self.hide()
+        })
+    }
+    
+    func hide() {
+        adjusting = false
+        if isHidden { return }
+        UIView.animate(withDuration: 0.3) {
+            self.alpha = 0
+        } completion: { _ in
+            self.isHidden = true
+        }
+    }
+    
+    func show() {
+        if !isHidden {
+            startHideTimer()
+            return
+        }
+        alpha = 0
+        isHidden = false
+        UIView.animate(withDuration: 0.3) {
+            self.alpha = 1
+        }
+        startHideTimer()
+    }
+    
     @objc func actionPan(sender:UIPanGestureRecognizer) {
         switch sender.state {
         case .began:
+            if isHidden {
+                show()
+            }
             adjusting = true
+            timer?.invalidate()
             sender.setTranslation(CGPoint(x: adjustIndicatorLeadingContstraint!.constant, y: 0), in: progressBackgoundView)
         case .changed:
             let move = sender.translation(in: progressBackgoundView).x
@@ -165,13 +184,17 @@ class PlayerControlView: UIView {
             adjustIndicatorLeadingContstraint?.constant = move
             updateTimeLabel()
         case .ended,.cancelled:
-            break
+            startHideTimer()
         default:
             break
         }
     }
     
     @objc func actionTap() {
+        if isHidden {
+            show()
+            return
+        }
         if adjusting {
             let seek = CGFloat(duration) * adjustIndicatorLeadingContstraint!.constant/progressBackgoundView.bounds.width
             delegate?.didSeek(to: TimeInterval(seek))
@@ -179,11 +202,15 @@ class PlayerControlView: UIView {
         } else {
             delegate?.didSeek(to: current)
         }
+        startHideTimer()
     }
 }
 
 extension PlayerControlView: UIGestureRecognizerDelegate {
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        if otherGestureRecognizer is UISwipeGestureRecognizer {
+            return !adjusting
+        }
+        return false
     }
 }

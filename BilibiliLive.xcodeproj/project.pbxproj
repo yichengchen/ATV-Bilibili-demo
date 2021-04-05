@@ -36,6 +36,8 @@
 		F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = F9B5736D260F652C00771ED5 /* Alamofire */; };
 		F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = F9B57372260F6B8E00771ED5 /* Starscream */; };
 		F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = F9B57377260F6BB400771ED5 /* SwiftyJSON */; };
+		F9B9EAE3261AA3400045C2C6 /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = F9B9EAE2261AA3400045C2C6 /* SwiftyXMLParser */; };
+		F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -68,6 +70,7 @@
 		F9B5735A260F5F7600771ED5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F9B5735D260F5F7600771ED5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F9B5735F260F5F7600771ED5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTabBarViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +81,7 @@
 				F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */,
 				F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */,
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
+				F9B9EAE3261AA3400045C2C6 /* SwiftyXMLParser in Frameworks */,
 				F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */,
 				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
 				F50FE664EF75537A1BC46005 /* Pods_BilibiliLive.framework in Frameworks */,
@@ -174,6 +178,7 @@
 				F99D28E926195EC200F8E66A /* UIView+Layout.swift */,
 				F99D28F62619F5F000F8E66A /* FeedViewController.swift */,
 				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
+				F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -202,6 +207,7 @@
 				F9B57377260F6BB400771ED5 /* SwiftyJSON */,
 				F927ED64260F917D00EAB8E3 /* Gzip */,
 				F927ED9E2610B5C300EAB8E3 /* Kingfisher */,
+				F9B9EAE2261AA3400045C2C6 /* SwiftyXMLParser */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -237,6 +243,7 @@
 				F9B57376260F6BB400771ED5 /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
 				F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */,
 				F927ED9D2610B5C300EAB8E3 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				F9B9EAE1261AA3400045C2C6 /* XCRemoteSwiftPackageReference "SwiftyXMLParser" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -308,6 +315,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
 				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
@@ -579,6 +587,14 @@
 				minimumVersion = 5.0.0;
 			};
 		};
+		F9B9EAE1261AA3400045C2C6 /* XCRemoteSwiftPackageReference "SwiftyXMLParser" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/yahoojapan/SwiftyXMLParser";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.3.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -606,6 +622,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F9B57376260F6BB400771ED5 /* XCRemoteSwiftPackageReference "SwiftyJSON" */;
 			productName = SwiftyJSON;
+		};
+		F9B9EAE2261AA3400045C2C6 /* SwiftyXMLParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F9B9EAE1261AA3400045C2C6 /* XCRemoteSwiftPackageReference "SwiftyXMLParser" */;
+			productName = SwiftyXMLParser;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -190,8 +190,8 @@
                     </tabBar>
                     <connections>
                         <segue destination="BYZ-38-t0r" kind="relationship" relationship="viewControllers" id="gCn-bR-3D5"/>
-                        <segue destination="9Nq-28-bVW" kind="relationship" relationship="viewControllers" id="bHT-xU-wJa"/>
                         <segue destination="ArX-1M-F52" kind="relationship" relationship="viewControllers" id="eV1-qf-lX1"/>
+                        <segue destination="9Nq-28-bVW" kind="relationship" relationship="viewControllers" id="eMY-fG-v7y"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="0vq-js-PeX" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
