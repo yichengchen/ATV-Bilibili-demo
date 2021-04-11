@@ -133,6 +133,14 @@ class VideoPlayerViewController: UIViewController {
     }
     
     func playmedia(json: JSON) {
+        guard json["data"].exists() else {
+            let alert = UIAlertController()
+            alert.addAction(UIAlertAction(title: "请求失败，可能需要大会员", style: .default, handler: { [weak self] _ in
+                self?.dismiss(animated: true, completion: nil)
+            }))
+            present(alert, animated: true, completion: nil)
+            return
+        }
         let video = json["data"]["dash"]["video"][1]["base_url"].stringValue
         let audio = json["data"]["dash"]["audio"].arrayValue.last!["baseUrl"].stringValue
         
