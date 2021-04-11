@@ -11,9 +11,16 @@ import SwiftyJSON
 
 class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController.create()
-    var feeds = [FeedData]() {
+    var feeds = [Any]() {
         didSet {
-            collectionVC.displayDatas = feeds.map{ DisplayData(title: $0.title, owner: $0.owner, pic: $0.pic) }
+            collectionVC.displayDatas = feeds.map {
+                if let feed = $0 as? FeedData {
+                    return DisplayData(title: feed.title, owner: feed.owner, pic: feed.pic)
+                } else if let bangumi = $0 as? BangumiData {
+                    return DisplayData(title: bangumi.title, owner: bangumi.owner, pic: bangumi.pic)
+                }
+                return DisplayData(title: "", owner: "", pic: nil)
+            }
         }
     }
     override func viewDidLoad() {
@@ -47,24 +54,57 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
         }
     }
     
-    func progrssData(json:JSON) -> [FeedData] {
-        let datas = json["data"].arrayValue.map { data -> FeedData in
-            let title = data["archive"]["title"].stringValue
-            let cid = data["archive"]["cid"].intValue
+    func progrssData(json:JSON) -> [Any] {
+        let datas = json["data"].arrayValue.map { data -> Any in
+            let bangumi = data["bangumi"]
+            if !bangumi.isEmpty {
+                let season = bangumi["season_id"].intValue
+                let owner = bangumi["title"].stringValue
+                let pic = bangumi["cover"].url!
+                let ep = bangumi["new_ep"]
+                let title = "第" + ep["index"].stringValue + "集 - " + ep["index_title"].stringValue
+                let episode = ep["episode_id"].intValue
+                return BangumiData(title: title, season: season, episode: episode, owner: owner, pic: pic)
+            }
             let avid = data["id"].intValue
-            let owner = data["archive"]["owner"]["name"].stringValue
-            let pic = data["archive"]["pic"].url!
+            let archive = data["archive"]
+            let title = archive["title"].stringValue
+            let cid = archive["cid"].intValue
+            let owner = archive["owner"]["name"].stringValue
+            let pic = archive["pic"].url!
             return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic)
         }
         return datas
     }
     
     func goDetail(with indexPath: IndexPath) {
-        let feed = feeds[indexPath.item]
-        let player = VideoPlayerViewController()
-        player.aid = feed.aid
-        player.cid = feed.cid
-        present(player, animated: true, completion: nil)
+        if let feed = feeds[indexPath.item] as? FeedData {
+            let player = VideoPlayerViewController()
+            player.aid = feed.aid
+            player.cid = feed.cid
+            present(player, animated: true, completion: nil)
+        }
+        if let bangumi = feeds[indexPath.item] as? BangumiData {
+            AF.request("https://api.bilibili.com/pgc/web/season/section?season_id=\(bangumi.season)").responseJSON { [weak self] (response) in
+                guard let self = self else { return }
+                switch(response.result) {
+                case .success(let data):
+                    let json = JSON(data)
+                    let episodes = json["result"]["main_section"]["episodes"].arrayValue
+                    for episode in episodes {
+                        if episode["id"].intValue == bangumi.episode {
+                            let player = VideoPlayerViewController()
+                            player.aid = episode["aid"].intValue
+                            player.cid = episode["cid"].intValue
+                            self.present(player, animated: true, completion: nil)
+                            break
+                        }
+                    }
+                case .failure(let error):
+                    print(error)
+                }
+            }
+        }
     }
 }
 
@@ -76,5 +116,11 @@ struct FeedData {
     let pic: URL
 }
 
-
+struct BangumiData {
+    let title: String
+    let season: Int
+    let episode: Int
+    let owner: String
+    let pic: URL
+}
 
