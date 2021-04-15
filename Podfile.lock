@@ -5,7 +5,7 @@ DEPENDENCIES:
   - TVVLCKit
 
 SPEC REPOS:
-  https://cdn.cocoapods.org/:
+  trunk:
     - TVVLCKit
 
 SPEC CHECKSUMS:

@@ -16,11 +16,13 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         let loginVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "Login")
         let liveVC = HomeViewController()
         let feedVC = FeedViewController()
+        let historyVC = HistoryViewController()
         let toViewVC = ToViewViewController()
         liveVC.tabBarItem.title = "Live"
         feedVC.tabBarItem.title = "Feeds"
+        historyVC.tabBarItem.title = "History"
         toViewVC.tabBarItem.title = "ToView"
-        setViewControllers([liveVC,feedVC,toViewVC,loginVC], animated: false)
+        setViewControllers([liveVC,feedVC,historyVC,toViewVC,loginVC], animated: false)
     }
     
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {

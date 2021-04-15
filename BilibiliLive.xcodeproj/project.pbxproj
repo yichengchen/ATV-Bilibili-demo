@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */; };
 		F50FE664EF75537A1BC46005 /* Pods_BilibiliLive.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B892306AA70BC7C98A7C2C /* Pods_BilibiliLive.framework */; };
 		F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED64260F917D00EAB8E3 /* Gzip */; };
 		F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */; };
@@ -43,6 +44,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		93F8BE4875579938452499D0 /* Pods-BilibiliLive.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BilibiliLive.release.xcconfig"; path = "Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive.release.xcconfig"; sourceTree = "<group>"; };
 		D8B892306AA70BC7C98A7C2C /* Pods_BilibiliLive.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BilibiliLive.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E88FD5934B32EABE181E32E2 /* Pods-BilibiliLive.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BilibiliLive.debug.xcconfig"; path = "Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive.debug.xcconfig"; sourceTree = "<group>"; };
@@ -185,6 +187,7 @@
 				F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */,
 				F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */,
 				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
+				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -322,6 +325,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */,
+				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
 				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
