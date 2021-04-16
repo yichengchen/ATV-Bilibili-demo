@@ -13,7 +13,7 @@ import SwiftyJSON
 import Kingfisher
 
 class HomeViewController: UIViewController, BLTabBarContentVCProtocol {
-    var rooms = [LiveRoom]() { didSet {collectionVC.displayDatas=feeds} }
+    var rooms = [LiveRoom]() { didSet {collectionVC.displayDatas=rooms} }
     
     let collectionVC = FeedCollectionViewController.create()
     override func viewDidLoad() {
