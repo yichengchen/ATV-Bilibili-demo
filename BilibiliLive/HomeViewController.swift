@@ -12,22 +12,21 @@ import Alamofire
 import SwiftyJSON
 import Kingfisher
 
-class HomeViewController: UIViewController {
-    @IBOutlet weak var collectionView: UICollectionView!
-    var rooms = [LiveRoom]()
+class HomeViewController: UIViewController, BLTabBarContentVCProtocol {
+    var rooms = [LiveRoom]() { didSet {collectionVC.displayDatas=feeds} }
+    
+    let collectionVC = FeedCollectionViewController.create()
     override func viewDidLoad() {
         super.viewDidLoad()
+        collectionVC.show(in: self)
+        collectionVC.didSelect = {
+            [weak self] idx in
+            self?.enter(with: idx)
+        }
         loadData()
     }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let source = sender as? UIButton, let dist = segue.destination as? PlayerViewController {
-            dist.roomID = source.tag
-        }
-    }
-    
-    @IBAction func actionReload(_ sender: Any) {
-        rooms.removeAll()
+
+    func reloadData() {
         loadData()
     }
     
@@ -45,13 +44,11 @@ class HomeViewController: UIViewController {
                     self.loadData(page: page+1,perviousPage: rooms)
                 } else {
                     self.rooms = rooms
-                    self.collectionView.reloadData()
                 }
             case .failure(let err):
                 print(err)
                 if rooms.count > 0 {
                     self.rooms = rooms
-                    self.collectionView.reloadData()
                 }
             }
         }
@@ -66,93 +63,31 @@ class HomeViewController: UIViewController {
         }
         return newRooms
     }
+    
+    func enter(with indexPath: IndexPath) {
+        let room = rooms[indexPath.item]
+        let cid = room.roomID
+        let playerVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "PlayerViewController") as! LivePlayerViewController
+        playerVC.roomID = cid
+        present(playerVC, animated: true, completion: nil)
+    }
 }
 
 extension HomeViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let room = rooms[indexPath.item]
-        let cid = room.roomID
-        let playerVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "PlayerViewController") as! PlayerViewController
-        playerVC.roomID = cid
-        present(playerVC, animated: true, completion: nil)
-    }
-    
-    
+        
+    }    
 }
 
-extension HomeViewController: UICollectionViewDataSource {
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 1
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return rooms.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! HomeCollectionViewCell
-        let room = rooms[indexPath.item]
-        cell.setup(room: room)
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "header", for: indexPath)
-        return header
-    }
-    
-}
-
-
-class HomeCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var upLabel: UILabel!
-    @IBOutlet weak var imageView: UIImageView!
-    
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        contentView.clipsToBounds = false
-        contentView.layer.shadowOffset = CGSize(width: 10, height: 10)
-        contentView.layer.shadowColor = UIColor.gray.cgColor
-        contentView.layer.shadowRadius = 20
-        contentView.layer.shadowOpacity = 1
-    }
-    
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        coordinator.addCoordinatedAnimations {
-            if self.isFocused {
-                self.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
-            } else {
-                self.transform = .identity
-            }
-        } completion: {}
-    }
-    
-    func setup(room: LiveRoom) {
-        titleLabel.text = room.name
-        upLabel.text = room.up
-        imageView.kf.setImage(with:room.cover)
-    }
-}
-
-
-struct LiveRoom {
+struct LiveRoom: DisplayData {
     let name:String
     let roomID: Int
     let up: String
     let cover: URL?
-}
-
-
-class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        delegate = self
-    }
     
-    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
-        if let homeVC = viewController as? HomeViewController {
-            homeVC.loadData()
-        }
-    }
+    var title: String { get {self.name} }
+    var owner: String { get {self.up} }
+    var pic: URL? { get {self.cover} }
 }
+
+

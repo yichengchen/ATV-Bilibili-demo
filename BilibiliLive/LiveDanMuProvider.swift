@@ -17,6 +17,7 @@ class LiveDanMuProvider {
     private let roomID: Int
     
     var onDanmu: ((String)->Void)? = nil
+    var onSC: ((String)->Void)? = nil
     
     init(roomID: Int) {
         self.roomID = roomID
@@ -63,7 +64,7 @@ class LiveDanMuProvider {
 
 // MARK: Data parse
 extension LiveDanMuProvider {
-    private func parseData(data: Data, decompressed: Bool = false) {
+    private func parseData(data: Data) {
         let header = LiveWSHeader.decode(data: data)
         let contentData = data.subdata(in: Int(header.headerSize) ..< Int(header.size))
         let operatorType = OperatorType(rawValue: header.operatorType)
@@ -77,10 +78,10 @@ extension LiveDanMuProvider {
             print("get heaerBeatReply")
         case .normal:
             do {
-                if decompressed {
+                if header.protocolType == 0 {
                     parseNormalData(data: contentData)
                 } else {
-                    parseData(data: try contentData.gunzipped(), decompressed: true)
+                    parseData(data: try contentData.gunzipped())
                 }
             } catch {
                 parseNormalData(data: contentData)
@@ -100,12 +101,19 @@ extension LiveDanMuProvider {
             print("decode fail")
             return
         }
-        let jsons = dataStr.components(separatedBy: CharacterSet.controlCharacters)
+        dataStr.components(separatedBy: CharacterSet.controlCharacters)
             .map{ JSON(parseJSON: $0) }
-        getDanMu(data: jsons).forEach{
-            print($0)
-            onDanmu?($0)
-        }
+            .forEach { json in
+                let cmd = json["cmd"].stringValue
+                switch cmd {
+                case "DANMU_MSG":
+                    if let str = json["info"][1].string { onDanmu?(str) }
+                case "SUPER_CHAT_MESSAGE_JPN", "SUPER_CHAT_MESSAGE":
+                    if let str = json["data"]["message"].string { onSC?(str) }
+                default:
+                    break
+                }
+            }
     }
     
     private func getDanMu(data: [JSON]) -> [String] {
