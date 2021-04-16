@@ -13,11 +13,7 @@ import SwiftyJSON
 import Kingfisher
 
 class HomeViewController: UIViewController, BLTabBarContentVCProtocol {
-    var rooms = [LiveRoom]() {
-        didSet {
-            collectionVC.displayDatas = rooms.map{DisplayData(title: $0.name, owner: $0.up, pic: $0.cover)}
-        }
-    }
+    var rooms = [LiveRoom]() { didSet {collectionVC.displayDatas=feeds} }
     
     let collectionVC = FeedCollectionViewController.create()
     override func viewDidLoad() {
@@ -83,11 +79,15 @@ extension HomeViewController: UICollectionViewDelegate {
     }    
 }
 
-struct LiveRoom {
+struct LiveRoom: DisplayData {
     let name:String
     let roomID: Int
     let up: String
     let cover: URL?
+    
+    var title: String { get {self.name} }
+    var owner: String { get {self.up} }
+    var pic: URL? { get {self.cover} }
 }
 
 

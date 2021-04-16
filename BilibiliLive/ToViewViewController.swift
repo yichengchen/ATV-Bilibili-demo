@@ -11,11 +11,7 @@ import SwiftyJSON
 
 class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController.create()
-    var feeds = [FeedData]() {
-        didSet {
-            collectionVC.displayDatas = feeds.map{ DisplayData(title: $0.title, owner: $0.owner, pic: $0.pic) }
-        }
-    }
+    var feeds = [FeedData]() { didSet {collectionVC.displayDatas=feeds} }
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)

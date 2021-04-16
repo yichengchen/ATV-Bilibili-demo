@@ -11,18 +11,7 @@ import SwiftyJSON
 
 class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController.create()
-    var feeds = [Any]() {
-        didSet {
-            collectionVC.displayDatas = feeds.map {
-                if let feed = $0 as? FeedData {
-                    return DisplayData(title: feed.title, owner: feed.owner, pic: feed.pic)
-                } else if let bangumi = $0 as? BangumiData {
-                    return DisplayData(title: bangumi.title, owner: bangumi.owner, pic: bangumi.pic)
-                }
-                return DisplayData(title: "", owner: "", pic: nil)
-            }
-        }
-    }
+    var feeds = [DisplayData]() { didSet {collectionVC.displayDatas=feeds} }
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)
@@ -54,8 +43,8 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
         }
     }
     
-    func progrssData(json:JSON) -> [Any] {
-        let datas = json["data"].arrayValue.map { data -> Any in
+    func progrssData(json:JSON) -> [DisplayData] {
+        let datas = json["data"].arrayValue.map { data -> DisplayData in
             let bangumi = data["bangumi"]
             if !bangumi.isEmpty {
                 let season = bangumi["season_id"].intValue
@@ -108,19 +97,19 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 }
 
-struct FeedData {
+struct FeedData: DisplayData {
     let title: String
     let cid: Int
     let aid: Int
     let owner: String
-    let pic: URL
+    let pic: URL?
 }
 
-struct BangumiData {
+struct BangumiData: DisplayData {
     let title: String
     let season: Int
     let episode: Int
     let owner: String
-    let pic: URL
+    let pic: URL?
 }
 

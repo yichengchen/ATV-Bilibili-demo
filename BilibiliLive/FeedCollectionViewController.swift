@@ -7,10 +7,10 @@
 
 import Foundation
 
-struct DisplayData {
-    let title: String
-    let owner: String
-    let pic: URL?
+protocol DisplayData {
+    var title: String { get }
+    var owner: String { get }
+    var pic: URL? { get }
 }
 
 class FeedCollectionViewController: UIViewController {
