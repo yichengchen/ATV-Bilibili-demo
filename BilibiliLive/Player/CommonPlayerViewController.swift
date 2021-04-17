@@ -17,6 +17,7 @@ class CommonPlayerViewController: UIViewController {
     var didPause:(()->Void)?=nil
     var didPlay: (()->Void)?=nil
     var didEnd: (()->Void)?=nil
+    let leftPressRecognizer = UILongPressGestureRecognizer()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -60,6 +61,12 @@ class CommonPlayerViewController: UIViewController {
         menuPressRecognizer.addTarget(self, action: #selector(actionMenu))
         menuPressRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
         view.addGestureRecognizer(menuPressRecognizer)
+        
+        
+        leftPressRecognizer.addTarget(self, action: #selector(actionMenu))
+        leftPressRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.leftArrow.rawValue)]
+        leftPressRecognizer.minimumPressDuration = 1
+        view.addGestureRecognizer(leftPressRecognizer)
     }
     
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
@@ -104,6 +111,10 @@ class CommonPlayerViewController: UIViewController {
         } else {
             dismiss(animated: true, completion: nil)
         }
+    }
+    
+    @objc func actionLeftLongPress(sender: UILongPressGestureRecognizer) {
+        print(sender.state.rawValue)
     }
 }
 

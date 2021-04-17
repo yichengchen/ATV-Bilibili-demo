@@ -68,10 +68,9 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     
     func goDetail(with indexPath: IndexPath) {
         if let feed = feeds[indexPath.item] as? FeedData {
-            let player = VideoPlayerViewController()
-            player.aid = feed.aid
-            player.cid = feed.cid
-            present(player, animated: true, completion: nil)
+            let detailVC = VideoDetailViewController.create(aid: feed.aid,cid: feed.cid)
+            present(detailVC, animated: true, completion: nil)
+            return
         }
         if let bangumi = feeds[indexPath.item] as? BangumiData {
             AF.request("https://api.bilibili.com/pgc/web/season/section?season_id=\(bangumi.season)").responseJSON { [weak self] (response) in

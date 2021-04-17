@@ -10,7 +10,11 @@ protocol PlayerControlViewDelegate: class {
 }
 
 class PlayerControlView: UIView {
-    var duration: TimeInterval = 3600
+    var duration: TimeInterval = 3600 {
+        didSet {
+            totoalTimeLabel.text = "\(Int(duration / 60)):\(Int(duration.truncatingRemainder(dividingBy: 60)))"
+        }
+    }
     var current: TimeInterval = 0 {
         didSet {
             updateProgress()
@@ -24,6 +28,7 @@ class PlayerControlView: UIView {
     private let indicatorView = UIView()
     private let adjustIndecatorView = UIView()
     private let currentTimeLabel = UILabel()
+    private let totoalTimeLabel = UILabel()
     private var playbackIndicatorLeadingContstraint: NSLayoutConstraint?
     private var adjustIndicatorLeadingContstraint: NSLayoutConstraint?
     private var adjustIndicatorLabelContstraint: NSLayoutConstraint?
@@ -94,7 +99,7 @@ class PlayerControlView: UIView {
         }
         
         addSubview(currentTimeLabel)
-        currentTimeLabel.text = "0:00"
+        currentTimeLabel.text = "0:0"
         currentTimeLabel.textColor = UIColor.white
         currentTimeLabel.font = UIFont.monospacedSystemFont(ofSize: 20, weight: .regular)
         
@@ -106,6 +111,14 @@ class PlayerControlView: UIView {
             [$0.leadingAnchor.constraint(greaterThanOrEqualTo: progressBackgoundView.leadingAnchor,constant: 0),
              $0.topAnchor.constraint(equalTo: progressBackgoundView.bottomAnchor,constant: 10),
              currentTimeCenterXConstarint]
+        }
+        
+        addSubview(totoalTimeLabel)
+        totoalTimeLabel.textColor = UIColor.white
+        totoalTimeLabel.font = UIFont.monospacedSystemFont(ofSize: 20, weight: .regular)
+        totoalTimeLabel.makeConstraints {
+            [$0.topAnchor.constraint(equalTo: progressBackgoundView.bottomAnchor,constant: 10),
+             $0.trailingAnchor.constraint(equalTo: progressBackgoundView.trailingAnchor)]
         }
     }
     

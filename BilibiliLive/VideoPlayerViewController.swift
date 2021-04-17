@@ -92,6 +92,7 @@ class VideoPlayerViewController: UIViewController {
     func ensureCid(callback:(()->Void)?=nil) {
         if cid > 0 {
             callback?()
+            return
         }
         AF.request("https://api.bilibili.com/x/player/pagelist?aid=\(aid!)&jsonp=jsonp").responseJSON {
             [weak self] resp in
@@ -157,10 +158,15 @@ class VideoPlayerViewController: UIViewController {
     }
     
     func playerTimeChange(time: TimeInterval) {
-        while let first = playingDanmus.first, first.time <= time {
+        let advanceTime = time.advanced(by: 1)
+        while let first = playingDanmus.first, first.time <= advanceTime {
             let danmu = playingDanmus.removeFirst()
+            let offset = advanceTime - danmu.time
             let model = DanmakuTextCellModel(str: danmu.text)
-            danMuView.shoot(danmaku: model)
+            DispatchQueue.main.asyncAfter(deadline: .now() + offset) {
+                [weak self] in
+                self?.danMuView.shoot(danmaku: model)
+            }
         }
     }
     

@@ -41,6 +41,7 @@
 		F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */; };
 		F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */; };
 		F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */; };
+		F9EDADD3262AA421007CB99F /* VideoDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -77,6 +78,7 @@
 		F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTabBarViewController.swift; sourceTree = "<group>"; };
 		F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCollectionViewController.swift; sourceTree = "<group>"; };
 		F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToViewViewController.swift; sourceTree = "<group>"; };
+		F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDetailViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -188,6 +190,7 @@
 				F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */,
 				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
 				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
+				F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -343,6 +346,7 @@
 				F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */,
 				F99D28F72619F5F000F8E66A /* FeedViewController.swift in Sources */,
 				F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */,
+				F9EDADD3262AA421007CB99F /* VideoDetailViewController.swift in Sources */,
 				F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */,
 				F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */,
 				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,

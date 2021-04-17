@@ -24,4 +24,11 @@ extension UIView {
             $0.bottomAnchor.constraint(equalTo: $0.superview!.bottomAnchor, constant: -inset.bottom),
         ] }
     }
+    
+    @discardableResult
+    func makeConstraintsBindToCenterOfSuperview() -> Self {
+        return makeConstraints { [
+            $0.centerXAnchor.constraint(equalTo: $0.superview!.centerXAnchor),
+            $0.centerYAnchor.constraint(equalTo: $0.superview!.centerYAnchor)] }
+    }
 }
