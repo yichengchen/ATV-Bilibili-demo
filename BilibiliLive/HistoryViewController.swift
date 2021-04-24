@@ -11,7 +11,7 @@ import SwiftyJSON
 
 class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController.create()
-    var feeds = [FeedData]() { didSet {collectionVC.displayDatas=feeds} }
+    var feeds = [HistoryData]() { didSet {collectionVC.displayDatas=feeds} }
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)
@@ -52,23 +52,25 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
         }
     }
     
-    func progrssData(json:JSON) -> [FeedData] {
-        let datas = json["data"].arrayValue.map { data -> FeedData in
+    func progrssData(json:JSON) -> [HistoryData] {
+        let datas = json["data"].arrayValue.map { data -> HistoryData in
             let title = data["title"].stringValue
             let cid = data["cid"].intValue
             let avid = data["aid"].intValue
             let owner = data["owner"]["name"].stringValue
             let pic = data["pic"].url!
-            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic)
+            let position = data["progress"].floatValue / data["duration"].floatValue
+            return HistoryData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, position: position)
         }
         return datas
     }
     
     func goDetail(with indexPath: IndexPath) {
-        let feed = feeds[indexPath.item]
+        let history = feeds[indexPath.item]
         let player = VideoPlayerViewController()
-        player.aid = feed.aid
-        player.cid = feed.cid
+        player.aid = history.aid
+        player.cid = history.cid
+        player.position = history.position
         present(player, animated: true, completion: nil)
     }
     
@@ -84,5 +86,13 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 }
 
+struct HistoryData: DisplayData {
+    let title: String
+    let cid: Int
+    let aid: Int
+    let owner: String
+    let pic: URL?
+    let position: Float
+}
 
 

@@ -17,6 +17,7 @@ class VideoPlayerViewController: UIViewController {
     var allDanmus = [Danmu]()
     var playingDanmus = [Danmu]()
     let danMuView = DanmakuView()
+    var position: Float = 0.0
     
     deinit {
         print("deinit")
@@ -154,6 +155,7 @@ class VideoPlayerViewController: UIViewController {
         player.media = videoMedia
         player.addPlaybackSlave(URL(string: audio)!, type: VLCMediaPlaybackSlaveType.audio, enforce: true)
         player.play()
+        player.position = self.position
         danMuView.play()
     }
     
