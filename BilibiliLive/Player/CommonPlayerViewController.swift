@@ -115,12 +115,8 @@ extension CommonPlayerViewController: VLCMediaPlayerDelegate {
         switch player.state {
         case .paused:
             didPause?()
-            leftSwipGesture.isEnabled = false
-            rightSwipGesture.isEnabled = false
         case .playing:
             didPlay?()
-            leftSwipGesture.isEnabled = true
-            rightSwipGesture.isEnabled = true
             fallthrough
         case .esAdded:
             loading?.stopAnimating()
@@ -143,13 +139,8 @@ extension CommonPlayerViewController: VLCMediaPlayerDelegate {
 
 extension CommonPlayerViewController: PlayerControlViewDelegate {
     func didSeek(to time: TimeInterval) {
-        didSeek?(time)
-        didPlay?()
         player.play()
         player.time = VLCTime(int: Int32(Int(time)) * 1000)
-    }
-    
-    func didStartPlay() {
-        player.play()
+        didSeek?(time)
     }
 }

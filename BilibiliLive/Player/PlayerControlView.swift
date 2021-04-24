@@ -7,7 +7,7 @@
 
 protocol PlayerControlViewDelegate: class {
     func didSeek(to time: TimeInterval)
-    func didStartPlay()
+    var player: VLCMediaPlayer { get }
 }
 
 class PlayerControlView: UIView {
@@ -214,7 +214,7 @@ class PlayerControlView: UIView {
             delegate?.didSeek(to: TimeInterval(seek))
             adjusting = false
         } else {
-            delegate?.didStartPlay()
+            delegate?.player.play()
         }
         startHideTimer()
     }
@@ -223,7 +223,7 @@ class PlayerControlView: UIView {
 extension PlayerControlView: UIGestureRecognizerDelegate {
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         if otherGestureRecognizer is UISwipeGestureRecognizer {
-            return !adjusting
+            return delegate?.player.isPlaying ?? false
         }
         return false
     }
