@@ -17,6 +17,8 @@ class CommonPlayerViewController: UIViewController {
     var didPause:(()->Void)?=nil
     var didPlay: (()->Void)?=nil
     var didEnd: (()->Void)?=nil
+    let rightSwipGesture = UISwipeGestureRecognizer()
+    let leftSwipGesture = UISwipeGestureRecognizer()
     let leftPressRecognizer = UILongPressGestureRecognizer()
 
     override func viewDidLoad() {
@@ -47,21 +49,13 @@ class CommonPlayerViewController: UIViewController {
              $0.centerXAnchor.constraint(equalTo: view.centerXAnchor)]
         }
         
-        let rightSwipGesture = UISwipeGestureRecognizer()
         rightSwipGesture.direction = .right
         rightSwipGesture.addTarget(self, action: #selector(forward))
         view.addGestureRecognizer(rightSwipGesture)
         
-        let leftSwipGesture = UISwipeGestureRecognizer()
         leftSwipGesture.direction = .left
         leftSwipGesture.addTarget(self, action: #selector(backward))
         view.addGestureRecognizer(leftSwipGesture)
-        
-        let menuPressRecognizer = UITapGestureRecognizer()
-        menuPressRecognizer.addTarget(self, action: #selector(actionMenu))
-        menuPressRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
-        view.addGestureRecognizer(menuPressRecognizer)
-        
         
         leftPressRecognizer.addTarget(self, action: #selector(actionMenu))
         leftPressRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.leftArrow.rawValue)]
@@ -73,14 +67,16 @@ class CommonPlayerViewController: UIViewController {
         guard let pressType = presses.first?.type else { return }
         switch pressType {
         case .select:
-            controlView.actionTap()
+            if player.isPlaying {
+                player.pause()
+            } else {
+                controlView.actionTap()
+            }
         case .playPause:
             if player.isPlaying {
                 player.pause()
-                didPause?()
             } else {
                 player.play()
-                didPlay?()
             }
         case .leftArrow:
             backward()
@@ -112,16 +108,21 @@ class CommonPlayerViewController: UIViewController {
             dismiss(animated: true, completion: nil)
         }
     }
-    
-    @objc func actionLeftLongPress(sender: UILongPressGestureRecognizer) {
-        print(sender.state.rawValue)
-    }
 }
 
 extension CommonPlayerViewController: VLCMediaPlayerDelegate {
     func mediaPlayerStateChanged(_ aNotification: Notification!) {
         switch player.state {
-        case .playing,.esAdded:
+        case .paused:
+            didPause?()
+            leftSwipGesture.isEnabled = false
+            rightSwipGesture.isEnabled = false
+        case .playing:
+            didPlay?()
+            leftSwipGesture.isEnabled = true
+            rightSwipGesture.isEnabled = true
+            fallthrough
+        case .esAdded:
             loading?.stopAnimating()
             loading?.removeFromSuperview()
             loading = nil
