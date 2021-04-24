@@ -7,6 +7,7 @@
 
 protocol PlayerControlViewDelegate: class {
     func didSeek(to time: TimeInterval)
+    func didStartPlay()
 }
 
 class PlayerControlView: UIView {
@@ -213,7 +214,7 @@ class PlayerControlView: UIView {
             delegate?.didSeek(to: TimeInterval(seek))
             adjusting = false
         } else {
-            delegate?.didSeek(to: current)
+            delegate?.didStartPlay()
         }
         startHideTimer()
     }

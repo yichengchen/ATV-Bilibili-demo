@@ -149,4 +149,8 @@ extension CommonPlayerViewController: PlayerControlViewDelegate {
             player.play()
         }
     }
+    
+    func didStartPlay() {
+        player.play()
+    }
 }
