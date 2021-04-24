@@ -40,4 +40,9 @@ class CookieHandler {
             }
         }
     }
+    
+    func csrf() -> String? {
+        let cookies = getCookie(forURL: "https://bilibili.com")
+        return cookies.first(where: {$0.name == "bili_jct"})?.value
+    }
 }

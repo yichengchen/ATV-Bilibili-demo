@@ -20,7 +20,10 @@ class VideoPlayerViewController: UIViewController {
     var position: Float = 0.0
     
     deinit {
-        print("deinit")
+        let progress = playerVC.player.time.value.intValue / 1000
+        guard progress > 0 else { return }
+        guard let csrf = CookieHandler.shared.csrf() else { return }
+        AF.request("https://api.bilibili.com/x/v2/history/report", method: .post, parameters: ["aid": aid!, "cid": cid!, "progress": progress, "csrf": csrf]).resume()
     }
     
     override func viewDidLoad() {
@@ -155,7 +158,7 @@ class VideoPlayerViewController: UIViewController {
         player.media = videoMedia
         player.addPlaybackSlave(URL(string: audio)!, type: VLCMediaPlaybackSlaveType.audio, enforce: true)
         player.play()
-        player.position = self.position
+        player.position = position
         danMuView.play()
     }
     

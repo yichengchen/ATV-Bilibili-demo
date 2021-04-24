@@ -74,9 +74,8 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
     
     func del(with indexPath: IndexPath) {
         let aid = feeds[indexPath.item].aid
-        let cookies = CookieHandler.shared.getCookie(forURL: "https://bilibili.com")
-        guard let token = cookies.first(where: {$0.name == "bili_jct"})?.value else { return }
-        AF.request("http://api.bilibili.com/x/v2/history/toview/del",method: .post,parameters: ["aid":aid,"csrf":token]).responseJSON {
+        guard let csrf = CookieHandler.shared.csrf() else { return }
+        AF.request("http://api.bilibili.com/x/v2/history/toview/del",method: .post,parameters: ["aid":aid,"csrf":csrf]).responseJSON {
             [weak self] resp in
             print(resp.result)
             self?.reloadData()
