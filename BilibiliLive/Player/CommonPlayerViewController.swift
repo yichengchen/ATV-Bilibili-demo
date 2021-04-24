@@ -143,11 +143,10 @@ extension CommonPlayerViewController: VLCMediaPlayerDelegate {
 
 extension CommonPlayerViewController: PlayerControlViewDelegate {
     func didSeek(to time: TimeInterval) {
-        player.time = VLCTime(int: Int32(Int(time)) * 1000)
         didSeek?(time)
-        if !player.isPlaying {
-            player.play()
-        }
+        didPlay?()
+        player.play()
+        player.time = VLCTime(int: Int32(Int(time)) * 1000)
     }
     
     func didStartPlay() {
