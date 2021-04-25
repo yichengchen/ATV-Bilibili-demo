@@ -22,7 +22,7 @@
 		F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8726103CFA00EAB8E3 /* DanmakuTextCellModel.swift */; };
 		F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */; };
 		F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */; };
-		F927ED992610AD8D00EAB8E3 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */; };
+		F927ED992610AD8D00EAB8E3 /* LiveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED982610AD8D00EAB8E3 /* LiveViewController.swift */; };
 		F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED9E2610B5C300EAB8E3 /* Kingfisher */; };
 		F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */; };
 		F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */; };
@@ -61,7 +61,7 @@
 		F927ED8726103CFA00EAB8E3 /* DanmakuTextCellModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuTextCellModel.swift; sourceTree = "<group>"; };
 		F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieManager.swift; sourceTree = "<group>"; };
-		F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		F927ED982610AD8D00EAB8E3 /* LiveViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveViewController.swift; sourceTree = "<group>"; };
 		F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewController.swift; sourceTree = "<group>"; };
 		F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BilibiliLive-Bridging-Header.h"; sourceTree = "<group>"; };
 		F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPlayerViewController.swift; sourceTree = "<group>"; };
@@ -106,6 +106,37 @@
 				93F8BE4875579938452499D0 /* Pods-BilibiliLive.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		2D3CD3F52635BD1100191419 /* ViewController */ = {
+			isa = PBXGroup;
+			children = (
+				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
+				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
+				F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */,
+			);
+			path = ViewController;
+			sourceTree = "<group>";
+		};
+		2D3CD3F72635BD7000191419 /* Support File */ = {
+			isa = PBXGroup;
+			children = (
+				F9B5735A260F5F7600771ED5 /* Assets.xcassets */,
+				F9B5735C260F5F7600771ED5 /* LaunchScreen.storyboard */,
+				F9B5735F260F5F7600771ED5 /* Info.plist */,
+				F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */,
+			);
+			path = "Support File";
+			sourceTree = "<group>";
+		};
+		2D3CD4002635BE7C00191419 /* Live */ = {
+			isa = PBXGroup;
+			children = (
+				F927ED982610AD8D00EAB8E3 /* LiveViewController.swift */,
+				F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */,
+				F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */,
+			);
+			path = Live;
 			sourceTree = "<group>";
 		};
 		E1B726B8E50640D8E33C0BC8 /* Frameworks */ = {
@@ -171,26 +202,19 @@
 			isa = PBXGroup;
 			children = (
 				F99D28EC2619F4D500F8E66A /* Player */,
-				F927ED6A2610391000EAB8E3 /* Vendor */,
+				2D3CD4002635BE7C00191419 /* Live */,
+				2D3CD3F52635BD1100191419 /* ViewController */,
 				F9B57353260F5F7400771ED5 /* AppDelegate.swift */,
-				F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */,
 				F9B57357260F5F7400771ED5 /* Main.storyboard */,
-				F9B5735A260F5F7600771ED5 /* Assets.xcassets */,
-				F9B5735C260F5F7600771ED5 /* LaunchScreen.storyboard */,
-				F9B5735F260F5F7600771ED5 /* Info.plist */,
-				F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */,
-				F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */,
-				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
-				F927ED982610AD8D00EAB8E3 /* HomeViewController.swift */,
-				F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */,
-				F99D28E926195EC200F8E66A /* UIView+Layout.swift */,
-				F99D28F62619F5F000F8E66A /* FeedViewController.swift */,
-				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
 				F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */,
+				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
 				F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */,
-				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
-				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
+				F99D28F62619F5F000F8E66A /* FeedViewController.swift */,
+				F99D28E926195EC200F8E66A /* UIView+Layout.swift */,
 				F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */,
+				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
+				F927ED6A2610391000EAB8E3 /* Vendor */,
+				2D3CD3F72635BD7000191419 /* Support File */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -338,7 +362,7 @@
 				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,
 				F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */,
-				F927ED992610AD8D00EAB8E3 /* HomeViewController.swift in Sources */,
+				F927ED992610AD8D00EAB8E3 /* LiveViewController.swift in Sources */,
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
 				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,

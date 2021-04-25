@@ -1,5 +1,5 @@
 //
-//  HomeViewController.swift
+//  LiveViewController.swift
 //  BilibiliLive
 //
 //  Created by Etan Chen on 2021/3/28.
@@ -12,7 +12,7 @@ import Alamofire
 import SwiftyJSON
 import Kingfisher
 
-class HomeViewController: UIViewController, BLTabBarContentVCProtocol {
+class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
     var rooms = [LiveRoom]() { didSet {collectionVC.displayDatas=rooms} }
     
     let collectionVC = FeedCollectionViewController.create()
@@ -73,7 +73,7 @@ class HomeViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 }
 
-extension HomeViewController: UICollectionViewDelegate {
+extension LiveViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
     }    

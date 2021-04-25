@@ -14,7 +14,7 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         super.viewDidLoad()
         delegate = self
         let loginVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "Login")
-        let liveVC = HomeViewController()
+        let liveVC = LiveViewController()
         let feedVC = FeedViewController()
         let historyVC = HistoryViewController()
         let toViewVC = ToViewViewController()
