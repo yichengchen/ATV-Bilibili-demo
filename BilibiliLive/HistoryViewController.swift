@@ -55,11 +55,20 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
     func progrssData(json:JSON) -> [HistoryData] {
         let datas = json["data"].arrayValue.map { data -> HistoryData in
             let title = data["title"].stringValue
-            let cid = data["cid"].intValue
             let avid = data["aid"].intValue
             let owner = data["owner"]["name"].stringValue
             let pic = data["pic"].url!
-            let position = data["progress"].floatValue / data["duration"].floatValue
+            
+            let cid: Int
+            let position: Float
+            let page = data["page"]
+            if page.exists() {
+                cid = page["cid"].intValue
+                position = data["progress"].floatValue / page["duration"].floatValue
+            } else {
+                cid = data["cid"].intValue
+                position = data["progress"].floatValue / data["duration"].floatValue
+            }
             return HistoryData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, position: position)
         }
         return datas
