@@ -17,7 +17,7 @@ class DanmakuTextCellModel: DanmakuCellModel, Equatable {
     var text = ""
     
     
-    var font = UIFont.systemFont(ofSize: 40)
+    var font = UIFont.systemFont(ofSize: 35)
     
     
     var cellClass: DanmakuCell.Type {

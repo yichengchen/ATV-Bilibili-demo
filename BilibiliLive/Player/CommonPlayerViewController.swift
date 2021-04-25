@@ -91,6 +91,7 @@ class CommonPlayerViewController: UIViewController {
         guard player.isSeekable, player.time.value != nil else { return }
         let newTime = player.time.value.int32Value + 10 * 1000
         player.time = VLCTime(int: newTime)
+        didSeek(to: TimeInterval(newTime/1000))
         controlView.show()
     }
     
@@ -98,6 +99,7 @@ class CommonPlayerViewController: UIViewController {
         guard player.isSeekable, player.time.value != nil else { return }
         let newTime = player.time.value.int32Value - 10 * 1000
         player.time = VLCTime(int: newTime)
+        didSeek(to: TimeInterval(newTime/1000))
         controlView.show()
     }
     
