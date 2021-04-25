@@ -11,6 +11,8 @@ protocol BLTabBarContentVCProtocol {
     func reloadData()
 }
 
+let selectedIndexKey = "BLTabBarViewController.selectedIndex"
+
 class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,11 +27,13 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         historyVC.tabBarItem.title = "History"
         toViewVC.tabBarItem.title = "ToView"
         setViewControllers([liveVC,feedVC,historyVC,toViewVC,loginVC], animated: false)
+        selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
     }
     
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         if let vc = viewController as? BLTabBarContentVCProtocol {
             vc.reloadData()
         }
+        UserDefaults.standard.set(tabBarController.selectedIndex, forKey: selectedIndexKey)
     }
 }
