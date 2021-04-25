@@ -118,7 +118,7 @@
 			path = ViewController;
 			sourceTree = "<group>";
 		};
-		2D3CD3F72635BD7000191419 /* Support File */ = {
+		2D3CD3F72635BD7000191419 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
 				F9B5735A260F5F7600771ED5 /* Assets.xcassets */,
@@ -126,7 +126,7 @@
 				F9B5735F260F5F7600771ED5 /* Info.plist */,
 				F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */,
 			);
-			path = "Support File";
+			path = "Supporting Files";
 			sourceTree = "<group>";
 		};
 		2D3CD4002635BE7C00191419 /* Live */ = {
@@ -214,7 +214,7 @@
 				F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */,
 				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
 				F927ED6A2610391000EAB8E3 /* Vendor */,
-				2D3CD3F72635BD7000191419 /* Support File */,
+				2D3CD3F72635BD7000191419 /* Supporting Files */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -525,14 +525,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = MEWHFZ92DY;
-				INFOPLIST_FILE = BilibiliLive/Info.plist;
+				INFOPLIST_FILE = "BilibiliLive/Supporting Files/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.etan.tv.BilibiliLive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "BilibiliLive/BilibiliLive-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "BilibiliLive/Supporting Files/BilibiliLive-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
@@ -549,14 +549,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = MEWHFZ92DY;
-				INFOPLIST_FILE = BilibiliLive/Info.plist;
+				INFOPLIST_FILE = "BilibiliLive/Supporting Files/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.etan.tv.BilibiliLive;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "BilibiliLive/BilibiliLive-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "BilibiliLive/Supporting Files/BilibiliLive-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 13.0;

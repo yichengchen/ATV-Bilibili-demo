@@ -5,6 +5,9 @@
 //  Created by Etan Chen on 2021/4/4.
 //
 
+import UIKit
+import TVVLCKit
+
 protocol PlayerControlViewDelegate: class {
     func didSeek(to time: TimeInterval)
     var player: VLCMediaPlayer { get }

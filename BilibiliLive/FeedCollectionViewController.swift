@@ -5,7 +5,7 @@
 //  Created by Etan Chen on 2021/4/5.
 //
 
-import Foundation
+import UIKit
 
 protocol DisplayData {
     var title: String { get }

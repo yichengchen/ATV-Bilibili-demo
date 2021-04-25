@@ -5,6 +5,8 @@
 //  Created by Etan Chen on 2021/4/5.
 //
 
+import UIKit
+
 protocol BLTabBarContentVCProtocol {
     func reloadData()
 }

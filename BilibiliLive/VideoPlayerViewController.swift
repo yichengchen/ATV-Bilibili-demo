@@ -5,7 +5,8 @@
 //  Created by Etan Chen on 2021/4/4.
 //
 
-import Foundation
+import UIKit
+import TVVLCKit
 import Alamofire
 import SwiftyJSON
 import SwiftyXMLParser

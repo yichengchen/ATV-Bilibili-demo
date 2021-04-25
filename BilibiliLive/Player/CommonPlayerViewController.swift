@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import TVVLCKit
 
 class CommonPlayerViewController: UIViewController {
     let player = VLCMediaPlayer()

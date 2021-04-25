@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import TVVLCKit
 import Alamofire
 import SwiftyJSON
 
