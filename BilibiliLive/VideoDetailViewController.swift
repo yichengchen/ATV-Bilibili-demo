@@ -28,7 +28,7 @@ class VideoDetailViewController: UIViewController {
 
     private var pages = [PageData]()
     
-    static func create(aid:Int,cid:Int) -> UIViewController {
+    static func create(aid:Int, cid:Int) -> UIViewController {
         let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: "VideoDetailViewController") as! VideoDetailViewController
         vc.aid = aid
         vc.cid = cid
@@ -95,6 +95,8 @@ class VideoDetailViewController: UIViewController {
             PageData(cid: $0["cid"].intValue, name: $0["part"].stringValue)
         }
         collectionView.reloadData()
+        let index = pages.firstIndex { $0.cid == cid } ?? 0
+        collectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .left, animated: false)
         loadingView.stopAnimating()
         loadingView.removeFromSuperview()
         effectContainerView.isHidden = false

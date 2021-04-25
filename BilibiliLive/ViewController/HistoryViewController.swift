@@ -61,26 +61,41 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
             
             let cid: Int
             let position: Float
+            let multiPage: Bool
+            let pages = data["videos"].intValue
             let page = data["page"]
-            if page.exists() {
+            if pages > 1 && page.exists() {
                 cid = page["cid"].intValue
                 position = data["progress"].floatValue / page["duration"].floatValue
+                multiPage = true
             } else {
                 cid = data["cid"].intValue
                 position = data["progress"].floatValue / data["duration"].floatValue
+                multiPage = false
             }
-            return HistoryData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, position: position)
+            return HistoryData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, position: position, multiPage: multiPage)
         }
         return datas
     }
     
     func goDetail(with indexPath: IndexPath) {
         let history = feeds[indexPath.item]
-        let player = VideoPlayerViewController()
-        player.aid = history.aid
-        player.cid = history.cid
-        player.position = history.position
-        present(player, animated: true, completion: nil)
+        if history.multiPage {
+            let detailVC = VideoDetailViewController.create(aid: history.aid, cid: history.cid)
+            present(detailVC, animated: true) {
+                let player = VideoPlayerViewController()
+                player.aid = history.aid
+                player.cid = history.cid
+                player.position = history.position
+                detailVC.present(player, animated: true, completion: nil)
+            }
+        } else {
+            let player = VideoPlayerViewController()
+            player.aid = history.aid
+            player.cid = history.cid
+            player.position = history.position
+            present(player, animated: true, completion: nil)
+        }
     }
     
     func del(with indexPath: IndexPath) {
@@ -101,6 +116,7 @@ struct HistoryData: DisplayData {
     let owner: String
     let pic: URL?
     let position: Float
+    let multiPage: Bool
 }
 
 
