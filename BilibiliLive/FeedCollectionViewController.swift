@@ -99,23 +99,8 @@ class HomeCollectionViewCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        contentView.clipsToBounds = false
-        contentView.layer.shadowOffset = CGSize(width: 10, height: 10)
-        contentView.layer.shadowColor = UIColor.gray.cgColor
-        contentView.layer.shadowRadius = 20
-        contentView.layer.shadowOpacity = 1
         let longpress = UILongPressGestureRecognizer(target: self, action: #selector(actionLongPress(sender:)))
         addGestureRecognizer(longpress)
-    }
-    
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        coordinator.addCoordinatedAnimations {
-            if self.isFocused {
-                self.transform = CGAffineTransform(scaleX: 1.1, y: 1.1)
-            } else {
-                self.transform = .identity
-            }
-        } completion: {}
     }
     
     func setup(data: DisplayData) {
