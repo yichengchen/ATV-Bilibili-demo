@@ -20,7 +20,9 @@ class CommonPlayerViewController: UIViewController {
     var didEnd: (()->Void)?=nil
     let rightSwipGesture = UISwipeGestureRecognizer()
     let leftSwipGesture = UISwipeGestureRecognizer()
+    let menuRecognizer = UITapGestureRecognizer()
     let leftPressRecognizer = UILongPressGestureRecognizer()
+    let rightPressRecognizer = UILongPressGestureRecognizer()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,16 +60,26 @@ class CommonPlayerViewController: UIViewController {
         leftSwipGesture.addTarget(self, action: #selector(backward))
         view.addGestureRecognizer(leftSwipGesture)
         
-        leftPressRecognizer.addTarget(self, action: #selector(actionMenu))
+        menuRecognizer.addTarget(self, action: #selector(actionMenu))
+        menuRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
+        view.addGestureRecognizer(menuRecognizer)
+
+        leftPressRecognizer.addTarget(self, action: #selector(actionLongLeft(sender:)))
         leftPressRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.leftArrow.rawValue)]
         leftPressRecognizer.minimumPressDuration = 1
         view.addGestureRecognizer(leftPressRecognizer)
+        
+        rightPressRecognizer.addTarget(self, action: #selector(actionLongRight(sender:)))
+        rightPressRecognizer.allowedPressTypes = [NSNumber(value: UIPress.PressType.rightArrow.rawValue)]
+        rightPressRecognizer.minimumPressDuration = 1
+        view.addGestureRecognizer(rightPressRecognizer)
     }
     
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
         guard let pressType = presses.first?.type else { return }
         switch pressType {
         case .select:
+            controlView.show()
             if player.isPlaying {
                 player.pause()
             } else {
@@ -90,17 +102,13 @@ class CommonPlayerViewController: UIViewController {
     
     @objc func forward() {
         guard player.isSeekable, player.time.value != nil else { return }
-        let newTime = player.time.value.int32Value + 10 * 1000
-        player.time = VLCTime(int: newTime)
-        didSeek(to: TimeInterval(newTime/1000))
+        player.jumpForward(10)
         controlView.show()
     }
     
     @objc func backward() {
         guard player.isSeekable, player.time.value != nil else { return }
-        let newTime = player.time.value.int32Value - 10 * 1000
-        player.time = VLCTime(int: newTime)
-        didSeek(to: TimeInterval(newTime/1000))
+        player.jumpBackward(10)
         controlView.show()
     }
     
@@ -109,6 +117,30 @@ class CommonPlayerViewController: UIViewController {
             controlView.hide()
         } else {
             dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    @objc func actionLongLeft(sender: UILongPressGestureRecognizer) {
+        controlView.show()
+        switch sender.state {
+        case .began:
+            player.rewind(atRate: 10)
+        case .ended,.cancelled:
+            player.rewind(atRate: 0)
+        default:
+            break
+        }
+    }
+    
+    @objc func actionLongRight(sender: UILongPressGestureRecognizer) {
+        controlView.show()
+        switch sender.state {
+        case .began:
+            player.fastForward(atRate: 10)
+        case .ended,.cancelled:
+            player.fastForward(atRate: 1)
+        default:
+            break
         }
     }
 }
@@ -120,11 +152,6 @@ extension CommonPlayerViewController: VLCMediaPlayerDelegate {
             didPause?()
         case .playing:
             didPlay?()
-            fallthrough
-        case .esAdded:
-            loading?.stopAnimating()
-            loading?.removeFromSuperview()
-            loading = nil
         case .ended:
             didEnd?()
         default:
@@ -137,6 +164,9 @@ extension CommonPlayerViewController: VLCMediaPlayerDelegate {
         controlView.duration = TimeInterval(player.media.length.intValue/1000)
         controlView.current = current
         playerTimeChanged?(current)
+        loading?.stopAnimating()
+        loading?.removeFromSuperview()
+        loading = nil
     }
 }
 

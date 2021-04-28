@@ -15,10 +15,8 @@ class DanmakuTextCellModel: DanmakuCellModel, Equatable {
     var identifier = ""
     
     var text = ""
-    
-    
-    var font = UIFont.systemFont(ofSize: 35)
-    
+    var color: UIColor = .white
+    var font = UIFont.systemFont(ofSize: 36)
     
     var cellClass: DanmakuCell.Type {
         return DanmakuTextCell.self

@@ -28,6 +28,8 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         toViewVC.tabBarItem.title = "ToView"
         setViewControllers([liveVC,feedVC,historyVC,toViewVC,loginVC], animated: false)
         selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
@@ -35,5 +37,9 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
             vc.reloadData()
         }
         UserDefaults.standard.set(tabBarController.selectedIndex, forKey: selectedIndexKey)
+    }
+    
+    @objc func didBecomeActive() {
+        (selectedViewController as? BLTabBarContentVCProtocol)?.reloadData()
     }
 }

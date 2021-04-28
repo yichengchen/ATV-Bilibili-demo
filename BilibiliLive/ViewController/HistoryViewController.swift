@@ -82,7 +82,7 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
         let history = feeds[indexPath.item]
         if history.multiPage {
             let detailVC = VideoDetailViewController.create(aid: history.aid, cid: history.cid)
-            present(detailVC, animated: true) {
+            present(detailVC, animated: false) {
                 let player = VideoPlayerViewController()
                 player.aid = history.aid
                 player.cid = history.cid

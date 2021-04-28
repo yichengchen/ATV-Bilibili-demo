@@ -108,7 +108,7 @@ extension LiveDanMuProvider {
                 switch cmd {
                 case "DANMU_MSG":
                     if let str = json["info"][1].string { onDanmu?(str) }
-                case "SUPER_CHAT_MESSAGE_JPN", "SUPER_CHAT_MESSAGE":
+                case "SUPER_CHAT_MESSAGE":
                     if let str = json["data"]["message"].string { onSC?(str) }
                 default:
                     break

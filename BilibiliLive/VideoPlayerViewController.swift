@@ -21,6 +21,7 @@ class VideoPlayerViewController: UIViewController {
     var position: Float = 0.0
     
     deinit {
+        if playerVC.player.time == nil { return }
         let progress = playerVC.player.time.value.intValue / 1000
         guard progress > 0 else { return }
         guard let csrf = CookieHandler.shared.csrf() else { return }
@@ -169,6 +170,17 @@ class VideoPlayerViewController: UIViewController {
             let danmu = playingDanmus.removeFirst()
             let offset = advanceTime - danmu.time
             let model = DanmakuTextCellModel(str: danmu.text)
+            model.color = UIColor(number: danmu.color)
+            switch danmu.mode {
+            case 1,2,3:
+                model.type = .floating
+            case 4:
+                model.type = .bottom
+            case 5:
+                model.type = .top
+            default:
+                continue
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + offset) {
                 [weak self] in
                 self?.danMuView.shoot(danmaku: model)
@@ -187,7 +199,7 @@ struct Danmu : Codable{
     var time:TimeInterval
     var mode:Int
     var fontSize:Int
-    var color:String
+    var color:Int
     var text:String
     
     init(_ attr: String, str: String) {
@@ -196,6 +208,17 @@ struct Danmu : Codable{
         time = TimeInterval(attrs[0])!
         mode = Int(attrs[1])!
         fontSize = Int(attrs[2])!
-        color = attrs[3]
+        color = Int(attrs[3])!
+    }
+}
+
+
+extension UIColor {
+    public convenience init(number: Int) {
+        let r, g, b: CGFloat
+        r = CGFloat((number & 0x00ff0000) >> 16) / 255
+        g = CGFloat((number & 0x0000ff00) >> 8) / 255
+        b = CGFloat(number & 0x000000ff) / 255
+        self.init(red: r, green: g, blue: b, alpha: 1)
     }
 }

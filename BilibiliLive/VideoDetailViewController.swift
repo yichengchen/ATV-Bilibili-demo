@@ -11,6 +11,7 @@ import UIKit
 import Alamofire
 import SwiftyJSON
 import Kingfisher
+import TVUIKit
 
 class VideoDetailViewController: UIViewController {
     @IBOutlet weak var titleLabel: UILabel!
@@ -18,7 +19,6 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet weak var noteLabel: UILabel!
     @IBOutlet weak var coverImageView: UIImageView!
     @IBOutlet weak var backgroundImageView: UIImageView!
-    @IBOutlet weak var playButton: UIButton!
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var effectContainerView: UIVisualEffectView!
     private var loadingView = UIActivityIndicatorView()
@@ -105,14 +105,6 @@ class VideoDetailViewController: UIViewController {
             self.backgroundImageView.alpha = 1
         }
     }
-    
-    @IBAction func actionPlay(_ sender: Any) {
-        let player = VideoPlayerViewController()
-        player.aid = aid
-        player.cid = cid
-        present(player, animated: true, completion: nil)
-    }
-    
 }
 
 extension VideoDetailViewController: UICollectionViewDelegate {
@@ -147,3 +139,14 @@ struct PageData {
     let name:String
 }
 
+class BLCardView: TVCardView {
+    override func didMoveToSuperview() {
+        super.didMoveToSuperview()
+        subviews.first?.subviews.first?.subviews.last?.subviews.first?.subviews.first?.layer.cornerRadius = 12
+       
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+    }
+}
