@@ -21,12 +21,15 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet weak var backgroundImageView: UIImageView!
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var effectContainerView: UIVisualEffectView!
+    @IBOutlet weak var pageCollectionView: UICollectionView!
+    @IBOutlet weak var recommandCollectionView: UICollectionView!
     private var loadingView = UIActivityIndicatorView()
     
     private var aid:Int!
     private var cid:Int!
 
     private var pages = [PageData]()
+    private var relateds = [VideoDetail]()
     
     static func create(aid:Int, cid:Int) -> UIViewController {
         let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: "VideoDetailViewController") as! VideoDetailViewController
@@ -72,6 +75,12 @@ class VideoDetailViewController: UIViewController {
                 self.exit(with: err)
             }
         }
+        
+        WebRequest.requestRelatedVideo(aid: aid) {
+            [weak self] recommands in
+            self?.relateds = recommands
+            self?.recommandCollectionView.reloadData()
+        }
     }
     
     private func update(with json:JSON) {
@@ -109,25 +118,41 @@ class VideoDetailViewController: UIViewController {
 
 extension VideoDetailViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let page = pages[indexPath.item]
-        let player = VideoPlayerViewController()
-        player.aid = aid
-        player.cid = page.cid
-        present(player, animated: true, completion: nil)
+        if collectionView == pageCollectionView {
+            let page = pages[indexPath.item]
+            let player = VideoPlayerViewController()
+            player.aid = aid
+            player.cid = page.cid
+            present(player, animated: true, completion: nil)
+        } else {
+            let video = relateds[indexPath.item]
+            let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
+            present(detailVC, animated: true, completion: nil)
+        }
         
     }
 }
 
 extension VideoDetailViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return pages.count
+        if collectionView == pageCollectionView {
+            return pages.count
+        }
+        return relateds.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let page = pages[indexPath.item]
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
         let label = cell.viewWithTag(2) as! UILabel
-        label.text = page.name
+        if collectionView == pageCollectionView {
+            let page = pages[indexPath.item]
+            label.text = page.name
+            return cell
+        }
+        let related = relateds[indexPath.row]
+        let imageView = cell.viewWithTag(1) as! UIImageView
+        label.text = related.title
+        imageView.kf.setImage(with: URL(string: related.pic))
         return cell
     }
     
