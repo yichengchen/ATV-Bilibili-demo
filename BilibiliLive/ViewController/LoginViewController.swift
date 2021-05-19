@@ -91,7 +91,8 @@ class LoginViewController: UIViewController {
                 break
             case .success(let token):
                 print(token)
-                UserDefaults.standard.set(token, forKey: "token")
+                UserDefaults.standard.set(codable:token, forKey: "token")
+                self.didValidationSuccess()
             case .fail:
                 break
             }

@@ -41,6 +41,11 @@ class CookieHandler {
         }
     }
     
+    func saveCookie(list:[HTTPCookie]) {
+        list.forEach({cookieStorage.setCookie($0)})
+        backupCookies()
+    }
+    
     func csrf() -> String? {
         let cookies = getCookie(forURL: "https://bilibili.com")
         return cookies.first(where: {$0.name == "bili_jct"})?.value
