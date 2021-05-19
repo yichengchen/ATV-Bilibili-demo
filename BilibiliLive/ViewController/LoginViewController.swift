@@ -46,25 +46,10 @@ class LoginViewController: UIViewController {
     
     func initValidation() -> Void {
         timer?.invalidate()
-        AF.request("https://passport.bilibili.com/qrcode/getLoginUrl").responseJSON {
-            [weak self] response in
-            guard let self = self else {return}
-            switch(response.result) {
-            case .success(let data):
-                let json = JSON(data)
-                guard let url = json["data"]["url"].string,
-                      let oauthKey = json["data"]["oauthKey"].string else {
-                    self.dismiss(animated: true, completion: nil)
-                    return
-                }
-                
-                self.qrcodeImageView.image = self.generateQRCode(from: url)
-                self.oauthKey = oauthKey
-                self.startValidationTimer()
-            case .failure(_):
-                print("------loopValidation---------")
-                break
-            }
+        ApiRequest.requestLoginQR { (code, url) in
+            self.qrcodeImageView.image = self.generateQRCode(from: url)
+            self.oauthKey = code
+            self.startValidationTimer()
         }
     }
     
@@ -95,42 +80,28 @@ class LoginViewController: UIViewController {
     }
     
     func loopValidation() -> Void{
-        let params:Parameters = [
-            "oauthKey": oauthKey,
-            "gourl": "http://www.bilibili.com"
-        ]
-        AF.request("https://passport.bilibili.com/qrcode/getLoginInfo",
-                   method: .post,
-                   parameters: params)
-            .responseJSON {
-                [weak self] response in
-                guard let self = self else { return }
-                switch(response.result) {
-                case .success(let data):
-                    let json = JSON(data)
-                    let status = json["status"].boolValue
-                    if status {
-                        CookieHandler.shared.backupCookies()
-                        self.stopValidationTimer()
-                        self.didValidationSuccess()
-                        return
-                    }
-                    
-                    let data = json["data"].intValue
-                    print("data:",data)
-                    // -1：密钥错误 -2：密钥超时  -4：未扫描 -5：未确认
-                    if data == -2 {
-                        self.initValidation()
-                    }
-                case .failure( _):
-                    print("------loopValidation---------")
-                    break
-                }
+        
+        ApiRequest.verifyLoginQR(code: oauthKey) {
+            [weak self] state in
+            guard let self = self else { return }
+            switch state {
+            case .expire:
+                self.initValidation()
+            case .waiting:
+                break
+            case .success(let token):
+                print(token)
+                UserDefaults.standard.set(token, forKey: "token")
+            case .fail:
+                break
             }
+        }
     }
     
     @IBAction func actionStart(_ sender: Any) {
         initValidation()
     }
 }
+
+
 

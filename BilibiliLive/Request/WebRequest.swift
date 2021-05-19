@@ -9,14 +9,13 @@ import Alamofire
 import Foundation
 import SwiftyJSON
 
+enum RequestError:Error {
+    case networkFail
+    case statusFail(code:Int)
+    case decodeFail
+}
 
-class WebRequest {
-    enum RequestError:Error {
-        case networkFail
-        case statusFail
-        case decodeFail
-    }
-    
+class WebRequest {    
     enum EndPoint {
         static let related = "http://api.bilibili.com/x/web-interface/archive/related"
     }
@@ -41,7 +40,7 @@ class WebRequest {
                     let errorCode = json["code"].intValue
                     if errorCode != 0 {
                         print(errorCode)
-                        complete?(.failure(.statusFail))
+                        complete?(.failure(.statusFail(code: errorCode)))
                         return
                     }
                     
@@ -60,7 +59,7 @@ class WebRequest {
     
     static func requestRelatedVideo(aid: Int,complete: (([VideoDetail])->Void)?=nil) {
         request(method: .get, url: EndPoint.related, parameters: ["aid":aid]) {
-            (result: Result<[VideoDetail], WebRequest.RequestError>) in
+            (result: Result<[VideoDetail], RequestError>) in
             if let details = try? result.get() {
                 complete?(details)
             }
