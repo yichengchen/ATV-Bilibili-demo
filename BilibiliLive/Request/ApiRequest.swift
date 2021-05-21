@@ -28,6 +28,7 @@ class ApiRequest {
         static let verifyQR = "https://passport.bilibili.com/x/passport-tv-login/qrcode/poll"
         static let refresh = "https://passport.bilibili.com/api/v2/oauth2/refresh_token"
         static let ssoCookie = "https://passport.bilibili.com/api/login/sso"
+        static let feed = "https://app.bilibili.com/x/v2/feed/index"
     }
     
     enum LoginState {
@@ -105,7 +106,6 @@ class ApiRequest {
                 } catch let err {
                     print(err)
                     complete?(.failure(.decodeFail))
-                    assertionFailure()
                 }
             case .failure(let err):
                 print(err)
@@ -156,7 +156,7 @@ class ApiRequest {
                 HTTPCookie(properties: [.domain :domain,
                                         .name:name,
                                         .value:value,
-                                        .expires:expires,
+                                        .expires:Date(timeIntervalSince1970: TimeInterval(expires)),
                                         HTTPCookiePropertyKey("HttpOnly"):httpOnly,
                                         .path:""])
             }
@@ -211,6 +211,48 @@ class ApiRequest {
                 UserDefaults.standard.set(codable: res.tokenInfo, forKey: "token")
             case .failure(let err):
                 print(err)
+            }
+        }
+    }
+    
+    
+    struct FeedResp:Codable {
+        let items:[Items]
+        
+        struct Items: Codable,DisplayData {
+            let can_play:Int?
+            let title: String
+            let param: String
+            let args: Args
+            let idx: Int
+            let cover: String
+            
+            var owner: String {
+                return args.up_name ?? ""
+            }
+            var pic: URL? {
+                return URL(string: cover)
+            }
+        }
+        
+        struct Args: Codable {
+            let up_name:String?
+//            let aid: Int?
+        }
+    }
+    
+    static func getFeeds(datas:[FeedResp.Items]=[], complete:(([FeedResp.Items])->Void)?=nil) {
+        let idx = "\(datas.last?.idx ?? 0)"
+        request(EndPoint.feed,parameters: ["idx":idx,"flush":"0","column":"4","device":"pad","pull":idx == "0" ? "1" : "0"]) {
+            (resp: Result<FeedResp, RequestError>) in
+            switch resp {
+            case .success(let data):
+                print(data.items)
+                complete?(datas + data.items)
+            case .failure(let err):
+                print(err)
+                complete?(datas)
+                break
             }
         }
     }

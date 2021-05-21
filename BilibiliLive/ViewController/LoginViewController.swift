@@ -75,6 +75,8 @@ class LoginViewController: UIViewController {
         let alert = UIAlertController()
         alert.addAction(UIAlertAction(title: "Success", style: .default, handler: { [weak self] _ in
             self?.dismiss(animated: true, completion: nil)
+            let tabBar = self?.tabBarController as? BLTabBarViewController
+            tabBar?.selectedIndex = 0
         }))
         present(alert, animated: true, completion: nil)
     }

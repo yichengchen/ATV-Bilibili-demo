@@ -27,7 +27,7 @@ class PlayerControlView: UIView {
     }
     weak var delegate: PlayerControlViewDelegate?
     
-    private var timer:Timer?
+    private(set) var timer:Timer?
     private let progressBackgoundView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
     private let indicatorView = UIView()
     private let adjustIndecatorView = UIView()

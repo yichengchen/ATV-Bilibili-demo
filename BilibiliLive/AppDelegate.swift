@@ -17,8 +17,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         CookieHandler.shared.restoreCookies()
         URLSession.shared.configuration.headers.add(.userAgent("BiLiBiLi AppleTV Client/1.0.0 (github/yichengchen/ATV-Bilibili-live-demo)"))
+        
         if ApiRequest.isLogin() {
-            ApiRequest.refreshToken()
+            if let expireDate = ApiRequest.getToken()?.expireDate {
+                let now = Date()
+                if expireDate.timeIntervalSince(now) < 60 * 60 * 30 {
+                    ApiRequest.refreshToken()
+                }
+            } else {
+                ApiRequest.refreshToken()
+            }
         }
         return true
     }

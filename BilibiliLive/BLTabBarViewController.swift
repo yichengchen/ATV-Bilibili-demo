@@ -20,13 +20,15 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         let loginVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "Login")
         let liveVC = LiveViewController()
         let feedVC = FeedViewController()
+        let followVC = FollowsViewController()
         let historyVC = HistoryViewController()
         let toViewVC = ToViewViewController()
         liveVC.tabBarItem.title = "Live"
-        feedVC.tabBarItem.title = "Feeds"
+        feedVC.tabBarItem.title = "Feed"
+        followVC.tabBarItem.title = "Follow"
         historyVC.tabBarItem.title = "History"
         toViewVC.tabBarItem.title = "ToView"
-        setViewControllers([liveVC,feedVC,historyVC,toViewVC,loginVC], animated: false)
+        setViewControllers([liveVC,feedVC,followVC,historyVC,toViewVC,loginVC], animated: false)
         selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
         
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)

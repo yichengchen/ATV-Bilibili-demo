@@ -124,7 +124,8 @@ class CommonPlayerViewController: UIViewController {
         controlView.show()
         switch sender.state {
         case .began:
-            player.rewind(atRate: 10)
+            controlView.timer?.invalidate()
+            player.rewind(atRate: 20)
         case .ended,.cancelled:
             player.rewind(atRate: 0)
         default:
@@ -136,7 +137,8 @@ class CommonPlayerViewController: UIViewController {
         controlView.show()
         switch sender.state {
         case .began:
-            player.fastForward(atRate: 10)
+            controlView.timer?.invalidate()
+            player.fastForward(atRate: 20)
         case .ended,.cancelled:
             player.fastForward(atRate: 1)
         default:
