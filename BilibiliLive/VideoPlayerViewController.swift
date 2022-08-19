@@ -55,17 +55,15 @@ class VideoPlayerViewController: CommonPlayerViewController {
     
     
     func fetchVideoData() {
-        AF.request("https://api.bilibili.com/x/player/playurl?avid=\(aid!)&cid=\(cid!)&qn=116&type=&fnver=0&fnval=16&otype=json")
-            .responseJSON  {
-                [weak self] response in
-                guard let self = self else { return }
-                switch response.result {
-                case .success(let data):
-                    self.playmedia(json: JSON(data))
-                case .failure(let error):
-                    print(error)
-                }
+        ApiRequest.requestJSON("https://api.bilibili.com/x/player/playurl?avid=\(aid!)&cid=\(cid!)&qn=116&type=&fnver=0&fnval=16&otype=json") { [weak self ] resp in
+            switch resp {
+            case .success(let data):
+                self?.playmedia(json: data)
+            case .failure(let error):
+                print(error)
+                self?.showErrorAlert()
             }
+        }
     }
     
     func ensureCid(callback:(()->Void)?=nil) {
@@ -113,13 +111,18 @@ class VideoPlayerViewController: CommonPlayerViewController {
         playingDanmus = allDanmus
     }
     
+    func showErrorAlert() {
+        let alert = UIAlertController()
+        alert.addAction(UIAlertAction(title: "请求失败，可能需要大会员", style: .default, handler: { [weak self] _ in
+            self?.dismiss(animated: true, completion: nil)
+        }))
+        present(alert, animated: true, completion: nil)
+        return
+    }
+    
     func playmedia(json: JSON) {
         guard json["data"].exists() else {
-            let alert = UIAlertController()
-            alert.addAction(UIAlertAction(title: "请求失败，可能需要大会员", style: .default, handler: { [weak self] _ in
-                self?.dismiss(animated: true, completion: nil)
-            }))
-            present(alert, animated: true, completion: nil)
+            showErrorAlert()
             return
         }
         NativePlayerContentApiPorvider.shared.setVideo(info: json)
@@ -227,7 +230,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
     }
     
     func startPlay() {
-        guard player?.rate == 0 else { return }
+        guard player?.rate == 0 && player?.error == nil else { return }
         player?.seek(to: .zero)
         player?.play()
     }
@@ -237,9 +240,6 @@ class VideoPlayerViewController: CommonPlayerViewController {
             print("player status: \(self.playerItem?.status.rawValue ?? -1)")
             if self.playerItem?.status == .readyToPlay {
                 startPlay()
-                if let playerItem = playerItem {
-                    removeObserver(playerItem, forKeyPath: "status")
-                }
             }
         }
     }

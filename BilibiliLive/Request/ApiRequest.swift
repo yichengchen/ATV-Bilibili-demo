@@ -72,13 +72,13 @@ class ApiRequest {
         return newParam
     }
     
-    static func request<T: Decodable>(_ url: URLConvertible,
+    
+    static func requestJSON(_ url: URLConvertible,
                         method: HTTPMethod = .get,
                         parameters: [String:String] = [:],
                         auth:Bool = true,
                         encoding: ParameterEncoding = URLEncoding.default,
-                        decoder: JSONDecoder = JSONDecoder(),
-                        complete: ((Result<T, RequestError>) -> Void)?) {
+                        complete: ((Result<JSON, RequestError>) -> Void)?) {
         var param = parameters
         if auth {
             param["access_key"] = getToken()?.accessToken
@@ -98,9 +98,26 @@ class ApiRequest {
                     complete?(.failure(.statusFail(code:errorCode)))
                     return
                 }
-                
+                complete?(.success(json))
+            case .failure(let err):
+                print(err)
+                complete?(.failure(.networkFail))
+            }
+        }
+    }
+    
+    static func request<T: Decodable>(_ url: URLConvertible,
+                        method: HTTPMethod = .get,
+                        parameters: [String:String] = [:],
+                        auth:Bool = true,
+                        encoding: ParameterEncoding = URLEncoding.default,
+                        decoder: JSONDecoder = JSONDecoder(),
+                        complete: ((Result<T, RequestError>) -> Void)?) {
+        requestJSON(url,method: method,parameters: parameters,auth: auth,encoding: encoding) { result in
+            switch result {
+            case .success(let data):
                 do {
-                    let data = try json["data"].rawData()
+                    let data = try data["data"].rawData()
                     let object = try decoder.decode(T.self, from: data)
                     complete?(.success(object))
                 } catch let err {
@@ -108,8 +125,7 @@ class ApiRequest {
                     complete?(.failure(.decodeFail))
                 }
             case .failure(let err):
-                print(err)
-                complete?(.failure(.networkFail))
+                complete?(.failure(err))
             }
         }
     }
