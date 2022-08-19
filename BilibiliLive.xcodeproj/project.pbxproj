@@ -9,7 +9,8 @@
 /* Begin PBXBuildFile section */
 		2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
-		F50FE664EF75537A1BC46005 /* Pods_BilibiliLive.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D8B892306AA70BC7C98A7C2C /* Pods_BilibiliLive.framework */; };
+		49E5F85028AF73C500FAA3CE /* CustomPlaylistDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */; };
+		49E5F85328AF760A00FAA3CE /* Regex in Frameworks */ = {isa = PBXBuildFile; productRef = 49E5F85228AF760A00FAA3CE /* Regex */; };
 		F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90AAE03265549B5008DE7C2 /* FeedViewController.swift */; };
 		F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED64260F917D00EAB8E3 /* Gzip */; };
 		F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */; };
@@ -29,7 +30,6 @@
 		F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */; };
 		F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */; };
 		F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28E926195EC200F8E66A /* UIView+Layout.swift */; };
-		F99D28EE2619F4E200F8E66A /* PlayerControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28ED2619F4E200F8E66A /* PlayerControlView.swift */; };
 		F99D28F72619F5F000F8E66A /* FollowsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28F62619F5F000F8E66A /* FollowsViewController.swift */; };
 		F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57353260F5F7400771ED5 /* AppDelegate.swift */; };
 		F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */; };
@@ -50,9 +50,7 @@
 /* Begin PBXFileReference section */
 		2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
-		93F8BE4875579938452499D0 /* Pods-BilibiliLive.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BilibiliLive.release.xcconfig"; path = "Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive.release.xcconfig"; sourceTree = "<group>"; };
-		D8B892306AA70BC7C98A7C2C /* Pods_BilibiliLive.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_BilibiliLive.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		E88FD5934B32EABE181E32E2 /* Pods-BilibiliLive.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-BilibiliLive.debug.xcconfig"; path = "Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive.debug.xcconfig"; sourceTree = "<group>"; };
+		49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPlaylistDelegate.swift; sourceTree = "<group>"; };
 		F90AAE03265549B5008DE7C2 /* FeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewController.swift; sourceTree = "<group>"; };
 		F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDanMuProvider.swift; sourceTree = "<group>"; };
 		F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCell.swift; sourceTree = "<group>"; };
@@ -71,7 +69,6 @@
 		F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BilibiliLive-Bridging-Header.h"; sourceTree = "<group>"; };
 		F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPlayerViewController.swift; sourceTree = "<group>"; };
 		F99D28E926195EC200F8E66A /* UIView+Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Layout.swift"; sourceTree = "<group>"; };
-		F99D28ED2619F4E200F8E66A /* PlayerControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlView.swift; sourceTree = "<group>"; };
 		F99D28F62619F5F000F8E66A /* FollowsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowsViewController.swift; sourceTree = "<group>"; };
 		F9B57350260F5F7400771ED5 /* BilibiliLive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BilibiliLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9B57353260F5F7400771ED5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -92,28 +89,19 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49E5F85328AF760A00FAA3CE /* Regex in Frameworks */,
 				F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */,
 				F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */,
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
 				F9B9EAE3261AA3400045C2C6 /* SwiftyXMLParser in Frameworks */,
 				F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */,
 				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
-				F50FE664EF75537A1BC46005 /* Pods_BilibiliLive.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		298E9CB7865C6F0138891473 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				E88FD5934B32EABE181E32E2 /* Pods-BilibiliLive.debug.xcconfig */,
-				93F8BE4875579938452499D0 /* Pods-BilibiliLive.release.xcconfig */,
-			);
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		2D3CD3F52635BD1100191419 /* ViewController */ = {
 			isa = PBXGroup;
 			children = (
@@ -154,17 +142,18 @@
 			path = Request;
 			sourceTree = "<group>";
 		};
-		E1B726B8E50640D8E33C0BC8 /* Frameworks */ = {
+		49E5F84E28AF73AF00FAA3CE /* MPEGDASHAVPlayer */ = {
 			isa = PBXGroup;
 			children = (
-				D8B892306AA70BC7C98A7C2C /* Pods_BilibiliLive.framework */,
+				49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */,
 			);
-			name = Frameworks;
+			path = MPEGDASHAVPlayer;
 			sourceTree = "<group>";
 		};
 		F927ED6A2610391000EAB8E3 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
+				49E5F84E28AF73AF00FAA3CE /* MPEGDASHAVPlayer */,
 				F927ED6B2610395300EAB8E3 /* DanmakuKit */,
 			);
 			path = Vendor;
@@ -190,7 +179,6 @@
 			isa = PBXGroup;
 			children = (
 				F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */,
-				F99D28ED2619F4E200F8E66A /* PlayerControlView.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -200,8 +188,6 @@
 			children = (
 				F9B57352260F5F7400771ED5 /* BilibiliLive */,
 				F9B57351260F5F7400771ED5 /* Products */,
-				298E9CB7865C6F0138891473 /* Pods */,
-				E1B726B8E50640D8E33C0BC8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -243,11 +229,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F9B57362260F5F7600771ED5 /* Build configuration list for PBXNativeTarget "BilibiliLive" */;
 			buildPhases = (
-				9F1BD6588961ACB4FE40EA45 /* [CP] Check Pods Manifest.lock */,
 				F9B5734C260F5F7400771ED5 /* Sources */,
 				F9B5734D260F5F7400771ED5 /* Frameworks */,
 				F9B5734E260F5F7400771ED5 /* Resources */,
-				5840338E4214CD9A5E2AC407 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -261,6 +245,7 @@
 				F927ED64260F917D00EAB8E3 /* Gzip */,
 				F927ED9E2610B5C300EAB8E3 /* Kingfisher */,
 				F9B9EAE2261AA3400045C2C6 /* SwiftyXMLParser */,
+				49E5F85228AF760A00FAA3CE /* Regex */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -297,6 +282,7 @@
 				F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */,
 				F927ED9D2610B5C300EAB8E3 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				F9B9EAE1261AA3400045C2C6 /* XCRemoteSwiftPackageReference "SwiftyXMLParser" */,
+				49E5F85128AF760A00FAA3CE /* XCRemoteSwiftPackageReference "Regex" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -321,54 +307,13 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		5840338E4214CD9A5E2AC407 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-BilibiliLive/Pods-BilibiliLive-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		9F1BD6588961ACB4FE40EA45 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-BilibiliLive-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		F9B5734C260F5F7400771ED5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */,
+				49E5F85028AF73C500FAA3CE /* CustomPlaylistDelegate.swift in Sources */,
 				F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */,
 				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
@@ -394,7 +339,6 @@
 				F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */,
 				F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */,
 				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,
-				F99D28EE2619F4E200F8E66A /* PlayerControlView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -538,7 +482,6 @@
 		};
 		F9B57363260F5F7600771ED5 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E88FD5934B32EABE181E32E2 /* Pods-BilibiliLive.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -562,7 +505,6 @@
 		};
 		F9B57364260F5F7600771ED5 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 93F8BE4875579938452499D0 /* Pods-BilibiliLive.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -607,6 +549,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		49E5F85128AF760A00FAA3CE /* XCRemoteSwiftPackageReference "Regex" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sharplet/Regex";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 		F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/1024jp/GzipSwift";
@@ -658,6 +608,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		49E5F85228AF760A00FAA3CE /* Regex */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49E5F85128AF760A00FAA3CE /* XCRemoteSwiftPackageReference "Regex" */;
+			productName = Regex;
+		};
 		F927ED64260F917D00EAB8E3 /* Gzip */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */;

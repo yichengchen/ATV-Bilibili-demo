@@ -6,26 +6,26 @@
 //
 
 import UIKit
-import TVVLCKit
 import Alamofire
 import SwiftyJSON
 import SwiftyXMLParser
+import AVKit
 
-class VideoPlayerViewController: UIViewController {
+class VideoPlayerViewController: CommonPlayerViewController {
     var cid:Int!
     var aid:Int!
-    let playerVC = CommonPlayerViewController()
     var allDanmus = [Danmu]()
     var playingDanmus = [Danmu]()
     let danMuView = DanmakuView()
     var position: Float = 0.0
+    private var playerDelegate: CustomPlaylistDelegate?
     
     deinit {
-        if playerVC.player.time == nil { return }
-        let progress = playerVC.player.time.value.intValue / 1000
-        guard progress > 0 else { return }
-        guard let csrf = CookieHandler.shared.csrf() else { return }
-        AF.request("https://api.bilibili.com/x/v2/history/report", method: .post, parameters: ["aid": aid!, "cid": cid!, "progress": progress, "csrf": csrf]).resume()
+        //        guard let currentTime = player?.currentTime(), currentTime>0 else { return }
+        //        let progress = playerVC.player.time.value.intValue / 1000
+        //        guard progress > 0 else { return }
+        //        guard let csrf = CookieHandler.shared.csrf() else { return }
+        //        AF.request("https://api.bilibili.com/x/v2/history/report", method: .post, parameters: ["aid": aid!, "cid": cid!, "progress": progress, "csrf": csrf]).resume()
     }
     
     override func viewDidLoad() {
@@ -54,31 +54,6 @@ class VideoPlayerViewController: UIViewController {
     }
     
     func setupPlayer() {
-        addChild(playerVC)
-        view.addSubview(playerVC.view)
-        playerVC.didMove(toParent: self)
-        playerVC.playerTimeChanged = {
-            [weak self] time in
-            self?.playerTimeChange(time: time)
-        }
-        playerVC.didSeek = {
-            [weak self] time in
-            self?.resetPlayingDanmu(time: time)
-        }
-        playerVC.didPlay = {
-            [weak self] in
-            self?.danMuView.play()
-        }
-        
-        playerVC.didPause = {
-            [weak self] in
-            self?.danMuView.pause()
-        }
-        
-        playerVC.didEnd = {
-            [weak self] in
-            self?.dismiss(animated: true, completion: nil)
-        }
     }
     
     func fetchVideoData() {
@@ -151,16 +126,13 @@ class VideoPlayerViewController: UIViewController {
         let video = json["data"]["dash"]["video"][1]["base_url"].stringValue
         let audio = json["data"]["dash"]["audio"].arrayValue.last!["baseUrl"].stringValue
         
-        let videoMedia = VLCMedia(url: URL(string: video)!)
-        videoMedia.addOptions([
-            "http-user-agent": "Bilibili/APPLE TV",
-            "http-referrer": "https://www.bilibili.com/video/av\(aid!)"
-        ])
-        let player = playerVC.player
-        player.media = videoMedia
-        player.addPlaybackSlave(URL(string: audio)!, type: VLCMediaPlaybackSlaveType.audio, enforce: true)
-        player.play()
-        player.position = position
+        
+        print(json)
+        //        let player = playerVC.player
+        //        player.media = videoMedia
+        //        player.addPlaybackSlave(URL(string: audio)!, type: VLCMediaPlaybackSlaveType.audio, enforce: true)
+        //        player.play()
+        //        player.position = position
         danMuView.play()
     }
     
@@ -191,6 +163,88 @@ class VideoPlayerViewController: UIViewController {
     func resetPlayingDanmu(time: TimeInterval) {
         let idx = allDanmus.firstIndex(where: {$0.time > time}) ?? allDanmus.endIndex
         playingDanmus = Array(allDanmus[idx ..< allDanmus.endIndex])
+    }
+    
+    
+    func playDash(url:URL) {
+        let headers: [String: String] = [
+            "User-Agent": "Bilibili/APPLE TV",
+            "Referer": "https://www.bilibili.com/video/av\(aid!)"
+        ]
+        let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+        playerDelegate = CustomPlaylistDelegate()
+        
+        asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
+        let playableKey = "playable"
+        let requestedKeys = [playableKey]
+        asset.loadValuesAsynchronously(forKeys: requestedKeys, completionHandler: {
+            DispatchQueue.main.async {
+                self.prepare(toPlay: asset, withKeys: requestedKeys)
+            }
+        })
+    }
+    
+    func prepare(toPlay asset: AVURLAsset, withKeys requestedKeys: [AnyHashable]) {
+        // Make sure that the value of each key has loaded successfully.
+        for thisKey in requestedKeys {
+            guard let thisKey = thisKey as? String else {
+                continue
+            }
+            var error: NSError?
+            let keyStatus = asset.statusOfValue(forKey: thisKey, error: &error)
+            if keyStatus == .failed {
+                assetFailedToPrepare(forPlayback: error)
+                return
+            }
+        }
+        
+        // Use the AVAsset playable property to detect whether the asset can be played.
+        if !asset.isPlayable {
+            // Generate an error describing the failure.
+            let localizedDescription =
+            NSLocalizedString("Item cannot be played", comment: "Item cannot be played description")
+            let localizedFailureReason = NSLocalizedString("The contents of the resource at the specified URL are not playable.", comment: "Item cannot be played failure reason")
+            let errorDict = [
+                NSLocalizedDescriptionKey: localizedDescription,
+                NSLocalizedFailureReasonErrorKey: localizedFailureReason,
+            ]
+            let assetCannotBePlayedError = NSError(domain: Bundle.main.bundleIdentifier ?? "", code: 0, userInfo: errorDict)
+            
+            // Display the error to the user.
+            assetFailedToPrepare(forPlayback: assetCannotBePlayedError)
+            
+            return
+        }
+        
+        // At this point we're ready to set up for playback of the asset.
+
+        // Create a new instance of AVPlayerItem from the now successfully loaded AVAsset.
+        let playerItem = AVPlayerItem(asset: asset)
+        if player == nil {
+            player = AVPlayer(playerItem: playerItem)
+        }
+        
+        // Make our new AVPlayerItem the AVPlayer's current item.
+        if player?.currentItem != playerItem {
+            player?.replaceCurrentItem(with: playerItem)
+        }
+        player?.play()
+    }
+    
+    func assetFailedToPrepare(forPlayback error: Error?) {
+        let title = error?.localizedDescription ?? ""
+        let message = (error as NSError?)?.localizedFailureReason ?? ""
+        
+        // Display the error.
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        // We add buttons to the alert controller by creating UIAlertActions:
+        let actionOk = UIAlertAction(title: "OK",
+                                     style: .default,
+                                     handler: nil) // You can use a block here to handle a press on this button
+        
+        alertController.addAction(actionOk)
+        
+        present(alertController, animated: true, completion: nil)
     }
 }
 
