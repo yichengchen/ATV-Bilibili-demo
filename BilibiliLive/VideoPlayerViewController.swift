@@ -10,6 +10,7 @@ import Alamofire
 import SwiftyJSON
 import SwiftyXMLParser
 import AVKit
+import AVFoundation
 
 class VideoPlayerViewController: CommonPlayerViewController {
     var cid:Int!
@@ -30,7 +31,6 @@ class VideoPlayerViewController: CommonPlayerViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupPlayer()
         ensureCid {
             [weak self] in
             self?.fetchVideoData()
@@ -53,8 +53,6 @@ class VideoPlayerViewController: CommonPlayerViewController {
         danMuView.displayArea = 0.8
     }
     
-    func setupPlayer() {
-    }
     
     func fetchVideoData() {
         AF.request("https://api.bilibili.com/x/player/playurl?avid=\(aid!)&cid=\(cid!)&qn=116&type=&fnver=0&fnval=16&otype=json")
@@ -111,6 +109,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         allDanmus.sort {
             $0.time < $1.time
         }
+        print("danmu count: \(allDanmus.count)")
         playingDanmus = allDanmus
     }
     
@@ -123,16 +122,9 @@ class VideoPlayerViewController: CommonPlayerViewController {
             present(alert, animated: true, completion: nil)
             return
         }
-        let video = json["data"]["dash"]["video"][1]["base_url"].stringValue
-        let audio = json["data"]["dash"]["audio"].arrayValue.last!["baseUrl"].stringValue
-        
-        
-        print(json)
-        //        let player = playerVC.player
-        //        player.media = videoMedia
-        //        player.addPlaybackSlave(URL(string: audio)!, type: VLCMediaPlaybackSlaveType.audio, enforce: true)
-        //        player.play()
-        //        player.position = position
+        NativePlayerContentApiPorvider.shared.setVideo(info: json)
+
+        playDash(url:  "http://127.0.0.1:\(NativePlayerContentApiPorvider.shared.port)/playitem.mpd")
         danMuView.play()
     }
     
@@ -165,17 +157,20 @@ class VideoPlayerViewController: CommonPlayerViewController {
         playingDanmus = Array(allDanmus[idx ..< allDanmus.endIndex])
     }
     
-    
-    func playDash(url:URL) {
+    let playableKey = "playable"
+    private var playerItem: AVPlayerItem?
+
+    func playDash(url:String) {
+        let playURL = URL(string: toCustomUrl(url))!
         let headers: [String: String] = [
             "User-Agent": "Bilibili/APPLE TV",
             "Referer": "https://www.bilibili.com/video/av\(aid!)"
         ]
-        let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+        let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         playerDelegate = CustomPlaylistDelegate()
+        let resourceLoader = asset.resourceLoader
         
-        asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
-        let playableKey = "playable"
+        resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
         let requestedKeys = [playableKey]
         asset.loadValuesAsynchronously(forKeys: requestedKeys, completionHandler: {
             DispatchQueue.main.async {
@@ -219,16 +214,34 @@ class VideoPlayerViewController: CommonPlayerViewController {
         // At this point we're ready to set up for playback of the asset.
 
         // Create a new instance of AVPlayerItem from the now successfully loaded AVAsset.
-        let playerItem = AVPlayerItem(asset: asset)
-        if player == nil {
-            player = AVPlayer(playerItem: playerItem)
+        playerItem = AVPlayerItem(asset: asset)
+        playerItem?.addObserver(self, forKeyPath: "status", options: [.new], context: nil)
+
+        let player = AVPlayer(playerItem: playerItem)
+        self.player = player
+        
+        player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { time in
+            self.playerTimeChange(time: time.seconds)
         }
         
-        // Make our new AVPlayerItem the AVPlayer's current item.
-        if player?.currentItem != playerItem {
-            player?.replaceCurrentItem(with: playerItem)
-        }
+    }
+    
+    func startPlay() {
+        guard player?.rate == 0 else { return }
+        player?.seek(to: .zero)
         player?.play()
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "status" {
+            print("player status: \(self.playerItem?.status.rawValue ?? -1)")
+            if self.playerItem?.status == .readyToPlay {
+                startPlay()
+                if let playerItem = playerItem {
+                    removeObserver(playerItem, forKeyPath: "status")
+                }
+            }
+        }
     }
     
     func assetFailedToPrepare(forPlayback error: Error?) {

@@ -42,10 +42,6 @@ class CustomPlaylistDelegate: NSObject, AVAssetResourceLoaderDelegate {
         loadingRequest.finishLoading(with: NSError(domain: NSURLErrorDomain, code: error, userInfo: nil))
     }
 
-    /*!
-     *  AVARLDelegateDemo's implementation of the protocol.
-     *  Check the given request for valid schemes:
-     */
     func resourceLoader(_: AVAssetResourceLoader,
                         shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
         guard let scheme = loadingRequest.request.url?.scheme else {
@@ -296,7 +292,6 @@ private extension CustomPlaylistDelegate {
         guard let i = url.lastIndex(of: ".") else {
             throw ParseError.invalidUrl
         }
-        print(playlist)
         let playlistUrl = String(url[..<i]) + "_" + String(index) + "." + hlsExt
         customPlaylists[playlistUrl] = playlist
         return playlistUrl
