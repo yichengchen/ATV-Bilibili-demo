@@ -7,6 +7,7 @@
 
 import UIKit
 import AVKit
+import Kingfisher
 
 class CommonPlayerViewController: AVPlayerViewController {
     let danMuView = DanmakuView()
@@ -15,14 +16,38 @@ class CommonPlayerViewController: AVPlayerViewController {
     private var retryCount = 0
     private let maxRetryCount = 3
     private var observer: NSKeyValueObservation?
+    private var rateObserver: NSKeyValueObservation?
     var playerItem: AVPlayerItem? {
         didSet {
             if let playerItem = playerItem {
                 removeObservarPlayerItem()
                 observePlayerItem(playerItem)
+                if let playerInfo = playerInfo {
+                    playerItem.externalMetadata = playerInfo
+                }
             }
         }
     }
+    
+    override var player: AVPlayer? {
+        didSet {
+            if let player = player {
+                rateObserver = player.observe(\.rate, options: [.old, .new]) {
+                    [weak self] player, _ in
+                    guard let self = self else { return }
+                    if player.rate > 0, self.danMuView.status == .pause {
+                        self.danMuView.play()
+                    } else if player.rate == 0, self.danMuView.status == .play {
+                        self.danMuView.pause()
+                    }
+                }
+            } else {
+                rateObserver = nil
+            }
+        }
+    }
+    
+    private var playerInfo: [AVMetadataItem]?
     
     deinit {
         observer = nil
@@ -31,6 +56,7 @@ class CommonPlayerViewController: AVPlayerViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         initDanmuView()
+        setupPlayerMenu()
     }
     
     override func viewDidLayoutSubviews() {
@@ -60,6 +86,56 @@ class CommonPlayerViewController: AVPlayerViewController {
         default:
             break
         }
+    }
+    
+    func setPlayerInfo(title:String?, subTitle:String?, desp: String?, pic: String?) {
+        let mapping: [AVMetadataIdentifier: Any?] = [
+            .commonIdentifierTitle: title,
+            .iTunesMetadataTrackSubTitle: subTitle,
+            .commonIdentifierDescription: desp,
+        ]
+        let meta = mapping.compactMap { createMetadataItem(for:$0, value:$1) }
+        playerInfo = meta
+        playerItem?.externalMetadata = meta
+        
+        if let pic = pic, let imageURL = URL(string:pic) {
+            let resource = ImageResource(downloadURL: imageURL)
+            KingfisherManager.shared.retrieveImage(with: resource) {
+                [weak self] result in
+                guard let self = self,
+                      let data = try? result.get().image.pngData(),
+                      let item = self.createMetadataItem(for: .commonIdentifierArtwork, value: data)
+                else { return }
+                
+                self.playerInfo?.removeAll{ $0.identifier == .commonIdentifierArtwork }
+                self.playerInfo?.append(item)
+                self.playerItem?.externalMetadata = self.playerInfo ?? []
+            }
+        }
+    }
+    
+    
+    private func createMetadataItem(for identifier: AVMetadataIdentifier,
+                                    value: Any?) -> AVMetadataItem? {
+        if value == nil {return nil}
+        let item = AVMutableMetadataItem()
+        item.identifier = identifier
+        item.value = value as? NSCopying & NSObjectProtocol
+        // Specify "und" to indicate an undefined language.
+        item.extendedLanguageTag = "und"
+        return item.copy() as? AVMetadataItem
+    }
+    
+    private func setupPlayerMenu() {
+        let danmuImage = UIImage(systemName: "list.bullet.rectangle.fill")
+        let danmuImageDisable = UIImage(systemName: "list.bullet.rectangle")
+        let danmuAction = UIAction(title: "Show Danmu", image: danMuView.isHidden ? danmuImageDisable : danmuImage) {
+            [weak self] action in
+            guard let self = self else { return }
+            self.danMuView.isHidden.toggle()
+            action.image = self.danMuView.isHidden ? danmuImageDisable : danmuImage
+        }
+        transportBarCustomMenuItems = [danmuAction]
     }
     
     private func removeObservarPlayerItem() {

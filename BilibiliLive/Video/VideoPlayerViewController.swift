@@ -64,6 +64,8 @@ class VideoPlayerViewController: CommonPlayerViewController {
     override func playerDidFinishPlaying() {
         dismiss(animated: true)
     }
+    
+
 }
 
 
@@ -82,6 +84,12 @@ extension VideoPlayerViewController {
                     self?.showErrorAlertAndExit(message: "请求失败,\(error)")
                 }
             }
+        }
+        
+        Task {
+            let info = await WebRequest.requestDetailVideo(aid: aid!)
+            setPlayerInfo(title: info?.title, subTitle: info?.owner.name, desp: info?.desc, pic: info?.pic)
+//            playerItem?.externalMetadata =
         }
     }
     

@@ -15,9 +15,14 @@ class LivePlayerViewController:CommonPlayerViewController {
         case noLiving
     }
     
-    var roomID = 0
-    var danMuProvider: LiveDanMuProvider?
-    var url: URL?
+    var room: LiveRoom? {
+        didSet {
+            roomID = room?.roomID ?? 0
+        }
+    }
+    private var roomID: Int = 0
+    private var danMuProvider: LiveDanMuProvider?
+    private var url: URL?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +33,7 @@ class LivePlayerViewController:CommonPlayerViewController {
             self.initPlayer()
         }
         danMuView.play()
+        setPlayerInfo(title: room?.title, subTitle: nil, desp: room?.owner, pic: room?.cover?.absoluteString)
     }
     
     override func viewWillDisappear(_ animated: Bool) {

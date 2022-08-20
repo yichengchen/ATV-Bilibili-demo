@@ -66,9 +66,8 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
     
     func enter(with indexPath: IndexPath) {
         let room = rooms[indexPath.item]
-        let cid = room.roomID
-        let playerVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "PlayerViewController") as! LivePlayerViewController
-        playerVC.roomID = cid
+        let playerVC = LivePlayerViewController()
+        playerVC.room = room
         present(playerVC, animated: true, completion: nil)
     }
 }
