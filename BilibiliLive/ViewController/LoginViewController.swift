@@ -17,12 +17,19 @@ class LoginViewController: UIViewController {
     var timer: Timer?
     var oauthKey: String = ""
     
+    static func create() -> LoginViewController {
+        let loginVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "Login") as! LoginViewController
+        return loginVC
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        BLTabBarViewController.clearSelected()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        initValidation()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -75,14 +82,12 @@ class LoginViewController: UIViewController {
         let alert = UIAlertController()
         alert.addAction(UIAlertAction(title: "Success", style: .default, handler: { [weak self] _ in
             self?.dismiss(animated: true, completion: nil)
-            let tabBar = self?.tabBarController as? BLTabBarViewController
-            tabBar?.selectedIndex = 0
+            AppDelegate.shared.showTabBar()
         }))
         present(alert, animated: true, completion: nil)
     }
     
     func loopValidation() -> Void{
-        
         ApiRequest.verifyLoginQR(code: oauthKey) {
             [weak self] state in
             guard let self = self else { return }

@@ -14,22 +14,31 @@ protocol BLTabBarContentVCProtocol {
 let selectedIndexKey = "BLTabBarViewController.selectedIndex"
 
 class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
+    static func clearSelected() {
+        UserDefaults.standard.removeObject(forKey: selectedIndexKey)
+    }
+    
+    deinit {
+        print("BLTabBarViewController deinit")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         delegate = self
-        let loginVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "Login")
         let liveVC = LiveViewController()
         let feedVC = FeedViewController()
         let followVC = FollowsViewController()
         let historyVC = HistoryViewController()
         let toViewVC = ToViewViewController()
+        let persionVC = PersonalViewController.create()
+        persionVC.extendedLayoutIncludesOpaqueBars = true
         liveVC.tabBarItem.title = "直播"
         feedVC.tabBarItem.title = "推荐"
         followVC.tabBarItem.title = "关注"
         historyVC.tabBarItem.title = "历史"
         toViewVC.tabBarItem.title = "稍后再看"
-        loginVC.tabBarItem.title = "登录"
-        setViewControllers([liveVC,feedVC,followVC,historyVC,toViewVC,loginVC], animated: false)
+        persionVC.tabBarItem.title = "我的"
+        setViewControllers([liveVC,feedVC,followVC,historyVC,toViewVC,persionVC], animated: false)
         selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
         
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)

@@ -18,15 +18,17 @@ enum RequestError:Error {
 class WebRequest {    
     enum EndPoint {
         static let related = "http://api.bilibili.com/x/web-interface/archive/related"
+        static let logout = "http://passport.bilibili.com/login/exit/v2"
     }
     
     static func request<T: Decodable>(method: HTTPMethod,
                                       url: URLConvertible,
-                                      parameters: Parameters? = nil,
+                                      parameters: Parameters = [:],
                                       headers: [String:String]? = nil,
                                       decoder: JSONDecoder? = nil,
                                       complete: ((Result<T, RequestError>) -> Void)?) {
-        
+        var parameters = parameters
+        parameters["biliCSRF"] = CookieHandler.shared.csrf()
         AF.request(url,
                    method: method,
                    parameters: parameters,
@@ -63,6 +65,20 @@ class WebRequest {
             if let details = try? result.get() {
                 complete?(details)
             }
+        }
+    }
+    
+    static func logout(complete: (()->Void)?=nil) {
+        request(method: .post, url: EndPoint.logout) {
+            (result: Result<[String:String], RequestError>) in
+            if let details = try? result.get() {
+                print("logout success")
+                print(details)
+            } else {
+                print("logout fail")
+            }
+            CookieHandler.shared.removeCookie()
+            complete?()
         }
     }
 }

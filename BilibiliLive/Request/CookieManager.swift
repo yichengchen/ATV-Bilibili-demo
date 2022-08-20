@@ -31,6 +31,10 @@ class CookieHandler {
         defaults.set(cookieDict, forKey: "SavedCookie")
     }
     
+    func removeCookie() {
+        defaults.removeObject(forKey: "SavedCookie")
+    }
+    
     func restoreCookies() {
         if let cookieDictionary = defaults.dictionary(forKey: "SavedCookie") {
             for (_, cookieProperties) in cookieDictionary {

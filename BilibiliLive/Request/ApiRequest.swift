@@ -72,6 +72,11 @@ class ApiRequest {
         return newParam
     }
     
+    static func logout(complete:(()->Void)?=nil) {
+        UserDefaults.standard.removeObject(forKey: "token")
+        complete?()
+    }
+    
     
     static func requestJSON(_ url: URLConvertible,
                         method: HTTPMethod = .get,
@@ -215,9 +220,9 @@ class ApiRequest {
     }
     
     static func refreshToken() {
+        AF.cancelAllRequests()
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
         request(EndPoint.refresh,method: .post,parameters: ["refresh_token" : getToken()?.refreshToken ?? ""],decoder: decoder) {
             (result:Result<LoginResp, RequestError>) in
             switch result {
