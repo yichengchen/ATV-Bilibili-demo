@@ -89,6 +89,7 @@ class CommonPlayerViewController: AVPlayerViewController {
     }
     
     func setPlayerInfo(title:String?, subTitle:String?, desp: String?, pic: String?) {
+        let desp = desp?.components(separatedBy: "\n").joined(separator: " ")
         let mapping: [AVMetadataIdentifier: Any?] = [
             .commonIdentifierTitle: title,
             .iTunesMetadataTrackSubTitle: subTitle,

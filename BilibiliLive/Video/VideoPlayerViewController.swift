@@ -25,7 +25,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
     deinit {
         guard let currentTime = player?.currentTime().seconds, currentTime>0 else { return }
         guard let csrf = CookieHandler.shared.csrf() else { return }
-        AF.request("https://api.bilibili.com/x/v2/history/report", method: .post, parameters: ["aid": aid!, "cid": cid!, "progress": currentTime, "csrf": csrf]).resume()
+        AF.request("https://api.bilibili.com/x/v2/history/report", method: .post, parameters: ["aid": aid!, "cid": cid!, "progress": Int(currentTime), "csrf": csrf]).resume()
     }
     
     override func viewDidLoad() {
