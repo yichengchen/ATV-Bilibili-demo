@@ -35,10 +35,17 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
     
-    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
-        if let vc = viewController as? BLTabBarContentVCProtocol {
-            vc.reloadData()
+    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        guard let buttonPress = presses.first?.type else { return }
+        if buttonPress == .playPause {
+            if let reloadVC = topMostViewController() as? BLTabBarContentVCProtocol {
+                print("send reload to \(reloadVC)")
+                reloadVC.reloadData()
+            }
         }
+    }
+    
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         UserDefaults.standard.set(tabBarController.selectedIndex, forKey: selectedIndexKey)
     }
     
