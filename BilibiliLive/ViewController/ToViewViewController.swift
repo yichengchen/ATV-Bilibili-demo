@@ -37,7 +37,7 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
     }
     
     func loadData() {
-        AF.request("http://api.bilibili.com/x/v2/history/toview").responseJSON {
+        AF.request("http://api.bilibili.com/x/v2/history/toview").responseData {
             [weak self] response in
             guard let self = self else { return }
             switch(response.result) {
@@ -75,7 +75,7 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
     func del(with indexPath: IndexPath) {
         let aid = feeds[indexPath.item].aid
         guard let csrf = CookieHandler.shared.csrf() else { return }
-        AF.request("http://api.bilibili.com/x/v2/history/toview/del",method: .post,parameters: ["aid":aid,"csrf":csrf]).responseJSON {
+        AF.request("http://api.bilibili.com/x/v2/history/toview/del",method: .post,parameters: ["aid":aid,"csrf":csrf]).responseData {
             [weak self] resp in
             print(resp.result)
             self?.reloadData()

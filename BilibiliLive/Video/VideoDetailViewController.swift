@@ -64,7 +64,7 @@ class VideoDetailViewController: UIViewController {
     }
     
     private func fetchData() {
-        AF.request("http://api.bilibili.com/x/web-interface/view",parameters: ["aid":aid]).responseJSON {
+        AF.request("http://api.bilibili.com/x/web-interface/view",parameters: ["aid":aid]).responseData {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {

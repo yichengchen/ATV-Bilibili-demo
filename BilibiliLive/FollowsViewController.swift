@@ -27,7 +27,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
     }
     
     func loadData() {
-        AF.request("https://api.bilibili.com/x/web-feed/feed?ps=50&pn=1").responseJSON {
+        AF.request("https://api.bilibili.com/x/web-feed/feed?ps=50&pn=1").responseData {
             [weak self] response in
             guard let self = self else { return }
             switch(response.result) {
@@ -73,7 +73,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
             return
         }
         if let bangumi = feeds[indexPath.item] as? BangumiData {
-            AF.request("https://api.bilibili.com/pgc/web/season/section?season_id=\(bangumi.season)").responseJSON { [weak self] (response) in
+            AF.request("https://api.bilibili.com/pgc/web/season/section?season_id=\(bangumi.season)").responseData { [weak self] (response) in
                 guard let self = self else { return }
                 switch(response.result) {
                 case .success(let data):

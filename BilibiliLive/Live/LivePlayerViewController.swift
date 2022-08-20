@@ -17,43 +17,30 @@ class LivePlayerViewController:CommonPlayerViewController {
     
     var roomID = 0
     var danMuProvider: LiveDanMuProvider?
-    let danMuView = DanmakuView()
-    let playerContainerView = UIView()
     var url: URL?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor.black
-        initDanmuView()
         refreshRoomsID(){
             [weak self] in
             guard let self = self else { return }
             self.initDataSource()
             self.initPlayer()
         }
+        danMuView.play()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        danMuView.stop()
         danMuProvider?.stop()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        danMuView.recaculateTracks()
-        danMuView.paddingTop = 5
-        danMuView.trackHeight = 50
-        danMuView.displayArea = 0.8
+    override func retryPlay() -> Bool {
+        play()
+        return true
     }
     
-    @objc func pause() {
-        danMuProvider?.stop()
-        danMuView.stop()
-        player?.pause()
-    }
-    
-    @objc func play() {
+    func play() {
         if let url = self.url {
             danMuProvider?.start()
             danMuView.play()
@@ -64,7 +51,7 @@ class LivePlayerViewController:CommonPlayerViewController {
             let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
             let playerItem = AVPlayerItem(asset: asset)
             player = AVPlayer(playerItem: playerItem)
-            player?.play()
+            observePlayerItem(playerItem)
         }
     }
     
@@ -79,7 +66,7 @@ class LivePlayerViewController:CommonPlayerViewController {
     
     func refreshRoomsID(complete:(()->Void)?=nil) {
         let url = "https://api.live.bilibili.com/room/v1/Room/room_init?id=\(roomID)"
-        AF.request(url).responseJSON {
+        AF.request(url).responseData {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {
@@ -118,22 +105,9 @@ class LivePlayerViewController:CommonPlayerViewController {
     }
     
     
-    func initDanmuView() {
-        view.addSubview(danMuView)
-        danMuView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            danMuView.topAnchor.constraint(equalTo: view.topAnchor),
-            danMuView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            danMuView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            danMuView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-        ])
-        danMuView.play()
-    }
-    
-    
     func initPlayer() {
         let requestUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=\(roomID)&platform=h5&otype=json&quality=10000"
-        AF.request(requestUrl).responseJSON {
+        AF.request(requestUrl).responseData {
             [unowned self] resp in
             switch resp.result {
             case .success(let object):

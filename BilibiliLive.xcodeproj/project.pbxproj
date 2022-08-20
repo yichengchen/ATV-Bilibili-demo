@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */; };
+		49389D5F28AFE8F100B9DAFD /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D5E28AFE8F100B9DAFD /* UIColor+Hex.swift */; };
+		49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* CustomPlaylistDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */; };
 		49E5F85328AF760A00FAA3CE /* Regex in Frameworks */ = {isa = PBXBuildFile; productRef = 49E5F85228AF760A00FAA3CE /* Regex */; };
@@ -51,6 +53,8 @@
 
 /* Begin PBXFileReference section */
 		2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
+		49389D5E28AFE8F100B9DAFD /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
+		49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDanmuProvider.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPlaylistDelegate.swift; sourceTree = "<group>"; };
 		49E5F85428AF7A2200FAA3CE /* NativePlayerContentApiPorvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePlayerContentApiPorvider.swift; sourceTree = "<group>"; };
@@ -137,27 +141,38 @@
 			path = Live;
 			sourceTree = "<group>";
 		};
+		49389D5D28AFE6DC00B9DAFD /* Video */ = {
+			isa = PBXGroup;
+			children = (
+				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
+				F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */,
+				49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */,
+			);
+			path = Video;
+			sourceTree = "<group>";
+		};
+		49389D6028AFE91E00B9DAFD /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				F99D28E926195EC200F8E66A /* UIView+Layout.swift */,
+				49389D5E28AFE8F100B9DAFD /* UIColor+Hex.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		49D39F26263AD3F100F14497 /* Request */ = {
 			isa = PBXGroup;
 			children = (
 				49D39F27263AD40000F14497 /* WebRequest.swift */,
 				F9D382B326359EF90070508F /* ApiRequest.swift */,
+				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
 			);
 			path = Request;
-			sourceTree = "<group>";
-		};
-		49E5F84E28AF73AF00FAA3CE /* MPEGDASHAVPlayer */ = {
-			isa = PBXGroup;
-			children = (
-				49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */,
-			);
-			path = MPEGDASHAVPlayer;
 			sourceTree = "<group>";
 		};
 		F927ED6A2610391000EAB8E3 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
-				49E5F84E28AF73AF00FAA3CE /* MPEGDASHAVPlayer */,
 				F927ED6B2610395300EAB8E3 /* DanmakuKit */,
 			);
 			path = Vendor;
@@ -182,6 +197,7 @@
 		F99D28EC2619F4D500F8E66A /* Player */ = {
 			isa = PBXGroup;
 			children = (
+				49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */,
 				F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */,
 			);
 			path = Player;
@@ -206,20 +222,18 @@
 		F9B57352260F5F7400771ED5 /* BilibiliLive */ = {
 			isa = PBXGroup;
 			children = (
+				49389D6028AFE91E00B9DAFD /* Extensions */,
 				49D39F26263AD3F100F14497 /* Request */,
 				F99D28EC2619F4D500F8E66A /* Player */,
 				2D3CD4002635BE7C00191419 /* Live */,
+				49389D5D28AFE6DC00B9DAFD /* Video */,
 				2D3CD3F52635BD1100191419 /* ViewController */,
 				F9B57353260F5F7400771ED5 /* AppDelegate.swift */,
 				F9B57357260F5F7400771ED5 /* Main.storyboard */,
 				F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */,
-				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
 				F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */,
 				F99D28F62619F5F000F8E66A /* FollowsViewController.swift */,
 				F90AAE03265549B5008DE7C2 /* FeedViewController.swift */,
-				F99D28E926195EC200F8E66A /* UIView+Layout.swift */,
-				F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */,
-				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
 				49E5F85428AF7A2200FAA3CE /* NativePlayerContentApiPorvider.swift */,
 				F927ED6A2610391000EAB8E3 /* Vendor */,
 				2D3CD3F72635BD7000191419 /* Supporting Files */,
@@ -329,6 +343,7 @@
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
 				F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
+				49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */,
 				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,
 				F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */,
@@ -344,6 +359,7 @@
 				F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */,
 				F9EDADD3262AA421007CB99F /* VideoDetailViewController.swift in Sources */,
 				F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */,
+				49389D5F28AFE8F100B9DAFD /* UIColor+Hex.swift in Sources */,
 				F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */,
 				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,
 				49E5F85528AF7A2200FAA3CE /* NativePlayerContentApiPorvider.swift in Sources */,
@@ -507,7 +523,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.0;
+				TVOS_DEPLOYMENT_TARGET = 15.0;
 			};
 			name = Debug;
 		};
@@ -529,7 +545,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "BilibiliLive/Supporting Files/BilibiliLive-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 13.0;
+				TVOS_DEPLOYMENT_TARGET = 15.0;
 			};
 			name = Release;
 		};

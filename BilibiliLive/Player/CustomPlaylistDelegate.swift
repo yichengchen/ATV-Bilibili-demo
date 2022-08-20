@@ -94,19 +94,6 @@ private extension CustomPlaylistDelegate {
 
     func getDuration(_ rawDuration: String) throws -> Float {
         return Float(rawDuration) ?? 1
-        let timePatternFull = Regex(#"(\d*)H(\d*)M(.*)S"#)
-        let timePatternSec = Regex(#"(\d*)S"#)
-        if let match = timePatternFull.firstMatch(in: rawDuration),
-            let hour = match.captures[0],
-            let minute = match.captures[1],
-            let second = match.captures[2] {
-            return (hour as NSString).floatValue * 3600 + (minute as NSString).floatValue * 60 + (second as NSString).floatValue
-        } else if let match = timePatternSec.firstMatch(in: rawDuration),
-            let second = match.captures[1] {
-            return (second as NSString).floatValue
-        } else {
-            throw ParseError.invalidDuration
-        }
     }
 
     func createMediaPlaylist(_ mpdInfo: MpdInfo, url: String) throws -> [String] {
@@ -153,7 +140,7 @@ private extension CustomPlaylistDelegate {
             }
 
             // #EXT-X-MAP:URI="tears_of_steel_1080p_1000k_h264_dash_track1_init.mp4"
-            let path = httpUrlPath + "/"
+//            let path = httpUrlPath + "/"
 //            let mapInit = try #"#EXT-X-MAP:URI=""# + path + getItem("initialization", items: item, keys: key, index: idx) + "\"\n"
 
             // #EXT-X-MLB-INFO:max-bw=999120,duration=4.000

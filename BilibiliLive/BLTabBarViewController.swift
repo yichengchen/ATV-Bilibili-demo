@@ -23,11 +23,12 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         let followVC = FollowsViewController()
         let historyVC = HistoryViewController()
         let toViewVC = ToViewViewController()
-        liveVC.tabBarItem.title = "Live"
-        feedVC.tabBarItem.title = "Feed"
-        followVC.tabBarItem.title = "Follow"
-        historyVC.tabBarItem.title = "History"
-        toViewVC.tabBarItem.title = "ToView"
+        liveVC.tabBarItem.title = "直播"
+        feedVC.tabBarItem.title = "推荐"
+        followVC.tabBarItem.title = "关注"
+        historyVC.tabBarItem.title = "历史"
+        toViewVC.tabBarItem.title = "稍后再看"
+        loginVC.tabBarItem.title = "登录"
         setViewControllers([liveVC,feedVC,followVC,historyVC,toViewVC,loginVC], animated: false)
         selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
         

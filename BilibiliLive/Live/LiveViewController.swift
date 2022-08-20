@@ -32,7 +32,7 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
     
     func loadData(page:Int = 1, perviousPage:[LiveRoom] = []) {
         var rooms = perviousPage
-        AF.request("https://api.live.bilibili.com/xlive/web-ucenter/v1/xfetter/GetWebList?page_size=10&page=\(page)").responseJSON {
+        AF.request("https://api.live.bilibili.com/xlive/web-ucenter/v1/xfetter/GetWebList?page_size=10&page=\(page)").responseData {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {
