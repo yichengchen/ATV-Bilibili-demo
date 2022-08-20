@@ -11,10 +11,7 @@
 		49389D5F28AFE8F100B9DAFD /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D5E28AFE8F100B9DAFD /* UIColor+Hex.swift */; };
 		49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
-		49E5F85028AF73C500FAA3CE /* CustomPlaylistDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */; };
-		49E5F85328AF760A00FAA3CE /* Regex in Frameworks */ = {isa = PBXBuildFile; productRef = 49E5F85228AF760A00FAA3CE /* Regex */; };
-		49E5F85528AF7A2200FAA3CE /* NativePlayerContentApiPorvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F85428AF7A2200FAA3CE /* NativePlayerContentApiPorvider.swift */; };
-		49E5F85828AF7A6300FAA3CE /* Vapor in Frameworks */ = {isa = PBXBuildFile; productRef = 49E5F85728AF7A6300FAA3CE /* Vapor */; };
+		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90AAE03265549B5008DE7C2 /* FeedViewController.swift */; };
 		F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED64260F917D00EAB8E3 /* Gzip */; };
 		F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */; };
@@ -56,8 +53,7 @@
 		49389D5E28AFE8F100B9DAFD /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
 		49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDanmuProvider.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
-		49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomPlaylistDelegate.swift; sourceTree = "<group>"; };
-		49E5F85428AF7A2200FAA3CE /* NativePlayerContentApiPorvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePlayerContentApiPorvider.swift; sourceTree = "<group>"; };
+		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		F90AAE03265549B5008DE7C2 /* FeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewController.swift; sourceTree = "<group>"; };
 		F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDanMuProvider.swift; sourceTree = "<group>"; };
 		F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCell.swift; sourceTree = "<group>"; };
@@ -96,12 +92,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				49E5F85328AF760A00FAA3CE /* Regex in Frameworks */,
 				F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */,
 				F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */,
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
 				F9B9EAE3261AA3400045C2C6 /* SwiftyXMLParser in Frameworks */,
-				49E5F85828AF7A6300FAA3CE /* Vapor in Frameworks */,
 				F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */,
 				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
 			);
@@ -197,7 +191,7 @@
 		F99D28EC2619F4D500F8E66A /* Player */ = {
 			isa = PBXGroup;
 			children = (
-				49E5F84F28AF73C500FAA3CE /* CustomPlaylistDelegate.swift */,
+				49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */,
 				F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */,
 			);
 			path = Player;
@@ -234,7 +228,6 @@
 				F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */,
 				F99D28F62619F5F000F8E66A /* FollowsViewController.swift */,
 				F90AAE03265549B5008DE7C2 /* FeedViewController.swift */,
-				49E5F85428AF7A2200FAA3CE /* NativePlayerContentApiPorvider.swift */,
 				F927ED6A2610391000EAB8E3 /* Vendor */,
 				2D3CD3F72635BD7000191419 /* Supporting Files */,
 			);
@@ -264,8 +257,6 @@
 				F927ED64260F917D00EAB8E3 /* Gzip */,
 				F927ED9E2610B5C300EAB8E3 /* Kingfisher */,
 				F9B9EAE2261AA3400045C2C6 /* SwiftyXMLParser */,
-				49E5F85228AF760A00FAA3CE /* Regex */,
-				49E5F85728AF7A6300FAA3CE /* Vapor */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -302,8 +293,6 @@
 				F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */,
 				F927ED9D2610B5C300EAB8E3 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				F9B9EAE1261AA3400045C2C6 /* XCRemoteSwiftPackageReference "SwiftyXMLParser" */,
-				49E5F85128AF760A00FAA3CE /* XCRemoteSwiftPackageReference "Regex" */,
-				49E5F85628AF7A6300FAA3CE /* XCRemoteSwiftPackageReference "vapor" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -334,7 +323,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */,
-				49E5F85028AF73C500FAA3CE /* CustomPlaylistDelegate.swift in Sources */,
+				49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */,
 				F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */,
 				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
@@ -362,7 +351,6 @@
 				49389D5F28AFE8F100B9DAFD /* UIColor+Hex.swift in Sources */,
 				F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */,
 				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,
-				49E5F85528AF7A2200FAA3CE /* NativePlayerContentApiPorvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -573,22 +561,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		49E5F85128AF760A00FAA3CE /* XCRemoteSwiftPackageReference "Regex" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sharplet/Regex";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
-			};
-		};
-		49E5F85628AF7A6300FAA3CE /* XCRemoteSwiftPackageReference "vapor" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/vapor/vapor";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/1024jp/GzipSwift";
@@ -640,16 +612,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		49E5F85228AF760A00FAA3CE /* Regex */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 49E5F85128AF760A00FAA3CE /* XCRemoteSwiftPackageReference "Regex" */;
-			productName = Regex;
-		};
-		49E5F85728AF7A6300FAA3CE /* Vapor */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 49E5F85628AF7A6300FAA3CE /* XCRemoteSwiftPackageReference "vapor" */;
-			productName = Vapor;
-		};
 		F927ED64260F917D00EAB8E3 /* Gzip */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */;

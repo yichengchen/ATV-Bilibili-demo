@@ -14,8 +14,18 @@ class CommonPlayerViewController: AVPlayerViewController {
     var playerStartPos: CMTime?
     private var retryCount = 0
     private let maxRetryCount = 3
+    private var observer: NSKeyValueObservation?
+    var playerItem: AVPlayerItem? {
+        didSet {
+            if let playerItem = playerItem {
+                removeObservarPlayerItem()
+                observePlayerItem(playerItem)
+            }
+        }
+    }
+    
     deinit {
-        removeObservarPlayerItem(player?.currentItem)
+        observer = nil
     }
 
     override func viewDidLoad() {
@@ -36,36 +46,36 @@ class CommonPlayerViewController: AVPlayerViewController {
         danMuView.stop()
     }
     
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
-        if keyPath == "status" {
-            print("player status: \(player?.currentItem?.status.rawValue ?? -1)")
-            switch player?.currentItem?.status {
-            case .readyToPlay:
-                startPlay()
-            case .failed:
-                removeObservarPlayerItem(player?.currentItem)
-                if retryCount<maxRetryCount, !retryPlay() {
-                    showErrorAlertAndExit(title: "播放失败", message: "播放器失败")
-                }
-                retryCount+=1
-            default:
-                break
+    func playerStatusDidChange() {
+        print("player status: \(player?.currentItem?.status.rawValue ?? -1)")
+        switch player?.currentItem?.status {
+        case .readyToPlay:
+            startPlay()
+        case .failed:
+            removeObservarPlayerItem()
+            if retryCount<maxRetryCount, !retryPlay() {
+                showErrorAlertAndExit(title: "播放器失败", message: playerItem?.errorLog()?.description ?? "")
             }
+            retryCount+=1
+        default:
+            break
         }
     }
     
-    func removeObservarPlayerItem(_ playerItem: AVPlayerItem?) {
-        playerItem?.removeObserver(self, forKeyPath: "status")
-        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: playerItem)
+    private func removeObservarPlayerItem() {
+        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
     }
     
-    func observePlayerItem(_ playerItem: AVPlayerItem) {
-        playerItem.addObserver(self, forKeyPath: "status", options: [.new], context: nil)
+    
+    private func observePlayerItem(_ playerItem: AVPlayerItem) {
+        observer = playerItem.observe(\.status, options:  [.new, .old]) {
+            [weak self] _,_  in
+            self?.playerStatusDidChange()
+        }
         NotificationCenter.default.addObserver(self,
                                  selector: #selector(playerDidFinishPlaying),
                                  name: .AVPlayerItemDidPlayToEndTime,
-                                 object: playerItem
-                    )
+                                 object: playerItem)
     }
     
     func retryPlay() -> Bool {

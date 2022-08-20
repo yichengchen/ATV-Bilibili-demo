@@ -19,7 +19,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
     
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
-    private var playerDelegate: CustomPlaylistDelegate?
+    private var playerDelegate: BilibiliVideoResourceLoaderDelegate?
     private let danmuProvider = VideoDanmuProvider()
     
     deinit {
@@ -44,9 +44,20 @@ class VideoPlayerViewController: CommonPlayerViewController {
     }
     
     
-    func playmedia(json: JSON) {
-        NativePlayerContentApiPorvider.shared.setVideo(info: json)
-        playDash(url:  "http://127.0.0.1:\(NativePlayerContentApiPorvider.shared.port)/playitem.mpd")
+    func playmedia(json: JSON) async {
+        playerStartPos = .zero
+        let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
+        let headers: [String: String] = [
+            "User-Agent": "Bilibili/APPLE TV",
+            "Referer": "https://www.bilibili.com/video/av\(aid!)"
+        ]
+        let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+        playerDelegate = BilibiliVideoResourceLoaderDelegate()
+        playerDelegate?.setBilibili(info: json)
+        asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
+        let requestedKeys = ["playable"]
+        await asset.loadValues(forKeys: requestedKeys)
+        prepare(toPlay: asset, withKeys: requestedKeys)
         danMuView.play()
     }
     
@@ -62,7 +73,7 @@ extension VideoPlayerViewController {
         ApiRequest.requestJSON("https://api.bilibili.com/x/player/playurl?avid=\(aid!)&cid=\(cid!)&qn=116&type=&fnver=0&fnval=16&otype=json") { [weak self] resp in
             switch resp {
             case .success(let data):
-                self?.playmedia(json: data)
+                Task { await self?.playmedia(json: data) }
             case .failure(let error):
                 switch error {
                 case .statusFail(let code):
@@ -99,26 +110,7 @@ extension VideoPlayerViewController {
 
 // MARK: - Player
 extension VideoPlayerViewController {
-    func playDash(url:String) {
-        playerStartPos = .zero
-        let playURL = URL(string: toCustomUrl(url))!
-        let headers: [String: String] = [
-            "User-Agent": "Bilibili/APPLE TV",
-            "Referer": "https://www.bilibili.com/video/av\(aid!)"
-        ]
-        let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
-        playerDelegate = CustomPlaylistDelegate()
-        let resourceLoader = asset.resourceLoader
-        
-        resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
-        let requestedKeys = ["playable"]
-        asset.loadValuesAsynchronously(forKeys: requestedKeys, completionHandler: {
-            DispatchQueue.main.async {
-                self.prepare(toPlay: asset, withKeys: requestedKeys)
-            }
-        })
-    }
-    
+    @MainActor
     func prepare(toPlay asset: AVURLAsset, withKeys requestedKeys: [AnyHashable]) {
         for thisKey in requestedKeys {
             guard let thisKey = thisKey as? String else {
@@ -137,9 +129,7 @@ extension VideoPlayerViewController {
             return
         }
 
-        let playerItem = AVPlayerItem(asset: asset)
-        observePlayerItem(playerItem)
-        
+        playerItem = AVPlayerItem(asset: asset)
         player = AVPlayer(playerItem: playerItem)
         player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
             self?.danmuProvider.playerTimeChange(time: time.seconds)

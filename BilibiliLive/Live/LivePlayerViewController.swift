@@ -49,9 +49,8 @@ class LivePlayerViewController:CommonPlayerViewController {
                 "Referer": "https://live.bilibili.com"
             ]
             let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
-            let playerItem = AVPlayerItem(asset: asset)
+            playerItem = AVPlayerItem(asset: asset)
             player = AVPlayer(playerItem: playerItem)
-            observePlayerItem(playerItem)
         }
     }
     
