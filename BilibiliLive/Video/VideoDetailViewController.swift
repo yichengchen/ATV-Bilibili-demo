@@ -104,8 +104,10 @@ class VideoDetailViewController: UIViewController {
             PageData(cid: $0["cid"].intValue, name: $0["part"].stringValue)
         }
         collectionView.reloadData()
-        let index = pages.firstIndex { $0.cid == cid } ?? 0
-        collectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .left, animated: false)
+        if pages.count > 0 {
+            let index = pages.firstIndex { $0.cid == cid } ?? 0
+            collectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .left, animated: false)
+        }
         loadingView.stopAnimating()
         loadingView.removeFromSuperview()
         effectContainerView.isHidden = false
