@@ -99,6 +99,7 @@ class ApiRequest {
                     print(errorCode)
                     if errorCode == -101 {
                         UserDefaults.standard.removeObject(forKey: "token")
+                        AppDelegate.shared.showLogin()
                     }
                     complete?(.failure(.statusFail(code:errorCode)))
                     return

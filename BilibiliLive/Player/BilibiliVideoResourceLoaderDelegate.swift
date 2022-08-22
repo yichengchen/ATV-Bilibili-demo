@@ -7,7 +7,6 @@
 //
 
 import AVFoundation
-import Regex
 import UIKit
 import SwiftyJSON
 
