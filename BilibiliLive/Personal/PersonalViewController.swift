@@ -6,7 +6,9 @@
 //
 
 import UIKit
-
+import Alamofire
+import SwiftyJSON
+import Kingfisher
 
 struct CellModel {
     let title:String
@@ -19,6 +21,8 @@ class PersonalViewController: UIViewController {
     }
 
     @IBOutlet weak var contentView: UIView!
+    @IBOutlet weak var avatarImageView: UIImageView!
+    @IBOutlet weak var usernameLabel: UILabel!
     var currentViewController: UIViewController?
     
     var cellModels = [CellModel]()
@@ -26,6 +30,18 @@ class PersonalViewController: UIViewController {
         super.viewDidLoad()
         setupData()
         cellModels.first?.action?()
+        avatarImageView.layer.cornerRadius = avatarImageView.frame.size.width / 2
+        
+        WebRequest.requestLoginInfo { [weak self] response in
+            switch response {
+            case .success(let json):
+                self?.avatarImageView.kf.setImage(with: URL(string: json["face"].stringValue))
+                self?.usernameLabel.text = json["uname"].stringValue
+            case .failure(_):
+                break
+            }
+            
+        }
     }
     
     

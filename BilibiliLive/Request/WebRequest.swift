@@ -22,12 +22,12 @@ class WebRequest {
         static let info = "http://api.bilibili.com/x/web-interface/view"
     }
     
-    static func request<T: Decodable>(method: HTTPMethod,
-                                      url: URLConvertible,
-                                      parameters: Parameters = [:],
-                                      headers: [String:String]? = nil,
-                                      decoder: JSONDecoder? = nil,
-                                      complete: ((Result<T, RequestError>) -> Void)?) {
+    static func requestJSON(method: HTTPMethod = .get,
+                            url: URLConvertible,
+                            parameters: Parameters = [:],
+                            headers: [String:String]? = nil,
+                            decoder: JSONDecoder? = nil,
+                            complete: ((Result<JSON, RequestError>) -> Void)?) {
         var parameters = parameters
         if method != .get {
             parameters["biliCSRF"] = CookieHandler.shared.csrf()
@@ -48,13 +48,7 @@ class WebRequest {
                         complete?(.failure(.statusFail(code: errorCode)))
                         return
                     }
-                    
-                    if let data = try? json["data"].rawData(),
-                       let object = try? (decoder ?? JSONDecoder()).decode(T.self, from: data) {
-                        complete?(.success(object))
-                    } else {
-                        complete?(.failure(.decodeFail))
-                    }
+                    complete?(.success(json["data"]))
                 case .failure(let err):
                     print(err)
                     complete?(.failure(.networkFail))
@@ -62,7 +56,28 @@ class WebRequest {
             }
     }
     
-    static func request<T: Decodable>(method: HTTPMethod,
+    static func request<T: Decodable>(method: HTTPMethod = .get,
+                                      url: URLConvertible,
+                                      parameters: Parameters = [:],
+                                      headers: [String:String]? = nil,
+                                      decoder: JSONDecoder? = nil,
+                                      complete: ((Result<T, RequestError>) -> Void)?) {
+        requestJSON(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder) { response in
+                switch response {
+                case .success(let data):
+                    if let data = try? data.rawData(),
+                       let object = try? (decoder ?? JSONDecoder()).decode(T.self, from: data) {
+                        complete?(.success(object))
+                    } else {
+                        complete?(.failure(.decodeFail))
+                    }
+                case .failure(let err):
+                    complete?(.failure(err))
+                }
+            }
+    }
+    
+    static func request<T: Decodable>(method: HTTPMethod = .get,
                                       url: URLConvertible,
                                       parameters: Parameters = [:],
                                       headers: [String:String]? = nil,
@@ -79,7 +94,10 @@ class WebRequest {
             }
         }
     }
-    
+}
+
+// MARK: - Video
+extension WebRequest {
     static func requestRelatedVideo(aid: Int,complete: (([VideoDetail])->Void)?=nil) {
         request(method: .get, url: EndPoint.related, parameters: ["aid":aid]) {
             (result: Result<[VideoDetail], RequestError>) in
@@ -96,7 +114,10 @@ class WebRequest {
             return nil
         }
     }
-    
+}
+
+// MARK: - User
+extension WebRequest {
     static func logout(complete: (()->Void)?=nil) {
         request(method: .post, url: EndPoint.logout) {
             (result: Result<[String:String], RequestError>) in
@@ -110,8 +131,11 @@ class WebRequest {
             complete?()
         }
     }
+    
+    static func requestLoginInfo(complete: ((Result<JSON, RequestError>) -> Void)?) {
+        requestJSON(url: "http://api.bilibili.com/x/web-interface/nav", complete: complete)
+    }
 }
-
 
 struct VideoDetail: Codable {
     let aid: Int

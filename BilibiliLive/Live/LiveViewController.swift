@@ -10,7 +10,6 @@ import UIKit
 
 import Alamofire
 import SwiftyJSON
-import Kingfisher
 
 class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
     var rooms = [LiveRoom]() { didSet {collectionVC.displayDatas=rooms} }
