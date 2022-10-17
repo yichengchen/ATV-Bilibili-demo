@@ -162,18 +162,17 @@
                                                                 <rect key="frame" x="23" y="23" width="454" height="54"/>
                                                                 <subviews>
                                                                     <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mSu-k1-tYD">
-                                                                        <rect key="frame" x="0.0" y="4" width="92" height="46"/>
+                                                                        <rect key="frame" x="0.0" y="0.0" width="454" height="54"/>
                                                                         <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                                         <nil key="textColor"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                 </subviews>
                                                                 <constraints>
-                                                                    <constraint firstItem="mSu-k1-tYD" firstAttribute="leading" secondItem="biX-VV-lQf" secondAttribute="leading" id="04e-fp-I0C"/>
-                                                                    <constraint firstItem="mSu-k1-tYD" firstAttribute="top" secondItem="biX-VV-lQf" secondAttribute="top" constant="4" id="Mg8-JP-ldj"/>
-                                                                    <constraint firstAttribute="bottom" secondItem="mSu-k1-tYD" secondAttribute="bottom" constant="4" id="PSb-Lw-t9Y"/>
-                                                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="mSu-k1-tYD" secondAttribute="trailing" constant="20" symbolic="YES" id="iFo-Hb-fqg"/>
-                                                                    <constraint firstItem="mSu-k1-tYD" firstAttribute="centerY" secondItem="biX-VV-lQf" secondAttribute="centerY" id="kf1-gU-aSr"/>
+                                                                    <constraint firstItem="mSu-k1-tYD" firstAttribute="top" secondItem="biX-VV-lQf" secondAttribute="top" id="7qc-GM-5jg"/>
+                                                                    <constraint firstAttribute="bottom" secondItem="mSu-k1-tYD" secondAttribute="bottom" id="8Tp-yd-qeK"/>
+                                                                    <constraint firstItem="mSu-k1-tYD" firstAttribute="leading" secondItem="biX-VV-lQf" secondAttribute="leading" id="XRM-Ka-49I"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="mSu-k1-tYD" secondAttribute="trailing" id="bLK-9r-PQg"/>
                                                                 </constraints>
                                                             </tvCardContentView>
                                                             <constraints>
