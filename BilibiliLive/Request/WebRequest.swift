@@ -20,6 +20,8 @@ class WebRequest {
         static let related = "http://api.bilibili.com/x/web-interface/archive/related"
         static let logout = "http://passport.bilibili.com/login/exit/v2"
         static let info = "http://api.bilibili.com/x/web-interface/view"
+        static let fav = "http://api.bilibili.com/x/v3/fav/resource/list"
+        static let favList = "http://api.bilibili.com/x/v3/fav/folder/created/list-all"
     }
     
     static func requestJSON(method: HTTPMethod = .get,
@@ -65,18 +67,20 @@ class WebRequest {
                                       decoder: JSONDecoder? = nil,
                                       complete: ((Result<T, RequestError>) -> Void)?) {
         requestJSON(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder) { response in
-                switch response {
-                case .success(let data):
-                    if let data = try? data.rawData(),
-                       let object = try? (decoder ?? JSONDecoder()).decode(T.self, from: data) {
-                        complete?(.success(object))
-                    } else {
-                        complete?(.failure(.decodeFail))
-                    }
-                case .failure(let err):
-                    complete?(.failure(err))
+            switch response {
+            case .success(let data):
+                do {
+                    let data = try data.rawData()
+                    let object = try (decoder ?? JSONDecoder()).decode(T.self, from: data)
+                    complete?(.success(object))
+                } catch let err {
+                    print("decode fail:", err)
+                    complete?(.failure(.decodeFail))
                 }
+            case .failure(let err):
+                complete?(.failure(err))
             }
+        }
     }
     
     static func request<T: Decodable>(method: HTTPMethod = .get,
@@ -117,9 +121,21 @@ extension WebRequest {
         }
     }
     
-    static func requestFavVideos(complete: ((Result<JSON, RequestError>) -> Void)?) {
-        guard let mid = ApiRequest.getToken()?.mid else { return }
-        requestJSON(url: "http://api.bilibili.com/x/v3/fav/folder/created/list-all", parameters: ["up_mid": mid], complete: complete)
+    static func requestFavVideosList() async throws -> [FavListData] {
+        guard let mid = ApiRequest.getToken()?.mid else { return [] }
+        struct Resp: Codable {
+            let list:[FavListData]
+        }
+        let res: Resp = try await request(method: .get, url: EndPoint.favList, parameters: ["up_mid": mid])
+        return res.list
+    }
+    
+    static func requestFavVideos(mid: String) async throws -> [FavData]  {
+        struct Resp:Codable {
+            let medias:[FavData]?
+        }
+        let res: Resp = try await request(method: .get, url: EndPoint.fav, parameters: ["media_id": mid, "ps": "20"])
+        return res.medias ?? []
     }
 }
 
@@ -142,6 +158,23 @@ extension WebRequest {
     static func requestLoginInfo(complete: ((Result<JSON, RequestError>) -> Void)?) {
         requestJSON(url: "http://api.bilibili.com/x/web-interface/nav", complete: complete)
     }
+}
+
+struct FavData: DisplayData, Codable {
+    struct Upper: Codable {
+        var name: String
+    }
+    var cover: String
+    var upper: Upper
+    var id: Int
+    var title: String
+    var owner: String { get { upper.name } }
+    var pic: URL? { get { URL(string: cover) } }
+}
+
+struct FavListData: Codable {
+    let title: String
+    let id: Int
 }
 
 struct VideoDetail: Codable {

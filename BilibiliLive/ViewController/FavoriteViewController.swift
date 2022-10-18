@@ -15,19 +15,13 @@ class FavoriteViewController: UIViewController {
     }
     
     @IBOutlet weak var tableView: UITableView!
-    var data: [JSON]?
+    var data: [FavListData]?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        WebRequest.requestFavVideos { [weak self] response in
-            switch response {
-            case .success(let json):
-                self?.data = json["list"].array
-                self?.tableView.reloadData()
-            case .failure(_):
-                break
-            }
+        Task {
+            data = try? await WebRequest.requestFavVideosList()
+            tableView.reloadData()
         }
     }
 
@@ -45,10 +39,10 @@ extension FavoriteViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let json = data?[indexPath.row] else { return UITableViewCell() }
+        guard let data = data?[indexPath.row] else { return UITableViewCell() }
         let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: FavRowCell.self)) as! FavRowCell
-        cell.titleLabel.text = json["title"].string
-        cell.mid = json["id"].stringValue
+        cell.titleLabel.text = data.title
+        cell.mid = String(data.id)
         cell.reload()
         return cell
     }
@@ -60,20 +54,14 @@ extension FavoriteViewController: UITableViewDataSource {
 
 class FavRowCell: UITableViewCell {
     var mid: String!
-    var data: [JSON]?
+    var data: [FavData]?
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var collectionView: UICollectionView!
     
     func reload() {
-        WebRequest.requestJSON(url: "http://api.bilibili.com/x/v3/fav/resource/list", parameters: ["media_id": mid!, "ps": "20"]) { [weak self] response in
-            switch response {
-            case .success(let json):
-                self?.data = json["medias"].array
-                self?.collectionView.reloadData()
-                break
-            case .failure(_):
-                break
-            }
+        Task {
+            data = try? await WebRequest.requestFavVideos(mid: mid)
+            collectionView.reloadData()
         }
     }
 }
@@ -90,20 +78,8 @@ extension FavRowCell: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let d = data?[indexPath.row] else { return UICollectionViewCell() }
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HomeCollectionViewCell.self), for: indexPath) as! HomeCollectionViewCell
-        guard let display = try? JSONDecoder().decode(FavData.self, from: d.rawData()) else { return cell }
-        cell.setup(data: display)
+        cell.setup(data: d)
         return cell
     }
 }
 
-struct FavData: DisplayData, Codable {
-    struct Upper: Codable {
-        var name: String
-    }
-    var cover: String
-    var upper: Upper
-    
-    var title: String
-    var owner: String { get { upper.name } }
-    var pic: URL? { get { URL(string: cover) } }
-}
