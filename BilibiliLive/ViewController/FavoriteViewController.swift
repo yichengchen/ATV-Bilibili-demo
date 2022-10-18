@@ -90,14 +90,20 @@ extension FavRowCell: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let d = data?[indexPath.row] else { return UICollectionViewCell() }
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HomeCollectionViewCell.self), for: indexPath) as! HomeCollectionViewCell
-        let display = FavData(title: d["title"].stringValue, owner: d["upper"]["name"].stringValue, pic: URL(string: d["cover"].stringValue))
+        guard let display = try? JSONDecoder().decode(FavData.self, from: d.rawData()) else { return cell }
         cell.setup(data: display)
         return cell
     }
 }
 
-struct FavData: DisplayData {
+struct FavData: DisplayData, Codable {
+    struct Upper: Codable {
+        var name: String
+    }
+    var cover: String
+    var upper: Upper
+    
     var title: String
-    var owner: String
-    var pic: URL?
+    var owner: String { get { upper.name } }
+    var pic: URL? { get { URL(string: cover) } }
 }
