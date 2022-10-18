@@ -94,7 +94,7 @@ extension VideoPlayerViewController {
     }
     
     func ensureCid(callback:(()->Void)?=nil) {
-        if cid > 0 {
+        if cid != nil && cid > 0 {
             callback?()
             return
         }
