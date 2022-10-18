@@ -48,7 +48,9 @@ class WebRequest {
                         complete?(.failure(.statusFail(code: errorCode)))
                         return
                     }
-                    complete?(.success(json["data"]))
+                    let dataj = json["data"]
+                    print(dataj)
+                    complete?(.success(dataj))
                 case .failure(let err):
                     print(err)
                     complete?(.failure(.networkFail))
@@ -113,6 +115,11 @@ extension WebRequest {
         } catch {
             return nil
         }
+    }
+    
+    static func requestFavVideos(complete: ((Result<JSON, RequestError>) -> Void)?) {
+        guard let mid = ApiRequest.getToken()?.mid else { return }
+        requestJSON(url: "http://api.bilibili.com/x/v3/fav/folder/created/list-all", parameters: ["up_mid": mid], complete: complete)
     }
 }
 

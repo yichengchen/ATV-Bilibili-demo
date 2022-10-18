@@ -25,20 +25,38 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         delegate = self
+        var vcs = [UIViewController]()
+        
         let liveVC = LiveViewController()
+        liveVC.tabBarItem.title = "直播"
+        vcs.append(liveVC)
+        
         let feedVC = FeedViewController()
+        feedVC.tabBarItem.title = "推荐"
+        vcs.append(feedVC)
+        
         let followVC = FollowsViewController()
+        followVC.tabBarItem.title = "关注"
+        vcs.append(followVC)
+        
+        let fav = FavoriteViewController.create()
+        fav.tabBarItem.title = "收藏"
+        vcs.append(fav)
+        
         let historyVC = HistoryViewController()
+        historyVC.tabBarItem.title = "历史"
+        vcs.append(historyVC)
+        
         let toViewVC = ToViewViewController()
+        toViewVC.tabBarItem.title = "稍后再看"
+        vcs.append(toViewVC)
+        
         let persionVC = PersonalViewController.create()
         persionVC.extendedLayoutIncludesOpaqueBars = true
-        liveVC.tabBarItem.title = "直播"
-        feedVC.tabBarItem.title = "推荐"
-        followVC.tabBarItem.title = "关注"
-        historyVC.tabBarItem.title = "历史"
-        toViewVC.tabBarItem.title = "稍后再看"
         persionVC.tabBarItem.title = "我的"
-        setViewControllers([liveVC,feedVC,followVC,historyVC,toViewVC,persionVC], animated: false)
+        vcs.append(persionVC)
+        
+        setViewControllers(vcs, animated: false)
         selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
         
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)

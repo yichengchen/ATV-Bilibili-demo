@@ -14,6 +14,7 @@
 		49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
+		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
 		F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90AAE03265549B5008DE7C2 /* FeedViewController.swift */; };
 		F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED64260F917D00EAB8E3 /* Gzip */; };
 		F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */; };
@@ -58,6 +59,7 @@
 		49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalViewController.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
+		AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteViewController.swift; sourceTree = "<group>"; };
 		F90AAE03265549B5008DE7C2 /* FeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewController.swift; sourceTree = "<group>"; };
 		F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveDanMuProvider.swift; sourceTree = "<group>"; };
 		F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCell.swift; sourceTree = "<group>"; };
@@ -111,9 +113,12 @@
 		2D3CD3F52635BD1100191419 /* ViewController */ = {
 			isa = PBXGroup;
 			children = (
+				F90AAE03265549B5008DE7C2 /* FeedViewController.swift */,
+				F99D28F62619F5F000F8E66A /* FollowsViewController.swift */,
+				AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */,
 				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
 				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
-				F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */,
+				49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */,
 			);
 			path = ViewController;
 			sourceTree = "<group>";
@@ -157,14 +162,6 @@
 				49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */,
 			);
 			path = Extensions;
-			sourceTree = "<group>";
-		};
-		49389D8A28B0A81C00B9DAFD /* Personal */ = {
-			isa = PBXGroup;
-			children = (
-				49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */,
-			);
-			path = Personal;
 			sourceTree = "<group>";
 		};
 		49D39F26263AD3F100F14497 /* Request */ = {
@@ -235,13 +232,11 @@
 				2D3CD4002635BE7C00191419 /* Live */,
 				49389D5D28AFE6DC00B9DAFD /* Video */,
 				2D3CD3F52635BD1100191419 /* ViewController */,
-				49389D8A28B0A81C00B9DAFD /* Personal */,
 				F9B57353260F5F7400771ED5 /* AppDelegate.swift */,
 				F9B57357260F5F7400771ED5 /* Main.storyboard */,
+				F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */,
 				F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */,
 				F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */,
-				F99D28F62619F5F000F8E66A /* FollowsViewController.swift */,
-				F90AAE03265549B5008DE7C2 /* FeedViewController.swift */,
 				F927ED6A2610391000EAB8E3 /* Vendor */,
 				2D3CD3F72635BD7000191419 /* Supporting Files */,
 			);
@@ -358,6 +353,7 @@
 				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,
 				49D39F28263AD40000F14497 /* WebRequest.swift in Sources */,
 				F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */,
+				AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */,
 				F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */,
 				F99D28F72619F5F000F8E66A /* FollowsViewController.swift in Sources */,
 				F9D382B426359EF90070508F /* ApiRequest.swift in Sources */,
