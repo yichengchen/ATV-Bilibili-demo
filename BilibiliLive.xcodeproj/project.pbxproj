@@ -118,7 +118,6 @@
 				AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */,
 				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
 				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
-				49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */,
 			);
 			path = ViewController;
 			sourceTree = "<group>";
@@ -172,6 +171,33 @@
 				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
 			);
 			path = Request;
+			sourceTree = "<group>";
+		};
+		AEA6AB1228FFE45A007CE72E /* Component */ = {
+			isa = PBXGroup;
+			children = (
+				F99D28EC2619F4D500F8E66A /* Player */,
+				49389D5D28AFE6DC00B9DAFD /* Video */,
+			);
+			path = Component;
+			sourceTree = "<group>";
+		};
+		AEA6AB1328FFE47F007CE72E /* Module */ = {
+			isa = PBXGroup;
+			children = (
+				2D3CD4002635BE7C00191419 /* Live */,
+				AEA6AB1428FFE48B007CE72E /* Personal */,
+				2D3CD3F52635BD1100191419 /* ViewController */,
+			);
+			path = Module;
+			sourceTree = "<group>";
+		};
+		AEA6AB1428FFE48B007CE72E /* Personal */ = {
+			isa = PBXGroup;
+			children = (
+				49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */,
+			);
+			path = Personal;
 			sourceTree = "<group>";
 		};
 		F927ED6A2610391000EAB8E3 /* Vendor */ = {
@@ -228,10 +254,8 @@
 			children = (
 				49389D6028AFE91E00B9DAFD /* Extensions */,
 				49D39F26263AD3F100F14497 /* Request */,
-				F99D28EC2619F4D500F8E66A /* Player */,
-				2D3CD4002635BE7C00191419 /* Live */,
-				49389D5D28AFE6DC00B9DAFD /* Video */,
-				2D3CD3F52635BD1100191419 /* ViewController */,
+				AEA6AB1228FFE45A007CE72E /* Component */,
+				AEA6AB1328FFE47F007CE72E /* Module */,
 				F9B57353260F5F7400771ED5 /* AppDelegate.swift */,
 				F9B57357260F5F7400771ED5 /* Main.storyboard */,
 				F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */,
