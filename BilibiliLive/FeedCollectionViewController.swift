@@ -189,5 +189,6 @@ class HomeCollectionViewCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         onLongPress = nil
+        stopScroll()
     }
 }
