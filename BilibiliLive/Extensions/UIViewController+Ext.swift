@@ -22,4 +22,8 @@ extension UIViewController {
 
         return self
     }
+    
+    static func topMostViewController() -> UIViewController {
+        return AppDelegate.shared.window!.rootViewController!.topMostViewController()
+    }
 }

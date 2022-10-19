@@ -17,7 +17,7 @@ struct CellModel {
 
 class PersonalViewController: UIViewController {
     static func create() -> PersonalViewController {
-        return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "My") as! PersonalViewController
+        return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! PersonalViewController
     }
 
     @IBOutlet weak var contentView: UIView!
@@ -48,7 +48,7 @@ class PersonalViewController: UIViewController {
     func setupData() {
         let setting = CellModel(title: "设置") {
             [weak self] in
-            self?.setViewController(vc: EmptyViewController())
+            self?.setViewController(vc: SettingsViewController.create())
         }
         cellModels.append(setting)
         let logout = CellModel(title: "登出") {

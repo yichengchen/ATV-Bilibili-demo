@@ -69,7 +69,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
     func goDetail(with indexPath: IndexPath) {
         if let feed = feeds[indexPath.item] as? FeedData {
             let detailVC = VideoDetailViewController.create(aid: feed.aid,cid: feed.cid)
-            present(detailVC, animated: true, completion: nil)
+            detailVC.present(from: self)
             return
         }
         if let bangumi = feeds[indexPath.item] as? BangumiData {
@@ -81,10 +81,8 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
                     let episodes = json["result"]["main_section"]["episodes"].arrayValue
                     for episode in episodes {
                         if episode["id"].intValue == bangumi.episode {
-                            let player = VideoPlayerViewController()
-                            player.aid = episode["aid"].intValue
-                            player.cid = episode["cid"].intValue
-                            self.present(player, animated: true, completion: nil)
+                            let detailVC = VideoDetailViewController.create(aid: episode["aid"].intValue,cid: episode["cid"].intValue)
+                            detailVC.present(from: self)
                             break
                         }
                     }

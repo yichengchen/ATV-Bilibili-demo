@@ -80,22 +80,8 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
     
     func goDetail(with indexPath: IndexPath) {
         let history = feeds[indexPath.item]
-        if history.multiPage {
-            let detailVC = VideoDetailViewController.create(aid: history.aid, cid: history.cid)
-            present(detailVC, animated: false) {
-                let player = VideoPlayerViewController()
-                player.aid = history.aid
-                player.cid = history.cid
-                player.position = history.position
-                detailVC.present(player, animated: true, completion: nil)
-            }
-        } else {
-            let player = VideoPlayerViewController()
-            player.aid = history.aid
-            player.cid = history.cid
-            player.position = history.position
-            present(player, animated: true, completion: nil)
-        }
+        let detailVC = VideoDetailViewController.create(aid: history.aid, cid: history.cid)
+        detailVC.present(from: self)
     }
     
     func del(with indexPath: IndexPath) {

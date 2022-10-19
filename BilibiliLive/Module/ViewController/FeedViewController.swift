@@ -53,7 +53,7 @@ class FeedViewController: UIViewController {
         let data = collectionVC.displayDatas[indexPath.item]
         let aid = (data as! ApiRequest.FeedResp.Items).param
         let detailVC = VideoDetailViewController.create(aid: Int(aid)!, cid: 0)
-        present(detailVC, animated: true)
+        detailVC.present(from: self)
     }
     
     @objc func actionPlay() {

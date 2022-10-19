@@ -66,10 +66,8 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
     
     func goDetail(with indexPath: IndexPath) {
         let feed = feeds[indexPath.item]
-        let player = VideoPlayerViewController()
-        player.aid = feed.aid
-        player.cid = feed.cid
-        present(player, animated: true, completion: nil)
+        let vc = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid)
+        vc.present(from: self)
     }
     
     func del(with indexPath: IndexPath) {

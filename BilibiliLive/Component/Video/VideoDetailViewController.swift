@@ -31,13 +31,11 @@ class VideoDetailViewController: UIViewController {
     private var pages = [PageData]()
     private var relateds = [VideoDetail]()
     
-    static func create(aid:Int, cid:Int) -> UIViewController {
+    static func create(aid:Int, cid:Int) -> VideoDetailViewController {
         let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: "VideoDetailViewController") as! VideoDetailViewController
         vc.aid = aid
         vc.cid = cid
-        let nav = UINavigationController(rootViewController: vc)
-        nav.setNavigationBarHidden(true, animated: false)
-        return nav
+        return vc
     }
     
     override func viewDidLoad() {
@@ -54,6 +52,19 @@ class VideoDetailViewController: UIViewController {
         loadingView.style = .large
         loadingView.startAnimating()
         loadingView.makeConstraintsBindToCenterOfSuperview()
+    }
+    
+    func present(from vc:UIViewController) {
+        if (!Settings.direatlyEnterVideo) {
+            vc.present(self, animated: true)
+        } else {
+            vc.present(self, animated: false) { [self] in
+                let player = VideoPlayerViewController()
+                player.aid = aid
+                player.cid = cid
+                present(player, animated: true)
+            }
+        }
     }
     
     private func exit(with error:Error) {

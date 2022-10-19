@@ -69,9 +69,8 @@ class FavRowCell: UITableViewCell {
 extension FavRowCell: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let d = data?[indexPath.row] else { return }
-        let player = VideoPlayerViewController()
-        player.aid = d.id
-        AppDelegate.shared.window?.rootViewController?.present(player, animated: true)
+        let vc = VideoDetailViewController.create(aid: d.id, cid: 0)
+        vc.present(from: UIViewController.topMostViewController())
     }
 }
 
