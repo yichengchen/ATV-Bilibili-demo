@@ -265,9 +265,9 @@
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             <subviews>
                                                 <tvCardView contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="GXU-Vb-zwJ" customClass="BLCardView" customModule="BilibiliLive" customModuleProvider="target">
-                                                    <rect key="frame" x="0.0" y="0.0" width="690" height="463"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="690" height="465"/>
                                                     <tvCardContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="GtY-4O-3OA">
-                                                        <rect key="frame" x="23" y="23" width="644" height="417"/>
+                                                        <rect key="frame" x="23" y="23" width="644" height="419"/>
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <subviews>
                                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="gbZ-KR-xkG">
@@ -282,13 +282,13 @@
                                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="CJY-xV-wSY">
                                                                         <rect key="frame" x="20" y="10" width="604" height="89"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xVm-6y-Jww" customClass="MarqueeLabel" customModule="BilibiliLive" customModuleProvider="target">
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xVm-6y-Jww" customClass="MarqueeLabel" customModule="BilibiliLive" customModuleProvider="target">
                                                                                 <rect key="frame" x="0.0" y="0.0" width="63" height="46"/>
                                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                                                 <nil key="textColor"/>
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="up" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GHy-JQ-eBJ" customClass="MarqueeLabel" customModule="BilibiliLive" customModuleProvider="target">
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="up" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GHy-JQ-eBJ" customClass="MarqueeLabel" customModule="BilibiliLive" customModuleProvider="target">
                                                                                 <rect key="frame" x="0.0" y="54" width="32" height="35"/>
                                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                                                 <nil key="textColor"/>
@@ -329,6 +329,7 @@
                                             <constraints>
                                                 <constraint firstAttribute="trailing" secondItem="GXU-Vb-zwJ" secondAttribute="trailing" id="CL4-CT-2qZ"/>
                                                 <constraint firstItem="GXU-Vb-zwJ" firstAttribute="top" secondItem="dIp-jE-sVk" secondAttribute="top" id="GWX-m2-mRw"/>
+                                                <constraint firstAttribute="bottom" secondItem="GXU-Vb-zwJ" secondAttribute="bottom" id="Hf7-lC-aRX"/>
                                                 <constraint firstItem="GXU-Vb-zwJ" firstAttribute="leading" secondItem="dIp-jE-sVk" secondAttribute="leading" id="bMm-ed-78e"/>
                                             </constraints>
                                         </collectionViewCellContentView>
@@ -336,6 +337,7 @@
                                         <size key="customSize" width="690" height="465"/>
                                         <connections>
                                             <outlet property="imageView" destination="gbZ-KR-xkG" id="QTT-LU-hkM"/>
+                                            <outlet property="imageViewHeightConstraint" destination="rJ8-xv-XI2" id="haf-QS-Du0"/>
                                             <outlet property="titleLabel" destination="xVm-6y-Jww" id="E0N-Yt-d05"/>
                                             <outlet property="upLabel" destination="GHy-JQ-eBJ" id="GDp-F4-1PG"/>
                                         </connections>

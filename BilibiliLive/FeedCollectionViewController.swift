@@ -13,8 +13,38 @@ protocol DisplayData {
     var pic: URL? { get }
 }
 
+extension FeedDisplayStyle {
+    var cellSize: CGSize {
+        switch self {
+        case .large:
+            return CGSize(width: 570, height: 450)
+        case .normal:
+            return CGSize(width: 440, height: 370)
+        }
+    }
+    
+    var spacing: CGFloat {
+        switch self {
+        case .large:
+            return 30
+        case .normal:
+            return 10
+        }
+    }
+    
+    var lineSpacing: CGFloat {
+        switch self {
+        case .large:
+            return 20
+        case .normal:
+            return 2
+        }
+    }
+}
+
 class FeedCollectionViewController: UIViewController {
     @IBOutlet weak var collectionView: UICollectionView!
+    
     var headerTitle: String? {
         didSet {
             layout.headerReferenceSize = CGSize(width: 1080, height: 50)
@@ -43,7 +73,11 @@ class FeedCollectionViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        let style = Settings.displayStyle
         layout.headerReferenceSize = .zero
+        layout.itemSize = style.cellSize
+        layout.minimumLineSpacing = style.lineSpacing
+        layout.minimumInteritemSpacing = style.spacing
     }
 }
 
@@ -111,12 +145,22 @@ class HomeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var titleLabel: MarqueeLabel!
     @IBOutlet weak var upLabel: MarqueeLabel!
     @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var imageViewHeightConstraint: NSLayoutConstraint!
+    
     
     var onLongPress: (()->Void)?=nil
     override func awakeFromNib() {
         super.awakeFromNib()
         let longpress = UILongPressGestureRecognizer(target: self, action: #selector(actionLongPress(sender:)))
         addGestureRecognizer(longpress)
+        imageView.layer.cornerRadius = 12
+        imageView.clipsToBounds = true
+        
+        if Settings.displayStyle == .normal {
+            imageViewHeightConstraint.constant = 250
+            titleLabel.font = UIFont.systemFont(ofSize: 30,weight: .semibold)
+            upLabel.font = UIFont.systemFont(ofSize: 20)
+        }
     }
     
     func setup(data: DisplayData) {
@@ -128,10 +172,12 @@ class HomeCollectionViewCell: UICollectionViewCell {
     
     func startScroll() {
         titleLabel.restartLabel()
+        upLabel.restartLabel()
     }
     
     func stopScroll() {
         titleLabel.shutdownLabel()
+        upLabel.shutdownLabel()
     }
     
     

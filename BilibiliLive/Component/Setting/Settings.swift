@@ -7,7 +7,14 @@
 
 import Foundation
 
-class Settings {
+enum FeedDisplayStyle {
+    case large
+    case normal
+}
+
+enum Settings {
+    static let displayStyle = FeedDisplayStyle.normal
+
     static var direatlyEnterVideo: Bool {
         set {
             UserDefaults.standard.set(newValue, forKey: "Settings.direatlyEnterVideo")
