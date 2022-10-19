@@ -845,8 +845,8 @@
                         <subviews>
                             <collectionView multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="EOv-ZU-UJS">
                                 <rect key="frame" x="80" y="0.0" width="1224" height="1080"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="jSs-Yw-LcT">
-                                    <size key="itemSize" width="1224" height="229"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="jSs-Yw-LcT">
+                                    <size key="itemSize" width="1224" height="68"/>
                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -920,6 +920,9 @@
                         </constraints>
                     </view>
                     <size key="freeformSize" width="1384" height="1080"/>
+                    <connections>
+                        <outlet property="collectionView" destination="EOv-ZU-UJS" id="UeE-6Z-feu"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="EOT-Mk-fwY" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

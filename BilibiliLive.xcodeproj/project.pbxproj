@@ -13,6 +13,7 @@
 		49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */; };
 		49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */; };
 		494741BC29001979005D6885 /* MarqueeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494741BB29001979005D6885 /* MarqueeLabel.swift */; };
+		494741C029002797005D6885 /* UserDefault+..swift in Sources */ = {isa = PBXBuildFile; fileRef = 494741BF29002797005D6885 /* UserDefault+..swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
@@ -61,6 +62,7 @@
 		49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Ext.swift"; sourceTree = "<group>"; };
 		49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalViewController.swift; sourceTree = "<group>"; };
 		494741BB29001979005D6885 /* MarqueeLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MarqueeLabel.swift; sourceTree = "<group>"; };
+		494741BF29002797005D6885 /* UserDefault+..swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefault+..swift"; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteViewController.swift; sourceTree = "<group>"; };
@@ -165,6 +167,7 @@
 				F99D28E926195EC200F8E66A /* UIView+Layout.swift */,
 				49389D5E28AFE8F100B9DAFD /* UIColor+Hex.swift */,
 				49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */,
+				494741BF29002797005D6885 /* UserDefault+..swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -395,6 +398,7 @@
 				AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */,
 				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,
 				49D39F28263AD40000F14497 /* WebRequest.swift in Sources */,
+				494741C029002797005D6885 /* UserDefault+..swift in Sources */,
 				F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */,
 				AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */,
 				F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */,

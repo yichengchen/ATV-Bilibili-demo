@@ -7,20 +7,15 @@
 
 import Foundation
 
-enum FeedDisplayStyle {
+enum FeedDisplayStyle:Codable,CaseIterable {
     case large
     case normal
 }
 
 enum Settings {
-    static let displayStyle = FeedDisplayStyle.normal
+    @UserDefaultCodable("Settings.displayStyle", defaultValue: .normal)
+    static var displayStyle: FeedDisplayStyle
 
-    static var direatlyEnterVideo: Bool {
-        set {
-            UserDefaults.standard.set(newValue, forKey: "Settings.direatlyEnterVideo")
-        }
-        get {
-            return UserDefaults.standard.bool(forKey: "Settings.direatlyEnterVideo")
-        }
-    }
+    @UserDefault("Settings.direatlyEnterVideo", defaultValue: false)
+    static var direatlyEnterVideo: Bool
 }

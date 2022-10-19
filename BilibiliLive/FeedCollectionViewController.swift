@@ -145,7 +145,7 @@ class HomeCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var titleLabel: MarqueeLabel!
     @IBOutlet weak var upLabel: MarqueeLabel!
     @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var imageViewHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var imageViewHeightConstraint: NSLayoutConstraint?
     
     
     var onLongPress: (()->Void)?=nil
@@ -157,7 +157,7 @@ class HomeCollectionViewCell: UICollectionViewCell {
         imageView.clipsToBounds = true
         
         if Settings.displayStyle == .normal {
-            imageViewHeightConstraint.constant = 250
+            imageViewHeightConstraint?.constant = 250
             titleLabel.font = UIFont.systemFont(ofSize: 30,weight: .semibold)
             upLabel.font = UIFont.systemFont(ofSize: 20)
         }

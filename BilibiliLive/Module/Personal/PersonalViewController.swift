@@ -12,7 +12,14 @@ import Kingfisher
 
 struct CellModel {
     let title:String
+    let desp: String?
     let action: (()->Void)?
+    
+    init(title: String, desp: String?=nil, action: (() -> Void)?=nil) {
+        self.title = title
+        self.desp = desp
+        self.action = action
+    }
 }
 
 class PersonalViewController: UIViewController {
