@@ -84,6 +84,23 @@ extension FeedCollectionViewController: UICollectionViewDataSource {
         return UICollectionReusableView()
     }
     
+    func collectionView(_ collectionView: UICollectionView, didUpdateFocusIn context: UICollectionViewFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        if let previousIndexPath = context.previouslyFocusedIndexPath,
+           let cell = collectionView.cellForItem(at:previousIndexPath) as? HomeCollectionViewCell {
+            cell.stopScroll()
+        }
+        if let previousIndexPath = context.nextFocusedIndexPath,
+           let cell = collectionView.cellForItem(at:previousIndexPath) as? HomeCollectionViewCell {
+            cell.startScroll()
+        }
+        
+    }
+    
+    func indexPathForPreferredFocusedView(in collectionView: UICollectionView) -> IndexPath? {
+        let indexPath = IndexPath(item: 0, section: 0)
+        return indexPath
+    }
+    
 }
 
 
@@ -91,12 +108,11 @@ extension FeedCollectionViewController: UICollectionViewDataSource {
 
 
 class HomeCollectionViewCell: UICollectionViewCell {
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var upLabel: UILabel!
+    @IBOutlet weak var titleLabel: MarqueeLabel!
+    @IBOutlet weak var upLabel: MarqueeLabel!
     @IBOutlet weak var imageView: UIImageView!
     
     var onLongPress: (()->Void)?=nil
-    
     override func awakeFromNib() {
         super.awakeFromNib()
         let longpress = UILongPressGestureRecognizer(target: self, action: #selector(actionLongPress(sender:)))
@@ -107,7 +123,17 @@ class HomeCollectionViewCell: UICollectionViewCell {
         titleLabel.text = data.title
         upLabel.text = data.owner
         imageView.kf.setImage(with:data.pic)
+        
     }
+    
+    func startScroll() {
+        titleLabel.restartLabel()
+    }
+    
+    func stopScroll() {
+        titleLabel.shutdownLabel()
+    }
+    
     
     @objc private func actionLongPress(sender:UILongPressGestureRecognizer) {
         guard sender.state == .began else { return }

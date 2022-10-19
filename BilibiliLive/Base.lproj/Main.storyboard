@@ -282,22 +282,23 @@
                                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="CJY-xV-wSY">
                                                                         <rect key="frame" x="20" y="10" width="604" height="89"/>
                                                                         <subviews>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xVm-6y-Jww">
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xVm-6y-Jww" customClass="MarqueeLabel" customModule="BilibiliLive" customModuleProvider="target">
                                                                                 <rect key="frame" x="0.0" y="0.0" width="63" height="46"/>
                                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                                                 <nil key="textColor"/>
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
-                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="up" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GHy-JQ-eBJ">
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="up" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GHy-JQ-eBJ" customClass="MarqueeLabel" customModule="BilibiliLive" customModuleProvider="target">
                                                                                 <rect key="frame" x="0.0" y="54" width="32" height="35"/>
                                                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
                                                                                 <nil key="textColor"/>
                                                                                 <nil key="highlightedColor"/>
                                                                             </label>
                                                                         </subviews>
+                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     </stackView>
                                                                 </subviews>
-                                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="trailing" secondItem="CJY-xV-wSY" secondAttribute="trailing" constant="20" id="6Uf-le-jhY"/>
                                                                     <constraint firstItem="CJY-xV-wSY" firstAttribute="leading" secondItem="srS-y7-fSF" secondAttribute="leading" constant="20" id="L8P-my-2Dn"/>
@@ -733,7 +734,7 @@
                                                                                             <nil key="highlightedColor"/>
                                                                                         </label>
                                                                                     </subviews>
-                                                                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                                     <constraints>
                                                                                         <constraint firstAttribute="trailing" secondItem="QX7-1Z-pZ9" secondAttribute="trailing" id="2fL-DU-x3e"/>
                                                                                         <constraint firstAttribute="trailing" secondItem="b5n-l0-s9a" secondAttribute="trailing" id="EaP-eI-dRr"/>
@@ -923,6 +924,14 @@
             <point key="canvasLocation" x="-2021" y="3761"/>
         </scene>
     </scenes>
+    <designables>
+        <designable name="GHy-JQ-eBJ">
+            <size key="intrinsicContentSize" width="32" height="35"/>
+        </designable>
+        <designable name="xVm-6y-Jww">
+            <size key="intrinsicContentSize" width="63" height="46"/>
+        </designable>
+    </designables>
     <resources>
         <systemColor name="secondaryLabelColor">
             <color red="0.0" green="0.0" blue="0.0" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
