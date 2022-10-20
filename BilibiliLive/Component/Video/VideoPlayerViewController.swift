@@ -13,7 +13,7 @@ import AVKit
 import AVFoundation
 
 class VideoPlayerViewController: CommonPlayerViewController {
-    var cid:Int!
+    var cid:Int?
     var aid:Int!
     var position: Float = 0.0
     
@@ -22,10 +22,13 @@ class VideoPlayerViewController: CommonPlayerViewController {
     private var playerDelegate: BilibiliVideoResourceLoaderDelegate?
     private let danmuProvider = VideoDanmuProvider()
     
-    deinit {
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
         guard let currentTime = player?.currentTime().seconds, currentTime>0 else { return }
-        guard let csrf = CookieHandler.shared.csrf() else { return }
-        AF.request("https://api.bilibili.com/x/v2/history/report", method: .post, parameters: ["aid": aid!, "cid": cid!, "progress": Int(currentTime), "csrf": csrf]).resume()
+
+        if let aid = aid, let cid = cid, cid > 0 {
+            WebRequest.reportWatchHistory(aid: aid, cid: cid, currentTime: Int(currentTime))
+        }
     }
     
     override func viewDidLoad() {
@@ -64,8 +67,6 @@ class VideoPlayerViewController: CommonPlayerViewController {
     override func playerDidFinishPlaying() {
         dismiss(animated: true)
     }
-    
-
 }
 
 
@@ -89,12 +90,11 @@ extension VideoPlayerViewController {
         Task {
             let info = await WebRequest.requestDetailVideo(aid: aid!)
             setPlayerInfo(title: info?.title, subTitle: info?.owner.name, desp: info?.desc, pic: info?.pic)
-//            playerItem?.externalMetadata =
         }
     }
     
     func ensureCid(callback:(()->Void)?=nil) {
-        if cid != nil && cid > 0 {
+        if let cid = cid, cid > 0 {
             callback?()
             return
         }
@@ -136,7 +136,7 @@ extension VideoPlayerViewController {
             showErrorAlertAndExit(message: "URL解析错误")
             return
         }
-
+        
         playerItem = AVPlayerItem(asset: asset)
         player = AVPlayer(playerItem: playerItem)
         player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in

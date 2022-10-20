@@ -22,6 +22,7 @@ class WebRequest {
         static let info = "http://api.bilibili.com/x/web-interface/view"
         static let fav = "http://api.bilibili.com/x/v3/fav/resource/list"
         static let favList = "http://api.bilibili.com/x/v3/fav/folder/created/list-all"
+        static let reportHistory = "https://api.bilibili.com/x/v2/history/report"
     }
     
     static func requestJSON(method: HTTPMethod = .get,
@@ -32,6 +33,7 @@ class WebRequest {
         var parameters = parameters
         if method != .get {
             parameters["biliCSRF"] = CookieHandler.shared.csrf()
+            parameters["csrf"] = CookieHandler.shared.csrf()
         }
         AF.request(url,
                    method: method,
@@ -146,6 +148,13 @@ extension WebRequest {
         }
         let res: Resp = try await request(method: .get, url: EndPoint.fav, parameters: ["media_id": mid, "ps": "20"])
         return res.medias ?? []
+    }
+    
+    static func reportWatchHistory(aid: Int, cid: Int, currentTime: Int) {
+        WebRequest.requestJSON(method: .post,
+                               url: EndPoint.reportHistory,
+                               parameters: ["aid": aid, "cid": cid, "progress": currentTime],
+                               complete: nil)
     }
 }
 
