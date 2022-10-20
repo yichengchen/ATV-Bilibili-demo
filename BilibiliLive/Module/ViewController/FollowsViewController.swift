@@ -12,6 +12,7 @@ import SwiftyJSON
 class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
     var feeds = [any DisplayData]() { didSet {collectionVC.displayDatas=feeds} }
+    private var page = 0
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)
@@ -19,32 +20,40 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
             [weak self] idx in
             self?.goDetail(with: idx)
         }
-        loadData()
+        collectionVC.loadMore = {
+            [weak self] in
+            self?.loadNextPage()
+        }
+        reloadData()
     }
     
     func reloadData() {
-        loadData()
+        Task {
+            await initData()
+        }
     }
     
-    func loadData() {
-        AF.request("https://api.bilibili.com/x/web-feed/feed?ps=50&pn=1").responseData {
-            [weak self] response in
-            guard let self = self else { return }
-            switch(response.result) {
-            case .success(let data):
-                let json = JSON(data)
-                let datas = self.progrssData(json: json)
-                self.feeds = datas
-                
-            case .failure(let error):
-                print(error)
-                break
+    func initData() async {
+        page = 1
+        feeds = (try? await requestData(page: 1)) ?? []
+    }
+    
+    func loadNextPage() {
+        Task {
+            do {
+                let data = try await requestData(page: page + 1)
+                collectionVC.appendData(displayData: data)
+                page += 1
+            } catch let err {
+                print(err)
             }
         }
     }
     
-    func progrssData(json:JSON) -> [any DisplayData] {
-        let datas = json["data"].arrayValue.map { data -> (any DisplayData) in
+    func requestData(page: Int) async throws -> [any DisplayData]  {
+        let json = try await WebRequest.requestJSON(url: "https://api.bilibili.com/x/web-feed/feed?ps=20&pn=\(page)")
+            
+        let datas = json.arrayValue.map { data -> (any DisplayData) in
             let bangumi = data["bangumi"]
             if !bangumi.isEmpty {
                 let season = bangumi["season_id"].intValue

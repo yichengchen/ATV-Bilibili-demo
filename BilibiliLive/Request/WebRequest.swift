@@ -28,7 +28,6 @@ class WebRequest {
                             url: URLConvertible,
                             parameters: Parameters = [:],
                             headers: [String:String]? = nil,
-                            decoder: JSONDecoder? = nil,
                             complete: ((Result<JSON, RequestError>) -> Void)?) {
         var parameters = parameters
         if method != .get {
@@ -66,7 +65,7 @@ class WebRequest {
                                       headers: [String:String]? = nil,
                                       decoder: JSONDecoder? = nil,
                                       complete: ((Result<T, RequestError>) -> Void)?) {
-        requestJSON(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder) { response in
+        requestJSON(method: method, url: url, parameters: parameters, headers: headers) { response in
             switch response {
             case .success(let data):
                 do {
@@ -83,6 +82,17 @@ class WebRequest {
         }
     }
     
+    static func requestJSON(method: HTTPMethod = .get,
+                            url: URLConvertible,
+                            parameters: Parameters = [:],
+                            headers: [String:String]? = nil) async throws -> JSON {
+        return try await withCheckedThrowingContinuation{ configure in
+            requestJSON(method: method, url: url,parameters: parameters, headers: headers) { resp in
+                configure.resume(with: resp)
+            }
+        }
+    }
+        
     static func request<T: Decodable>(method: HTTPMethod = .get,
                                       url: URLConvertible,
                                       parameters: Parameters = [:],

@@ -136,6 +136,20 @@ class ApiRequest {
         }
     }
     
+    static func request<T: Decodable>(_ url: URLConvertible,
+                                      method: HTTPMethod = .get,
+                                      parameters: [String:String] = [:],
+                                      auth:Bool = true,
+                                      encoding: ParameterEncoding = URLEncoding.default,
+                                      decoder: JSONDecoder = JSONDecoder()) async throws -> T  {
+        try await withCheckedThrowingContinuation{ configure in
+            request(url,method: method,parameters: parameters,auth: auth,encoding: encoding,decoder: decoder) { resp in
+                configure.resume(with: resp)
+            }
+        }
+    }
+                                      
+    
     static func requestLoginQR(handler: ((String,String)->Void)?=nil) {
         
         class Resp:Codable {
@@ -277,6 +291,12 @@ class ApiRequest {
                 break
             }
         }
+    }
+    
+    static func getFeeds(lastIdx: Int = 0) async throws ->[FeedResp.Items]  {
+        let idx = "\(lastIdx)"
+        let resp: FeedResp = try await request(EndPoint.feed,parameters: ["idx":idx,"flush":"0","column":"4","device":"pad","pull":idx == "0" ? "1" : "0"])
+        return resp.items
     }
     
 

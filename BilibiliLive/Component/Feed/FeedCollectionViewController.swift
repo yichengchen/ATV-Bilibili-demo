@@ -40,9 +40,12 @@ class FeedCollectionViewController: UIViewController {
     
     var didSelect: ((IndexPath)->Void)? = nil
     var didLongPress: ((IndexPath)->Void)? = nil
+    var loadMore: (()->Void)? = nil
+    var finished = false
     var displayDatas: [any DisplayData] {
         set {
             _displayData = newValue.map{AnyDispplayData(data: $0)}
+            finished = false
         }
         get {
             _displayData.map{$0.data}
@@ -58,6 +61,9 @@ class FeedCollectionViewController: UIViewController {
         }
     }
     
+    private var isLoading = false
+    
+    
     typealias DisplayCellRegistration = UICollectionView.CellRegistration<FeedCollectionViewCell, AnyDispplayData>
     private lazy var dataSource = makeDataSource()
     
@@ -69,6 +75,14 @@ class FeedCollectionViewController: UIViewController {
         view.makeConstraintsToBindToSuperview()
         didMove(toParent: vc)
         vc.tabBarObservedScrollView = collectionView
+    }
+    
+    func appendData(displayData:[any DisplayData]) {
+        _displayData.append(contentsOf: displayData.map{AnyDispplayData(data: $0)})
+        if displayData.count < 10 {
+            finished = true
+        }
+        isLoading = false
     }
     
     override func viewDidLoad() {
@@ -143,6 +157,15 @@ extension FeedCollectionViewController: UICollectionViewDelegate {
            let cell = collectionView.cellForItem(at:previousIndexPath) as? FeedCollectionViewCell {
             cell.startScroll()
         }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard _displayData.count > 0 else { return }
+        guard indexPath.row == _displayData.count - 1, !isLoading, !finished else {
+            return
+        }
+        isLoading = true
+        loadMore?()
     }
 }
 

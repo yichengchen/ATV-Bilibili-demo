@@ -8,7 +8,7 @@
 import UIKit
 
 
-class FeedViewController: UIViewController {
+class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
     var loading = false
     override func viewDidLoad() {
@@ -18,46 +18,41 @@ class FeedViewController: UIViewController {
             [weak self] idx in
             self?.goDetail(with: idx)
         }
-        loadData()
+        
+        collectionVC.loadMore = {
+            [weak self] in
+            self?.loadMore()
+        }
+        reloadData()
     }
     
-    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        guard let pressType = presses.first?.type else { return }
-        switch pressType {
-        case .playPause:
-            loadData()
-        default:
-            break
+    func reloadData() {
+        if loading { return }
+        Task {
+            loading = true
+            let feeds = try? await ApiRequest.getFeeds()
+            collectionVC.displayDatas = feeds ?? []
+            loading = false
         }
     }
     
-    func loadData() {
-        if loading { return }
-        loading = true
-        requests(datas: [])
-    }
-    
-    func requests(number: Int = 0, datas: [ApiRequest.FeedResp.Items]) {
-        if number > 3 {
-            self.collectionVC.displayDatas = datas
-            self.loading = false
+    func loadMore() {
+        guard let last = (collectionVC.displayDatas.last as? ApiRequest.FeedResp.Items)?.idx else {
             return
         }
-        ApiRequest.getFeeds(datas: datas) { items in
-            self.requests(number: number + 1, datas: items)
+        Task {
+            loading = true
+            let newData = try? await ApiRequest.getFeeds(lastIdx: last)
+            collectionVC.appendData(displayData: newData ?? [])
+            loading = false
         }
     }
-    
     
     func goDetail(with indexPath: IndexPath) {
         let data = collectionVC.displayDatas[indexPath.item]
         let aid = (data as! ApiRequest.FeedResp.Items).param
         let detailVC = VideoDetailViewController.create(aid: Int(aid)!, cid: 0)
         detailVC.present(from: self)
-    }
-    
-    @objc func actionPlay() {
-        loadData()
     }
     
 }
