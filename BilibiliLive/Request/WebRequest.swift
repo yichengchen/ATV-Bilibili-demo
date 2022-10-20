@@ -23,6 +23,7 @@ class WebRequest {
         static let fav = "http://api.bilibili.com/x/v3/fav/resource/list"
         static let favList = "http://api.bilibili.com/x/v3/fav/folder/created/list-all"
         static let reportHistory = "https://api.bilibili.com/x/v2/history/report"
+        static let upSpace = "http://api.bilibili.com/x/space/arc/search"
     }
     
     static func requestJSON(method: HTTPMethod = .get,
@@ -156,6 +157,11 @@ extension WebRequest {
                                parameters: ["aid": aid, "cid": cid, "progress": currentTime],
                                complete: nil)
     }
+    
+    static func requestUpSpaceVideo(mid: Int,page:Int,pageSize:Int=50) async throws -> [UpSpaceReq.List.VListData] {
+        let resp: UpSpaceReq = try await request(url: EndPoint.upSpace,parameters: ["mid":mid,"pn":page,"ps":pageSize])
+        return resp.list.vlist
+    }
 }
 
 // MARK: - User
@@ -220,3 +226,18 @@ struct VideoPage: Codable {
     let part: String
 }
 
+struct UpSpaceReq:Codable,Hashable {
+    let list:List
+    struct List:Codable,Hashable {
+        let vlist:[VListData]
+        struct VListData:Codable,Hashable, DisplayData {
+            let title:String
+            let author: String
+            let aid:Int
+            let pic:URL?
+            var owner: String {
+                return author
+            }
+        }
+    }
+}

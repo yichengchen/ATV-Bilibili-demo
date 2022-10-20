@@ -15,7 +15,7 @@ import TVUIKit
 
 class VideoDetailViewController: UIViewController {
     @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var upNameLabel: UILabel!
+    @IBOutlet weak var upButton: UIButton!
     @IBOutlet weak var noteLabel: UILabel!
     @IBOutlet weak var coverImageView: UIImageView!
     @IBOutlet weak var backgroundImageView: UIImageView!
@@ -27,6 +27,7 @@ class VideoDetailViewController: UIViewController {
     
     private var aid:Int!
     private var cid:Int!
+    private var mid = 0
 
     private var pages = [PageData]()
     private var relateds = [VideoDetail]()
@@ -43,6 +44,12 @@ class VideoDetailViewController: UIViewController {
         navigationController?.setNavigationBarHidden(true, animated: false)
         setupLoading()
         fetchData()
+    }
+    
+    override var preferredFocusedView: UIView? {
+        get {
+            return pageCollectionView
+        }
     }
     
     private func setupLoading() {
@@ -95,10 +102,10 @@ class VideoDetailViewController: UIViewController {
     }
     
     private func update(with json:JSON) {
-        print(json)
         let data = json["data"]
+        mid = data["owner"]["mid"].intValue
         titleLabel.text = data["title"].stringValue
-        upNameLabel.text = data["owner"]["name"].stringValue
+        upButton.setTitle(data["owner"]["name"].stringValue, for: .normal)
         let image = URL(string: data["pic"].stringValue)
             coverImageView.kf.setImage(with: image)
             backgroundImageView.kf.setImage(with: image)
@@ -126,6 +133,13 @@ class VideoDetailViewController: UIViewController {
         UIView.animate(withDuration: 0.25) {
             self.backgroundImageView.alpha = 1
         }
+    }
+    
+
+    @IBAction func actionShowUpSpace(_ sender: Any) {
+        let upSpaceVC = UpSpaceViewController()
+        upSpaceVC.mid = mid
+        present(upSpaceVC, animated: true)
     }
 }
 

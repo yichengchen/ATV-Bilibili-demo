@@ -16,6 +16,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)
+        collectionVC.pageSize = 40
         collectionVC.didSelect = {
             [weak self] idx in
             self?.goDetail(with: idx)
@@ -51,7 +52,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
     }
     
     func requestData(page: Int) async throws -> [any DisplayData]  {
-        let json = try await WebRequest.requestJSON(url: "https://api.bilibili.com/x/web-feed/feed?ps=20&pn=\(page)")
+        let json = try await WebRequest.requestJSON(url: "https://api.bilibili.com/x/web-feed/feed?ps=40&pn=\(page)")
             
         let datas = json.arrayValue.map { data -> (any DisplayData) in
             let bangumi = data["bangumi"]

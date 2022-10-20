@@ -14,6 +14,7 @@
 		49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */; };
 		494741C029002797005D6885 /* UserDefault+..swift in Sources */ = {isa = PBXBuildFile; fileRef = 494741BF29002797005D6885 /* UserDefault+..swift */; };
 		494741C329016CCE005D6885 /* MarqueeLabel in Frameworks */ = {isa = PBXBuildFile; productRef = 494741C229016CCE005D6885 /* MarqueeLabel */; };
+		494741C6290177BB005D6885 /* UpSpaceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494741C5290177BB005D6885 /* UpSpaceViewController.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
@@ -65,6 +66,7 @@
 		49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Ext.swift"; sourceTree = "<group>"; };
 		49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalViewController.swift; sourceTree = "<group>"; };
 		494741BF29002797005D6885 /* UserDefault+..swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefault+..swift"; sourceTree = "<group>"; };
+		494741C5290177BB005D6885 /* UpSpaceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpSpaceViewController.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteViewController.swift; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 				AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */,
 				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
 				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
+				494741C5290177BB005D6885 /* UpSpaceViewController.swift */,
 			);
 			path = ViewController;
 			sourceTree = "<group>";
@@ -416,6 +419,7 @@
 				49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
 				AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */,
+				494741C6290177BB005D6885 /* UpSpaceViewController.swift in Sources */,
 				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,
 				49D39F28263AD40000F14497 /* WebRequest.swift in Sources */,
 				494741C029002797005D6885 /* UserDefault+..swift in Sources */,

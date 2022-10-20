@@ -42,6 +42,7 @@ class FeedCollectionViewController: UIViewController {
     var didLongPress: ((IndexPath)->Void)? = nil
     var loadMore: (()->Void)? = nil
     var finished = false
+    var pageSize = 20
     var displayDatas: [any DisplayData] {
         set {
             _displayData = newValue.map{AnyDispplayData(data: $0)}
@@ -79,7 +80,7 @@ class FeedCollectionViewController: UIViewController {
     
     func appendData(displayData:[any DisplayData]) {
         _displayData.append(contentsOf: displayData.map{AnyDispplayData(data: $0)})
-        if displayData.count < 10 {
+        if displayData.count < pageSize {
             finished = true
         }
         isLoading = false
@@ -95,6 +96,7 @@ class FeedCollectionViewController: UIViewController {
         collectionView.register(FeedCollectionViewCell.self, forCellWithReuseIdentifier: "1")
         collectionView.dataSource = dataSource
         collectionView.delegate = self
+        collectionView.remembersLastFocusedIndexPath = true
     }
     
     //MARK: - Private
