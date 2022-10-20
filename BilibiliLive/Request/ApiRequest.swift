@@ -277,22 +277,6 @@ class ApiRequest {
         }
     }
     
-    static func getFeeds(datas:[FeedResp.Items]=[], complete:(([FeedResp.Items])->Void)?=nil) {
-        let idx = "\(datas.last?.idx ?? 0)"
-        request(EndPoint.feed,parameters: ["idx":idx,"flush":"0","column":"4","device":"pad","pull":idx == "0" ? "1" : "0"]) {
-            (resp: Result<FeedResp, RequestError>) in
-            switch resp {
-            case .success(let data):
-                print(data.items)
-                complete?(datas + data.items)
-            case .failure(let err):
-                print(err)
-                complete?(datas)
-                break
-            }
-        }
-    }
-    
     static func getFeeds(lastIdx: Int = 0) async throws ->[FeedResp.Items]  {
         let idx = "\(lastIdx)"
         let resp: FeedResp = try await request(EndPoint.feed,parameters: ["idx":idx,"flush":"0","column":"4","device":"pad","pull":idx == "0" ? "1" : "0"])

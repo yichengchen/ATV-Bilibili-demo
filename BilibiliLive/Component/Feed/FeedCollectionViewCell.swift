@@ -7,6 +7,7 @@
 
 import UIKit
 import TVUIKit
+import MarqueeLabel
 
 class FeedCollectionViewCell: UICollectionViewCell {
     var onLongPress: (()->Void)?=nil
@@ -41,8 +42,6 @@ class FeedCollectionViewCell: UICollectionViewCell {
             make.trailing.equalToSuperview()
             make.top.equalToSuperview()
             make.height.equalTo(imageView.snp.width).multipliedBy(9.0/16)
-
-//            make.height.equalTo(Settings.displayStyle == .normal ? 250 : 313)
         }
         imageView.layer.cornerRadius = 12
         imageView.clipsToBounds = true
@@ -59,6 +58,8 @@ class FeedCollectionViewCell: UICollectionViewCell {
         stackView.axis = .vertical
         stackView.addArrangedSubview(titleLabel)
         stackView.addArrangedSubview(upLabel)
+        titleLabel.holdScrolling = true
+        upLabel.holdScrolling = true
         
         infoView.addSubview(stackView)
         stackView.snp.makeConstraints { make in
@@ -87,11 +88,15 @@ class FeedCollectionViewCell: UICollectionViewCell {
     func startScroll() {
         titleLabel.restartLabel()
         upLabel.restartLabel()
+        titleLabel.holdScrolling = false
+        upLabel.holdScrolling = false
     }
     
     func stopScroll() {
         titleLabel.shutdownLabel()
         upLabel.shutdownLabel()
+        titleLabel.holdScrolling = true
+        upLabel.holdScrolling = true
     }
     
     
