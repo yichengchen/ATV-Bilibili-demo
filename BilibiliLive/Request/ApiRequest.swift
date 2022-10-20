@@ -257,7 +257,7 @@ class ApiRequest {
             }
         }
         
-        struct Args: Codable {
+        struct Args: Codable, Hashable {
             let up_name:String?
 //            let aid: Int?
         }

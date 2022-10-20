@@ -14,7 +14,7 @@ import SwiftyJSON
 class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
     var rooms = [LiveRoom]() { didSet {collectionVC.displayDatas=rooms} }
     
-    let collectionVC = FeedCollectionViewController.create()
+    let collectionVC = FeedCollectionViewController()
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)

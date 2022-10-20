@@ -57,7 +57,10 @@ class FavRowCell: UITableViewCell {
     var data: [FavData]?
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var collectionView: UICollectionView!
-    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        collectionView.register(FeedCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: FeedCollectionViewCell.self))
+    }
     func reload() {
         Task {
             data = try? await WebRequest.requestFavVideos(mid: mid)
@@ -81,7 +84,7 @@ extension FavRowCell: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let d = data?[indexPath.row] else { return UICollectionViewCell() }
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: HomeCollectionViewCell.self), for: indexPath) as! HomeCollectionViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: FeedCollectionViewCell.self), for: indexPath) as! FeedCollectionViewCell
         cell.setup(data: d)
         return cell
     }

@@ -10,7 +10,7 @@ import Alamofire
 import SwiftyJSON
 
 class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
-    let collectionVC = FeedCollectionViewController.create()
+    let collectionVC = FeedCollectionViewController()
     var feeds = [HistoryData]() { didSet {collectionVC.displayDatas=feeds} }
     override func viewDidLoad() {
         super.viewDidLoad()

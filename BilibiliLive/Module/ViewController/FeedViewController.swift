@@ -9,7 +9,7 @@ import UIKit
 
 
 class FeedViewController: UIViewController {
-    let collectionVC = FeedCollectionViewController.create()
+    let collectionVC = FeedCollectionViewController()
     var loading = false
     override func viewDidLoad() {
         super.viewDidLoad()

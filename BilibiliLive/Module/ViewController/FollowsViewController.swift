@@ -10,8 +10,8 @@ import Alamofire
 import SwiftyJSON
 
 class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
-    let collectionVC = FeedCollectionViewController.create()
-    var feeds = [DisplayData]() { didSet {collectionVC.displayDatas=feeds} }
+    let collectionVC = FeedCollectionViewController()
+    var feeds = [any DisplayData]() { didSet {collectionVC.displayDatas=feeds} }
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)
@@ -43,8 +43,8 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
         }
     }
     
-    func progrssData(json:JSON) -> [DisplayData] {
-        let datas = json["data"].arrayValue.map { data -> DisplayData in
+    func progrssData(json:JSON) -> [any DisplayData] {
+        let datas = json["data"].arrayValue.map { data -> (any DisplayData) in
             let bangumi = data["bangumi"]
             if !bangumi.isEmpty {
                 let season = bangumi["season_id"].intValue

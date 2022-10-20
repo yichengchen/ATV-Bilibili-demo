@@ -161,7 +161,7 @@ extension WebRequest {
 }
 
 struct FavData: DisplayData, Codable {
-    struct Upper: Codable {
+    struct Upper: Codable, Hashable {
         var name: String
     }
     var cover: String

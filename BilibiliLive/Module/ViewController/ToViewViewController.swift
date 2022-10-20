@@ -10,7 +10,7 @@ import Alamofire
 import SwiftyJSON
 
 class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
-    let collectionVC = FeedCollectionViewController.create()
+    let collectionVC = FeedCollectionViewController()
     var feeds = [FeedData]() { didSet {collectionVC.displayDatas=feeds} }
     override func viewDidLoad() {
         super.viewDidLoad()
