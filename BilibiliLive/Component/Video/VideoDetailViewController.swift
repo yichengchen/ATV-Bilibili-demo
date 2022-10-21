@@ -132,8 +132,9 @@ class VideoDetailViewController: UIViewController {
         pages = data["pages"].arrayValue.map {
             PageData(cid: $0["cid"].intValue, name: $0["part"].stringValue)
         }
-        pageCollectionView.reloadData()
-        if pages.count > 0 {
+        if (pages.count > 1) {
+            pageCollectionView.reloadData()
+            pageCollectionView.isHidden = false
             let index = pages.firstIndex { $0.cid == cid } ?? 0
             pageCollectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .left, animated: false)
         }

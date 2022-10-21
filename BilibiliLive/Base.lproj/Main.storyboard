@@ -260,7 +260,7 @@
                                             <rect key="frame" x="0.0" y="0.0" width="1920" height="1080"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Yik-Sf-Vx3">
-                                                    <rect key="frame" x="0.0" y="0.0" width="1928" height="1193"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="1928" height="998"/>
                                                     <subviews>
                                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PqM-nB-5Uz">
                                                             <rect key="frame" x="0.0" y="0.0" width="1928" height="530"/>
@@ -470,7 +470,7 @@
                                                                 <constraint firstItem="D4E-g6-BwX" firstAttribute="leading" secondItem="EUF-gD-Nh2" secondAttribute="trailing" id="YBR-cp-yds"/>
                                                             </constraints>
                                                         </stackView>
-                                                        <collectionView multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="qLh-0S-AdH">
+                                                        <collectionView hidden="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="qLh-0S-AdH">
                                                             <rect key="frame" x="0.0" y="658" width="1928" height="195"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="195" id="h1U-WR-0Mp"/>
@@ -534,7 +534,7 @@
                                                             </connections>
                                                         </collectionView>
                                                         <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MOG-5I-YVc">
-                                                            <rect key="frame" x="0.0" y="853" width="1928" height="340"/>
+                                                            <rect key="frame" x="0.0" y="658" width="1928" height="340"/>
                                                             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="BVU-mM-utN">
                                                                 <rect key="frame" x="0.0" y="0.0" width="1928" height="340"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
