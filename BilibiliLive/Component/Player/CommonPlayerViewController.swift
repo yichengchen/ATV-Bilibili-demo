@@ -136,7 +136,25 @@ class CommonPlayerViewController: AVPlayerViewController {
             self.danMuView.isHidden.toggle()
             action.image = self.danMuView.isHidden ? danmuImageDisable : danmuImage
         }
-        transportBarCustomMenuItems = [danmuAction]
+        
+        let playSpeedArray = [PlaySpeed(name: "0.5X", value: 0.5), PlaySpeed(name: "0.75X", value: 0.75), PlaySpeed(name: "1X", value: 1),
+                              PlaySpeed(name: "1.25X", value: 1.25), PlaySpeed(name: "1.5X", value: 1.5), PlaySpeed(name: "2X", value: 2)]
+        let speedActions = playSpeedArray.map { playSpeed in
+            UIAction(title: playSpeed.name, state: self.player?.rate == playSpeed.value ? .on : .off) { [weak self] action in
+                self?.player?.rate = playSpeed.value
+                self?.danMuView.playingSpeed = playSpeed.value
+                action.state = .on
+            }
+        }
+        speedActions.forEach { speedAction in
+            if (speedAction.title == "1X") {
+                speedAction.state = .on
+            }
+        }
+        let gearImage = UIImage(systemName: "speedometer")
+        let playSpeedMenu = UIMenu(title: "播放速度", image: gearImage, options: [.singleSelection], children: speedActions)
+        
+        transportBarCustomMenuItems = [danmuAction, playSpeedMenu]
     }
     
     private func removeObservarPlayerItem() {
@@ -185,4 +203,9 @@ class CommonPlayerViewController: AVPlayerViewController {
         view.addSubview(danMuView)
         danMuView.makeConstraintsToBindToSuperview()
     }
+}
+
+struct PlaySpeed {
+    var name: String
+    var value: Float
 }
