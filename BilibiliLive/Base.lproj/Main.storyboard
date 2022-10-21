@@ -260,19 +260,19 @@
                                             <rect key="frame" x="0.0" y="0.0" width="1920" height="1080"/>
                                             <subviews>
                                                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="Yik-Sf-Vx3">
-                                                    <rect key="frame" x="0.0" y="0.0" width="1928" height="1017"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="1920" height="1186"/>
                                                     <subviews>
                                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="PqM-nB-5Uz">
-                                                            <rect key="frame" x="0.0" y="0.0" width="1928" height="549"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="1920" height="549"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kwE-Zo-p5T">
-                                                                    <rect key="frame" x="80" y="60" width="1768" height="69"/>
+                                                                    <rect key="frame" x="80" y="60" width="1760" height="69"/>
                                                                     <fontDescription key="fontDescription" style="UICTFontTextStyleTitle2"/>
-                                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    <color key="textColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iyN-iM-POq">
-                                                                    <rect key="frame" x="80" y="153" width="108" height="46"/>
+                                                                    <rect key="frame" x="80" y="153" width="100" height="46"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="46" id="KWV-Gr-tro"/>
                                                                     </constraints>
@@ -280,20 +280,21 @@
                                                                     <state key="normal" title="Button"/>
                                                                     <buttonConfiguration key="configuration" style="plain" title="Button">
                                                                         <fontDescription key="titleFontDescription" style="UICTFontTextStyleCallout"/>
-                                                                        <directionalEdgeInsets key="contentInsets" top="4" leading="8" bottom="4" trailing="8"/>
+                                                                        <directionalEdgeInsets key="contentInsets" top="4" leading="0.0" bottom="4" trailing="8"/>
+                                                                        <color key="baseForegroundColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     </buttonConfiguration>
                                                                     <connections>
                                                                         <action selector="actionShowUpSpace:" destination="Q5X-tf-Ysh" eventType="primaryActionTriggered" id="Hu5-jX-8b2"/>
                                                                     </connections>
                                                                 </button>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="note" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nbz-Ga-vnB">
-                                                                    <rect key="frame" x="80" y="215" width="1078" height="35"/>
-                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
-                                                                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    <rect key="frame" x="80" y="215" width="1070" height="37"/>
+                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                    <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="rEZ-Qh-SKb">
-                                                                    <rect key="frame" x="1178" y="149" width="670" height="400"/>
+                                                                    <rect key="frame" x="1170" y="149" width="670" height="400"/>
                                                                     <constraints>
                                                                         <constraint firstAttribute="height" constant="400" id="tap-TX-GBA"/>
                                                                         <constraint firstAttribute="width" constant="670" id="vDk-tY-9Ep"/>
@@ -317,7 +318,7 @@
                                                             </constraints>
                                                         </view>
                                                         <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vbQ-HI-MDf">
-                                                            <rect key="frame" x="0.0" y="549" width="1928" height="128"/>
+                                                            <rect key="frame" x="0.0" y="549" width="1920" height="128"/>
                                                             <subviews>
                                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9vw-Yl-J3e">
                                                                     <rect key="frame" x="0.0" y="0.0" width="80" height="128"/>
@@ -326,16 +327,16 @@
                                                                     </constraints>
                                                                 </view>
                                                                 <tvCardView contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="XBu-MI-x3F" customClass="BLCardView" customModule="BilibiliLive" customModuleProvider="target">
-                                                                    <rect key="frame" x="80" y="0.0" width="200" height="128"/>
+                                                                    <rect key="frame" x="80" y="0.0" width="170" height="128"/>
                                                                     <tvCardContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="kgH-hK-JTU">
-                                                                        <rect key="frame" x="23" y="23" width="154" height="82"/>
+                                                                        <rect key="frame" x="23" y="23" width="124" height="82"/>
                                                                         <autoresizingMask key="autoresizingMask"/>
                                                                         <subviews>
-                                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="play.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="rLe-PL-E7L" customClass="BLImageView" customModule="BilibiliLive" customModuleProvider="target">
-                                                                                <rect key="frame" x="63" y="23.5" width="28.5" height="34.5"/>
+                                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="play.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="rLe-PL-E7L" customClass="BLImageView" customModule="BilibiliLive" customModuleProvider="target">
+                                                                                <rect key="frame" x="0.0" y="-0.5" width="38.5" height="35"/>
                                                                                 <color key="tintColor" systemColor="labelColor"/>
                                                                                 <constraints>
-                                                                                    <constraint firstAttribute="width" secondItem="rLe-PL-E7L" secondAttribute="height" multiplier="3:4" id="4kY-lO-EZj"/>
+                                                                                    <constraint firstAttribute="width" secondItem="rLe-PL-E7L" secondAttribute="height" id="4kY-lO-EZj"/>
                                                                                 </constraints>
                                                                             </imageView>
                                                                         </subviews>
@@ -351,7 +352,7 @@
                                                                         </userDefinedRuntimeAttributes>
                                                                     </tvCardContentView>
                                                                     <constraints>
-                                                                        <constraint firstAttribute="width" constant="200" id="PTu-sn-B8H"/>
+                                                                        <constraint firstAttribute="width" constant="170" id="PTu-sn-B8H"/>
                                                                         <constraint firstItem="rLe-PL-E7L" firstAttribute="height" secondItem="XBu-MI-x3F" secondAttribute="height" multiplier="0.3" id="i4S-ci-BQI"/>
                                                                     </constraints>
                                                                     <color key="cardBackgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -360,13 +361,13 @@
                                                                     </connections>
                                                                 </tvCardView>
                                                                 <tvCardView contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="gEd-Og-Zzr" customClass="BLCardView" customModule="BilibiliLive" customModuleProvider="target">
-                                                                    <rect key="frame" x="280" y="0.0" width="200" height="128"/>
+                                                                    <rect key="frame" x="250" y="0.0" width="170" height="128"/>
                                                                     <tvCardContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="rcW-FY-Lqm">
-                                                                        <rect key="frame" x="23" y="23" width="154" height="82"/>
+                                                                        <rect key="frame" x="23" y="23" width="124" height="82"/>
                                                                         <autoresizingMask key="autoresizingMask"/>
                                                                         <subviews>
-                                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="hand.thumbsup.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="k7H-10-SoJ" customClass="BLImageView" customModule="BilibiliLive" customModuleProvider="target">
-                                                                                <rect key="frame" x="58" y="22.5" width="38.5" height="37.5"/>
+                                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="hand.thumbsup.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="k7H-10-SoJ" customClass="BLImageView" customModule="BilibiliLive" customModuleProvider="target">
+                                                                                <rect key="frame" x="0.0" y="-1.5" width="38.5" height="37.5"/>
                                                                                 <color key="tintColor" systemColor="labelColor"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="width" secondItem="k7H-10-SoJ" secondAttribute="height" multiplier="1:1" id="hWQ-Wt-MKn"/>
@@ -385,7 +386,7 @@
                                                                         </userDefinedRuntimeAttributes>
                                                                     </tvCardContentView>
                                                                     <constraints>
-                                                                        <constraint firstAttribute="width" constant="200" id="9kg-kH-nAk"/>
+                                                                        <constraint firstAttribute="width" constant="170" id="TS4-5r-Cr3"/>
                                                                         <constraint firstItem="k7H-10-SoJ" firstAttribute="height" secondItem="gEd-Og-Zzr" secondAttribute="height" multiplier="0.3" id="xAu-oH-phM"/>
                                                                     </constraints>
                                                                     <color key="cardBackgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -394,13 +395,13 @@
                                                                     </connections>
                                                                 </tvCardView>
                                                                 <tvCardView contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="V5D-ST-91f" customClass="BLCardView" customModule="BilibiliLive" customModuleProvider="target">
-                                                                    <rect key="frame" x="480" y="0.0" width="200" height="128"/>
+                                                                    <rect key="frame" x="420" y="0.0" width="170" height="128"/>
                                                                     <tvCardContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="m4X-WR-EtE">
-                                                                        <rect key="frame" x="23" y="23" width="154" height="82"/>
+                                                                        <rect key="frame" x="23" y="23" width="124" height="82"/>
                                                                         <autoresizingMask key="autoresizingMask"/>
                                                                         <subviews>
-                                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="bitcoinsign.circle.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="sLw-i9-NhZ" customClass="BLImageView" customModule="BilibiliLive" customModuleProvider="target">
-                                                                                <rect key="frame" x="58" y="22.5" width="38.5" height="37.5"/>
+                                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bitcoinsign.circle.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="sLw-i9-NhZ" customClass="BLImageView" customModule="BilibiliLive" customModuleProvider="target">
+                                                                                <rect key="frame" x="0.0" y="-1.5" width="38.5" height="37.5"/>
                                                                                 <color key="tintColor" systemColor="labelColor"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="width" secondItem="sLw-i9-NhZ" secondAttribute="height" multiplier="1:1" id="Hda-Yu-XUn"/>
@@ -420,7 +421,6 @@
                                                                     </tvCardContentView>
                                                                     <constraints>
                                                                         <constraint firstItem="sLw-i9-NhZ" firstAttribute="height" secondItem="V5D-ST-91f" secondAttribute="height" multiplier="0.3" id="9bl-hV-ZHt"/>
-                                                                        <constraint firstAttribute="width" constant="200" id="Vdo-fO-Eej"/>
                                                                     </constraints>
                                                                     <color key="cardBackgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <connections>
@@ -428,13 +428,13 @@
                                                                     </connections>
                                                                 </tvCardView>
                                                                 <tvCardView contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="EUF-gD-Nh2" customClass="BLCardView" customModule="BilibiliLive" customModuleProvider="target">
-                                                                    <rect key="frame" x="680" y="0.0" width="200" height="128"/>
+                                                                    <rect key="frame" x="590" y="0.0" width="172.5" height="128"/>
                                                                     <tvCardContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="jTK-2a-sNb">
-                                                                        <rect key="frame" x="23" y="23" width="154" height="82"/>
+                                                                        <rect key="frame" x="23" y="23" width="126.5" height="82"/>
                                                                         <autoresizingMask key="autoresizingMask"/>
                                                                         <subviews>
-                                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="star.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="ltj-qQ-qJw" customClass="BLImageView" customModule="BilibiliLive" customModuleProvider="target">
-                                                                                <rect key="frame" x="56" y="21.5" width="42.5" height="38.5"/>
+                                                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="ltj-qQ-qJw" customClass="BLImageView" customModule="BilibiliLive" customModuleProvider="target">
+                                                                                <rect key="frame" x="0.0" y="-2.5" width="42.5" height="38.5"/>
                                                                                 <color key="tintColor" systemColor="labelColor"/>
                                                                                 <constraints>
                                                                                     <constraint firstAttribute="width" secondItem="ltj-qQ-qJw" secondAttribute="height" multiplier="11:10" id="iwj-r1-Gsr"/>
@@ -453,7 +453,6 @@
                                                                         </userDefinedRuntimeAttributes>
                                                                     </tvCardContentView>
                                                                     <constraints>
-                                                                        <constraint firstAttribute="width" constant="200" id="YIy-5k-yMU"/>
                                                                         <constraint firstItem="ltj-qQ-qJw" firstAttribute="height" secondItem="EUF-gD-Nh2" secondAttribute="height" multiplier="0.3" id="cdX-VG-53b"/>
                                                                     </constraints>
                                                                     <color key="cardBackgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -462,16 +461,18 @@
                                                                     </connections>
                                                                 </tvCardView>
                                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="D4E-g6-BwX">
-                                                                    <rect key="frame" x="880" y="0.0" width="1048" height="128"/>
+                                                                    <rect key="frame" x="762.5" y="0.0" width="1157.5" height="128"/>
                                                                 </view>
                                                             </subviews>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="128" id="07h-8t-wSc"/>
                                                                 <constraint firstItem="D4E-g6-BwX" firstAttribute="leading" secondItem="EUF-gD-Nh2" secondAttribute="trailing" id="YBR-cp-yds"/>
+                                                                <constraint firstItem="EUF-gD-Nh2" firstAttribute="width" secondItem="V5D-ST-91f" secondAttribute="width" multiplier="1.01404" id="asX-lD-60y"/>
+                                                                <constraint firstItem="V5D-ST-91f" firstAttribute="width" secondItem="gEd-Og-Zzr" secondAttribute="width" id="qSc-18-x0p"/>
                                                             </constraints>
                                                         </stackView>
                                                         <collectionView hidden="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="qLh-0S-AdH">
-                                                            <rect key="frame" x="0.0" y="677" width="1928" height="195"/>
+                                                            <rect key="frame" x="0.0" y="677" width="1920" height="195"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="195" id="h1U-WR-0Mp"/>
                                                             </constraints>
@@ -533,120 +534,115 @@
                                                                 <outlet property="delegate" destination="Q5X-tf-Ysh" id="NEw-gJ-LIf"/>
                                                             </connections>
                                                         </collectionView>
-                                                        <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="MOG-5I-YVc">
-                                                            <rect key="frame" x="0.0" y="677" width="1928" height="340"/>
-                                                            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="BVU-mM-utN">
-                                                                <rect key="frame" x="0.0" y="0.0" width="1928" height="340"/>
-                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                                <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="推荐视频" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vBp-Ow-fTv">
-                                                                        <rect key="frame" x="20" y="15" width="118" height="35"/>
-                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
-                                                                        <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                        <nil key="highlightedColor"/>
-                                                                    </label>
-                                                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="nw1-cq-9yk">
-                                                                        <rect key="frame" x="0.0" y="50" width="1928" height="290"/>
-                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                        <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="KGi-CA-565">
-                                                                            <size key="itemSize" width="361" height="274"/>
-                                                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="30" maxY="0.0"/>
-                                                                        </collectionViewFlowLayout>
-                                                                        <cells>
-                                                                            <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cell" id="k7X-Wb-AoO">
-                                                                                <rect key="frame" x="0.0" y="17" width="361" height="256"/>
+                                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="eZe-7H-ceC">
+                                                            <rect key="frame" x="0.0" y="677" width="1920" height="509"/>
+                                                            <subviews>
+                                                                <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="nw1-cq-9yk">
+                                                                    <rect key="frame" x="0.0" y="189" width="1920" height="300"/>
+                                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    <constraints>
+                                                                        <constraint firstAttribute="height" constant="300" id="ZIz-U8-uOr"/>
+                                                                    </constraints>
+                                                                    <collectionViewFlowLayout key="collectionViewLayout" scrollDirection="horizontal" minimumLineSpacing="10" minimumInteritemSpacing="10" id="KGi-CA-565">
+                                                                        <size key="itemSize" width="361" height="274"/>
+                                                                        <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                                                        <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                                                        <inset key="sectionInset" minX="0.0" minY="0.0" maxX="30" maxY="0.0"/>
+                                                                    </collectionViewFlowLayout>
+                                                                    <cells>
+                                                                        <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cell" id="k7X-Wb-AoO">
+                                                                            <rect key="frame" x="0.0" y="22" width="361" height="256"/>
+                                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                            <collectionViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="C4H-Cc-If4">
+                                                                                <rect key="frame" x="0.0" y="0.0" width="361" height="256"/>
                                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                                <collectionViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="C4H-Cc-If4">
-                                                                                    <rect key="frame" x="0.0" y="0.0" width="361" height="256"/>
-                                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                                    <subviews>
-                                                                                        <tvCardView contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="DAs-GF-FRb" customClass="BLCardView" customModule="BilibiliLive" customModuleProvider="target">
-                                                                                            <rect key="frame" x="0.0" y="0.0" width="361" height="256"/>
-                                                                                            <tvCardContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="Mpg-SA-1SL">
-                                                                                                <rect key="frame" x="23" y="23" width="315" height="210"/>
-                                                                                                <autoresizingMask key="autoresizingMask"/>
-                                                                                                <subviews>
-                                                                                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="wiq-Qv-wbI">
-                                                                                                        <rect key="frame" x="0.0" y="0.0" width="315" height="175"/>
-                                                                                                    </imageView>
-                                                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LCL-r2-7HM">
-                                                                                                        <rect key="frame" x="0.0" y="175" width="315" height="35"/>
-                                                                                                        <subviews>
-                                                                                                            <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vCf-l0-gRG">
-                                                                                                                <rect key="frame" x="0.0" y="0.0" width="315" height="35"/>
-                                                                                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                                                                <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
-                                                                                                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                                                                <nil key="highlightedColor"/>
-                                                                                                            </label>
-                                                                                                        </subviews>
-                                                                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                                                        <constraints>
-                                                                                                            <constraint firstItem="vCf-l0-gRG" firstAttribute="leading" secondItem="LCL-r2-7HM" secondAttribute="leading" id="IXJ-Uv-iSs"/>
-                                                                                                            <constraint firstAttribute="bottom" secondItem="vCf-l0-gRG" secondAttribute="bottom" id="WYq-vy-I7e"/>
-                                                                                                            <constraint firstItem="vCf-l0-gRG" firstAttribute="top" secondItem="LCL-r2-7HM" secondAttribute="top" id="g0v-dn-KJB"/>
-                                                                                                            <constraint firstAttribute="trailing" secondItem="vCf-l0-gRG" secondAttribute="trailing" id="jWF-qk-EeC"/>
-                                                                                                        </constraints>
-                                                                                                    </view>
-                                                                                                </subviews>
-                                                                                                <constraints>
-                                                                                                    <constraint firstItem="LCL-r2-7HM" firstAttribute="leading" secondItem="Mpg-SA-1SL" secondAttribute="leading" id="50K-eG-IRX"/>
-                                                                                                    <constraint firstAttribute="trailing" secondItem="LCL-r2-7HM" secondAttribute="trailing" id="IaH-WJ-LDj"/>
-                                                                                                    <constraint firstItem="LCL-r2-7HM" firstAttribute="top" secondItem="wiq-Qv-wbI" secondAttribute="bottom" id="JYA-Yr-6SX"/>
-                                                                                                    <constraint firstAttribute="trailing" secondItem="wiq-Qv-wbI" secondAttribute="trailing" id="PhQ-Os-pZK"/>
-                                                                                                    <constraint firstItem="wiq-Qv-wbI" firstAttribute="leading" secondItem="Mpg-SA-1SL" secondAttribute="leading" id="Vlc-Pj-BRN"/>
-                                                                                                    <constraint firstAttribute="bottom" secondItem="LCL-r2-7HM" secondAttribute="bottom" id="u7v-b7-lhk"/>
-                                                                                                    <constraint firstItem="wiq-Qv-wbI" firstAttribute="top" secondItem="Mpg-SA-1SL" secondAttribute="top" id="w3S-yl-iC3"/>
-                                                                                                </constraints>
-                                                                                                <userDefinedRuntimeAttributes>
-                                                                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
-                                                                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                                                                                        <integer key="value" value="12"/>
-                                                                                                    </userDefinedRuntimeAttribute>
-                                                                                                </userDefinedRuntimeAttributes>
-                                                                                            </tvCardContentView>
-                                                                                        </tvCardView>
-                                                                                    </subviews>
-                                                                                    <constraints>
-                                                                                        <constraint firstItem="DAs-GF-FRb" firstAttribute="top" secondItem="C4H-Cc-If4" secondAttribute="top" id="0OC-DH-kd5"/>
-                                                                                        <constraint firstAttribute="bottom" secondItem="DAs-GF-FRb" secondAttribute="bottom" id="i32-CK-toB"/>
-                                                                                        <constraint firstItem="DAs-GF-FRb" firstAttribute="leading" secondItem="C4H-Cc-If4" secondAttribute="leading" id="k20-qK-X2o"/>
-                                                                                        <constraint firstAttribute="trailing" secondItem="DAs-GF-FRb" secondAttribute="trailing" id="qr1-Nr-Ix3"/>
-                                                                                    </constraints>
-                                                                                </collectionViewCellContentView>
-                                                                                <size key="customSize" width="361" height="256"/>
-                                                                            </collectionViewCell>
-                                                                        </cells>
-                                                                        <connections>
-                                                                            <outlet property="dataSource" destination="Q5X-tf-Ysh" id="Ozj-24-crt"/>
-                                                                            <outlet property="delegate" destination="Q5X-tf-Ysh" id="2WW-5q-Vxy"/>
-                                                                        </connections>
-                                                                    </collectionView>
-                                                                </subviews>
-                                                                <constraints>
-                                                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="vBp-Ow-fTv" secondAttribute="trailing" constant="20" symbolic="YES" id="OfF-dp-Est"/>
-                                                                    <constraint firstAttribute="trailing" secondItem="nw1-cq-9yk" secondAttribute="trailing" id="WGM-O4-Fbh"/>
-                                                                    <constraint firstAttribute="bottom" secondItem="nw1-cq-9yk" secondAttribute="bottom" id="ctz-ld-BNW"/>
-                                                                    <constraint firstItem="nw1-cq-9yk" firstAttribute="top" secondItem="vBp-Ow-fTv" secondAttribute="bottom" id="gjQ-BO-eX6"/>
-                                                                    <constraint firstItem="vBp-Ow-fTv" firstAttribute="leading" secondItem="BVU-mM-utN" secondAttribute="leading" constant="20" symbolic="YES" id="mn7-E6-GQ2"/>
-                                                                    <constraint firstItem="nw1-cq-9yk" firstAttribute="leading" secondItem="BVU-mM-utN" secondAttribute="leading" id="utd-2f-3zm"/>
-                                                                    <constraint firstItem="vBp-Ow-fTv" firstAttribute="top" secondItem="BVU-mM-utN" secondAttribute="top" constant="15" id="yuN-W9-sOI"/>
-                                                                </constraints>
-                                                            </view>
+                                                                                <subviews>
+                                                                                    <tvCardView contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="DAs-GF-FRb" customClass="BLCardView" customModule="BilibiliLive" customModuleProvider="target">
+                                                                                        <rect key="frame" x="0.0" y="0.0" width="361" height="256"/>
+                                                                                        <tvCardContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="Mpg-SA-1SL">
+                                                                                            <rect key="frame" x="23" y="23" width="315" height="210"/>
+                                                                                            <autoresizingMask key="autoresizingMask"/>
+                                                                                            <subviews>
+                                                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="wiq-Qv-wbI">
+                                                                                                    <rect key="frame" x="0.0" y="0.0" width="315" height="175"/>
+                                                                                                </imageView>
+                                                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LCL-r2-7HM">
+                                                                                                    <rect key="frame" x="0.0" y="175" width="315" height="35"/>
+                                                                                                    <subviews>
+                                                                                                        <label opaque="NO" userInteractionEnabled="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vCf-l0-gRG">
+                                                                                                            <rect key="frame" x="0.0" y="0.0" width="315" height="35"/>
+                                                                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                                                            <fontDescription key="fontDescription" style="UICTFontTextStyleFootnote"/>
+                                                                                                            <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                                                            <nil key="highlightedColor"/>
+                                                                                                        </label>
+                                                                                                    </subviews>
+                                                                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                                                    <constraints>
+                                                                                                        <constraint firstItem="vCf-l0-gRG" firstAttribute="leading" secondItem="LCL-r2-7HM" secondAttribute="leading" id="IXJ-Uv-iSs"/>
+                                                                                                        <constraint firstAttribute="bottom" secondItem="vCf-l0-gRG" secondAttribute="bottom" id="WYq-vy-I7e"/>
+                                                                                                        <constraint firstItem="vCf-l0-gRG" firstAttribute="top" secondItem="LCL-r2-7HM" secondAttribute="top" id="g0v-dn-KJB"/>
+                                                                                                        <constraint firstAttribute="trailing" secondItem="vCf-l0-gRG" secondAttribute="trailing" id="jWF-qk-EeC"/>
+                                                                                                    </constraints>
+                                                                                                </view>
+                                                                                            </subviews>
+                                                                                            <constraints>
+                                                                                                <constraint firstItem="LCL-r2-7HM" firstAttribute="leading" secondItem="Mpg-SA-1SL" secondAttribute="leading" id="50K-eG-IRX"/>
+                                                                                                <constraint firstAttribute="trailing" secondItem="LCL-r2-7HM" secondAttribute="trailing" id="IaH-WJ-LDj"/>
+                                                                                                <constraint firstItem="LCL-r2-7HM" firstAttribute="top" secondItem="wiq-Qv-wbI" secondAttribute="bottom" id="JYA-Yr-6SX"/>
+                                                                                                <constraint firstAttribute="trailing" secondItem="wiq-Qv-wbI" secondAttribute="trailing" id="PhQ-Os-pZK"/>
+                                                                                                <constraint firstItem="wiq-Qv-wbI" firstAttribute="leading" secondItem="Mpg-SA-1SL" secondAttribute="leading" id="Vlc-Pj-BRN"/>
+                                                                                                <constraint firstAttribute="bottom" secondItem="LCL-r2-7HM" secondAttribute="bottom" id="u7v-b7-lhk"/>
+                                                                                                <constraint firstItem="wiq-Qv-wbI" firstAttribute="top" secondItem="Mpg-SA-1SL" secondAttribute="top" id="w3S-yl-iC3"/>
+                                                                                            </constraints>
+                                                                                            <userDefinedRuntimeAttributes>
+                                                                                                <userDefinedRuntimeAttribute type="boolean" keyPath="layer.masksToBounds" value="YES"/>
+                                                                                                <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                                                    <integer key="value" value="12"/>
+                                                                                                </userDefinedRuntimeAttribute>
+                                                                                            </userDefinedRuntimeAttributes>
+                                                                                        </tvCardContentView>
+                                                                                    </tvCardView>
+                                                                                </subviews>
+                                                                                <constraints>
+                                                                                    <constraint firstItem="DAs-GF-FRb" firstAttribute="top" secondItem="C4H-Cc-If4" secondAttribute="top" id="0OC-DH-kd5"/>
+                                                                                    <constraint firstAttribute="bottom" secondItem="DAs-GF-FRb" secondAttribute="bottom" id="i32-CK-toB"/>
+                                                                                    <constraint firstItem="DAs-GF-FRb" firstAttribute="leading" secondItem="C4H-Cc-If4" secondAttribute="leading" id="k20-qK-X2o"/>
+                                                                                    <constraint firstAttribute="trailing" secondItem="DAs-GF-FRb" secondAttribute="trailing" id="qr1-Nr-Ix3"/>
+                                                                                </constraints>
+                                                                            </collectionViewCellContentView>
+                                                                            <size key="customSize" width="361" height="256"/>
+                                                                        </collectionViewCell>
+                                                                    </cells>
+                                                                    <connections>
+                                                                        <outlet property="dataSource" destination="Q5X-tf-Ysh" id="Ozj-24-crt"/>
+                                                                        <outlet property="delegate" destination="Q5X-tf-Ysh" id="2WW-5q-Vxy"/>
+                                                                    </connections>
+                                                                </collectionView>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="推荐视频" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vBp-Ow-fTv">
+                                                                    <rect key="frame" x="88" y="20" width="193" height="169"/>
+                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                                                                    <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                            </subviews>
+                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <constraints>
-                                                                <constraint firstAttribute="height" constant="340" id="qAp-i5-EZa"/>
+                                                                <constraint firstItem="vBp-Ow-fTv" firstAttribute="top" secondItem="eZe-7H-ceC" secondAttribute="top" constant="20" symbolic="YES" id="4at-Bl-tMy"/>
+                                                                <constraint firstItem="nw1-cq-9yk" firstAttribute="top" secondItem="vBp-Ow-fTv" secondAttribute="bottom" id="81n-rP-oXl"/>
+                                                                <constraint firstItem="vBp-Ow-fTv" firstAttribute="leading" secondItem="eZe-7H-ceC" secondAttribute="leadingMargin" id="AX9-Gr-weJ"/>
+                                                                <constraint firstItem="nw1-cq-9yk" firstAttribute="leading" secondItem="eZe-7H-ceC" secondAttribute="leading" id="P3J-hL-P0t"/>
+                                                                <constraint firstAttribute="bottom" secondItem="nw1-cq-9yk" secondAttribute="bottom" constant="20" symbolic="YES" id="oCB-lg-EcK"/>
+                                                                <constraint firstAttribute="trailing" secondItem="nw1-cq-9yk" secondAttribute="trailing" id="zG0-DZ-cs9"/>
                                                             </constraints>
-                                                            <blurEffect style="dark"/>
-                                                        </visualEffectView>
+                                                        </view>
                                                     </subviews>
                                                 </stackView>
                                             </subviews>
                                             <constraints>
                                                 <constraint firstItem="Yik-Sf-Vx3" firstAttribute="leading" secondItem="Dm8-CL-kxU" secondAttribute="leading" id="7Jq-3c-2Fe"/>
                                                 <constraint firstItem="Yik-Sf-Vx3" firstAttribute="trailing" secondItem="Dm8-CL-kxU" secondAttribute="trailing" id="Cy1-uN-lqe"/>
-                                                <constraint firstItem="Yik-Sf-Vx3" firstAttribute="width" secondItem="Dm8-CL-kxU" secondAttribute="width" multiplier="1.00417" id="Ety-SY-ydL"/>
+                                                <constraint firstItem="Yik-Sf-Vx3" firstAttribute="width" secondItem="Dm8-CL-kxU" secondAttribute="width" id="Ety-SY-ydL"/>
                                                 <constraint firstItem="Yik-Sf-Vx3" firstAttribute="top" secondItem="Dm8-CL-kxU" secondAttribute="top" id="M0u-Lh-XFP"/>
                                                 <constraint firstAttribute="bottom" secondItem="Yik-Sf-Vx3" secondAttribute="bottom" id="Qyl-4S-OiZ"/>
                                             </constraints>
@@ -659,7 +655,7 @@
                                         <constraint firstItem="Dm8-CL-kxU" firstAttribute="top" secondItem="ceJ-M6-8gv" secondAttribute="top" id="mgB-ZQ-kBV"/>
                                     </constraints>
                                 </view>
-                                <blurEffect style="dark"/>
+                                <blurEffect style="light"/>
                             </visualEffectView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="jiz-a9-CuL"/>
