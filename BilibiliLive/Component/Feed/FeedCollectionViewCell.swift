@@ -11,7 +11,8 @@ import MarqueeLabel
 
 class FeedCollectionViewCell: UICollectionViewCell {
     var onLongPress: (()->Void)?=nil
-
+    var styleOverride: FeedDisplayStyle? {didSet { updateStyle() }}
+    
     private let titleLabel = MarqueeLabel()
     private let upLabel = MarqueeLabel()
     private let imageView = UIImageView()
@@ -48,33 +49,23 @@ class FeedCollectionViewCell: UICollectionViewCell {
         
         cardView.contentView.addSubview(infoView)
         infoView.snp.makeConstraints { make in
-            make.leading.equalToSuperview()
-            make.trailing.equalToSuperview()
-            make.top.equalTo(imageView.snp.bottom).offset(8)
-            make.bottom.equalToSuperview()
+            make.leading.trailing.bottom.equalToSuperview()
+            make.top.equalTo(imageView.snp.bottom).offset(8).priority(.high)
         }
         
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.addArrangedSubview(titleLabel)
         stackView.addArrangedSubview(upLabel)
+        stackView.alignment = .leading
         titleLabel.holdScrolling = true
         upLabel.holdScrolling = true
-        
+        titleLabel.speed = .rate(100)
+        infoView.accessibilityIdentifier = "info base view"
         infoView.addSubview(stackView)
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.snp.makeConstraints { make in
-            make.top.equalToSuperview()
-            make.bottom.equalToSuperview()
-            make.leading.equalToSuperview().offset(2)
-            make.trailing.equalToSuperview().inset(2)
-        }
-
-        if Settings.displayStyle == .normal {
-            titleLabel.font = UIFont.systemFont(ofSize: 30,weight: .semibold)
-            upLabel.font = UIFont.systemFont(ofSize: 20)
-        } else {
-            titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-            upLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
+            make.edges.equalToSuperview()
         }
     }
     
@@ -82,7 +73,7 @@ class FeedCollectionViewCell: UICollectionViewCell {
         titleLabel.text = data.title
         upLabel.text = data.owner
         imageView.kf.setImage(with:data.pic)
-        
+        updateStyle()
     }
     
     func startScroll() {
@@ -97,6 +88,16 @@ class FeedCollectionViewCell: UICollectionViewCell {
         upLabel.shutdownLabel()
         titleLabel.holdScrolling = true
         upLabel.holdScrolling = true
+    }
+    
+    private func updateStyle() {
+        if styleOverride ?? Settings.displayStyle == .normal {
+            titleLabel.font = UIFont.systemFont(ofSize: 30,weight: .semibold)
+            upLabel.font = UIFont.systemFont(ofSize: 20)
+        } else {
+            titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+            upLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
+        }
     }
     
     

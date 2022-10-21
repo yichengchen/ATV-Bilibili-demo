@@ -7,86 +7,127 @@
 
 import UIKit
 import SwiftyJSON
+import SnapKit
 
 class FavoriteViewController: UIViewController {
-    
-    static func create() -> FavoriteViewController {
-        return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! FavoriteViewController
-    }
-    
-    @IBOutlet weak var tableView: UITableView!
-    var data: [FavListData]?
+    var collectionView: UICollectionView!
+    var dataSource: UICollectionViewDiffableDataSource<FavListData, FavData>! = nil
+    var currentSnapshot: NSDiffableDataSourceSnapshot<FavListData, FavData>! = nil
+    static let titleElementKind = "titleElementKind"
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        Task {
-            data = try? await WebRequest.requestFavVideosList()
-            tableView.reloadData()
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
+        collectionView.delegate = self
+        collectionView.remembersLastFocusedIndexPath = true
+        view.addSubview(collectionView)
+        collectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
-    }
-
-}
-
-extension FavoriteViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, canFocusRowAt indexPath: IndexPath) -> Bool {
-        return false
-    }
-}
-
-extension FavoriteViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return data?.count ?? 0
+        configureDataSource()
+        loadData()
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let data = data?[indexPath.row] else { return UITableViewCell() }
-        let cell = tableView.dequeueReusableCell(withIdentifier: String(describing: FavRowCell.self)) as! FavRowCell
-        cell.titleLabel.text = data.title
-        cell.mid = String(data.id)
-        cell.reload()
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 521
-    }
-}
-
-class FavRowCell: UITableViewCell {
-    var mid: String!
-    var data: [FavData]?
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var collectionView: UICollectionView!
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        collectionView.register(FeedCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: FeedCollectionViewCell.self))
-    }
-    func reload() {
+    func loadData() {
         Task {
-            data = try? await WebRequest.requestFavVideos(mid: mid)
-            collectionView.reloadData()
+            guard let favList = try? await WebRequest.requestFavVideosList() else {
+                return
+            }
+            currentSnapshot.appendSections(favList)
+            favList.forEach { list in
+                Task {
+                    if let content = try? await WebRequest.requestFavVideos(mid:String(list.id)) {
+                        applyData(for: list, content: content)
+                    }
+                }
+            }
         }
     }
+    
+    @MainActor func applyData(for list: FavListData, content:[FavData]) {
+        currentSnapshot.appendItems(content,toSection: list)
+        dataSource.apply(currentSnapshot)
+    }
 }
 
-extension FavRowCell: UICollectionViewDelegate {
+extension FavoriteViewController {
+    private func createLayout() -> UICollectionViewLayout {
+        let sectionProvider = { (sectionIndex: Int,
+                                 layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                  heightDimension: .fractionalHeight(1.0))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            
+            let groupFractionalWidth = Settings.displayStyle == .large ? 0.33 : 0.25
+            let groupFractionalHeight = Settings.displayStyle == .large ? 0.26 : 0.2
+
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(groupFractionalWidth),
+                                                   heightDimension: .fractionalWidth(groupFractionalHeight))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            
+            let section = NSCollectionLayoutSection(group: group)
+            section.orthogonalScrollingBehavior = .continuous
+            
+            let titleSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                   heightDimension: .estimated(44))
+            let titleSupplementary = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: titleSize,
+                elementKind: FavoriteViewController.titleElementKind,
+                alignment: .top)
+            section.boundarySupplementaryItems = [titleSupplementary]
+            return section
+        }
+        
+        let config = UICollectionViewCompositionalLayoutConfiguration()
+        config.interSectionSpacing = 20
+        
+        let layout = UICollectionViewCompositionalLayout(
+            sectionProvider: sectionProvider, configuration: config)
+        return layout
+    }
+    
+    private func configureDataSource() {
+        let cellRegistration = UICollectionView.CellRegistration<FeedCollectionViewCell, FavData> {
+            $0.setup(data: $2)
+        }
+        dataSource = UICollectionViewDiffableDataSource<FavListData, FavData>(collectionView: collectionView,cellProvider: cellRegistration.cellProvider)
+        
+        let supplementaryRegistration = UICollectionView.SupplementaryRegistration<TitleSupplementaryView>(elementKind: FavoriteViewController.titleElementKind) {
+            (supplementaryView, string, indexPath) in
+            if let snapshot = self.currentSnapshot {
+                let videoCategory = snapshot.sectionIdentifiers[indexPath.section]
+                supplementaryView.label.text = videoCategory.title
+            }
+        }
+        
+        dataSource.supplementaryViewProvider = { (view, kind, index) in
+            return self.collectionView.dequeueConfiguredReusableSupplementary(
+                using: supplementaryRegistration, for: index)
+        }
+        
+        currentSnapshot = NSDiffableDataSourceSnapshot<FavListData, FavData>()
+    }
+}
+
+extension FavoriteViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let d = data?[indexPath.row] else { return }
+        guard let d = dataSource.itemIdentifier(for: indexPath) else { return }
         let vc = VideoDetailViewController.create(aid: d.id, cid: 0)
         vc.present(from: UIViewController.topMostViewController())
     }
-}
-
-extension FavRowCell: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return data?.count ?? 0
+    
+    func indexPathForPreferredFocusedView(in collectionView: UICollectionView) -> IndexPath? {
+        return IndexPath(item: 0, section: 0)
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let d = data?[indexPath.row] else { return UICollectionViewCell() }
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: FeedCollectionViewCell.self), for: indexPath) as! FeedCollectionViewCell
-        cell.setup(data: d)
-        return cell
+    func collectionView(_ collectionView: UICollectionView, didUpdateFocusIn context: UICollectionViewFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        if let previousIndexPath = context.previouslyFocusedIndexPath,
+           let cell = collectionView.cellForItem(at:previousIndexPath) as? FeedCollectionViewCell {
+            cell.stopScroll()
+        }
+        if let previousIndexPath = context.nextFocusedIndexPath,
+           let cell = collectionView.cellForItem(at:previousIndexPath) as? FeedCollectionViewCell {
+            cell.startScroll()
+        }
     }
 }
-

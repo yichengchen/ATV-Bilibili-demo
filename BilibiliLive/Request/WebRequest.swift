@@ -197,7 +197,7 @@ struct FavData: DisplayData, Codable {
     var pic: URL? { get { URL(string: cover) } }
 }
 
-struct FavListData: Codable {
+struct FavListData: Codable, Hashable {
     let title: String
     let id: Int
 }

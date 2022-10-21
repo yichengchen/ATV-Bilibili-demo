@@ -39,7 +39,7 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         followVC.tabBarItem.title = "关注"
         vcs.append(followVC)
         
-        let fav = FavoriteViewController.create()
+        let fav = FavoriteViewController()
         fav.tabBarItem.title = "收藏"
         vcs.append(fav)
         
