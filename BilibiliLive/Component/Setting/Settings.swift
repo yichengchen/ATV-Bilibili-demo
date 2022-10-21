@@ -18,4 +18,54 @@ enum Settings {
 
     @UserDefault("Settings.direatlyEnterVideo", defaultValue: false)
     static var direatlyEnterVideo: Bool
+    
+    @UserDefaultCodable("Settings.mediaQuality", defaultValue: .quality_1080p)
+    static var mediaQuality: MediaQualityEnum
+    
+}
+
+struct MediaQuality {
+    var qn: Int
+    var fnval: Int
+}
+
+enum MediaQualityEnum: Codable, CaseIterable {
+    case quality_1080p
+    case quality_2160p
+    case quality_hdr_dolby
+}
+
+extension MediaQualityEnum {
+    var desp: String {
+        switch self {
+        case .quality_1080p:
+            return "1080p"
+        case .quality_2160p:
+            return "4K"
+        case .quality_hdr_dolby:
+            return "HDR和杜比视界"
+        }
+    }
+    
+    var qn: Int {
+        switch self {
+        case .quality_1080p:
+            return 116
+        case .quality_2160p:
+            return 120
+        case .quality_hdr_dolby:
+            return 126
+        }
+    }
+    
+    var fnval: Int {
+        switch self {
+        case .quality_1080p:
+            return 16
+        case .quality_2160p:
+            return 144
+        case .quality_hdr_dolby:
+            return 976
+        }
+    }
 }

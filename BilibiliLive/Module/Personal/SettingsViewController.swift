@@ -52,6 +52,20 @@ class SettingsViewController: UIViewController {
             self?.present(alert, animated: true)
         }
         cellModels.append(style)
+        
+        let quality = CellModel(title: "最高画质", desp: Settings.mediaQuality.desp) { [weak self] in
+            let alert = UIAlertController(title: "最高画质", message: "4k以上需要大会员", preferredStyle: .actionSheet)
+            for quality in MediaQualityEnum.allCases {
+                let action = UIAlertAction(title: quality.desp, style: .default) { _ in
+                    Settings.mediaQuality = quality
+                    self?.setupData()
+                }
+                alert.addAction(action)
+            }
+            self?.present(alert, animated: true)
+        }
+        cellModels.append(quality)
+        
         collectionView.reloadData()
     }
     
