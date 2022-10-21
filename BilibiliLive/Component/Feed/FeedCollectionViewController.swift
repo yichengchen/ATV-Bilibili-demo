@@ -45,7 +45,7 @@ class FeedCollectionViewController: UIViewController {
     var pageSize = 20
     var displayDatas: [any DisplayData] {
         set {
-            _displayData = newValue.map{AnyDispplayData(data: $0)}
+            _displayData = newValue.map{AnyDispplayData(data: $0)}.uniqued()
             finished = false
         }
         get {
@@ -79,7 +79,7 @@ class FeedCollectionViewController: UIViewController {
     }
     
     func appendData(displayData:[any DisplayData]) {
-        _displayData.append(contentsOf: displayData.map{AnyDispplayData(data: $0)})
+        _displayData.append(contentsOf: displayData.map{AnyDispplayData(data: $0)}.filter({!_displayData.contains($0)}))
         if displayData.count < pageSize {
             finished = true
         }

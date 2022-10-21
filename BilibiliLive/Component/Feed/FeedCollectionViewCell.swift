@@ -8,6 +8,7 @@
 import UIKit
 import TVUIKit
 import MarqueeLabel
+import Kingfisher
 
 class FeedCollectionViewCell: UICollectionViewCell {
     var onLongPress: (()->Void)?=nil
@@ -72,7 +73,7 @@ class FeedCollectionViewCell: UICollectionViewCell {
     func setup(data: any DisplayData) {
         titleLabel.text = data.title
         upLabel.text = data.owner
-        imageView.kf.setImage(with:data.pic)
+        imageView.kf.setImage(with:data.pic,options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202)))])
         updateStyle()
     }
     

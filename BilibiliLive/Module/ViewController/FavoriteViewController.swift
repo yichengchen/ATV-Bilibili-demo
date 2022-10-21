@@ -20,6 +20,7 @@ class FavoriteViewController: UIViewController {
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
         collectionView.delegate = self
         collectionView.remembersLastFocusedIndexPath = true
+        tabBarObservedScrollView = collectionView
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
