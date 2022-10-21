@@ -96,12 +96,13 @@ class ApiRequest {
                 print(json)
                 let errorCode = json["code"].intValue
                 if errorCode != 0 {
-                    print(errorCode)
                     if errorCode == -101 {
                         UserDefaults.standard.removeObject(forKey: "token")
                         AppDelegate.shared.showLogin()
                     }
-                    complete?(.failure(.statusFail(code:errorCode)))
+                    let message = json["message"].stringValue
+                    print(errorCode, message)
+                    complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }
                 complete?(.success(json))
@@ -215,7 +216,7 @@ class ApiRequest {
                 handler?(.success(token: res.tokenInfo))
             case .failure(let error):
                 switch error {
-                case .statusFail(let code):
+                case .statusFail(let code, _):
                     switch code {
                     case 86038: handler?(.expire)
                     case 86039: handler?(.waiting)
@@ -228,10 +229,6 @@ class ApiRequest {
                 }
             }
         }
-    }
-    
-    static func getSSOCookie() {
-        
     }
     
     static func refreshToken() {

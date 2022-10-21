@@ -18,6 +18,7 @@
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
+		AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7A3B1F290298BE006FEBB0 /* Colors.swift */; };
 		AEA6AB1628FFE951007CE72E /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA6AB1528FFE951007CE72E /* SettingsViewController.swift */; };
 		AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA6AB1828FFF3DD007CE72E /* Settings.swift */; };
 		F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90AAE03265549B5008DE7C2 /* FeedViewController.swift */; };
@@ -71,6 +72,7 @@
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteViewController.swift; sourceTree = "<group>"; };
+		AE7A3B1F290298BE006FEBB0 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		AEA6AB1528FFE951007CE72E /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		AEA6AB1828FFF3DD007CE72E /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		F90AAE03265549B5008DE7C2 /* FeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewController.swift; sourceTree = "<group>"; };
@@ -198,9 +200,10 @@
 			isa = PBXGroup;
 			children = (
 				F9171D6229010DE5002868C7 /* Feed */,
-				AEA6AB1728FFF3D0007CE72E /* Setting */,
 				F99D28EC2619F4D500F8E66A /* Player */,
 				49389D5D28AFE6DC00B9DAFD /* Video */,
+				AEA6AB1828FFF3DD007CE72E /* Settings.swift */,
+				AE7A3B1F290298BE006FEBB0 /* Colors.swift */,
 			);
 			path = Component;
 			sourceTree = "<group>";
@@ -222,14 +225,6 @@
 				AEA6AB1528FFE951007CE72E /* SettingsViewController.swift */,
 			);
 			path = Personal;
-			sourceTree = "<group>";
-		};
-		AEA6AB1728FFF3D0007CE72E /* Setting */ = {
-			isa = PBXGroup;
-			children = (
-				AEA6AB1828FFF3DD007CE72E /* Settings.swift */,
-			);
-			path = Setting;
 			sourceTree = "<group>";
 		};
 		F9171D6229010DE5002868C7 /* Feed */ = {
@@ -401,6 +396,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */,
+				AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */,
 				49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */,
 				AEA6AB1628FFE951007CE72E /* SettingsViewController.swift in Sources */,
 				49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */,

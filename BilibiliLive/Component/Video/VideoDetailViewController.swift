@@ -14,16 +14,24 @@ import Kingfisher
 import TVUIKit
 
 class VideoDetailViewController: UIViewController {
+    private var loadingView = UIActivityIndicatorView()
+    @IBOutlet weak var backgroundImageView: UIImageView!
+    @IBOutlet weak var effectContainerView: UIVisualEffectView!
+    
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var upButton: UIButton!
     @IBOutlet weak var noteLabel: UILabel!
     @IBOutlet weak var coverImageView: UIImageView!
-    @IBOutlet weak var backgroundImageView: UIImageView!
-    @IBOutlet weak var collectionView: UICollectionView!
-    @IBOutlet weak var effectContainerView: UIVisualEffectView!
+    
+    @IBOutlet weak var playCardView: BLCardView!
+    
+    @IBOutlet weak var playImageView: BLImageView!
+    @IBOutlet weak var likeImageView: BLImageView!
+    @IBOutlet weak var coinImageView: BLImageView!
+    @IBOutlet weak var favImageView: BLImageView!
+    
     @IBOutlet weak var pageCollectionView: UICollectionView!
     @IBOutlet weak var recommandCollectionView: UICollectionView!
-    private var loadingView = UIActivityIndicatorView()
     
     private var aid:Int!
     private var cid:Int!
@@ -41,14 +49,13 @@ class VideoDetailViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.setNavigationBarHidden(true, animated: false)
         setupLoading()
         fetchData()
     }
     
     override var preferredFocusedView: UIView? {
         get {
-            return pageCollectionView
+            return playCardView
         }
     }
     
@@ -99,6 +106,10 @@ class VideoDetailViewController: UIViewController {
             self?.relateds = recommands
             self?.recommandCollectionView.reloadData()
         }
+        
+        WebRequest.requestLikeStatus(aid: aid) { [weak self] isLiked in
+            self?.likeImageView.on = isLiked
+        }
     }
     
     private func update(with json:JSON) {
@@ -121,10 +132,10 @@ class VideoDetailViewController: UIViewController {
         pages = data["pages"].arrayValue.map {
             PageData(cid: $0["cid"].intValue, name: $0["part"].stringValue)
         }
-        collectionView.reloadData()
+        pageCollectionView.reloadData()
         if pages.count > 0 {
             let index = pages.firstIndex { $0.cid == cid } ?? 0
-            collectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .left, animated: false)
+            pageCollectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .left, animated: false)
         }
         loadingView.stopAnimating()
         loadingView.removeFromSuperview()
@@ -135,11 +146,46 @@ class VideoDetailViewController: UIViewController {
         }
     }
     
-
     @IBAction func actionShowUpSpace(_ sender: Any) {
         let upSpaceVC = UpSpaceViewController()
         upSpaceVC.mid = mid
         present(upSpaceVC, animated: true)
+    }
+    
+    @IBAction func actionPlay(_ sender: BLCardView) {
+        let player = VideoPlayerViewController()
+        player.aid = aid
+        player.cid = cid
+        present(player, animated: true, completion: nil)
+    }
+    
+    @IBAction func actionLike(_ sender: BLCardView) {
+        Task {
+            likeImageView.on = !likeImageView.on
+            let success = await WebRequest.requestLike(aid: aid, like: likeImageView.on)
+            if !success {
+                likeImageView.on = !likeImageView.on
+            }
+        }
+    }
+    
+    @IBAction func actionCoin(_ sender: BLCardView) {
+        let alert = UIAlertController(title: "投币个数", message: nil, preferredStyle: .actionSheet)
+        let aid = aid!
+        alert.addAction(UIAlertAction(title: "1", style: .default) { _ in
+            WebRequest.requestCoin(aid: aid, num: 1)
+        })
+        alert.addAction(UIAlertAction(title: "2", style: .default) { _ in
+            WebRequest.requestCoin(aid: aid, num: 2)
+        })
+        alert.addAction(UIAlertAction(title: "取消", style: .default))
+        present(alert, animated: true)
+    }
+    
+    @IBAction func actionFavorite(_ sender: BLCardView) {
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "待开发", style: .default))
+        present(alert, animated: true)
     }
 }
 
@@ -200,5 +246,13 @@ class BLCardView: TVCardView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
+    }
+}
+
+class BLImageView: UIImageView {
+    var on: Bool = false {
+        didSet {
+            tintColor = on ? UIColor.biliblue : UIColor.black
+        }
     }
 }

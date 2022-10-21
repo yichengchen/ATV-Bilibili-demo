@@ -11,7 +11,7 @@ import SwiftyJSON
 
 enum RequestError:Error {
     case networkFail
-    case statusFail(code:Int)
+    case statusFail(code:Int, message: String)
     case decodeFail
 }
 
@@ -24,13 +24,16 @@ class WebRequest {
         static let favList = "http://api.bilibili.com/x/v3/fav/folder/created/list-all"
         static let reportHistory = "https://api.bilibili.com/x/v2/history/report"
         static let upSpace = "http://api.bilibili.com/x/space/arc/search"
+        static let like = "http://api.bilibili.com/x/web-interface/archive/like"
+        static let likeStatus = "http://api.bilibili.com/x/web-interface/archive/has/like"
+        static let coin = "http://api.bilibili.com/x/web-interface/coin/add"
     }
     
     static func requestJSON(method: HTTPMethod = .get,
                             url: URLConvertible,
                             parameters: Parameters = [:],
                             headers: [String:String]? = nil,
-                            complete: ((Result<JSON, RequestError>) -> Void)?) {
+                            complete: ((Result<JSON, RequestError>) -> Void)? = nil) {
         var parameters = parameters
         if method != .get {
             parameters["biliCSRF"] = CookieHandler.shared.csrf()
@@ -48,8 +51,9 @@ class WebRequest {
                     let json = JSON(data)
                     let errorCode = json["code"].intValue
                     if errorCode != 0 {
-                        print(errorCode)
-                        complete?(.failure(.statusFail(code: errorCode)))
+                        let message = json["message"].stringValue
+                        print(errorCode, message)
+                        complete?(.failure(.statusFail(code: errorCode, message: message)))
                         return
                     }
                     let dataj = json["data"]
@@ -152,15 +156,40 @@ extension WebRequest {
     }
     
     static func reportWatchHistory(aid: Int, cid: Int, currentTime: Int) {
-        WebRequest.requestJSON(method: .post,
-                               url: EndPoint.reportHistory,
-                               parameters: ["aid": aid, "cid": cid, "progress": currentTime],
-                               complete: nil)
+        requestJSON(method: .post,
+                    url: EndPoint.reportHistory,
+                    parameters: ["aid": aid, "cid": cid, "progress": currentTime],
+                    complete: nil)
     }
     
     static func requestUpSpaceVideo(mid: Int,page:Int,pageSize:Int=50) async throws -> [UpSpaceReq.List.VListData] {
         let resp: UpSpaceReq = try await request(url: EndPoint.upSpace,parameters: ["mid":mid,"pn":page,"ps":pageSize])
         return resp.list.vlist
+    }
+    
+    static func requestLike(aid: Int,like: Bool) async -> Bool {
+        do {
+            _ = try await requestJSON(method: .post, url: EndPoint.like, parameters: ["aid": aid, "like": like ? "1" : "2"])
+            return true
+        } catch {
+            return false
+        }
+    }
+    
+    static func requestLikeStatus(aid: Int, complete: ((Bool) -> Void)?) {
+        requestJSON(url: EndPoint.likeStatus, parameters: ["aid": aid]) {
+            response in
+            switch response {
+            case .success(let data):
+                complete?(data.intValue == 1)
+            case .failure(_):
+                complete?(false)
+            }
+        }
+    }
+    
+    static func requestCoin(aid: Int, num: Int) {
+        requestJSON(method: .post, url: EndPoint.coin, parameters: ["aid": aid, "multiply": num, "select_like": 1])
     }
 }
 
