@@ -38,8 +38,8 @@ class FeedCollectionViewController: UIViewController {
         case main
     }
     
-    var didSelect: ((IndexPath)->Void)? = nil
-    var didLongPress: ((IndexPath)->Void)? = nil
+    var didSelect: ((any DisplayData)->Void)? = nil
+    var didLongPress: ((any DisplayData)->Void)? = nil
     var loadMore: (()->Void)? = nil
     var finished = false
     var pageSize = 20
@@ -133,7 +133,7 @@ class FeedCollectionViewController: UIViewController {
             cell.setup(data: displayData.data)
             cell.onLongPress = {
                 [weak self] in
-                self?.didLongPress?(indexPath)
+                self?.didLongPress?(displayData.data)
             }
         }
     }
@@ -142,7 +142,9 @@ class FeedCollectionViewController: UIViewController {
 
 extension FeedCollectionViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        didSelect?(indexPath)
+        if let data = dataSource.itemIdentifier(for: indexPath) {
+            didSelect?(data.data)
+        }
     }
     
     func indexPathForPreferredFocusedView(in collectionView: UICollectionView) -> IndexPath? {

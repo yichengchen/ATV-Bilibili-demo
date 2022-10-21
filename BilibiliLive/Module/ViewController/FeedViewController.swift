@@ -15,8 +15,8 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
         super.viewDidLoad()
         collectionVC.show(in: self)
         collectionVC.didSelect = {
-            [weak self] idx in
-            self?.goDetail(with: idx)
+            [weak self] record in
+            self?.goDetail(with: record as! ApiRequest.FeedResp.Items)
         }
         
         collectionVC.loadMore = {
@@ -48,9 +48,8 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
         }
     }
     
-    func goDetail(with indexPath: IndexPath) {
-        let data = collectionVC.displayDatas[indexPath.item]
-        let aid = (data as! ApiRequest.FeedResp.Items).param
+    func goDetail(with data: ApiRequest.FeedResp.Items) {
+        let aid = data.param
         let detailVC = VideoDetailViewController.create(aid: Int(aid)!, cid: 0)
         detailVC.present(from: self)
     }

@@ -79,6 +79,8 @@ class CommonPlayerViewController: AVPlayerViewController {
             startPlay()
         case .failed:
             removeObservarPlayerItem()
+            print(player?.currentItem?.error ?? "no error")
+            print(player?.currentItem?.errorLog() ?? "no error log")
             if retryCount<maxRetryCount, !retryPlay() {
                 showErrorAlertAndExit(title: "播放器失败", message: playerItem?.errorLog()?.description ?? "")
             }

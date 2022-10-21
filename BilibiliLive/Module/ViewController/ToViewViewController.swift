@@ -11,20 +11,20 @@ import SwiftyJSON
 
 class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
-    var feeds = [FeedData]() { didSet {collectionVC.displayDatas=feeds} }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)
         collectionVC.didSelect = {
-            [weak self] idx in
-            self?.goDetail(with: idx)
+            [weak self] record in
+            self?.goDetail(with: record as! FeedData)
         }
         collectionVC.didLongPress = {
-            [weak self] idx in
+            [weak self] record in
             guard let self = self else { return }
             let alert = UIAlertController(title: "Delete?", message: nil, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-                self.del(with: idx)
+                self.del(with: record as! FeedData)
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
             self.present(alert, animated: true, completion: nil)
@@ -44,7 +44,7 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
             case .success(let data):
                 let json = JSON(data)
                 let datas = self.progrssData(json: json)
-                self.feeds = datas
+                self.collectionVC.displayDatas = datas
             case .failure(let error):
                 print(error)
                 break
@@ -64,14 +64,13 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
         return datas
     }
     
-    func goDetail(with indexPath: IndexPath) {
-        let feed = feeds[indexPath.item]
+    func goDetail(with feed: FeedData) {
         let vc = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid)
         vc.present(from: self)
     }
     
-    func del(with indexPath: IndexPath) {
-        let aid = feeds[indexPath.item].aid
+    func del(with feed: FeedData) {
+        let aid = feed.aid
         guard let csrf = CookieHandler.shared.csrf() else { return }
         AF.request("http://api.bilibili.com/x/v2/history/toview/del",method: .post,parameters: ["aid":aid,"csrf":csrf]).responseData {
             [weak self] resp in

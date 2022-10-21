@@ -11,15 +11,14 @@ import SwiftyJSON
 
 class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
-    var feeds = [any DisplayData]() { didSet {collectionVC.displayDatas=feeds} }
     private var page = 0
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)
         collectionVC.pageSize = 40
         collectionVC.didSelect = {
-            [weak self] idx in
-            self?.goDetail(with: idx)
+            [weak self]  in
+            self?.goDetail(with: $0)
         }
         collectionVC.loadMore = {
             [weak self] in
@@ -36,7 +35,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
     
     func initData() async {
         page = 1
-        feeds = (try? await requestData(page: 1)) ?? []
+        collectionVC.displayDatas = (try? await requestData(page: 1)) ?? []
     }
     
     func loadNextPage() {
@@ -76,13 +75,13 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
         return datas
     }
     
-    func goDetail(with indexPath: IndexPath) {
-        if let feed = feeds[indexPath.item] as? FeedData {
+    func goDetail(with displayData: any DisplayData) {
+        if let feed = displayData as? FeedData {
             let detailVC = VideoDetailViewController.create(aid: feed.aid,cid: feed.cid)
             detailVC.present(from: self)
             return
         }
-        if let bangumi = feeds[indexPath.item] as? BangumiData {
+        if let bangumi = displayData as? BangumiData {
             AF.request("https://api.bilibili.com/pgc/web/season/section?season_id=\(bangumi.season)").responseData { [weak self] (response) in
                 guard let self = self else { return }
                 switch(response.result) {

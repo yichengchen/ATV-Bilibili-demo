@@ -19,8 +19,8 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
         super.viewDidLoad()
         collectionVC.show(in: self)
         collectionVC.didSelect = {
-            [weak self] idx in
-            self?.enter(with: idx)
+            [weak self] in
+            self?.enter(with: $0 as! LiveRoom)
         }
         loadData()
     }
@@ -63,18 +63,11 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
         return newRooms
     }
     
-    func enter(with indexPath: IndexPath) {
-        let room = rooms[indexPath.item]
+    func enter(with room: LiveRoom) {
         let playerVC = LivePlayerViewController()
         playerVC.room = room
         present(playerVC, animated: true, completion: nil)
     }
-}
-
-extension LiveViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
-    }    
 }
 
 struct LiveRoom: DisplayData {

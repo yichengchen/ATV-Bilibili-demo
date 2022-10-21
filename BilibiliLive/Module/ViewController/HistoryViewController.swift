@@ -11,23 +11,12 @@ import SwiftyJSON
 
 class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
-    var feeds = [HistoryData]() { didSet {collectionVC.displayDatas=feeds} }
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)
         collectionVC.didSelect = {
-            [weak self] idx in
-            self?.goDetail(with: idx)
-        }
-        collectionVC.didLongPress = {
-            [weak self] idx in
-            guard let self = self else { return }
-            let alert = UIAlertController(title: "Delete?", message: nil, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-                self.del(with: idx)
-            }))
-            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-            self.present(alert, animated: true, completion: nil)
+            [weak self] in
+            self?.goDetail(with: $0 as! HistoryData)
         }
         loadData()
     }
@@ -44,7 +33,7 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
             case .success(let data):
                 let json = JSON(data)
                 let datas = self.progrssData(json: json)
-                self.feeds = datas
+                self.collectionVC.displayDatas = datas
             case .failure(let error):
                 print(error)
                 break
@@ -78,20 +67,9 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
         return datas
     }
     
-    func goDetail(with indexPath: IndexPath) {
-        let history = feeds[indexPath.item]
+    func goDetail(with history: HistoryData) {
         let detailVC = VideoDetailViewController.create(aid: history.aid, cid: history.cid)
         detailVC.present(from: self)
-    }
-    
-    func del(with indexPath: IndexPath) {
-        let aid = feeds[indexPath.item].aid
-        guard let csrf = CookieHandler.shared.csrf() else { return }
-        AF.request("http://api.bilibili.com/x/v2/history/delete",method: .post,parameters: ["aid":aid,"csrf":csrf]).responseData {
-            [weak self] resp in
-            print(resp.result)
-            self?.reloadData()
-        }
     }
 }
 

@@ -17,8 +17,8 @@ class UpSpaceViewController: UIViewController {
         collectionVC.show(in: self)
         collectionVC.pageSize = 40
         collectionVC.didSelect = {
-            [weak self] idx in
-            self?.goDetail(with: idx)
+            [weak self] in
+            self?.goDetail(with: $0 as! UpSpaceReq.List.VListData)
         }
         collectionVC.loadMore = {
             [weak self] in
@@ -45,9 +45,8 @@ class UpSpaceViewController: UIViewController {
         }
     }
     
-    func goDetail(with indexPath: IndexPath) {
-        let history = collectionVC.displayDatas[indexPath.item] as! UpSpaceReq.List.VListData
-        let detailVC = VideoDetailViewController.create(aid: history.aid, cid: 0)
+    func goDetail(with record: UpSpaceReq.List.VListData) {
+        let detailVC = VideoDetailViewController.create(aid: record.aid, cid: 0)
         detailVC.present(from: self)
     }
 }
