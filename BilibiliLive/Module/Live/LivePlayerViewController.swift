@@ -47,9 +47,15 @@ class LivePlayerViewController:CommonPlayerViewController {
     }
     
     func play() {
-        if let url = self.url {
-            danMuProvider?.start()
-            danMuView.play()
+        if var url = self.url {
+            if Settings.livePlayerHack {
+                var components = URLComponents(string: url.absoluteString)!
+                components.query = nil
+                url = components.url ?? url
+                danMuProvider?.start()
+                danMuView.play()
+            }
+
             let headers: [String: String] = [
                 "User-Agent": "Bilibili/APPLE TV",
                 "Referer": "https://live.bilibili.com"
