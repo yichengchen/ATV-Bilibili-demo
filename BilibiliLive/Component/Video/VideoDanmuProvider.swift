@@ -66,7 +66,7 @@ class VideoDanmuProvider {
             let danmu = playingDanmus.removeFirst()
             let offset = advanceTime - danmu.time
             let model = DanmakuTextCellModel(str: danmu.text)
-            model.color = UIColor(number: danmu.color)
+            model.color = UIColor(hex: UInt32(danmu.color))
             switch danmu.mode {
             case 1,2,3:
                 model.type = .floating

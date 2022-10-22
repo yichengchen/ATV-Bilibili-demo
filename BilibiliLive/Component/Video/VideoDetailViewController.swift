@@ -19,15 +19,14 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet weak var effectContainerView: UIVisualEffectView!
     
     @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var upButton: UIButton!
+
+    @IBOutlet weak var upButton: BLCustomTextButton!
     @IBOutlet weak var noteLabel: UILabel!
     @IBOutlet weak var coverImageView: UIImageView!
+    @IBOutlet weak var playButton: BLCustomButton!
+    @IBOutlet weak var likeButton: BLCustomButton!
+    @IBOutlet weak var coinButton: BLCustomButton!
     
-    @IBOutlet weak var playCardView: BLCardView!
-    
-    @IBOutlet weak var playImageView: BLImageView!
-    @IBOutlet weak var likeImageView: BLImageView!
-    @IBOutlet weak var coinImageView: BLImageView!
     @IBOutlet weak var favImageView: BLImageView!
     
     @IBOutlet weak var pageCollectionView: UICollectionView!
@@ -55,7 +54,7 @@ class VideoDetailViewController: UIViewController {
     
     override var preferredFocusedView: UIView? {
         get {
-            return playCardView
+            return playButton
         }
     }
     
@@ -108,7 +107,7 @@ class VideoDetailViewController: UIViewController {
         }
         
         WebRequest.requestLikeStatus(aid: aid) { [weak self] isLiked in
-            self?.likeImageView.on = isLiked
+            self?.likeButton.isOn = isLiked
         }
     }
     
@@ -116,7 +115,7 @@ class VideoDetailViewController: UIViewController {
         let data = json["data"]
         mid = data["owner"]["mid"].intValue
         titleLabel.text = data["title"].stringValue
-        upButton.setTitle(data["owner"]["name"].stringValue, for: .normal)
+        upButton.title = data["owner"]["name"].stringValue
         let image = URL(string: data["pic"].stringValue)
             coverImageView.kf.setImage(with: image)
             backgroundImageView.kf.setImage(with: image)
@@ -153,24 +152,24 @@ class VideoDetailViewController: UIViewController {
         present(upSpaceVC, animated: true)
     }
     
-    @IBAction func actionPlay(_ sender: BLCardView) {
+    @IBAction func actionPlay(_ sender: Any) {
         let player = VideoPlayerViewController()
         player.aid = aid
         player.cid = cid
         present(player, animated: true, completion: nil)
     }
     
-    @IBAction func actionLike(_ sender: BLCardView) {
+    @IBAction func actionLike(_ sender: Any) {
         Task {
-            likeImageView.on = !likeImageView.on
-            let success = await WebRequest.requestLike(aid: aid, like: likeImageView.on)
+            likeButton.isOn.toggle()
+            let success = await WebRequest.requestLike(aid: aid, like: likeButton.isOn)
             if !success {
-                likeImageView.on = !likeImageView.on
+                likeButton.isOn.toggle()
             }
         }
     }
     
-    @IBAction func actionCoin(_ sender: BLCardView) {
+    @IBAction func actionCoin(_ sender: Any) {
         let alert = UIAlertController(title: "投币个数", message: nil, preferredStyle: .actionSheet)
         let aid = aid!
         alert.addAction(UIAlertAction(title: "1", style: .default) { _ in
@@ -183,7 +182,7 @@ class VideoDetailViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    @IBAction func actionFavorite(_ sender: BLCardView) {
+    @IBAction func actionFavorite(_ sender: Any) {
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "待开发", style: .default))
         present(alert, animated: true)
