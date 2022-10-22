@@ -19,6 +19,7 @@ class FeedCollectionViewCell: UICollectionViewCell {
     private let imageView = UIImageView()
     private let cardView = TVCardView()
     private let infoView = UIView()
+    private let avatarView = UIImageView()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -47,6 +48,7 @@ class FeedCollectionViewCell: UICollectionViewCell {
         }
         imageView.layer.cornerRadius = 12
         imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFill
         
         cardView.contentView.addSubview(infoView)
         infoView.snp.makeConstraints { make in
@@ -54,7 +56,25 @@ class FeedCollectionViewCell: UICollectionViewCell {
             make.top.equalTo(imageView.snp.bottom).offset(8).priority(.high)
         }
         
+        let hStackView = UIStackView()
+        infoView.addSubview(hStackView)
+        hStackView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        hStackView.addArrangedSubview(avatarView)
+        hStackView.alignment = .center
+        hStackView.spacing = 8
+        avatarView.backgroundColor = .clear
+        avatarView.snp.makeConstraints { make in
+            make.width.equalTo(avatarView.snp.height)
+            make.height.equalTo(infoView.snp.height).multipliedBy(0.7).priority(.high)
+        }
+        avatarView.setContentHuggingPriority(.defaultLow, for: .vertical)
+        avatarView.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
+        avatarView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
         let stackView = UIStackView()
+        hStackView.addArrangedSubview(stackView)
         stackView.axis = .vertical
         stackView.addArrangedSubview(titleLabel)
         stackView.addArrangedSubview(upLabel)
@@ -63,17 +83,19 @@ class FeedCollectionViewCell: UICollectionViewCell {
         upLabel.holdScrolling = true
         titleLabel.speed = .rate(100)
         infoView.accessibilityIdentifier = "info base view"
-        infoView.addSubview(stackView)
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
+
     }
     
     func setup(data: any DisplayData) {
         titleLabel.text = data.title
         upLabel.text = data.owner
         imageView.kf.setImage(with:data.pic,options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202)))])
+        if let avatar = data.avatar {
+            avatarView.isHidden = false
+            avatarView.kf.setImage(with:avatar,options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))),.processor(RoundCornerImageProcessor(radius:.widthFraction(0.5))),.cacheSerializer(FormatIndicatedCacheSerializer.png)])
+        } else {
+            avatarView.isHidden = true
+        }
         updateStyle()
     }
     
@@ -110,6 +132,7 @@ class FeedCollectionViewCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         onLongPress = nil
+        avatarView.image = nil
         stopScroll()
     }
 }

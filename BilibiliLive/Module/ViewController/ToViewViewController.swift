@@ -59,7 +59,8 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
             let avid = data["aid"].intValue
             let owner = data["owner"]["name"].stringValue
             let pic = data["pic"].url!
-            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic)
+            let avatar = data["owner"]["face"].url
+            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic,avatar: avatar)
         }
         return datas
     }

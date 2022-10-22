@@ -69,8 +69,9 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
             let title = archive["title"].stringValue
             let cid = archive["cid"].intValue
             let owner = archive["owner"]["name"].stringValue
+            let avatar = archive["owner"]["face"].url
             let pic = archive["pic"].url!
-            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic)
+            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, avatar: avatar)
         }
         return datas
     }
@@ -109,6 +110,7 @@ struct FeedData: DisplayData {
     let aid: Int
     let owner: String
     let pic: URL?
+    let avatar: URL?
 }
 
 struct BangumiData: DisplayData {

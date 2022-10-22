@@ -13,6 +13,11 @@ protocol DisplayData: Hashable {
     var title: String { get }
     var owner: String { get }
     var pic: URL? { get }
+    var avatar: URL? { get }
+}
+
+extension DisplayData {
+    var avatar: URL? { return nil }
 }
 
 struct AnyDispplayData: Hashable {
