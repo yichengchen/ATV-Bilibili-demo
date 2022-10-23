@@ -5,9 +5,9 @@
 //  Created by Etan Chen on 2021/4/4.
 //
 
-import UIKit
 import AVKit
 import Kingfisher
+import UIKit
 
 class CommonPlayerViewController: AVPlayerViewController {
     let danMuView = DanmakuView()
@@ -28,7 +28,7 @@ class CommonPlayerViewController: AVPlayerViewController {
             }
         }
     }
-    
+
     override var player: AVPlayer? {
         didSet {
             if let player = player {
@@ -46,9 +46,9 @@ class CommonPlayerViewController: AVPlayerViewController {
             }
         }
     }
-    
+
     private var playerInfo: [AVMetadataItem]?
-    
+
     deinit {
         observer = nil
     }
@@ -58,7 +58,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         initDanmuView()
         setupPlayerMenu()
     }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         danMuView.recaculateTracks()
@@ -66,12 +66,12 @@ class CommonPlayerViewController: AVPlayerViewController {
         danMuView.trackHeight = 50
         danMuView.displayArea = 0.8
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
         danMuView.stop()
     }
-    
+
     func playerStatusDidChange() {
         print("player status: \(player?.currentItem?.status.rawValue ?? -1)")
         switch player?.currentItem?.status {
@@ -81,27 +81,27 @@ class CommonPlayerViewController: AVPlayerViewController {
             removeObservarPlayerItem()
             print(player?.currentItem?.error ?? "no error")
             print(player?.currentItem?.errorLog() ?? "no error log")
-            if retryCount<maxRetryCount, !retryPlay() {
+            if retryCount < maxRetryCount, !retryPlay() {
                 showErrorAlertAndExit(title: "播放器失败", message: playerItem?.errorLog()?.description ?? "")
             }
-            retryCount+=1
+            retryCount += 1
         default:
             break
         }
     }
-    
-    func setPlayerInfo(title:String?, subTitle:String?, desp: String?, pic: String?) {
+
+    func setPlayerInfo(title: String?, subTitle: String?, desp: String?, pic: String?) {
         let desp = desp?.components(separatedBy: "\n").joined(separator: " ")
         let mapping: [AVMetadataIdentifier: Any?] = [
             .commonIdentifierTitle: title,
             .iTunesMetadataTrackSubTitle: subTitle,
             .commonIdentifierDescription: desp,
         ]
-        let meta = mapping.compactMap { createMetadataItem(for:$0, value:$1) }
+        let meta = mapping.compactMap { createMetadataItem(for: $0, value: $1) }
         playerInfo = meta
         playerItem?.externalMetadata = meta
-        
-        if let pic = pic, let imageURL = URL(string:pic) {
+
+        if let pic = pic, let imageURL = URL(string: pic) {
             let resource = ImageResource(downloadURL: imageURL)
             KingfisherManager.shared.retrieveImage(with: resource) {
                 [weak self] result in
@@ -109,18 +109,18 @@ class CommonPlayerViewController: AVPlayerViewController {
                       let data = try? result.get().image.pngData(),
                       let item = self.createMetadataItem(for: .commonIdentifierArtwork, value: data)
                 else { return }
-                
-                self.playerInfo?.removeAll{ $0.identifier == .commonIdentifierArtwork }
+
+                self.playerInfo?.removeAll { $0.identifier == .commonIdentifierArtwork }
                 self.playerInfo?.append(item)
                 self.playerItem?.externalMetadata = self.playerInfo ?? []
             }
         }
     }
-    
-    
+
     private func createMetadataItem(for identifier: AVMetadataIdentifier,
-                                    value: Any?) -> AVMetadataItem? {
-        if value == nil {return nil}
+                                    value: Any?) -> AVMetadataItem?
+    {
+        if value == nil { return nil }
         let item = AVMutableMetadataItem()
         item.identifier = identifier
         item.value = value as? NSCopying & NSObjectProtocol
@@ -128,7 +128,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         item.extendedLanguageTag = "und"
         return item.copy() as? AVMetadataItem
     }
-    
+
     private func setupPlayerMenu() {
         var menus = [UIMenuElement]()
         let danmuImage = UIImage(systemName: "list.bullet.rectangle.fill")
@@ -140,7 +140,7 @@ class CommonPlayerViewController: AVPlayerViewController {
             action.image = self.danMuView.isHidden ? danmuImageDisable : danmuImage
         }
         menus.append(danmuAction)
-        
+
         if allowChangeSpeed {
             let playSpeedArray = [PlaySpeed(name: "0.5X", value: 0.5),
                                   PlaySpeed(name: "0.75X", value: 0.75),
@@ -160,32 +160,31 @@ class CommonPlayerViewController: AVPlayerViewController {
         }
         transportBarCustomMenuItems = menus
     }
-    
+
     private func removeObservarPlayerItem() {
         NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
     }
-    
-    
+
     private func observePlayerItem(_ playerItem: AVPlayerItem) {
-        observer = playerItem.observe(\.status, options:  [.new, .old]) {
-            [weak self] _,_  in
+        observer = playerItem.observe(\.status, options: [.new, .old]) {
+            [weak self] _, _ in
             self?.playerStatusDidChange()
         }
         NotificationCenter.default.addObserver(self,
-                                 selector: #selector(playerDidFinishPlaying),
-                                 name: .AVPlayerItemDidPlayToEndTime,
-                                 object: playerItem)
+                                               selector: #selector(playerDidFinishPlaying),
+                                               name: .AVPlayerItemDidPlayToEndTime,
+                                               object: playerItem)
     }
-    
+
     func retryPlay() -> Bool {
         return false
     }
-    
+
     @objc func playerDidFinishPlaying() {
         // need override
     }
-    
-    func showErrorAlertAndExit(title: String="播放失败", message: String="未知错误") {
+
+    func showErrorAlertAndExit(title: String = "播放失败", message: String = "未知错误") {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let actionOk = UIAlertAction(title: "OK", style: .default) {
             [weak self] _ in
@@ -194,7 +193,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         alertController.addAction(actionOk)
         present(alertController, animated: true, completion: nil)
     }
-    
+
     private func startPlay() {
         guard player?.rate == 0 && player?.error == nil else { return }
         if let playerStartPos = playerStartPos {
@@ -202,7 +201,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         }
         player?.play()
     }
-    
+
     private func initDanmuView() {
         view.addSubview(danMuView)
         danMuView.makeConstraintsToBindToSuperview()

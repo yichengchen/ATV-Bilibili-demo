@@ -26,7 +26,7 @@ class UpSpaceViewController: UIViewController {
         }
         loadData()
     }
-    
+
     func loadData() {
         Task {
             page = 1
@@ -34,17 +34,17 @@ class UpSpaceViewController: UIViewController {
             collectionVC.displayDatas = res ?? []
         }
     }
-    
+
     func loadMore() {
         Task {
             do {
-                let res = try await WebRequest.requestUpSpaceVideo(mid: mid, page: page+1)
+                let res = try await WebRequest.requestUpSpaceVideo(mid: mid, page: page + 1)
                 collectionVC.appendData(displayData: res)
                 page = page + 1
             }
         }
     }
-    
+
     func goDetail(with record: UpSpaceReq.List.VListData) {
         let detailVC = VideoDetailViewController.create(aid: record.aid, cid: 0)
         detailVC.present(from: self)

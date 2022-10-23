@@ -5,24 +5,23 @@
 //  Created by yicheng on 2021/4/25.
 //
 
-import Foundation
-import CryptoKit
 import Alamofire
+import CryptoKit
+import Foundation
 import SwiftyJSON
 
-
 struct LoginToken: Codable {
-    let mid:Int
-    let accessToken:String
-    let refreshToken:String
-    let expiresIn:Int
-    var expireDate:Date?
+    let mid: Int
+    let accessToken: String
+    let refreshToken: String
+    let expiresIn: Int
+    var expireDate: Date?
 }
 
-class ApiRequest {
+enum ApiRequest {
     static let appkey = "4409e2ce8ffd12b8"
     static let appsec = "59b43e04ad6965f34319062b478f83dd"
-    
+
     enum EndPoint {
         static let loginQR = "https://passport.bilibili.com/x/passport-tv-login/qrcode/auth_code"
         static let verifyQR = "https://passport.bilibili.com/x/passport-tv-login/qrcode/poll"
@@ -30,68 +29,68 @@ class ApiRequest {
         static let ssoCookie = "https://passport.bilibili.com/api/login/sso"
         static let feed = "https://app.bilibili.com/x/v2/feed/index"
     }
-    
+
     enum LoginState {
-        case success(token:LoginToken)
+        case success(token: LoginToken)
         case fail
         case expire
         case waiting
     }
-    
-    static func save(token:LoginToken) {
+
+    static func save(token: LoginToken) {
         UserDefaults.standard.set(token, forKey: "token")
     }
-    
+
     static func getToken() -> LoginToken? {
-        if let token:LoginToken = UserDefaults.standard.codable(forKey: "token") {
+        if let token: LoginToken = UserDefaults.standard.codable(forKey: "token") {
             return token
         }
         return nil
     }
-    
+
     static func isLogin() -> Bool {
         return getToken() != nil
     }
-    
-    static func sign(for param: [String:String]) -> [String: String] {
+
+    static func sign(for param: [String: String]) -> [String: String] {
         var newParam = param
         newParam["appkey"] = appkey
         newParam["ts"] = "\(Date().timeIntervalSince1970)"
         newParam["local_id"] = "0"
         var rawParam = newParam
             .sorted(by: { $0.0 < $1.0 })
-            .map({"\($0.key)=\($0.value)"})
+            .map({ "\($0.key)=\($0.value)" })
             .joined(separator: "&")
         rawParam.append(appsec)
-        
+
         let md5 = Insecure.MD5
             .hash(data: rawParam.data(using: .utf8)!)
-            .map { String(format: "%02hhx", $0)}
+            .map { String(format: "%02hhx", $0) }
             .joined()
         newParam["sign"] = md5
         return newParam
     }
-    
-    static func logout(complete:(()->Void)?=nil) {
+
+    static func logout(complete: (() -> Void)? = nil) {
         UserDefaults.standard.removeObject(forKey: "token")
         complete?()
     }
-    
-    
+
     static func requestJSON(_ url: URLConvertible,
-                        method: HTTPMethod = .get,
-                        parameters: [String:String] = [:],
-                        auth:Bool = true,
-                        encoding: ParameterEncoding = URLEncoding.default,
-                        complete: ((Result<JSON, RequestError>) -> Void)?) {
+                            method: HTTPMethod = .get,
+                            parameters: [String: String] = [:],
+                            auth: Bool = true,
+                            encoding: ParameterEncoding = URLEncoding.default,
+                            complete: ((Result<JSON, RequestError>) -> Void)?)
+    {
         var param = parameters
         if auth {
             param["access_key"] = getToken()?.accessToken
         }
         param = sign(for: param)
-        AF.request(url,method: method,parameters: param,encoding: encoding).responseData { response in
+        AF.request(url, method: method, parameters: param, encoding: encoding).responseData { response in
             switch response.result {
-            case .success(let data):
+            case let .success(data):
                 let json = JSON(data)
                 print(json)
                 let errorCode = json["code"].intValue
@@ -106,23 +105,24 @@ class ApiRequest {
                     return
                 }
                 complete?(.success(json))
-            case .failure(let err):
+            case let .failure(err):
                 print(err)
                 complete?(.failure(.networkFail))
             }
         }
     }
-    
+
     static func request<T: Decodable>(_ url: URLConvertible,
-                        method: HTTPMethod = .get,
-                        parameters: [String:String] = [:],
-                        auth:Bool = true,
-                        encoding: ParameterEncoding = URLEncoding.default,
-                        decoder: JSONDecoder = JSONDecoder(),
-                        complete: ((Result<T, RequestError>) -> Void)?) {
-        requestJSON(url,method: method,parameters: parameters,auth: auth,encoding: encoding) { result in
+                                      method: HTTPMethod = .get,
+                                      parameters: [String: String] = [:],
+                                      auth: Bool = true,
+                                      encoding: ParameterEncoding = URLEncoding.default,
+                                      decoder: JSONDecoder = JSONDecoder(),
+                                      complete: ((Result<T, RequestError>) -> Void)?)
+    {
+        requestJSON(url, method: method, parameters: parameters, auth: auth, encoding: encoding) { result in
             switch result {
-            case .success(let data):
+            case let .success(data):
                 do {
                     let data = try data["data"].rawData()
                     let object = try decoder.decode(T.self, from: data)
@@ -131,155 +131,150 @@ class ApiRequest {
                     print(err)
                     complete?(.failure(.decodeFail))
                 }
-            case .failure(let err):
+            case let .failure(err):
                 complete?(.failure(err))
             }
         }
     }
-    
+
     static func request<T: Decodable>(_ url: URLConvertible,
                                       method: HTTPMethod = .get,
-                                      parameters: [String:String] = [:],
-                                      auth:Bool = true,
+                                      parameters: [String: String] = [:],
+                                      auth: Bool = true,
                                       encoding: ParameterEncoding = URLEncoding.default,
-                                      decoder: JSONDecoder = JSONDecoder()) async throws -> T  {
-        try await withCheckedThrowingContinuation{ configure in
-            request(url,method: method,parameters: parameters,auth: auth,encoding: encoding,decoder: decoder) { resp in
+                                      decoder: JSONDecoder = JSONDecoder()) async throws -> T
+    {
+        try await withCheckedThrowingContinuation { configure in
+            request(url, method: method, parameters: parameters, auth: auth, encoding: encoding, decoder: decoder) { resp in
                 configure.resume(with: resp)
             }
         }
     }
-                                      
-    
-    static func requestLoginQR(handler: ((String,String)->Void)?=nil) {
-        
-        class Resp:Codable {
+
+    static func requestLoginQR(handler: ((String, String) -> Void)? = nil) {
+        class Resp: Codable {
             let authCode: String
             let url: String
         }
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        
-        request(EndPoint.loginQR, method: .post,auth: false, decoder: decoder){
-            (result:Result<Resp, RequestError>) in
+
+        request(EndPoint.loginQR, method: .post, auth: false, decoder: decoder) {
+            (result: Result<Resp, RequestError>) in
             switch result {
-            case .success(let res):
-                handler?(res.authCode,res.url)
-            case .failure(let error):
+            case let .success(res):
+                handler?(res.authCode, res.url)
+            case let .failure(error):
                 print(error)
             }
         }
     }
-    
-    
+
     struct LoginResp: Codable {
         struct CookieInfo: Codable {
-            let domains:[String]
-            let cookies:[Cookie]
-            func toCookies()->[HTTPCookie] {
+            let domains: [String]
+            let cookies: [Cookie]
+            func toCookies() -> [HTTPCookie] {
                 domains.map { domain in
-                    cookies.compactMap{$0.toCookie(domain: domain)}
+                    cookies.compactMap { $0.toCookie(domain: domain) }
                 }.reduce([], +)
             }
-
         }
-        struct Cookie:Codable {
+
+        struct Cookie: Codable {
             let name: String
-            let value:String
-            let httpOnly:Int
+            let value: String
+            let httpOnly: Int
             let expires: Int
-            
-            func toCookie(domain: String)->HTTPCookie? {
-                HTTPCookie(properties: [.domain :domain,
-                                        .name:name,
-                                        .value:value,
-                                        .expires:Date(timeIntervalSince1970: TimeInterval(expires)),
-                                        HTTPCookiePropertyKey("HttpOnly"):httpOnly,
-                                        .path:""])
+
+            func toCookie(domain: String) -> HTTPCookie? {
+                HTTPCookie(properties: [.domain: domain,
+                                        .name: name,
+                                        .value: value,
+                                        .expires: Date(timeIntervalSince1970: TimeInterval(expires)),
+                                        HTTPCookiePropertyKey("HttpOnly"): httpOnly,
+                                        .path: ""])
             }
         }
+
         var tokenInfo: LoginToken
-        let cookieInfo:CookieInfo
+        let cookieInfo: CookieInfo
     }
-    
-    static func verifyLoginQR(code: String,handler: ((LoginState)->Void)?=nil) {
+
+    static func verifyLoginQR(code: String, handler: ((LoginState) -> Void)? = nil) {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
 
         request(EndPoint.verifyQR,
-                method: .post,parameters: ["auth_code":code],auth: false,decoder: decoder) {
-            (result:Result<LoginResp, RequestError>) in
+                method: .post, parameters: ["auth_code": code], auth: false, decoder: decoder) {
+            (result: Result<LoginResp, RequestError>) in
             switch result {
-            case .success(var res):
+            case var .success(res):
                 res.tokenInfo.expireDate = Date().addingTimeInterval(TimeInterval(res.tokenInfo.expiresIn))
                 CookieHandler.shared.saveCookie(list: res.cookieInfo.toCookies())
                 handler?(.success(token: res.tokenInfo))
-            case .failure(let error):
+            case let .failure(error):
                 switch error {
-                case .statusFail(let code, _):
+                case let .statusFail(code, _):
                     switch code {
                     case 86038: handler?(.expire)
                     case 86039: handler?(.waiting)
                     default:
                         break
                     }
-                    break
                 default:
                     break
                 }
             }
         }
     }
-    
+
     static func refreshToken() {
         AF.cancelAllRequests()
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        request(EndPoint.refresh,method: .post,parameters: ["refresh_token" : getToken()?.refreshToken ?? ""],decoder: decoder) {
-            (result:Result<LoginResp, RequestError>) in
+        request(EndPoint.refresh, method: .post, parameters: ["refresh_token": getToken()?.refreshToken ?? ""], decoder: decoder) {
+            (result: Result<LoginResp, RequestError>) in
             switch result {
-            case .success(var res):
+            case var .success(res):
                 res.tokenInfo.expireDate = Date().addingTimeInterval(TimeInterval(res.tokenInfo.expiresIn))
                 CookieHandler.shared.saveCookie(list: res.cookieInfo.toCookies())
                 UserDefaults.standard.set(codable: res.tokenInfo, forKey: "token")
-            case .failure(let err):
+            case let .failure(err):
                 print(err)
             }
         }
     }
-    
-    
-    struct FeedResp:Codable {
-        let items:[Items]
-        
-        struct Items: Codable,DisplayData {
-            let can_play:Int?
+
+    struct FeedResp: Codable {
+        let items: [Items]
+
+        struct Items: Codable, DisplayData {
+            let can_play: Int?
             let title: String
             let param: String
             let args: Args
             let idx: Int
             let cover: String
-            
+
             var owner: String {
                 return args.up_name ?? ""
             }
+
             var pic: URL? {
                 return URL(string: cover)
             }
         }
-        
+
         struct Args: Codable, Hashable {
-            let up_name:String?
+            let up_name: String?
 //            let aid: Int?
         }
     }
-    
-    static func getFeeds(lastIdx: Int = 0) async throws ->[FeedResp.Items]  {
+
+    static func getFeeds(lastIdx: Int = 0) async throws -> [FeedResp.Items] {
         let idx = "\(lastIdx)"
-        let resp: FeedResp = try await request(EndPoint.feed,parameters: ["idx":idx,"flush":"0","column":"4","device":"pad","pull":idx == "0" ? "1" : "0"])
+        let resp: FeedResp = try await request(EndPoint.feed, parameters: ["idx": idx, "flush": "0", "column": "4", "device": "pad", "pull": idx == "0" ? "1" : "0"])
         return resp.items
     }
-    
-
 }
-

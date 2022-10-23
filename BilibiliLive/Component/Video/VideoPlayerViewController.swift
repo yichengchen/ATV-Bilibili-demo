@@ -5,32 +5,32 @@
 //  Created by Etan Chen on 2021/4/4.
 //
 
-import UIKit
 import Alamofire
+import AVFoundation
+import AVKit
 import SwiftyJSON
 import SwiftyXMLParser
-import AVKit
-import AVFoundation
+import UIKit
 
 class VideoPlayerViewController: CommonPlayerViewController {
-    var cid:Int?
-    var aid:Int!
+    var cid: Int?
+    var aid: Int!
     var position: Float = 0.0
-    
+
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
     private var playerDelegate: BilibiliVideoResourceLoaderDelegate?
     private let danmuProvider = VideoDanmuProvider()
-    
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        guard let currentTime = player?.currentTime().seconds, currentTime>0 else { return }
+        guard let currentTime = player?.currentTime().seconds, currentTime > 0 else { return }
 
         if let aid = aid, let cid = cid, cid > 0 {
             WebRequest.reportWatchHistory(aid: aid, cid: cid, currentTime: Int(currentTime))
         }
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         ensureCid {
@@ -45,14 +45,13 @@ class VideoPlayerViewController: CommonPlayerViewController {
             self?.danMuView.shoot(danmaku: $0)
         }
     }
-    
-    
+
     func playmedia(json: JSON) async {
         playerStartPos = .zero
         let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
         let headers: [String: String] = [
             "User-Agent": "Bilibili/APPLE TV",
-            "Referer": "https://www.bilibili.com/video/av\(aid!)"
+            "Referer": "https://www.bilibili.com/video/av\(aid!)",
         ]
         let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         playerDelegate = BilibiliVideoResourceLoaderDelegate()
@@ -63,37 +62,37 @@ class VideoPlayerViewController: CommonPlayerViewController {
         prepare(toPlay: asset, withKeys: requestedKeys)
         danMuView.play()
     }
-    
+
     override func playerDidFinishPlaying() {
         dismiss(animated: true)
     }
 }
 
-
 // MARK: - Requests
+
 extension VideoPlayerViewController {
     func fetchVideoData() {
         ApiRequest.requestJSON("https://api.bilibili.com/x/player/playurl?avid=\(aid!)&cid=\(cid!)&qn=116&type=&fnver=0&fnval=16&otype=json") { [weak self] resp in
             switch resp {
-            case .success(let data):
+            case let .success(data):
                 Task { await self?.playmedia(json: data) }
-            case .failure(let error):
+            case let .failure(error):
                 switch error {
-                case .statusFail(let code):
+                case let .statusFail(code):
                     self?.showErrorAlertAndExit(message: "请求失败\(code)，可能需要大会员")
                 default:
                     self?.showErrorAlertAndExit(message: "请求失败,\(error)")
                 }
             }
         }
-        
+
         Task {
             let info = await WebRequest.requestDetailVideo(aid: aid!)
             setPlayerInfo(title: info?.title, subTitle: info?.owner.name, desp: info?.desc, pic: info?.pic)
         }
     }
-    
-    func ensureCid(callback:(()->Void)?=nil) {
+
+    func ensureCid(callback: (() -> Void)? = nil) {
         if let cid = cid, cid > 0 {
             callback?()
             return
@@ -102,12 +101,12 @@ extension VideoPlayerViewController {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {
-            case .success(let data):
+            case let .success(data):
                 let json = JSON(data)
                 let cid = json["data"][0]["cid"].intValue
                 self.cid = cid
                 callback?()
-            case .failure(let err):
+            case let .failure(err):
                 self.showErrorAlertAndExit(message: "请求cid失败")
                 print(err)
             }
@@ -115,8 +114,8 @@ extension VideoPlayerViewController {
     }
 }
 
-
 // MARK: - Player
+
 extension VideoPlayerViewController {
     @MainActor
     func prepare(toPlay asset: AVURLAsset, withKeys requestedKeys: [AnyHashable]) {
@@ -131,12 +130,12 @@ extension VideoPlayerViewController {
                 return
             }
         }
-        
+
         if !asset.isPlayable {
             showErrorAlertAndExit(message: "URL解析错误")
             return
         }
-        
+
         playerItem = AVPlayerItem(asset: asset)
         player = AVPlayer(playerItem: playerItem)
         player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in

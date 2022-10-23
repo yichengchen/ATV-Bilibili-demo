@@ -5,9 +5,9 @@
 //  Created by Etan Chen on 2021/4/4.
 //
 
-import UIKit
 import Alamofire
 import SwiftyJSON
+import UIKit
 
 class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
@@ -17,7 +17,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
         collectionVC.show(in: self)
         collectionVC.pageSize = 40
         collectionVC.didSelect = {
-            [weak self]  in
+            [weak self] in
             self?.goDetail(with: $0)
         }
         collectionVC.loadMore = {
@@ -26,18 +26,18 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
         }
         reloadData()
     }
-    
+
     func reloadData() {
         Task {
             await initData()
         }
     }
-    
+
     func initData() async {
         page = 1
         collectionVC.displayDatas = (try? await requestData(page: 1)) ?? []
     }
-    
+
     func loadNextPage() {
         Task {
             do {
@@ -49,10 +49,10 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
             }
         }
     }
-    
-    func requestData(page: Int) async throws -> [any DisplayData]  {
+
+    func requestData(page: Int) async throws -> [any DisplayData] {
         let json = try await WebRequest.requestJSON(url: "https://api.bilibili.com/x/web-feed/feed?ps=40&pn=\(page)")
-            
+
         let datas = json.arrayValue.map { data -> (any DisplayData) in
             let timestamp = data["pubdate"].int
             let date = DateFormatter.stringFor(timestamp: timestamp)
@@ -64,7 +64,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
                 let ep = bangumi["new_ep"]
                 let title = "第" + ep["index"].stringValue + "集 - " + ep["index_title"].stringValue
                 let episode = ep["episode_id"].intValue
-                return BangumiData(title: title, season: season, episode: episode, owner: owner, pic: pic,date: date)
+                return BangumiData(title: title, season: season, episode: episode, owner: owner, pic: pic, date: date)
             }
             let avid = data["id"].intValue
             let archive = data["archive"]
@@ -73,32 +73,32 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
             let owner = archive["owner"]["name"].stringValue
             let avatar = archive["owner"]["face"].url
             let pic = archive["pic"].url!
-            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, avatar: avatar,date: date)
+            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, avatar: avatar, date: date)
         }
         return datas
     }
-    
+
     func goDetail(with displayData: any DisplayData) {
         if let feed = displayData as? FeedData {
-            let detailVC = VideoDetailViewController.create(aid: feed.aid,cid: feed.cid)
+            let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid)
             detailVC.present(from: self)
             return
         }
         if let bangumi = displayData as? BangumiData {
-            AF.request("https://api.bilibili.com/pgc/web/season/section?season_id=\(bangumi.season)").responseData { [weak self] (response) in
+            AF.request("https://api.bilibili.com/pgc/web/season/section?season_id=\(bangumi.season)").responseData { [weak self] response in
                 guard let self = self else { return }
-                switch(response.result) {
-                case .success(let data):
+                switch response.result {
+                case let .success(data):
                     let json = JSON(data)
                     let episodes = json["result"]["main_section"]["episodes"].arrayValue
                     for episode in episodes {
                         if episode["id"].intValue == bangumi.episode {
-                            let detailVC = VideoDetailViewController.create(aid: episode["aid"].intValue,cid: episode["cid"].intValue)
+                            let detailVC = VideoDetailViewController.create(aid: episode["aid"].intValue, cid: episode["cid"].intValue)
                             detailVC.present(from: self)
                             break
                         }
                     }
-                case .failure(let error):
+                case let .failure(error):
                     print(error)
                 }
             }
@@ -124,4 +124,3 @@ struct BangumiData: DisplayData {
     let pic: URL?
     let date: String?
 }
-

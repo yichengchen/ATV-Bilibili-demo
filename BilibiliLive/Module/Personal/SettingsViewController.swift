@@ -8,7 +8,7 @@
 import UIKit
 
 extension FeedDisplayStyle {
-    var desp:String {
+    var desp: String {
         switch self {
         case .large:
             return "3行"
@@ -19,27 +19,27 @@ extension FeedDisplayStyle {
 }
 
 class SettingsViewController: UIViewController {
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet var collectionView: UICollectionView!
     var cellModels = [CellModel]()
 
     static func create() -> SettingsViewController {
         return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! SettingsViewController
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupData()
     }
-    
+
     func setupData() {
         cellModels.removeAll()
-        let directlyVideo = CellModel(title: "直接进入视频",desp: Settings.direatlyEnterVideo ? "开" : "关") {
+        let directlyVideo = CellModel(title: "直接进入视频", desp: Settings.direatlyEnterVideo ? "开" : "关") {
             [weak self] in
             Settings.direatlyEnterVideo.toggle()
             self?.setupData()
         }
         cellModels.append(directlyVideo)
-        
+
         let style = CellModel(title: "时间线显示模式", desp: Settings.displayStyle.desp) { [weak self] in
             let alert = UIAlertController(title: "显示模式", message: "重启app生效", preferredStyle: .actionSheet)
             for style in FeedDisplayStyle.allCases {
@@ -52,7 +52,7 @@ class SettingsViewController: UIViewController {
             self?.present(alert, animated: true)
         }
         cellModels.append(style)
-        let liveHack = CellModel(title: "直播播放黑屏修复",desp: Settings.direatlyEnterVideo ? "开" : "关") {
+        let liveHack = CellModel(title: "直播播放黑屏修复", desp: Settings.direatlyEnterVideo ? "开" : "关") {
             [weak self] in
             Settings.livePlayerHack.toggle()
             self?.setupData()
@@ -60,7 +60,6 @@ class SettingsViewController: UIViewController {
         cellModels.append(liveHack)
         collectionView.reloadData()
     }
-    
 }
 
 extension SettingsViewController: UICollectionViewDelegate {
@@ -73,12 +72,11 @@ extension SettingsViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
-    
-    
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return cellModels.count
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SettingsSwitchCell.self), for: indexPath) as! SettingsSwitchCell
         let data = cellModels[indexPath.row]
@@ -89,6 +87,6 @@ extension SettingsViewController: UICollectionViewDataSource {
 }
 
 class SettingsSwitchCell: UICollectionViewCell {
-    @IBOutlet weak var titleLabel: UILabel!
-    @IBOutlet weak var descLabel: UILabel!
+    @IBOutlet var titleLabel: UILabel!
+    @IBOutlet var descLabel: UILabel!
 }

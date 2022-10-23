@@ -14,39 +14,38 @@ class BLCustomButton: BLButton {
     @IBInspectable var image: UIImage? {
         didSet { updateButton() }
     }
+
     @IBInspectable var onImage: UIImage? {
         didSet { updateButton() }
     }
-    
+
     @IBInspectable var highLightImage: UIImage? {
         didSet { updateButton() }
     }
-    
+
     @IBInspectable var title: String? {
         didSet {
             updateTitleLabel()
         }
     }
-    
+
     @IBInspectable var titleColor: UIColor = UIColor.black.withAlphaComponent(0.9) {
         didSet { titleLabel.textColor = titleColor }
     }
-    
+
     @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 24) {
         didSet { titleLabel.font = titleFont }
     }
-    
-    var isOn:Bool = false {
+
+    var isOn: Bool = false {
         didSet {
             updateButton()
         }
     }
-    
 
     private let titleLabel = UILabel()
     private let imageView = UIImageView()
-    
-    
+
     override func setup() {
         super.setup()
         titleLabel.isUserInteractionEnabled = false
@@ -62,10 +61,9 @@ class BLCustomButton: BLButton {
         titleLabel.font = titleFont
         titleLabel.textColor = titleColor
         updateTitleLabel(force: true)
-        
     }
-    
-    private func updateTitleLabel(force:Bool=false) {
+
+    private func updateTitleLabel(force: Bool = false) {
         let shouldHide = title?.count == 0
         titleLabel.text = title
         if force || titleLabel.isHidden != shouldHide {
@@ -79,13 +77,12 @@ class BLCustomButton: BLButton {
                 }
             }
         }
-        
     }
-    
+
     private func getImage() -> UIImage? {
         isOn ? onImage : image
     }
-    
+
     private func updateButton() {
         if isFocused {
             imageView.image = highLightImage ?? getImage()
@@ -95,7 +92,7 @@ class BLCustomButton: BLButton {
             imageView.tintColor = .white
         }
     }
-    
+
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
         updateButton()
@@ -106,23 +103,23 @@ class BLCustomButton: BLButton {
 @MainActor
 class BLCustomTextButton: BLButton {
     private let titleLabel = UILabel()
-    
+
     @IBInspectable var title: String? {
         didSet { titleLabel.text = title }
     }
-    
-    @IBInspectable var titleColor: UIColor = UIColor.white {
+
+    @IBInspectable var titleColor: UIColor = .white {
         didSet { titleLabel.textColor = titleColor }
     }
-    
-    @IBInspectable var titleSelectedColor: UIColor = UIColor.black {
+
+    @IBInspectable var titleSelectedColor: UIColor = .black {
         didSet { titleLabel.textColor = titleColor }
     }
-    
+
     @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 28) {
         didSet { titleLabel.font = titleFont }
     }
-    
+
     override func setup() {
         super.setup()
         effectView.layer.cornerRadius = 10
@@ -136,33 +133,30 @@ class BLCustomTextButton: BLButton {
         titleLabel.textColor = isFocused ? titleSelectedColor : titleColor
         titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
     }
-    
+
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
         titleLabel.textColor = isFocused ? titleSelectedColor : titleColor
     }
 }
 
-
 class BLButton: UIControl {
     private var motionEffect: UIInterpolatingMotionEffect!
     fileprivate let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     private let selectedWhiteView = UIView()
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setup()
     }
-    
-    override var canBecomeFocused: Bool{
-        get { return true }
-    }
-    
+
+    override var canBecomeFocused: Bool { return true }
+
     func setup() {
         isUserInteractionEnabled = true
         motionEffect = UIInterpolatingMotionEffect(keyPath: "center.x", type: .tiltAlongHorizontalAxis)
@@ -182,38 +176,36 @@ class BLButton: UIControl {
         selectedWhiteView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        
     }
-    
+
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
         super.pressesEnded(presses, with: event)
         if presses.first?.type == .select {
             sendActions(for: .primaryActionTriggered)
         }
     }
-    
+
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
         if isFocused {
             selectedWhiteView.isHidden = false
             coordinator.addCoordinatedAnimations {
-                self.transform = CGAffineTransformMakeScale(1.1, 1.1);
-                let scaleDiff = (self.bounds.size.height*1.1-self.bounds.size.height)/2;
-                self.transform = CGAffineTransformTranslate(self.transform, 0, -scaleDiff);
-                self.layer.shadowOffset = CGSizeMake(0, 10);
-                self.layer.shadowOpacity = 0.15;
-                self.layer.shadowRadius = 16.0;
+                self.transform = CGAffineTransformMakeScale(1.1, 1.1)
+                let scaleDiff = (self.bounds.size.height * 1.1 - self.bounds.size.height) / 2
+                self.transform = CGAffineTransformTranslate(self.transform, 0, -scaleDiff)
+                self.layer.shadowOffset = CGSizeMake(0, 10)
+                self.layer.shadowOpacity = 0.15
+                self.layer.shadowRadius = 16.0
                 self.addMotionEffect(self.motionEffect)
             }
         } else {
             selectedWhiteView.isHidden = true
             coordinator.addCoordinatedAnimations {
-                self.transform = CGAffineTransformIdentity;
-                self.layer.shadowOpacity = 0;
-                self.layer.shadowOffset = CGSizeMake(0, 0);
+                self.transform = CGAffineTransformIdentity
+                self.layer.shadowOpacity = 0
+                self.layer.shadowOffset = CGSizeMake(0, 0)
                 self.removeMotionEffect(self.motionEffect)
             }
         }
     }
 }
-

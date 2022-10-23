@@ -10,7 +10,7 @@ import UIKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
-    
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         CookieHandler.shared.restoreCookies()
@@ -36,16 +36,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func showLogin() {
         window?.rootViewController = LoginViewController.create()
     }
-    
+
     func showTabBar() {
         window?.rootViewController = BLTabBarViewController()
     }
 
     static var shared: AppDelegate {
-        get {
-            return UIApplication.shared.delegate as! AppDelegate
-        }
+        return UIApplication.shared.delegate as! AppDelegate
     }
-
 }
-

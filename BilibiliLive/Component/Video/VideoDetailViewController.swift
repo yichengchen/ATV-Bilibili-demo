@@ -9,56 +9,54 @@ import Foundation
 import UIKit
 
 import Alamofire
-import SwiftyJSON
 import Kingfisher
+import SwiftyJSON
 import TVUIKit
 
 class VideoDetailViewController: UIViewController {
     private var loadingView = UIActivityIndicatorView()
-    @IBOutlet weak var backgroundImageView: UIImageView!
-    @IBOutlet weak var effectContainerView: UIVisualEffectView!
-    
-    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet var backgroundImageView: UIImageView!
+    @IBOutlet var effectContainerView: UIVisualEffectView!
 
-    @IBOutlet weak var upButton: BLCustomTextButton!
-    @IBOutlet weak var noteLabel: UILabel!
-    @IBOutlet weak var coverImageView: UIImageView!
-    @IBOutlet weak var playButton: BLCustomButton!
-    @IBOutlet weak var likeButton: BLCustomButton!
-    @IBOutlet weak var coinButton: BLCustomButton!
-        
-    @IBOutlet weak var durationLabel: UILabel!
-    @IBOutlet weak var avatarImageView: UIImageView!
-    @IBOutlet weak var favButton: BLCustomButton!
-    @IBOutlet weak var pageCollectionView: UICollectionView!
-    @IBOutlet weak var recommandCollectionView: UICollectionView!
-    
-    private var aid:Int!
-    private var cid:Int!
+    @IBOutlet var titleLabel: UILabel!
+
+    @IBOutlet var upButton: BLCustomTextButton!
+    @IBOutlet var noteLabel: UILabel!
+    @IBOutlet var coverImageView: UIImageView!
+    @IBOutlet var playButton: BLCustomButton!
+    @IBOutlet var likeButton: BLCustomButton!
+    @IBOutlet var coinButton: BLCustomButton!
+
+    @IBOutlet var durationLabel: UILabel!
+    @IBOutlet var avatarImageView: UIImageView!
+    @IBOutlet var favButton: BLCustomButton!
+    @IBOutlet var pageCollectionView: UICollectionView!
+    @IBOutlet var recommandCollectionView: UICollectionView!
+
+    private var aid: Int!
+    private var cid: Int!
     private var mid = 0
 
     private var pages = [PageData]()
     private var relateds = [VideoDetail]()
-    
-    static func create(aid:Int, cid:Int) -> VideoDetailViewController {
+
+    static func create(aid: Int, cid: Int) -> VideoDetailViewController {
         let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: "VideoDetailViewController") as! VideoDetailViewController
         vc.aid = aid
         vc.cid = cid
         return vc
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLoading()
         fetchData()
     }
-    
+
     override var preferredFocusedView: UIView? {
-        get {
-            return playButton
-        }
+        return playButton
     }
-    
+
     private func setupLoading() {
         effectContainerView.isHidden = true
         view.addSubview(loadingView)
@@ -67,9 +65,9 @@ class VideoDetailViewController: UIViewController {
         loadingView.startAnimating()
         loadingView.makeConstraintsBindToCenterOfSuperview()
     }
-    
-    func present(from vc:UIViewController) {
-        if (!Settings.direatlyEnterVideo) {
+
+    func present(from vc: UIViewController) {
+        if !Settings.direatlyEnterVideo {
             vc.present(self, animated: true)
         } else {
             vc.present(self, animated: false) { [self] in
@@ -80,39 +78,39 @@ class VideoDetailViewController: UIViewController {
             }
         }
     }
-    
-    private func exit(with error:Error) {
+
+    private func exit(with error: Error) {
         print(error)
         let alertVC = UIAlertController(title: "获取失败", message: nil, preferredStyle: .alert)
         alertVC.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
         present(alertVC, animated: true, completion: nil)
     }
-    
+
     private func fetchData() {
-        AF.request("http://api.bilibili.com/x/web-interface/view",parameters: ["aid":aid]).responseData {
+        AF.request("http://api.bilibili.com/x/web-interface/view", parameters: ["aid": aid]).responseData {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {
-            case .success(let data):
+            case let .success(data):
                 let json = JSON(data)
                 self.update(with: json)
-            case .failure(let err):
+            case let .failure(err):
                 self.exit(with: err)
             }
         }
-        
+
         WebRequest.requestRelatedVideo(aid: aid) {
             [weak self] recommands in
             self?.relateds = recommands
             self?.recommandCollectionView.reloadData()
         }
-        
+
         WebRequest.requestLikeStatus(aid: aid) { [weak self] isLiked in
             self?.likeButton.isOn = isLiked
         }
     }
-    
-    private func update(with json:JSON) {
+
+    private func update(with json: JSON) {
         let data = json["data"]
         mid = data["owner"]["mid"].intValue
         likeButton.title = data["stat"]["favorite"].stringValue
@@ -125,13 +123,13 @@ class VideoDetailViewController: UIViewController {
         favButton.title = data["stat"]["favorite"].stringValue
         titleLabel.text = data["title"].stringValue
         upButton.title = data["owner"]["name"].stringValue
-         
-        avatarImageView.kf.setImage(with:data["owner"]["face"].url,options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))),.processor(RoundCornerImageProcessor(radius:.widthFraction(0.5))),.cacheSerializer(FormatIndicatedCacheSerializer.png)])
-        
+
+        avatarImageView.kf.setImage(with: data["owner"]["face"].url, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
+
         let image = URL(string: data["pic"].stringValue)
-            coverImageView.kf.setImage(with: image)
-            backgroundImageView.kf.setImage(with: image)
-        
+        coverImageView.kf.setImage(with: image)
+        backgroundImageView.kf.setImage(with: image)
+
         var notes = [String]()
         let status = data["dynamic"].stringValue
         if status.count > 1 {
@@ -139,11 +137,11 @@ class VideoDetailViewController: UIViewController {
         }
         notes.append(data["desc"].stringValue)
         noteLabel.text = notes.joined(separator: "\n")
-        
+
         pages = data["pages"].arrayValue.map {
             PageData(cid: $0["cid"].intValue, name: $0["part"].stringValue)
         }
-        if (pages.count > 1) {
+        if pages.count > 1 {
             pageCollectionView.reloadData()
             pageCollectionView.isHidden = false
             let index = pages.firstIndex { $0.cid == cid } ?? 0
@@ -157,20 +155,20 @@ class VideoDetailViewController: UIViewController {
             self.backgroundImageView.alpha = 1
         }
     }
-    
+
     @IBAction func actionShowUpSpace(_ sender: Any) {
         let upSpaceVC = UpSpaceViewController()
         upSpaceVC.mid = mid
         present(upSpaceVC, animated: true)
     }
-    
+
     @IBAction func actionPlay(_ sender: Any) {
         let player = VideoPlayerViewController()
         player.aid = aid
         player.cid = cid
         present(player, animated: true, completion: nil)
     }
-    
+
     @IBAction func actionLike(_ sender: Any) {
         Task {
             likeButton.isOn.toggle()
@@ -180,7 +178,7 @@ class VideoDetailViewController: UIViewController {
             }
         }
     }
-    
+
     @IBAction func actionCoin(_ sender: Any) {
         let alert = UIAlertController(title: "投币个数", message: nil, preferredStyle: .actionSheet)
         let aid = aid!
@@ -193,7 +191,7 @@ class VideoDetailViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "取消", style: .default))
         present(alert, animated: true)
     }
-    
+
     @IBAction func actionFavorite(_ sender: Any) {
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         alert.addAction(UIAlertAction(title: "待开发", style: .default))
@@ -214,7 +212,6 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
             present(detailVC, animated: true, completion: nil)
         }
-        
     }
 }
 
@@ -225,7 +222,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         }
         return relateds.count
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
         let label = cell.viewWithTag(2) as! UILabel
@@ -240,22 +237,19 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         imageView.kf.setImage(with: URL(string: related.pic))
         return cell
     }
-    
-    
 }
 
 struct PageData {
     let cid: Int
-    let name:String
+    let name: String
 }
 
 class BLCardView: TVCardView {
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
         subviews.first?.subviews.first?.subviews.last?.subviews.first?.subviews.first?.layer.cornerRadius = 12
-       
     }
-    
+
     override func layoutSubviews() {
         super.layoutSubviews()
     }

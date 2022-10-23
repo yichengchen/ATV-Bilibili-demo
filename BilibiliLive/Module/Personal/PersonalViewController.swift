@@ -5,17 +5,17 @@
 //  Created by yicheng on 2022/8/20.
 //
 
-import UIKit
 import Alamofire
-import SwiftyJSON
 import Kingfisher
+import SwiftyJSON
+import UIKit
 
 struct CellModel {
-    let title:String
+    let title: String
     let desp: String?
-    let action: (()->Void)?
-    
-    init(title: String, desp: String?=nil, action: (() -> Void)?=nil) {
+    let action: (() -> Void)?
+
+    init(title: String, desp: String? = nil, action: (() -> Void)? = nil) {
         self.title = title
         self.desp = desp
         self.action = action
@@ -27,31 +27,29 @@ class PersonalViewController: UIViewController {
         return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! PersonalViewController
     }
 
-    @IBOutlet weak var contentView: UIView!
-    @IBOutlet weak var avatarImageView: UIImageView!
-    @IBOutlet weak var usernameLabel: UILabel!
+    @IBOutlet var contentView: UIView!
+    @IBOutlet var avatarImageView: UIImageView!
+    @IBOutlet var usernameLabel: UILabel!
     var currentViewController: UIViewController?
-    
+
     var cellModels = [CellModel]()
     override func viewDidLoad() {
         super.viewDidLoad()
         setupData()
         cellModels.first?.action?()
         avatarImageView.layer.cornerRadius = avatarImageView.frame.size.width / 2
-        
+
         WebRequest.requestLoginInfo { [weak self] response in
             switch response {
-            case .success(let json):
+            case let .success(json):
                 self?.avatarImageView.kf.setImage(with: URL(string: json["face"].stringValue))
                 self?.usernameLabel.text = json["uname"].stringValue
-            case .failure(_):
+            case .failure:
                 break
             }
-            
         }
     }
-    
-    
+
     func setupData() {
         let setting = CellModel(title: "设置") {
             [weak self] in
@@ -64,25 +62,25 @@ class PersonalViewController: UIViewController {
         }
         cellModels.append(logout)
     }
-    
+
     func setViewController(vc: UIViewController) {
         currentViewController?.willMove(toParent: nil)
         currentViewController?.view.removeFromSuperview()
         currentViewController?.removeFromParent()
-        
+
         currentViewController = vc
         addChild(vc)
         contentView.addSubview(vc.view)
         vc.view.makeConstraintsToBindToSuperview()
         vc.didMove(toParent: self)
     }
-    
+
     func actionLogout() {
         let alert = UIAlertController(title: "确定登出？", message: nil, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "确定", style: .default){
+        alert.addAction(UIAlertAction(title: "确定", style: .default) {
             _ in
-            ApiRequest.logout() {
-                WebRequest.logout() {
+            ApiRequest.logout {
+                WebRequest.logout {
                     AppDelegate.shared.showLogin()
                 }
             }
@@ -99,7 +97,7 @@ extension PersonalViewController: UICollectionViewDataSource {
         label.text = cellModels[indexPath.item].title
         return cell
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return cellModels.count
     }
@@ -110,7 +108,6 @@ extension PersonalViewController: UICollectionViewDelegate {
         cellModels[indexPath.item].action?()
     }
 }
-
 
 class EmptyViewController: UIViewController {
     override func viewDidLoad() {

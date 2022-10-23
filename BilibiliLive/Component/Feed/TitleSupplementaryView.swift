@@ -5,17 +5,19 @@
 //  Created by yicheng on 2022/10/21.
 //
 
-import UIKit
 import SnapKit
+import UIKit
 
 class TitleSupplementaryView: UICollectionReusableView {
     let label = UILabel()
     static let reuseIdentifier = "title-supplementary-reuse-identifier"
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         configure()
     }
+
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError()
     }
@@ -35,4 +37,3 @@ extension TitleSupplementaryView {
         label.font = UIFont.preferredFont(forTextStyle: .title3)
     }
 }
-

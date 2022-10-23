@@ -12,8 +12,8 @@ import Alamofire
 import SwiftyJSON
 
 class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
-    var rooms = [LiveRoom]() { didSet {collectionVC.displayDatas=rooms} }
-    
+    var rooms = [LiveRoom]() { didSet { collectionVC.displayDatas = rooms } }
+
     let collectionVC = FeedCollectionViewController()
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,23 +28,23 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
     func reloadData() {
         loadData()
     }
-    
-    func loadData(page:Int = 1, perviousPage:[LiveRoom] = []) {
+
+    func loadData(page: Int = 1, perviousPage: [LiveRoom] = []) {
         var rooms = perviousPage
         AF.request("https://api.live.bilibili.com/xlive/web-ucenter/v1/xfetter/GetWebList?page_size=10&page=\(page)").responseData {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {
-            case .success(let data):
+            case let .success(data):
                 let json = JSON(data)
                 rooms.append(contentsOf: self.process(json: json))
                 let totalCount = json["data"]["count"].intValue
                 if self.rooms.count < totalCount, page < 5 {
-                    self.loadData(page: page+1,perviousPage: rooms)
+                    self.loadData(page: page + 1, perviousPage: rooms)
                 } else {
                     self.rooms = rooms
                 }
-            case .failure(let err):
+            case let .failure(err):
                 print(err)
                 if rooms.count > 0 {
                     self.rooms = rooms
@@ -52,7 +52,7 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
             }
         }
     }
-    
+
     func process(json: JSON) -> [LiveRoom] {
         let newRooms = json["data"]["rooms"].arrayValue.map { room in
             LiveRoom(name: room["title"].stringValue,
@@ -62,7 +62,7 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
         }
         return newRooms
     }
-    
+
     func enter(with room: LiveRoom) {
         let playerVC = LivePlayerViewController()
         playerVC.room = room
@@ -71,14 +71,12 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
 }
 
 struct LiveRoom: DisplayData {
-    let name:String
+    let name: String
     let roomID: Int
     let up: String
     let cover: URL?
-    
-    var title: String { get {self.name} }
-    var owner: String { get {self.up} }
-    var pic: URL? { get {self.cover} }
+
+    var title: String { name }
+    var owner: String { up }
+    var pic: URL? { cover }
 }
-
-

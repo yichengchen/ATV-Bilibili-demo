@@ -7,11 +7,10 @@
 //
 
 import AVFoundation
-import UIKit
 import SwiftyJSON
+import UIKit
 
 class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelegate {
-    
     enum URLs {
         static let customScheme = "atv"
         static let customPrefix = customScheme + "://"
@@ -23,33 +22,33 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private var audioPlaylist = ""
     private var videoPlaylist = ""
     private var masterPlaylist = ""
-    
+
     private let badRequestErrorCode = 455
 
-    func setBilibili(info:JSON) {
+    func setBilibili(info: JSON) {
         let dash = info["data"]["dash"]
         let duration = dash["duration"].intValue
-        
+
         let video = dash["video"][1]
         let videoBaseURL = video["base_url"].stringValue
-        let videoBackupURL = video["backup_url"].arrayValue.map({$0.stringValue})
-                
+        let videoBackupURL = video["backup_url"].arrayValue.map({ $0.stringValue })
+
         let width = video["width"].intValue
         let height = video["height"].intValue
         let videocodecs = video["codecs"].stringValue
         let frameRate = video["frameRate"].stringValue
         let sar = video["sar"].stringValue
         let videoBandwidth = video["bandwidth"].stringValue
-        
+
         let videoURL = videoBackupURL.first ?? videoBaseURL
-        
+
         let audio = dash["audio"][0]
         let audioBaseURL = audio["base_url"].stringValue
-        let audioBackupURL = audio["backup_url"].arrayValue.map({$0.stringValue})
+        let audioBackupURL = audio["backup_url"].arrayValue.map({ $0.stringValue })
         let audioURL = audioBackupURL.first ?? audioBaseURL
-        
+
         let audioCodec = audio["codecs"].stringValue
-        
+
         let audioBandwidth = audio["bandwidth"].stringValue
         masterPlaylist = """
         #EXTM3U
@@ -71,7 +70,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         #EXT-X-MLB-INFO:max-bw=\(videoBandwidth),duration=\(duration)
         #EXT-X-ENDLIST
         """
-        
+
         audioPlaylist = """
         #EXTM3U
         #EXT-X-VERSION:6
@@ -84,13 +83,12 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         #EXT-X-MLB-INFO:max-bw=\(audioBandwidth),duration=\(duration)
         #EXT-X-ENDLIST
         """
-        
     }
-    
+
     private func reportError(_ loadingRequest: AVAssetResourceLoadingRequest, withErrorCode error: Int) {
         loadingRequest.finishLoading(with: NSError(domain: NSURLErrorDomain, code: error, userInfo: nil))
     }
-    
+
     private func report(_ loadingRequest: AVAssetResourceLoadingRequest, content: String) {
         if let data = content.data(using: .utf8) {
             loadingRequest.dataRequest?.respond(with: data)
@@ -101,7 +99,8 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     }
 
     func resourceLoader(_: AVAssetResourceLoader,
-                        shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
+                        shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool
+    {
         guard let scheme = loadingRequest.request.url?.scheme, scheme == URLs.customScheme else {
             return false
         }
@@ -119,7 +118,7 @@ private extension BilibiliVideoResourceLoaderDelegate {
             reportError(loadingRequest, withErrorCode: badRequestErrorCode)
             return
         }
-        
+
         switch customUrl {
         case URLs.video:
             report(loadingRequest, content: videoPlaylist)

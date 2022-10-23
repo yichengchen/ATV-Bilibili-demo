@@ -5,9 +5,9 @@
 //  Created by whw on 2021/4/15.
 //
 
-import UIKit
 import Alamofire
 import SwiftyJSON
+import UIKit
 
 class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
@@ -20,34 +20,33 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
         }
         loadData()
     }
-    
+
     func reloadData() {
         loadData()
     }
-    
+
     func loadData() {
         AF.request("http://api.bilibili.com/x/v2/history").responseData {
             [weak self] response in
             guard let self = self else { return }
-            switch(response.result) {
-            case .success(let data):
+            switch response.result {
+            case let .success(data):
                 let json = JSON(data)
                 let datas = self.progrssData(json: json)
                 self.collectionVC.displayDatas = datas
-            case .failure(let error):
+            case let .failure(error):
                 print(error)
-                break
             }
         }
     }
-    
-    func progrssData(json:JSON) -> [HistoryData] {
+
+    func progrssData(json: JSON) -> [HistoryData] {
         let datas = json["data"].arrayValue.map { data -> HistoryData in
             let title = data["title"].stringValue
             let avid = data["aid"].intValue
             let owner = data["owner"]["name"].stringValue
             let pic = data["pic"].url!
-            
+
             let cid: Int
             let position: Float
             let multiPage: Bool
@@ -66,7 +65,7 @@ class HistoryViewController: UIViewController, BLTabBarContentVCProtocol {
         }
         return datas
     }
-    
+
     func goDetail(with history: HistoryData) {
         let detailVC = VideoDetailViewController.create(aid: history.aid, cid: history.cid)
         detailVC.present(from: self)
@@ -82,5 +81,3 @@ struct HistoryData: DisplayData {
     let position: Float
     let multiPage: Bool
 }
-
-

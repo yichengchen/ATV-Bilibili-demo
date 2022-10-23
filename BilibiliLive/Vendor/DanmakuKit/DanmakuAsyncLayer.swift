@@ -8,62 +8,59 @@
 import UIKit
 
 class Sentinel {
-    
     private var value: Int32 = 0
-    
+
     public func getValue() -> Int32 {
         return value
     }
-    
+
     public func increase() {
         value += 1
     }
-    
 }
 
 var pool: DanmakuQueuePool!
 
 class DanmakuAsyncLayer: CALayer {
-    
     /// When true, it is drawn asynchronously and is ture by default.
     public var displayAsync = true
-    
+
     public var willDisplay: ((_ layer: DanmakuAsyncLayer) -> Void)?
-    
-    public var displaying: ((_ context: CGContext, _ size: CGSize, _ isCancelled:(() -> Bool)) -> Void)?
-    
+
+    public var displaying: ((_ context: CGContext, _ size: CGSize, _ isCancelled: () -> Bool) -> Void)?
+
     public var didDisplay: ((_ layer: DanmakuAsyncLayer, _ finished: Bool) -> Void)?
-    
+
     private let sentinel = Sentinel()
-    
+
     override init() {
         super.init()
         contentsScale = UIScreen.main.scale
     }
-    
+
     override init(layer: Any) {
         super.init(layer: layer)
     }
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
-    
+
     deinit {
         sentinel.increase()
     }
-    
+
     override func setNeedsDisplay() {
-        //1. Cancel the last drawing
+        // 1. Cancel the last drawing
         sentinel.increase()
-        //2. call super
+        // 2. call super
         super.setNeedsDisplay()
     }
-    
+
     override func display() {
         display(async: displayAsync)
     }
-    
+
     private func display(async: Bool) {
         guard displaying != nil else {
             willDisplay?(self)
@@ -71,11 +68,11 @@ class DanmakuAsyncLayer: CALayer {
             didDisplay?(self, true)
             return
         }
-        
+
         if async {
             willDisplay?(self)
             let value = sentinel.getValue()
-            let isCancelled = {() -> Bool in
+            let isCancelled = { () -> Bool in
                 return value != self.sentinel.getValue()
             }
             let size = bounds.size
@@ -128,7 +125,7 @@ class DanmakuAsyncLayer: CALayer {
                     }
                 }
             }
-            
+
         } else {
             sentinel.increase()
             willDisplay?(self)
@@ -137,12 +134,11 @@ class DanmakuAsyncLayer: CALayer {
                 UIGraphicsEndImageContext()
                 return
             }
-            displaying?(context, bounds.size, {() -> Bool in return false})
+            displaying?(context, bounds.size, { () -> Bool in return false })
             let image = UIGraphicsGetImageFromCurrentImageContext()
             UIGraphicsEndImageContext()
             contents = image?.cgImage
             didDisplay?(self, true)
         }
     }
-    
 }

@@ -5,29 +5,30 @@
 //  Created by Etan on 2021/3/27.
 //
 
-import UIKit
 import Alamofire
-import SwiftyJSON
 import AVKit
+import SwiftyJSON
+import UIKit
 
 class LivePlayerViewController: CommonPlayerViewController {
     enum LiveError: Error {
         case noLiving
     }
-    
+
     var room: LiveRoom? {
         didSet {
             roomID = room?.roomID ?? 0
         }
     }
+
     private var roomID: Int = 0
     private var danMuProvider: LiveDanMuProvider?
     private var url: URL?
-        
+
     override func viewDidLoad() {
         allowChangeSpeed = false
         super.viewDidLoad()
-        refreshRoomsID(){
+        refreshRoomsID {
             [weak self] in
             guard let self = self else { return }
             self.initDataSource()
@@ -36,19 +37,19 @@ class LivePlayerViewController: CommonPlayerViewController {
         danMuView.play()
         setPlayerInfo(title: room?.title, subTitle: nil, desp: room?.owner, pic: room?.cover?.absoluteString)
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
         danMuProvider?.stop()
     }
-    
+
     override func retryPlay() -> Bool {
         play()
         return true
     }
-    
+
     func play() {
-        if var url = self.url {
+        if var url = url {
             if Settings.livePlayerHack {
                 var components = URLComponents(string: url.absoluteString)!
                 components.query = nil
@@ -59,14 +60,14 @@ class LivePlayerViewController: CommonPlayerViewController {
 
             let headers: [String: String] = [
                 "User-Agent": "Bilibili/APPLE TV",
-                "Referer": "https://live.bilibili.com"
+                "Referer": "https://live.bilibili.com",
             ]
             let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
             playerItem = AVPlayerItem(asset: asset)
             player = AVPlayer(playerItem: playerItem)
         }
     }
-    
+
     func endWithError(err: Error) {
         let alert = UIAlertController(title: "播放失败", message: "\(err)", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: {
@@ -75,14 +76,14 @@ class LivePlayerViewController: CommonPlayerViewController {
         }))
         present(alert, animated: true, completion: nil)
     }
-    
-    func refreshRoomsID(complete:(()->Void)?=nil) {
+
+    func refreshRoomsID(complete: (() -> Void)? = nil) {
         let url = "https://api.live.bilibili.com/room/v1/Room/room_init?id=\(roomID)"
         AF.request(url).responseData {
             [weak self] resp in
             guard let self = self else { return }
             switch resp.result {
-            case .success(let object):
+            case let .success(object):
                 let json = JSON(object)
                 let isLive = json["data"]["live_status"].intValue == 1
                 if !isLive {
@@ -93,12 +94,12 @@ class LivePlayerViewController: CommonPlayerViewController {
                     self.roomID = newID
                 }
                 complete?()
-            case .failure(let error):
+            case let .failure(error):
                 self.endWithError(err: error)
             }
         }
     }
-    
+
     func initDataSource() {
         danMuProvider = LiveDanMuProvider(roomID: roomID)
         danMuProvider?.onDanmu = {
@@ -115,14 +116,13 @@ class LivePlayerViewController: CommonPlayerViewController {
         }
         danMuProvider?.start()
     }
-    
-    
+
     func initPlayer() {
         let requestUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=\(roomID)&platform=h5&otype=json&quality=10000"
         AF.request(requestUrl).responseData {
             [unowned self] resp in
             switch resp.result {
-            case .success(let object):
+            case let .success(object):
                 let json = JSON(object)
                 if let playUrl = json["data"]["durl"].arrayValue.first?["url"].string {
                     self.url = URL(string: playUrl)!
@@ -130,12 +130,10 @@ class LivePlayerViewController: CommonPlayerViewController {
                 } else {
                     dismiss(animated: true, completion: nil)
                 }
-                break
-            case .failure(let err):
+            case let .failure(err):
                 print(err)
                 dismiss(animated: true, completion: nil)
             }
         }
     }
 }
-

@@ -38,7 +38,7 @@ struct UserDefault<T> {
 }
 
 @propertyWrapper
-struct UserDefaultCodable<T:Codable> {
+struct UserDefaultCodable<T: Codable> {
     private let key: String
     private let defaultValue: T
     private let userDefaults: UserDefaults
@@ -51,7 +51,7 @@ struct UserDefaultCodable<T:Codable> {
 
     var wrappedValue: T {
         get {
-            guard let value:T? = userDefaults.codable(forKey: key) else {
+            guard let value: T? = userDefaults.codable(forKey: key) else {
                 return defaultValue
             }
 
@@ -77,12 +77,12 @@ extension Optional: OptionalProtocol {
     }
 }
 
-
 extension UserDefaults {
     func set<Element: Codable>(codable: Element, forKey key: String) {
         let data = try? JSONEncoder().encode(codable)
         UserDefaults.standard.setValue(data, forKey: key)
     }
+
     func codable<Element: Codable>(forKey key: String) -> Element? {
         guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
         let element = try? JSONDecoder().decode(Element.self, from: data)

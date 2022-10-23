@@ -7,7 +7,6 @@
 
 import UIKit
 
-
 class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
     var loading = false
@@ -18,14 +17,14 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
             [weak self] record in
             self?.goDetail(with: record as! ApiRequest.FeedResp.Items)
         }
-        
+
         collectionVC.loadMore = {
             [weak self] in
             self?.loadMore()
         }
         reloadData()
     }
-    
+
     func reloadData() {
         if loading { return }
         Task {
@@ -35,7 +34,7 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
             loading = false
         }
     }
-    
+
     func loadMore() {
         guard let last = (collectionVC.displayDatas.last as? ApiRequest.FeedResp.Items)?.idx else {
             return
@@ -47,11 +46,10 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
             loading = false
         }
     }
-    
+
     func goDetail(with data: ApiRequest.FeedResp.Items) {
         let aid = data.param
         let detailVC = VideoDetailViewController.create(aid: Int(aid)!, cid: 0)
         detailVC.present(from: self)
     }
-    
 }
