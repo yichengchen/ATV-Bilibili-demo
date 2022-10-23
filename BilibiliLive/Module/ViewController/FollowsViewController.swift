@@ -54,6 +54,8 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
         let json = try await WebRequest.requestJSON(url: "https://api.bilibili.com/x/web-feed/feed?ps=40&pn=\(page)")
             
         let datas = json.arrayValue.map { data -> (any DisplayData) in
+            let timestamp = data["pubdate"].int
+            let date = DateFormatter.stringFor(timestamp: timestamp)
             let bangumi = data["bangumi"]
             if !bangumi.isEmpty {
                 let season = bangumi["season_id"].intValue
@@ -62,7 +64,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
                 let ep = bangumi["new_ep"]
                 let title = "第" + ep["index"].stringValue + "集 - " + ep["index_title"].stringValue
                 let episode = ep["episode_id"].intValue
-                return BangumiData(title: title, season: season, episode: episode, owner: owner, pic: pic)
+                return BangumiData(title: title, season: season, episode: episode, owner: owner, pic: pic,date: date)
             }
             let avid = data["id"].intValue
             let archive = data["archive"]
@@ -71,7 +73,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
             let owner = archive["owner"]["name"].stringValue
             let avatar = archive["owner"]["face"].url
             let pic = archive["pic"].url!
-            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, avatar: avatar)
+            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, avatar: avatar,date: date)
         }
         return datas
     }
@@ -111,6 +113,7 @@ struct FeedData: DisplayData {
     let owner: String
     let pic: URL?
     let avatar: URL?
+    let date: String?
 }
 
 struct BangumiData: DisplayData {
@@ -119,5 +122,6 @@ struct BangumiData: DisplayData {
     let episode: Int
     let owner: String
     let pic: URL?
+    let date: String?
 }
 

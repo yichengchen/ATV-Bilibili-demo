@@ -14,10 +14,12 @@ protocol DisplayData: Hashable {
     var owner: String { get }
     var pic: URL? { get }
     var avatar: URL? { get }
+    var date: String? { get }
 }
 
 extension DisplayData {
     var avatar: URL? { return nil }
+    var date: String? { return nil }
 }
 
 struct AnyDispplayData: Hashable {
@@ -114,18 +116,22 @@ class FeedCollectionViewController: UIViewController {
     }
     
     private func makeGridLayoutSection() -> NSCollectionLayoutSection {
+        let heightDimension = NSCollectionLayoutDimension.estimated(Settings.displayStyle == .large ? 350 : 400)
         let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(Settings.displayStyle == .large ? 0.33 : 0.25),
-            heightDimension: .fractionalHeight(1)
+            heightDimension: heightDimension
         ))
+        let hSpacing:CGFloat = Settings.displayStyle == .large ? 35 : 30
+        item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: hSpacing, bottom: 0, trailing: hSpacing)
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1),
-                heightDimension: .fractionalWidth(Settings.displayStyle == .large ? 0.26 : 0.2)
+                heightDimension: heightDimension
             ),
             subitem: item,
             count: Settings.displayStyle == .large ? 3 : 4
         )
+        group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: .fixed(0), top: .fixed(16), trailing: .fixed(0), bottom: .fixed(16))
         return NSCollectionLayoutSection(group: group)
     }
 
@@ -155,17 +161,6 @@ extension FeedCollectionViewController: UICollectionViewDelegate {
     func indexPathForPreferredFocusedView(in collectionView: UICollectionView) -> IndexPath? {
         let indexPath = IndexPath(item: 0, section: 0)
         return indexPath
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didUpdateFocusIn context: UICollectionViewFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        if let previousIndexPath = context.previouslyFocusedIndexPath,
-           let cell = collectionView.cellForItem(at:previousIndexPath) as? FeedCollectionViewCell {
-            cell.stopScroll()
-        }
-        if let previousIndexPath = context.nextFocusedIndexPath,
-           let cell = collectionView.cellForItem(at:previousIndexPath) as? FeedCollectionViewCell {
-            cell.startScroll()
-        }
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {

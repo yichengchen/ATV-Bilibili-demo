@@ -55,17 +55,22 @@ extension FavoriteViewController {
     private func createLayout() -> UICollectionViewLayout {
         let sectionProvider = { (sectionIndex: Int,
                                  layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
+            let heightDimension = NSCollectionLayoutDimension.estimated(Settings.displayStyle == .large ? 350 : 400)
+            
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                  heightDimension: .fractionalHeight(1.0))
+                                                  heightDimension: heightDimension)
+            
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            let hSpacing:CGFloat = Settings.displayStyle == .large ? 35 : 30
+            item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: hSpacing, bottom: 0, trailing: hSpacing)
             
             let groupFractionalWidth = Settings.displayStyle == .large ? 0.33 : 0.25
             let groupFractionalHeight = Settings.displayStyle == .large ? 0.26 : 0.2
-
+            
             let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(groupFractionalWidth),
                                                    heightDimension: .fractionalWidth(groupFractionalHeight))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-            
+            group.edgeSpacing = .init(leading: .fixed(0), top: .fixed(40), trailing: .fixed(0), bottom: .fixed(10))
             let section = NSCollectionLayoutSection(group: group)
             section.orthogonalScrollingBehavior = .continuous
             
@@ -80,7 +85,7 @@ extension FavoriteViewController {
         }
         
         let config = UICollectionViewCompositionalLayoutConfiguration()
-        config.interSectionSpacing = 20
+        config.interSectionSpacing = 0
         
         let layout = UICollectionViewCompositionalLayout(
             sectionProvider: sectionProvider, configuration: config)
@@ -119,16 +124,5 @@ extension FavoriteViewController: UICollectionViewDelegate {
     
     func indexPathForPreferredFocusedView(in collectionView: UICollectionView) -> IndexPath? {
         return IndexPath(item: 0, section: 0)
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didUpdateFocusIn context: UICollectionViewFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        if let previousIndexPath = context.previouslyFocusedIndexPath,
-           let cell = collectionView.cellForItem(at:previousIndexPath) as? FeedCollectionViewCell {
-            cell.stopScroll()
-        }
-        if let previousIndexPath = context.nextFocusedIndexPath,
-           let cell = collectionView.cellForItem(at:previousIndexPath) as? FeedCollectionViewCell {
-            cell.startScroll()
-        }
     }
 }

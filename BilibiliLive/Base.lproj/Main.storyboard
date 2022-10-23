@@ -272,8 +272,8 @@
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="note" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nbz-Ga-vnB">
-                                                                    <rect key="frame" x="80" y="219" width="1070" height="37"/>
-                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                                                                    <rect key="frame" x="80" y="219" width="1070" height="35"/>
+                                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleBody"/>
                                                                     <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
@@ -319,7 +319,7 @@
                                                             <viewLayoutGuide key="safeArea" id="dhb-ip-Zbb"/>
                                                             <constraints>
                                                                 <constraint firstAttribute="bottom" secondItem="rEZ-Qh-SKb" secondAttribute="bottom" id="4hS-07-pe1"/>
-                                                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Nbz-Ga-vnB" secondAttribute="bottom" constant="10" id="7HR-kp-N7a"/>
+                                                                <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="Nbz-Ga-vnB" secondAttribute="bottom" constant="30" id="7HR-kp-N7a"/>
                                                                 <constraint firstItem="Nbz-Ga-vnB" firstAttribute="leading" secondItem="dhb-ip-Zbb" secondAttribute="leading" id="8YH-gz-RIu"/>
                                                                 <constraint firstItem="skF-nX-ooc" firstAttribute="top" secondItem="kwE-Zo-p5T" secondAttribute="bottom" constant="20" id="PUA-FR-Yzz"/>
                                                                 <constraint firstItem="dhb-ip-Zbb" firstAttribute="trailing" secondItem="rEZ-Qh-SKb" secondAttribute="trailing" id="Vy1-Hs-MN2"/>

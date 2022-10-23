@@ -60,7 +60,9 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
             let owner = data["owner"]["name"].stringValue
             let pic = data["pic"].url!
             let avatar = data["owner"]["face"].url
-            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic,avatar: avatar)
+            let timestamp = data["pubdate"].int
+            let date = DateFormatter.stringFor(timestamp: timestamp)
+            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic,avatar: avatar, date: date)
         }
         return datas
     }
