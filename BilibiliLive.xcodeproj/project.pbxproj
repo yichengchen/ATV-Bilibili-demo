@@ -329,6 +329,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F9B57362260F5F7600771ED5 /* Build configuration list for PBXNativeTarget "BilibiliLive" */;
 			buildPhases = (
+				4947421429050FAF005D6885 /* Swift formate */,
 				F9B5734C260F5F7400771ED5 /* Sources */,
 				F9B5734D260F5F7400771ED5 /* Frameworks */,
 				F9B5734E260F5F7400771ED5 /* Resources */,
@@ -409,6 +410,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4947421429050FAF005D6885 /* Swift formate */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Swift formate";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cd BuildTools\nSDKROOT=(xcrun --sdk macosx --show-sdk-path)\nswift run -c release swiftformat --disable unusedArguments,numberFormatting,redundantReturn,andOperator,anyObjectProtocol,trailingClosures,redundantFileprivate --ranges nospace  \"$SRCROOT\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F9B5734C260F5F7400771ED5 /* Sources */ = {
