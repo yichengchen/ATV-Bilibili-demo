@@ -10,7 +10,7 @@ import Alamofire
 import SwiftyJSON
 import AVKit
 
-class LivePlayerViewController:CommonPlayerViewController {
+class LivePlayerViewController: CommonPlayerViewController {
     enum LiveError: Error {
         case noLiving
     }
@@ -23,8 +23,9 @@ class LivePlayerViewController:CommonPlayerViewController {
     private var roomID: Int = 0
     private var danMuProvider: LiveDanMuProvider?
     private var url: URL?
-    
+        
     override func viewDidLoad() {
+        allowChangeSpeed = false
         super.viewDidLoad()
         refreshRoomsID(){
             [weak self] in

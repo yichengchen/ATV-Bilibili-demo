@@ -11,7 +11,7 @@ import Kingfisher
 
 class CommonPlayerViewController: AVPlayerViewController {
     let danMuView = DanmakuView()
-    
+    var allowChangeSpeed = true
     var playerStartPos: CMTime?
     private var retryCount = 0
     private let maxRetryCount = 3
@@ -130,6 +130,7 @@ class CommonPlayerViewController: AVPlayerViewController {
     }
     
     private func setupPlayerMenu() {
+        var menus = [UIMenuElement]()
         let danmuImage = UIImage(systemName: "list.bullet.rectangle.fill")
         let danmuImageDisable = UIImage(systemName: "list.bullet.rectangle")
         let danmuAction = UIAction(title: "Show Danmu", image: danMuView.isHidden ? danmuImageDisable : danmuImage) {
@@ -138,25 +139,26 @@ class CommonPlayerViewController: AVPlayerViewController {
             self.danMuView.isHidden.toggle()
             action.image = self.danMuView.isHidden ? danmuImageDisable : danmuImage
         }
+        menus.append(danmuAction)
         
-        let playSpeedArray = [PlaySpeed(name: "0.5X", value: 0.5), PlaySpeed(name: "0.75X", value: 0.75), PlaySpeed(name: "1X", value: 1),
-                              PlaySpeed(name: "1.25X", value: 1.25), PlaySpeed(name: "1.5X", value: 1.5), PlaySpeed(name: "2X", value: 2)]
-        let speedActions = playSpeedArray.map { playSpeed in
-            UIAction(title: playSpeed.name, state: self.player?.rate == playSpeed.value ? .on : .off) { [weak self] action in
-                self?.player?.rate = playSpeed.value
-                self?.danMuView.playingSpeed = playSpeed.value
-                action.state = .on
+        if allowChangeSpeed {
+            let playSpeedArray = [PlaySpeed(name: "0.5X", value: 0.5),
+                                  PlaySpeed(name: "0.75X", value: 0.75),
+                                  PlaySpeed(name: "1X", value: 1),
+                                  PlaySpeed(name: "1.25X", value: 1.25),
+                                  PlaySpeed(name: "1.5X", value: 1.5),
+                                  PlaySpeed(name: "2X", value: 2)]
+            let speedActions = playSpeedArray.map { playSpeed in
+                UIAction(title: playSpeed.name, state: player?.rate ?? 1 == playSpeed.value ? .on : .off) { [weak self] action in
+                    self?.player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
+                    self?.player?.rate = playSpeed.value
+                    self?.danMuView.playingSpeed = playSpeed.value
+                }
             }
+            let playSpeedMenu = UIMenu(title: "播放速度", image: UIImage(systemName: "speedometer"), options: [.singleSelection], children: speedActions)
+            menus.append(playSpeedMenu)
         }
-        speedActions.forEach { speedAction in
-            if (speedAction.title == "1X") {
-                speedAction.state = .on
-            }
-        }
-        let gearImage = UIImage(systemName: "speedometer")
-        let playSpeedMenu = UIMenu(title: "播放速度", image: gearImage, options: [.singleSelection], children: speedActions)
-        
-        transportBarCustomMenuItems = [danmuAction, playSpeedMenu]
+        transportBarCustomMenuItems = menus
     }
     
     private func removeObservarPlayerItem() {

@@ -1,0 +1,42 @@
+
+/* Class = "UILabel"; text = "账号登录"; ObjectID = "0Gh-Tr-lhk"; */
+"0Gh-Tr-lhk.text" = "账号登录";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "5nf-Nl-CjG"; */
+"5nf-Nl-CjG.text" = "Label";
+
+/* Class = "UITabBarItem"; title = "Login"; ObjectID = "Alt-lD-Xfg"; */
+"Alt-lD-Xfg.title" = "Login";
+
+/* Class = "UIButton"; normalTitle = "重新生成二维码"; ObjectID = "AnH-0K-2tX"; */
+"AnH-0K-2tX.normalTitle" = "重新生成二维码";
+
+/* Class = "UILabel"; text = "1 请打开BiliBili官方手机客户端扫码登录  2. 如果登录失败尝试点击重新生成二维码"; ObjectID = "C1r-RI-xZ8"; */
+"C1r-RI-xZ8.text" = "1 请打开BiliBili官方手机客户端扫码登录  2. 如果登录失败尝试点击重新生成二维码";
+
+/* Class = "UILabel"; text = "note"; ObjectID = "Nbz-Ga-vnB"; */
+"Nbz-Ga-vnB.text" = "note";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "Vmd-dT-xd0"; */
+"Vmd-dT-xd0.text" = "Label";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "gzQ-pJ-wdz"; */
+"gzQ-pJ-wdz.text" = "Label";
+
+/* Class = "UILabel"; text = "name"; ObjectID = "kfL-LD-BxN"; */
+"kfL-LD-BxN.text" = "name";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "kwE-Zo-p5T"; */
+"kwE-Zo-p5T.text" = "Label";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "mSu-k1-tYD"; */
+"mSu-k1-tYD.text" = "Label";
+
+/* Class = "UILabel"; text = "推荐视频"; ObjectID = "vBp-Ow-fTv"; */
+"vBp-Ow-fTv.text" = "推荐视频";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "vCf-l0-gRG"; */
+"vCf-l0-gRG.text" = "Label";
+
+/* Class = "UILabel"; text = "1分1s"; ObjectID = "ymk-p2-UgZ"; */
+"ymk-p2-UgZ.text" = "1分1s";

@@ -26,9 +26,10 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet weak var playButton: BLCustomButton!
     @IBOutlet weak var likeButton: BLCustomButton!
     @IBOutlet weak var coinButton: BLCustomButton!
-    
-    @IBOutlet weak var favImageView: BLImageView!
-    
+        
+    @IBOutlet weak var durationLabel: UILabel!
+    @IBOutlet weak var avatarImageView: UIImageView!
+    @IBOutlet weak var favButton: BLCustomButton!
     @IBOutlet weak var pageCollectionView: UICollectionView!
     @IBOutlet weak var recommandCollectionView: UICollectionView!
     
@@ -114,8 +115,19 @@ class VideoDetailViewController: UIViewController {
     private func update(with json:JSON) {
         let data = json["data"]
         mid = data["owner"]["mid"].intValue
+        likeButton.title = data["stat"]["favorite"].stringValue
+        coinButton.title = data["stat"]["coin"].stringValue
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.unitsStyle = .brief
+        let formattedString = formatter.string(from: TimeInterval(data["duration"].intValue)) ?? ""
+        durationLabel.text = formattedString
+        favButton.title = data["stat"]["favorite"].stringValue
         titleLabel.text = data["title"].stringValue
         upButton.title = data["owner"]["name"].stringValue
+         
+        avatarImageView.kf.setImage(with:data["owner"]["face"].url,options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))),.processor(RoundCornerImageProcessor(radius:.widthFraction(0.5))),.cacheSerializer(FormatIndicatedCacheSerializer.png)])
+        
         let image = URL(string: data["pic"].stringValue)
             coverImageView.kf.setImage(with: image)
             backgroundImageView.kf.setImage(with: image)

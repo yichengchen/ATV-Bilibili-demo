@@ -119,20 +119,22 @@ class BLCustomTextButton: BLButton {
         didSet { titleLabel.textColor = titleColor }
     }
     
-    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 24) {
+    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 28) {
         didSet { titleLabel.font = titleFont }
     }
     
     override func setup() {
         super.setup()
+        effectView.layer.cornerRadius = 10
         effectView.contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
-            make.top.bottom.equalToSuperview().inset(8)
-            make.left.right.equalToSuperview().inset(16)
+            make.top.bottom.equalToSuperview().inset(10)
+            make.left.right.equalToSuperview().inset(24)
         }
         titleLabel.text = title
         titleLabel.font = titleFont
         titleLabel.textColor = isFocused ? titleSelectedColor : titleColor
+        titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
     }
     
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
