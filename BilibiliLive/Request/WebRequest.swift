@@ -29,11 +29,11 @@ enum WebRequest {
         static let coin = "http://api.bilibili.com/x/web-interface/coin/add"
     }
 
-    static func requestJSON(method: HTTPMethod = .get,
+    static func requestData(method: HTTPMethod = .get,
                             url: URLConvertible,
                             parameters: Parameters = [:],
                             headers: [String: String]? = nil,
-                            complete: ((Result<JSON, RequestError>) -> Void)? = nil)
+                            complete: ((Result<Data, RequestError>) -> Void)? = nil)
     {
         var parameters = parameters
         if method != .get {
@@ -49,22 +49,38 @@ enum WebRequest {
             .responseData { response in
                 switch response.result {
                 case let .success(data):
-                    let json = JSON(data)
-                    let errorCode = json["code"].intValue
-                    if errorCode != 0 {
-                        let message = json["message"].stringValue
-                        print(errorCode, message)
-                        complete?(.failure(.statusFail(code: errorCode, message: message)))
-                        return
-                    }
-                    let dataj = json["data"]
-                    print(dataj)
-                    complete?(.success(dataj))
+                    complete?(.success(data))
                 case let .failure(err):
                     print(err)
                     complete?(.failure(.networkFail))
                 }
             }
+    }
+
+    static func requestJSON(method: HTTPMethod = .get,
+                            url: URLConvertible,
+                            parameters: Parameters = [:],
+                            headers: [String: String]? = nil,
+                            complete: ((Result<JSON, RequestError>) -> Void)? = nil)
+    {
+        requestData(method: method, url: url, parameters: parameters, headers: headers) { response in
+            switch response {
+            case let .success(data):
+                let json = JSON(data)
+                let errorCode = json["code"].intValue
+                if errorCode != 0 {
+                    let message = json["message"].stringValue
+                    print(errorCode, message)
+                    complete?(.failure(.statusFail(code: errorCode, message: message)))
+                    return
+                }
+                let dataj = json["data"]
+                print(dataj)
+                complete?(.success(dataj))
+            case let .failure(err):
+                complete?(.failure(err))
+            }
+        }
     }
 
     static func request<T: Decodable>(method: HTTPMethod = .get,
@@ -203,6 +219,19 @@ extension WebRequest {
             switch response {
             case let .success(data):
                 complete?(data["multiply"].intValue)
+            case .failure:
+                complete?(0)
+            }
+        }
+    }
+
+    static func requestTodayCoins(complete: ((Int) -> Void)?) {
+        requestData(url: "http://www.bilibili.com/plus/account/exp.php") {
+            response in
+            switch response {
+            case let .success(data):
+                let json = JSON(data)
+                complete?(json["number"].intValue)
             case .failure:
                 complete?(0)
             }

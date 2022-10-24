@@ -193,6 +193,9 @@ class VideoDetailViewController: UIViewController {
     @IBAction func actionCoin(_ sender: Any) {
         guard didSentCoins < 2 else { return }
         let alert = UIAlertController(title: "投币个数", message: nil, preferredStyle: .actionSheet)
+        WebRequest.requestTodayCoins { todayCoins in
+            alert.message = "今日已投(\(todayCoins / 10)/5)个币"
+        }
         let aid = aid!
         alert.addAction(UIAlertAction(title: "1", style: .default) { [weak self] _ in
             self?.likeButton.isOn = true
