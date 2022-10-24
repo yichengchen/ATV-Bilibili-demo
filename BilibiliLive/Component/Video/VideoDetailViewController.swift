@@ -44,7 +44,7 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
-    private var pages = [PageData]()
+    private var pages = [VideoPage]()
     private var relateds = [VideoDetail]()
 
     static func create(aid: Int, cid: Int) -> VideoDetailViewController {
@@ -123,36 +123,31 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
-    private func update(with data: JSON) {
-        mid = data["owner"]["mid"].intValue
-        likeButton.title = data["stat"]["favorite"].stringValue
-        coinButton.title = data["stat"]["coin"].stringValue
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute, .second]
-        formatter.unitsStyle = .brief
-        let formattedString = formatter.string(from: TimeInterval(data["duration"].intValue)) ?? ""
-        durationLabel.text = formattedString
-        favButton.title = data["stat"]["favorite"].stringValue
-        titleLabel.text = data["title"].stringValue
-        upButton.title = data["owner"]["name"].stringValue
+    private func update(with data: VideoDetail) {
+        mid = data.owner.mid
+        coinButton.title = data.stat.coin.string()
+        favButton.title = data.stat.favorite.string()
+        likeButton.title = data.stat.like.string()
 
-        avatarImageView.kf.setImage(with: data["owner"]["face"].url, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
+        durationLabel.text = data.durationString
+        titleLabel.text = data.title
+        upButton.title = data.owner.name
 
-        let image = URL(string: data["pic"].stringValue)
+        avatarImageView.kf.setImage(with: URL(string: data.owner.face), options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
+
+        let image = URL(string: data.pic)
         coverImageView.kf.setImage(with: image)
         backgroundImageView.kf.setImage(with: image)
 
         var notes = [String]()
-        let status = data["dynamic"].stringValue
+        let status = data.dynamic ?? ""
         if status.count > 1 {
             notes.append(status)
         }
-        notes.append(data["desc"].stringValue)
+        notes.append(data.desc)
         noteLabel.text = notes.joined(separator: "\n")
 
-        pages = data["pages"].arrayValue.map {
-            PageData(cid: $0["cid"].intValue, name: $0["part"].stringValue)
-        }
+        pages = data.pages ?? []
         if pages.count > 1 {
             pageCollectionView.reloadData()
             pageCollectionView.isHidden = false
@@ -262,7 +257,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         let label = cell.viewWithTag(2) as! UILabel
         if collectionView == pageCollectionView {
             let page = pages[indexPath.item]
-            label.text = page.name
+            label.text = page.part
             return cell
         }
         let related = relateds[indexPath.row]
@@ -271,11 +266,6 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         imageView.kf.setImage(with: URL(string: related.pic))
         return cell
     }
-}
-
-struct PageData {
-    let cid: Int
-    let name: String
 }
 
 class BLCardView: TVCardView {
@@ -289,10 +279,8 @@ class BLCardView: TVCardView {
     }
 }
 
-class BLImageView: UIImageView {
-    var on: Bool = false {
-        didSet {
-            tintColor = on ? UIColor.biliblue : UIColor.black
-        }
+extension Int {
+    func string() -> String {
+        return String(self)
     }
 }

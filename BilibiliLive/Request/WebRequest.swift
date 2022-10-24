@@ -142,10 +142,9 @@ enum WebRequest {
 // MARK: - Video
 
 extension WebRequest {
-    static func requestVideoInfo(aid: Int, complete: ((Result<JSON, RequestError>) -> Void)?) {
-        requestJSON(url: "http://api.bilibili.com/x/web-interface/view", parameters: ["aid": aid]) {
-            response in
-            complete?(response)
+    static func requestVideoInfo(aid: Int, complete: ((Result<VideoDetail, RequestError>) -> Void)?) {
+        request(url: "http://api.bilibili.com/x/web-interface/view", parameters: ["aid": aid]) { result in
+            complete?(result)
         }
     }
 
@@ -337,6 +336,25 @@ struct VideoDetail: Codable {
     let desc: String
     let owner: VideoOwner
     let pages: [VideoPage]?
+    let dynamic: String?
+    let duration: Int
+
+    let stat: Stat
+    struct Stat: Codable {
+        let favorite: Int
+        let coin: Int
+        let like: Int
+        let share: Int
+        let danmaku: Int
+        let view: Int
+    }
+
+    var durationString: String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.unitsStyle = .brief
+        return formatter.string(from: TimeInterval(duration)) ?? ""
+    }
 }
 
 struct VideoOwner: Codable {

@@ -51,6 +51,7 @@ class LoginViewController: UIViewController {
     }
 
     func initValidation() {
+        qrcodeImageView.image = UIImage()
         timer?.invalidate()
         ApiRequest.requestLoginQR { code, url in
             self.qrcodeImageView.image = self.generateQRCode(from: url)
