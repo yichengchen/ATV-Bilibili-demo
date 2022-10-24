@@ -2,7 +2,7 @@
 //  VideoDetailViewController.swift
 //  BilibiliLive
 //
-//  Created by Etan Chen on 2021/4/17.
+//  Created by yicheng on 2021/4/17.
 //
 
 import AVKit
@@ -36,7 +36,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var pageView: UIView!
 
     private var aid: Int!
-    private var cid: Int!
+    private var cid: Int = 0 { didSet { if oldValue != cid { fetchDataWithCid() } }}
     private var mid = 0
     private var didSentCoins = 0 {
         didSet {
@@ -109,16 +109,6 @@ class VideoDetailViewController: UIViewController {
             }
         }
 
-        WebRequest.requestHistory { [weak self] datas in
-            guard let self = self else { return }
-            for data in datas {
-                if data.aid == self.aid {
-                    self.startTime = CMTime(seconds: Double(data.progress), preferredTimescale: 1)
-                    break
-                }
-            }
-        }
-
         WebRequest.requestRelatedVideo(aid: aid) {
             [weak self] recommands in
             self?.relateds = recommands
@@ -138,6 +128,15 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
+    private func fetchDataWithCid() {
+        guard cid > 0 else { return }
+        if startTime == nil {
+            WebRequest.requestPlayerInfo(aid: aid, cid: cid) { [weak self] info in
+                self?.startTime = CMTime(seconds: Double(info.playTimeInSecond), preferredTimescale: 1)
+            }
+        }
+    }
+
     private func update(with data: VideoDetail) {
         mid = data.owner.mid
         coinButton.title = data.stat.coin.string()
@@ -148,7 +147,7 @@ class VideoDetailViewController: UIViewController {
         titleLabel.text = data.title
         upButton.title = data.owner.name
 
-        avatarImageView.kf.setImage(with: URL(string: data.owner.face), options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
+        avatarImageView.kf.setImage(with: data.owner.face, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
 
         let image = URL(string: data.pic)
         coverImageView.kf.setImage(with: image)
@@ -168,6 +167,9 @@ class VideoDetailViewController: UIViewController {
             pageView.isHidden = false
             let index = pages.firstIndex { $0.cid == cid } ?? 0
             pageCollectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .left, animated: false)
+            if cid == 0 {
+                cid = pages.first?.cid ?? 0
+            }
         }
         loadingView.stopAnimating()
         loadingView.removeFromSuperview()

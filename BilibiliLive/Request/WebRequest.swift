@@ -27,6 +27,7 @@ enum WebRequest {
         static let like = "http://api.bilibili.com/x/web-interface/archive/like"
         static let likeStatus = "http://api.bilibili.com/x/web-interface/archive/has/like"
         static let coin = "http://api.bilibili.com/x/web-interface/coin/add"
+        static let playerInfo = "https://api.bilibili.com/x/player/v2"
     }
 
     static func requestData(method: HTTPMethod = .get,
@@ -153,6 +154,15 @@ extension WebRequest {
             (result: Result<[HistoryData], RequestError>) in
             if let data = try? result.get() {
                 complete?(data)
+            }
+        }
+    }
+
+    static func requestPlayerInfo(aid: Int, cid: Int, complete: ((PlayerInfo) -> Void)? = nil) {
+        request(url: EndPoint.playerInfo, parameters: ["aid": aid, "cid": cid]) {
+            (result: Result<PlayerInfo, RequestError>) in
+            if let info = try? result.get() {
+                complete?(info)
             }
         }
     }
@@ -292,10 +302,6 @@ extension WebRequest {
     }
 }
 
-struct Upper: Codable, Hashable {
-    var name: String
-}
-
 struct HistoryData: DisplayData, Codable {
     struct HistoryPage: Codable, Hashable {
         let cid: Int
@@ -303,9 +309,10 @@ struct HistoryData: DisplayData, Codable {
 
     let title: String
     var ownerName: String { owner.name }
+    var avatar: URL? { owner.face }
     let pic: URL?
 
-    let owner: Upper
+    let owner: VideoOwner
     let cid: Int
     let aid: Int
     let progress: Int
@@ -314,7 +321,7 @@ struct HistoryData: DisplayData, Codable {
 
 struct FavData: DisplayData, Codable {
     var cover: String
-    var upper: Upper
+    var upper: VideoOwner
     var id: Int
     var title: String
     var ownerName: String { upper.name }
@@ -356,10 +363,10 @@ struct VideoDetail: Codable {
     }
 }
 
-struct VideoOwner: Codable {
+struct VideoOwner: Codable, Hashable {
     let mid: Int
     let name: String
-    let face: String
+    let face: URL
 }
 
 struct VideoPage: Codable {
@@ -382,5 +389,13 @@ struct UpSpaceReq: Codable, Hashable {
                 return author
             }
         }
+    }
+}
+
+struct PlayerInfo: Codable {
+    let last_play_time: Int
+
+    var playTimeInSecond: Int {
+        last_play_time / 1000
     }
 }
