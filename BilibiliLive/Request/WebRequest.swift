@@ -196,6 +196,18 @@ extension WebRequest {
     static func requestCoin(aid: Int, num: Int) {
         requestJSON(method: .post, url: EndPoint.coin, parameters: ["aid": aid, "multiply": num, "select_like": 1])
     }
+
+    static func requestCoinStatus(aid: Int, complete: ((Int) -> Void)?) {
+        requestJSON(url: "http://api.bilibili.com/x/web-interface/archive/coins", parameters: ["aid": aid]) {
+            response in
+            switch response {
+            case let .success(data):
+                complete?(data["multiply"].intValue)
+            case .failure:
+                complete?(0)
+            }
+        }
+    }
 }
 
 // MARK: - User

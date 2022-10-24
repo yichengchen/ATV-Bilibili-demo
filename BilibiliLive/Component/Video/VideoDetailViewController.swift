@@ -36,6 +36,13 @@ class VideoDetailViewController: UIViewController {
     private var aid: Int!
     private var cid: Int!
     private var mid = 0
+    private var didSentCoins = 0 {
+        didSet {
+            if didSentCoins > 0 {
+                coinButton.isOn = true
+            }
+        }
+    }
 
     private var pages = [PageData]()
     private var relateds = [VideoDetail]()
@@ -107,6 +114,10 @@ class VideoDetailViewController: UIViewController {
 
         WebRequest.requestLikeStatus(aid: aid) { [weak self] isLiked in
             self?.likeButton.isOn = isLiked
+        }
+
+        WebRequest.requestCoinStatus(aid: aid) { [weak self] coins in
+            self?.didSentCoins = coins
         }
     }
 
@@ -180,14 +191,21 @@ class VideoDetailViewController: UIViewController {
     }
 
     @IBAction func actionCoin(_ sender: Any) {
+        guard didSentCoins < 2 else { return }
         let alert = UIAlertController(title: "投币个数", message: nil, preferredStyle: .actionSheet)
         let aid = aid!
-        alert.addAction(UIAlertAction(title: "1", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: "1", style: .default) { [weak self] _ in
+            self?.likeButton.isOn = true
+            self?.didSentCoins += 1
             WebRequest.requestCoin(aid: aid, num: 1)
         })
-        alert.addAction(UIAlertAction(title: "2", style: .default) { _ in
-            WebRequest.requestCoin(aid: aid, num: 2)
-        })
+        if didSentCoins == 0 {
+            alert.addAction(UIAlertAction(title: "2", style: .default) { [weak self] _ in
+                self?.likeButton.isOn = true
+                self?.didSentCoins += 2
+                WebRequest.requestCoin(aid: aid, num: 2)
+            })
+        }
         alert.addAction(UIAlertAction(title: "取消", style: .default))
         present(alert, animated: true)
     }
