@@ -33,6 +33,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var favButton: BLCustomButton!
     @IBOutlet var pageCollectionView: UICollectionView!
     @IBOutlet var recommandCollectionView: UICollectionView!
+    @IBOutlet var pageView: UIView!
 
     private var aid: Int!
     private var cid: Int!
@@ -60,6 +61,8 @@ class VideoDetailViewController: UIViewController {
         super.viewDidLoad()
         setupLoading()
         fetchData()
+        pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: "BLTextOnlyCollectionViewCell")
+        pageCollectionView.collectionViewLayout = makePageCollectionViewLayout()
     }
 
     override var preferredFocusedView: UIView? {
@@ -162,7 +165,7 @@ class VideoDetailViewController: UIViewController {
         pages = data.pages ?? []
         if pages.count > 1 {
             pageCollectionView.reloadData()
-            pageCollectionView.isHidden = false
+            pageView.isHidden = false
             let index = pages.firstIndex { $0.cid == cid } ?? 0
             pageCollectionView.scrollToItem(at: IndexPath(row: index, section: 0), at: .left, animated: false)
         }
@@ -266,13 +269,14 @@ extension VideoDetailViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        let label = cell.viewWithTag(2) as! UILabel
         if collectionView == pageCollectionView {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as! BLTextOnlyCollectionViewCell
             let page = pages[indexPath.item]
-            label.text = page.part
+            cell.titleLabel.text = page.part
             return cell
         }
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+        let label = cell.viewWithTag(2) as! UILabel
         let related = relateds[indexPath.row]
         let imageView = cell.viewWithTag(1) as! UIImageView
         label.text = related.title
@@ -289,6 +293,23 @@ class BLCardView: TVCardView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+    }
+}
+
+extension VideoDetailViewController {
+    func makePageCollectionViewLayout() -> UICollectionViewLayout {
+        UICollectionViewCompositionalLayout {
+            _, _ in
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                  heightDimension: .fractionalHeight(1.0))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.14), heightDimension: .fractionalHeight(1))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            let section = NSCollectionLayoutSection(group: group)
+            section.orthogonalScrollingBehavior = .continuous
+            section.interGroupSpacing = 40
+            return section
+        }
     }
 }
 
