@@ -119,6 +119,10 @@ class VideoDetailViewController: UIViewController {
         WebRequest.requestCoinStatus(aid: aid) { [weak self] coins in
             self?.didSentCoins = coins
         }
+
+        WebRequest.requestFavoriteStatus(aid: aid) { [weak self] isFavorited in
+            self?.favButton.isOn = isFavorited
+        }
     }
 
     private func update(with json: JSON) {
@@ -214,9 +218,21 @@ class VideoDetailViewController: UIViewController {
     }
 
     @IBAction func actionFavorite(_ sender: Any) {
-        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        alert.addAction(UIAlertAction(title: "待开发", style: .default))
-        present(alert, animated: true)
+        Task {
+            guard let favList = try? await WebRequest.requestFavVideosList() else {
+                return
+            }
+            let alert = UIAlertController(title: "收藏", message: nil, preferredStyle: .actionSheet)
+            let aid = aid!
+            for fav in favList {
+                alert.addAction(UIAlertAction(title: fav.title, style: .default) { [weak self] _ in
+                    self?.favButton.isOn = true
+                    WebRequest.requestFavorite(aid: aid, mlid: fav.id)
+                })
+            }
+            alert.addAction(UIAlertAction(title: "取消", style: .default))
+            present(alert, animated: true)
+        }
     }
 }
 

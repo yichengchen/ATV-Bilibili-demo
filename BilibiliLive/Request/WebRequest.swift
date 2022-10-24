@@ -237,6 +237,22 @@ extension WebRequest {
             }
         }
     }
+
+    static func requestFavorite(aid: Int, mlid: Int) {
+        requestJSON(method: .post, url: "http://api.bilibili.com/x/v3/fav/resource/deal", parameters: ["rid": aid, "type": 2, "add_media_ids": mlid])
+    }
+
+    static func requestFavoriteStatus(aid: Int, complete: ((Bool) -> Void)?) {
+        requestJSON(url: "http://api.bilibili.com/x/v2/fav/video/favoured", parameters: ["aid": aid]) {
+            response in
+            switch response {
+            case let .success(data):
+                complete?(data["favoured"].boolValue)
+            case .failure:
+                complete?(false)
+            }
+        }
+    }
 }
 
 // MARK: - User
