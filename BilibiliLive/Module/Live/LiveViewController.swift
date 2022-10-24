@@ -77,6 +77,6 @@ struct LiveRoom: DisplayData {
     let cover: URL?
 
     var title: String { name }
-    var owner: String { up }
+    var ownerName: String { up }
     var pic: URL? { cover }
 }

@@ -249,7 +249,7 @@ enum ApiRequest {
     struct FeedResp: Codable {
         let items: [Items]
 
-        struct Items: Codable, DisplayData {
+        struct Items: DisplayData, Codable {
             let can_play: Int?
             let title: String
             let param: String
@@ -257,7 +257,7 @@ enum ApiRequest {
             let idx: Int
             let cover: String
 
-            var owner: String {
+            var ownerName: String {
                 return args.up_name ?? ""
             }
 

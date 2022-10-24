@@ -80,7 +80,7 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
 
     func setup(data: any DisplayData) {
         titleLabel.text = data.title
-        upLabel.text = [data.owner, data.date].compactMap({ $0 }).joined(separator: " · ")
+        upLabel.text = [data.ownerName, data.date].compactMap({ $0 }).joined(separator: " · ")
         imageView.kf.setImage(with: data.pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202)))])
         if let avatar = data.avatar {
             avatarView.isHidden = false

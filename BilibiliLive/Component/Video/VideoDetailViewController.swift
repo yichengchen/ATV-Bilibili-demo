@@ -94,13 +94,11 @@ class VideoDetailViewController: UIViewController {
     }
 
     private func fetchData() {
-        AF.request("http://api.bilibili.com/x/web-interface/view", parameters: ["aid": aid]).responseData {
-            [weak self] resp in
+        WebRequest.requestVideoInfo(aid: aid) { [weak self] response in
             guard let self = self else { return }
-            switch resp.result {
+            switch response {
             case let .success(data):
-                let json = JSON(data)
-                self.update(with: json)
+                self.update(with: data)
             case let .failure(err):
                 self.exit(with: err)
             }
@@ -125,8 +123,7 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
-    private func update(with json: JSON) {
-        let data = json["data"]
+    private func update(with data: JSON) {
         mid = data["owner"]["mid"].intValue
         likeButton.title = data["stat"]["favorite"].stringValue
         coinButton.title = data["stat"]["coin"].stringValue

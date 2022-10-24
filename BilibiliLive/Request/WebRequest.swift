@@ -142,6 +142,22 @@ enum WebRequest {
 // MARK: - Video
 
 extension WebRequest {
+    static func requestVideoInfo(aid: Int, complete: ((Result<JSON, RequestError>) -> Void)?) {
+        requestJSON(url: "http://api.bilibili.com/x/web-interface/view", parameters: ["aid": aid]) {
+            response in
+            complete?(response)
+        }
+    }
+
+    static func requestHistory(complete: (([HistoryData]) -> Void)?) {
+        request(url: "http://api.bilibili.com/x/v2/history") {
+            (result: Result<[HistoryData], RequestError>) in
+            if let data = try? result.get() {
+                complete?(data)
+            }
+        }
+    }
+
     static func requestRelatedVideo(aid: Int, complete: (([VideoDetail]) -> Void)? = nil) {
         request(method: .get, url: EndPoint.related, parameters: ["aid": aid]) {
             (result: Result<[VideoDetail], RequestError>) in
@@ -277,16 +293,33 @@ extension WebRequest {
     }
 }
 
-struct FavData: DisplayData, Codable {
-    struct Upper: Codable, Hashable {
-        var name: String
+struct Upper: Codable, Hashable {
+    var name: String
+}
+
+struct HistoryData: DisplayData, Codable {
+    struct HistoryPage: Codable, Hashable {
+        let cid: Int
     }
 
+    let title: String
+    var ownerName: String { owner.name }
+    let pic: URL?
+
+    let owner: Upper
+    let cid: Int
+    let aid: Int
+    let progress: Float
+    let duration: Float
+    var position: Float { progress / duration }
+}
+
+struct FavData: DisplayData, Codable {
     var cover: String
     var upper: Upper
     var id: Int
     var title: String
-    var owner: String { upper.name }
+    var ownerName: String { upper.name }
     var pic: URL? { URL(string: cover) }
 }
 
@@ -328,7 +361,7 @@ struct UpSpaceReq: Codable, Hashable {
             let author: String
             let aid: Int
             let pic: URL?
-            var owner: String {
+            var ownerName: String {
                 return author
             }
         }

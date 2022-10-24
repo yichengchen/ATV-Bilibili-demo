@@ -11,7 +11,7 @@ import UIKit
 
 protocol DisplayData: Hashable {
     var title: String { get }
-    var owner: String { get }
+    var ownerName: String { get }
     var pic: URL? { get }
     var avatar: URL? { get }
     var date: String? { get }

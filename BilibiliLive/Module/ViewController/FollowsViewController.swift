@@ -64,7 +64,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
                 let ep = bangumi["new_ep"]
                 let title = "第" + ep["index"].stringValue + "集 - " + ep["index_title"].stringValue
                 let episode = ep["episode_id"].intValue
-                return BangumiData(title: title, season: season, episode: episode, owner: owner, pic: pic, date: date)
+                return BangumiData(title: title, season: season, episode: episode, ownerName: owner, pic: pic, date: date)
             }
             let avid = data["id"].intValue
             let archive = data["archive"]
@@ -73,7 +73,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
             let owner = archive["owner"]["name"].stringValue
             let avatar = archive["owner"]["face"].url
             let pic = archive["pic"].url!
-            return FeedData(title: title, cid: cid, aid: avid, owner: owner, pic: pic, avatar: avatar, date: date)
+            return FeedData(title: title, cid: cid, aid: avid, ownerName: owner, pic: pic, avatar: avatar, date: date)
         }
         return datas
     }
@@ -110,7 +110,7 @@ struct FeedData: DisplayData {
     let title: String
     let cid: Int
     let aid: Int
-    let owner: String
+    let ownerName: String
     let pic: URL?
     let avatar: URL?
     let date: String?
@@ -120,7 +120,7 @@ struct BangumiData: DisplayData {
     let title: String
     let season: Int
     let episode: Int
-    let owner: String
+    let ownerName: String
     let pic: URL?
     let date: String?
 }
