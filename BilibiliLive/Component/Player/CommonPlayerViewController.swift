@@ -197,7 +197,7 @@ class CommonPlayerViewController: AVPlayerViewController {
     private func startPlay() {
         guard player?.rate == 0 && player?.error == nil else { return }
         if let playerStartPos = playerStartPos {
-            player?.seek(to: playerStartPos)
+            player?.seek(to: playerStartPos, toleranceBefore: .zero, toleranceAfter: .zero)
         }
         player?.play()
     }

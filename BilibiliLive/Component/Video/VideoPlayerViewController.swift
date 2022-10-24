@@ -15,7 +15,6 @@ import UIKit
 class VideoPlayerViewController: CommonPlayerViewController {
     var cid: Int?
     var aid: Int!
-    var position: Float = 0.0
 
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
@@ -47,7 +46,6 @@ class VideoPlayerViewController: CommonPlayerViewController {
     }
 
     func playmedia(json: JSON) async {
-        playerStartPos = .zero
         let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
         let headers: [String: String] = [
             "User-Agent": "Bilibili/APPLE TV",

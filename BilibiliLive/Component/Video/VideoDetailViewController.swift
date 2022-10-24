@@ -5,6 +5,7 @@
 //  Created by Etan Chen on 2021/4/17.
 //
 
+import AVKit
 import Foundation
 import UIKit
 
@@ -44,6 +45,7 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
+    private var startTime: CMTime?
     private var pages = [VideoPage]()
     private var relateds = [VideoDetail]()
 
@@ -101,6 +103,16 @@ class VideoDetailViewController: UIViewController {
                 self.update(with: data)
             case let .failure(err):
                 self.exit(with: err)
+            }
+        }
+
+        WebRequest.requestHistory { [weak self] datas in
+            guard let self = self else { return }
+            for data in datas {
+                if data.aid == self.aid {
+                    self.startTime = CMTime(seconds: Double(data.progress), preferredTimescale: 1)
+                    break
+                }
             }
         }
 
@@ -173,6 +185,7 @@ class VideoDetailViewController: UIViewController {
         let player = VideoPlayerViewController()
         player.aid = aid
         player.cid = cid
+        player.playerStartPos = startTime
         present(player, animated: true, completion: nil)
     }
 

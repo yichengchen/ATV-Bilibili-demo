@@ -308,9 +308,8 @@ struct HistoryData: DisplayData, Codable {
     let owner: Upper
     let cid: Int
     let aid: Int
-    let progress: Float
-    let duration: Float
-    var position: Float { progress / duration }
+    let progress: Int
+    let duration: Int
 }
 
 struct FavData: DisplayData, Codable {
