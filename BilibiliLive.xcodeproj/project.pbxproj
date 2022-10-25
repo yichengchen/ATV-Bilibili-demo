@@ -35,7 +35,6 @@
 		F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */; };
 		F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6D2610395300EAB8E3 /* DanmakuView.swift */; };
 		F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED6E2610395300EAB8E3 /* DanmakuAsyncLayer.swift */; };
-		F927ED762610395300EAB8E3 /* .gitkeep in Resources */ = {isa = PBXBuildFile; fileRef = F927ED6F2610395300EAB8E3 /* .gitkeep */; };
 		F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED702610395300EAB8E3 /* DanmakuQueuePool.swift */; };
 		F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED712610395300EAB8E3 /* DanmakuTrack.swift */; };
 		F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED722610395300EAB8E3 /* DanmakuCellModel.swift */; };
@@ -93,7 +92,6 @@
 		F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCell.swift; sourceTree = "<group>"; };
 		F927ED6D2610395300EAB8E3 /* DanmakuView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuView.swift; sourceTree = "<group>"; };
 		F927ED6E2610395300EAB8E3 /* DanmakuAsyncLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuAsyncLayer.swift; sourceTree = "<group>"; };
-		F927ED6F2610395300EAB8E3 /* .gitkeep */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitkeep; sourceTree = "<group>"; };
 		F927ED702610395300EAB8E3 /* DanmakuQueuePool.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuQueuePool.swift; sourceTree = "<group>"; };
 		F927ED712610395300EAB8E3 /* DanmakuTrack.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuTrack.swift; sourceTree = "<group>"; };
 		F927ED722610395300EAB8E3 /* DanmakuCellModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DanmakuCellModel.swift; sourceTree = "<group>"; };
@@ -273,7 +271,6 @@
 				F927ED6C2610395300EAB8E3 /* DanmakuCell.swift */,
 				F927ED6D2610395300EAB8E3 /* DanmakuView.swift */,
 				F927ED6E2610395300EAB8E3 /* DanmakuAsyncLayer.swift */,
-				F927ED6F2610395300EAB8E3 /* .gitkeep */,
 				F927ED702610395300EAB8E3 /* DanmakuQueuePool.swift */,
 				F927ED712610395300EAB8E3 /* DanmakuTrack.swift */,
 				F927ED722610395300EAB8E3 /* DanmakuCellModel.swift */,
@@ -408,7 +405,6 @@
 				F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */,
 				F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */,
 				F9B57359260F5F7400771ED5 /* Main.storyboard in Resources */,
-				F927ED762610395300EAB8E3 /* .gitkeep in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -431,7 +427,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "cd BuildTools\nSDKROOT=(xcrun --sdk macosx --show-sdk-path)\nswift run -c release swiftformat --disable unusedArguments,numberFormatting,redundantReturn,andOperator,anyObjectProtocol,trailingClosures,redundantFileprivate --ranges nospace  \"$SRCROOT\"\n";
+			shellScript = "if [[ -z \"${CI}\" ]]; then\n  exit\nfi\ncd BuildTools\nSDKROOT=(xcrun --sdk macosx --show-sdk-path)\nswift run -c release swiftformat --disable unusedArguments,numberFormatting,redundantReturn,andOperator,anyObjectProtocol,trailingClosures,redundantFileprivate --ranges nospace  \"$SRCROOT\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

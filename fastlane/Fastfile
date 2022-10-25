@@ -1,0 +1,12 @@
+default_platform(:tvos)
+
+platform :tvos do
+  desc "Description of what the lane does"
+  lane :build_simulator do
+    build_app(
+      skip_package_ipa: true,
+      skip_archive: true,
+      destination: "platform=tvOS Simulator,name=Apple TV"
+  )
+  end
+end
