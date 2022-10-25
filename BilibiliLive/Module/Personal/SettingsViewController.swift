@@ -58,6 +58,26 @@ class SettingsViewController: UIViewController {
             self?.setupData()
         }
         cellModels.append(liveHack)
+
+        let quality = CellModel(title: "最高画质", desp: Settings.mediaQuality.desp) { [weak self] in
+            let alert = UIAlertController(title: "最高画质", message: "4k以上需要大会员", preferredStyle: .actionSheet)
+            for quality in MediaQualityEnum.allCases {
+                let action = UIAlertAction(title: quality.desp, style: .default) { _ in
+                    Settings.mediaQuality = quality
+                    self?.setupData()
+                }
+                alert.addAction(action)
+            }
+            self?.present(alert, animated: true)
+        }
+        cellModels.append(quality)
+        let losslessAudio = CellModel(title: "无损音频和杜比全景声", desp: Settings.losslessAudio ? "开" : "关") {
+            [weak self] in
+            Settings.losslessAudio.toggle()
+            self?.setupData()
+        }
+        cellModels.append(losslessAudio)
+
         collectionView.reloadData()
     }
 }

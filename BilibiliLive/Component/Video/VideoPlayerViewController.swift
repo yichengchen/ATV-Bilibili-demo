@@ -70,7 +70,8 @@ class VideoPlayerViewController: CommonPlayerViewController {
 
 extension VideoPlayerViewController {
     func fetchVideoData() {
-        ApiRequest.requestJSON("https://api.bilibili.com/x/player/playurl?avid=\(aid!)&cid=\(cid!)&qn=116&type=&fnver=0&fnval=16&otype=json") { [weak self] resp in
+        let quality = Settings.mediaQuality
+        ApiRequest.requestJSON("https://api.bilibili.com/x/player/playurl?avid=\(aid!)&cid=\(cid!)&qn=\(quality.qn)&type=&fnver=0&fnval=\(quality.fnval)&otype=json") { [weak self] resp in
             switch resp {
             case let .success(data):
                 Task { await self?.playmedia(json: data) }
