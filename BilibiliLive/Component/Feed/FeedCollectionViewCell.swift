@@ -45,11 +45,14 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
         let hStackView = UIStackView()
         let stackView = UIStackView()
         infoView.addSubview(hStackView)
-        hStackView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
         hStackView.addArrangedSubview(avatarView)
         hStackView.addArrangedSubview(stackView)
+        hStackView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.bottom.equalToSuperview().priority(.high)
+            make.height.equalTo(stackView.snp.height)
+        }
+
         hStackView.alignment = .top
         hStackView.spacing = 10
         avatarView.backgroundColor = .clear
@@ -68,6 +71,7 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
         stackView.addArrangedSubview(upLabel)
         stackView.alignment = .leading
         stackView.spacing = 6
+        stackView.setContentHuggingPriority(.required, for: .vertical)
         titleLabel.holdScrolling = true
         titleLabel.setContentHuggingPriority(.required, for: .vertical)
         titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
@@ -130,5 +134,34 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
         onLongPress = nil
         avatarView.image = nil
         stopScroll()
+    }
+}
+
+extension FeedDisplayStyle {
+    var fractionalWidth: CGFloat {
+        switch self {
+        case .large:
+            return 0.33
+        case .normal:
+            return 0.25
+        }
+    }
+
+    var fractionalHeight: CGFloat {
+        switch self {
+        case .large:
+            return fractionalWidth / 1.5
+        case .normal:
+            return fractionalWidth / 1.5
+        }
+    }
+
+    var heightEstimated: CGFloat {
+        switch self {
+        case .large:
+            return 516
+        case .normal:
+            return 380
+        }
     }
 }

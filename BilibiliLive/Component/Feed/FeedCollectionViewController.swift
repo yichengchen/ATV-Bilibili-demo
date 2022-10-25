@@ -113,23 +113,31 @@ class FeedCollectionViewController: UIViewController {
         }
     }
 
+    private var selfSizeingEnable: Bool {
+        if #available(tvOS 16.0, *) {
+            return true
+        }
+        return false
+    }
+
     private func makeGridLayoutSection() -> NSCollectionLayoutSection {
-        let heightDimension = NSCollectionLayoutDimension.estimated(Settings.displayStyle == .large ? 350 : 400)
+        let heightDimension = NSCollectionLayoutDimension.estimated(Settings.displayStyle.heightEstimated)
         let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(Settings.displayStyle == .large ? 0.33 : 0.25),
-            heightDimension: heightDimension
+            widthDimension: .fractionalWidth(Settings.displayStyle.fractionalWidth),
+            heightDimension: selfSizeingEnable ? heightDimension : .fractionalHeight(1)
         ))
         let hSpacing: CGFloat = Settings.displayStyle == .large ? 35 : 30
         item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: hSpacing, bottom: 0, trailing: hSpacing)
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1),
-                heightDimension: heightDimension
+                heightDimension: selfSizeingEnable ? heightDimension : .fractionalWidth(Settings.displayStyle.fractionalHeight)
             ),
             subitem: item,
             count: Settings.displayStyle == .large ? 3 : 4
         )
-        group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: .fixed(0), top: .fixed(16), trailing: .fixed(0), bottom: .fixed(16))
+        let vSpacing: CGFloat = Settings.displayStyle == .large ? 24 : 16
+        group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: .fixed(0), top: .fixed(vSpacing), trailing: .fixed(0), bottom: .fixed(vSpacing))
         return NSCollectionLayoutSection(group: group)
     }
 
