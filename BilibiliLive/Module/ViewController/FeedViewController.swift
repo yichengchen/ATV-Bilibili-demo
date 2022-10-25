@@ -17,7 +17,7 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
             [weak self] record in
             self?.goDetail(with: record as! ApiRequest.FeedResp.Items)
         }
-
+        collectionVC.pageSize = 1
         collectionVC.loadMore = {
             [weak self] in
             self?.loadMore()
