@@ -48,7 +48,7 @@ extension MediaQualityEnum {
         case .quality_2160p:
             return "4K"
         case .quality_hdr_dolby:
-            return "HDR和杜比视界"
+            return "杜比视界"
         }
     }
 
