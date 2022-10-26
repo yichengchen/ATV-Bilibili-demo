@@ -27,6 +27,8 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private var playlists = [String]()
     private var hasAudioInMasterListAdded = false
 
+    let videoCodecBlackList = ["avc1.640034"] // high 5.2 is not supported
+
     private func reset() {
         playlists.removeAll()
         masterPlaylist = """
@@ -37,6 +39,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     }
 
     private func addVideoPlayBackInfo(codec: String, width: Int, height: Int, frameRate: String, bandwidth: Int, duration: Int, url: String, sar: String) {
+        guard !videoCodecBlackList.contains(codec) else { return }
         let content = """
         #EXT-X-STREAM-INF:AUDIO="audio",CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth)
         \(URLs.customPrefix)\(playlists.count)
@@ -87,7 +90,6 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         reset()
         for video in info.dash.video {
             addVideoPlayBackInfo(codec: video.codecs, width: video.width, height: video.height, frameRate: video.frame_rate, bandwidth: video.bandwidth, duration: info.dash.duration, url: video.base_url, sar: video.sar)
-            break
         }
 
         if Settings.losslessAudio {
@@ -96,7 +98,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
                     addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: audio.base_url)
                 }
             } else if let audio = info.dash.flac?.audio {
-                // addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: audio.base_url)
+                addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: audio.base_url)
             }
         }
 
