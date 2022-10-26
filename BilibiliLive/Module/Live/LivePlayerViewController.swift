@@ -27,6 +27,7 @@ class LivePlayerViewController: CommonPlayerViewController {
 
     override func viewDidLoad() {
         allowChangeSpeed = false
+        requiresLinearPlayback = true
         super.viewDidLoad()
         refreshRoomsID {
             [weak self] in
