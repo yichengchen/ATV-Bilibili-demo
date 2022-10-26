@@ -35,6 +35,10 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         feedVC.tabBarItem.title = "推荐"
         vcs.append(feedVC)
 
+        let hotVC = HotViewController()
+        hotVC.tabBarItem.title = "热门"
+        vcs.append(hotVC)
+
         let followVC = FollowsViewController()
         followVC.tabBarItem.title = "关注"
         vcs.append(followVC)
@@ -47,9 +51,9 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         historyVC.tabBarItem.title = "历史"
         vcs.append(historyVC)
 
-        let toViewVC = ToViewViewController()
-        toViewVC.tabBarItem.title = "稍后再看"
-        vcs.append(toViewVC)
+//        let toViewVC = ToViewViewController()
+//        toViewVC.tabBarItem.title = "稍后再看"
+//        vcs.append(toViewVC)
 
         let persionVC = PersonalViewController.create()
         persionVC.extendedLayoutIncludesOpaqueBars = true

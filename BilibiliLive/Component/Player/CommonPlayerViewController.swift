@@ -90,7 +90,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         }
     }
 
-    func setPlayerInfo(title: String?, subTitle: String?, desp: String?, pic: String?) {
+    func setPlayerInfo(title: String?, subTitle: String?, desp: String?, pic: URL?) {
         let desp = desp?.components(separatedBy: "\n").joined(separator: " ")
         let mapping: [AVMetadataIdentifier: Any?] = [
             .commonIdentifierTitle: title,
@@ -101,8 +101,8 @@ class CommonPlayerViewController: AVPlayerViewController {
         playerInfo = meta
         playerItem?.externalMetadata = meta
 
-        if let pic = pic, let imageURL = URL(string: pic) {
-            let resource = ImageResource(downloadURL: imageURL)
+        if let pic = pic {
+            let resource = ImageResource(downloadURL: pic)
             KingfisherManager.shared.retrieveImage(with: resource) {
                 [weak self] result in
                 guard let self = self,

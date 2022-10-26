@@ -150,9 +150,8 @@ class VideoDetailViewController: UIViewController {
 
         avatarImageView.kf.setImage(with: data.owner.face, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
 
-        let image = URL(string: data.pic)
-        coverImageView.kf.setImage(with: image)
-        backgroundImageView.kf.setImage(with: image)
+        coverImageView.kf.setImage(with: data.pic)
+        backgroundImageView.kf.setImage(with: data.pic)
 
         var notes = [String]()
         let status = data.dynamic ?? ""
@@ -288,7 +287,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         let related = relateds[indexPath.row]
         let imageView = cell.viewWithTag(1) as! UIImageView
         label.text = related.title
-        imageView.kf.setImage(with: URL(string: related.pic))
+        imageView.kf.setImage(with: related.pic)
         return cell
     }
 }

@@ -340,12 +340,14 @@ struct FavListData: Codable, Hashable {
     let id: Int
 }
 
-struct VideoDetail: Codable {
+struct VideoDetail: Codable, Hashable, DisplayData {
+    var ownerName: String { owner.name }
+
     let aid: Int
     let cid: Int
     let title: String
     let videos: Int
-    let pic: String
+    let pic: URL?
     let desc: String
     let owner: VideoOwner
     let pages: [VideoPage]?
@@ -353,7 +355,7 @@ struct VideoDetail: Codable {
     let duration: Int
 
     let stat: Stat
-    struct Stat: Codable {
+    struct Stat: Codable, Hashable {
         let favorite: Int
         let coin: Int
         let like: Int
@@ -376,7 +378,7 @@ struct VideoOwner: Codable, Hashable {
     let face: URL
 }
 
-struct VideoPage: Codable {
+struct VideoPage: Codable, Hashable {
     let cid: Int
     let page: Int
     let from: String

@@ -36,7 +36,7 @@ class LivePlayerViewController: CommonPlayerViewController {
             self.initPlayer()
         }
         danMuView.play()
-        setPlayerInfo(title: room?.title, subTitle: nil, desp: room?.ownerName, pic: room?.cover?.absoluteString)
+        setPlayerInfo(title: room?.title, subTitle: nil, desp: room?.ownerName, pic: room?.cover)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
