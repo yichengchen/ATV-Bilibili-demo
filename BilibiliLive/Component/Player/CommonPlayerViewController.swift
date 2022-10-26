@@ -148,15 +148,20 @@ class CommonPlayerViewController: AVPlayerViewController {
                                   PlaySpeed(name: "1.25X", value: 1.25),
                                   PlaySpeed(name: "1.5X", value: 1.5),
                                   PlaySpeed(name: "2X", value: 2)]
-            let speedActions = playSpeedArray.map { playSpeed in
-                UIAction(title: playSpeed.name, state: player?.rate ?? 1 == playSpeed.value ? .on : .off) { [weak self] action in
-                    self?.player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
-                    self?.player?.rate = playSpeed.value
-                    self?.danMuView.playingSpeed = playSpeed.value
+
+            if #available(tvOS 16.0, *) {
+                speeds = playSpeedArray.map { AVPlaybackSpeed(rate: $0.value, localizedName: $0.name) }
+            } else {
+                let speedActions = playSpeedArray.map { playSpeed in
+                    UIAction(title: playSpeed.name, state: player?.rate ?? 1 == playSpeed.value ? .on : .off) { [weak self] action in
+                        self?.player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
+                        self?.player?.rate = playSpeed.value
+                        self?.danMuView.playingSpeed = playSpeed.value
+                    }
                 }
+                let playSpeedMenu = UIMenu(title: "播放速度", image: UIImage(systemName: "speedometer"), options: [.singleSelection], children: speedActions)
+                menus.append(playSpeedMenu)
             }
-            let playSpeedMenu = UIMenu(title: "播放速度", image: UIImage(systemName: "speedometer"), options: [.singleSelection], children: speedActions)
-            menus.append(playSpeedMenu)
         }
         transportBarCustomMenuItems = menus
     }
