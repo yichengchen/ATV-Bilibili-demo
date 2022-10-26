@@ -85,7 +85,7 @@ class FeedCollectionViewController: UIViewController {
 
     func appendData(displayData: [any DisplayData]) {
         _displayData.append(contentsOf: displayData.map { AnyDispplayData(data: $0) }.filter({ !_displayData.contains($0) }))
-        if displayData.count < pageSize {
+        if displayData.count < pageSize - 5 {
             finished = true
         }
         isLoading = false
