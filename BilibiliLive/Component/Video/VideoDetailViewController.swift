@@ -27,6 +27,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var playButton: BLCustomButton!
     @IBOutlet var likeButton: BLCustomButton!
     @IBOutlet var coinButton: BLCustomButton!
+    @IBOutlet var dislikeButton: BLCustomButton!
 
     @IBOutlet var durationLabel: UILabel!
     @IBOutlet var avatarImageView: UIImageView!
@@ -243,6 +244,11 @@ class VideoDetailViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "取消", style: .default))
             present(alert, animated: true)
         }
+    }
+
+    @IBAction func actionDislike(_ sender: Any) {
+        dislikeButton.isOn.toggle()
+        ApiRequest.requestDislike(aid: aid, dislike: dislikeButton.isOn)
     }
 }
 

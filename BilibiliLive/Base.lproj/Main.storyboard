@@ -392,14 +392,27 @@
                                                                         <action selector="actionFavorite:" destination="Q5X-tf-Ysh" eventType="primaryActionTriggered" id="4zN-i3-UR0"/>
                                                                     </connections>
                                                                 </view>
+                                                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Efg-f4-str" customClass="BLCustomButton" customModule="BilibiliLive" customModuleProvider="target">
+                                                                    <rect key="frame" x="800" y="0.0" width="160" height="128"/>
+                                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    <userDefinedRuntimeAttributes>
+                                                                        <userDefinedRuntimeAttribute type="image" keyPath="image" value="hand.thumbsdown" catalog="system"/>
+                                                                        <userDefinedRuntimeAttribute type="string" keyPath="title" value="不喜欢"/>
+                                                                        <userDefinedRuntimeAttribute type="image" keyPath="onImage" value="hand.thumbsdown.fill" catalog="system"/>
+                                                                    </userDefinedRuntimeAttributes>
+                                                                    <connections>
+                                                                        <action selector="actionDislike:" destination="Q5X-tf-Ysh" eventType="primaryActionTriggered" id="WzX-3P-wiW"/>
+                                                                    </connections>
+                                                                </view>
                                                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="D4E-g6-BwX">
-                                                                    <rect key="frame" x="800" y="0.0" width="1120" height="128"/>
+                                                                    <rect key="frame" x="980" y="0.0" width="940" height="128"/>
                                                                 </view>
                                                             </subviews>
                                                             <constraints>
                                                                 <constraint firstAttribute="height" constant="128" id="07h-8t-wSc"/>
                                                                 <constraint firstItem="lIW-Ax-AbL" firstAttribute="width" secondItem="lfB-VX-ver" secondAttribute="width" id="Jqv-rm-0eq"/>
                                                                 <constraint firstItem="fxL-C9-Fqb" firstAttribute="width" secondItem="lfB-VX-ver" secondAttribute="width" id="VHk-sR-ggH"/>
+                                                                <constraint firstItem="Efg-f4-str" firstAttribute="width" secondItem="lfB-VX-ver" secondAttribute="width" id="aYd-hN-4AJ"/>
                                                                 <constraint firstItem="Olx-aY-Y43" firstAttribute="width" secondItem="lfB-VX-ver" secondAttribute="width" id="kWG-mq-ZeE"/>
                                                             </constraints>
                                                         </stackView>
@@ -582,6 +595,7 @@
                         <outlet property="backgroundImageView" destination="Kie-Aa-AFL" id="1Th-ka-RPV"/>
                         <outlet property="coinButton" destination="Olx-aY-Y43" id="a4a-wo-J4P"/>
                         <outlet property="coverImageView" destination="rEZ-Qh-SKb" id="OqG-Sz-6Jv"/>
+                        <outlet property="dislikeButton" destination="Efg-f4-str" id="3iU-2Q-SZS"/>
                         <outlet property="durationLabel" destination="ymk-p2-UgZ" id="bJX-8D-fcZ"/>
                         <outlet property="effectContainerView" destination="akE-tZ-Y1L" id="fRI-xN-KfU"/>
                         <outlet property="favButton" destination="fxL-C9-Fqb" id="X9x-nb-2hH"/>
@@ -700,6 +714,8 @@
     <resources>
         <image name="bitcoinsign.circle" catalog="system" width="128" height="128"/>
         <image name="bitcoinsign.circle.fill" catalog="system" width="128" height="128"/>
+        <image name="hand.thumbsdown" catalog="system" width="115" height="128"/>
+        <image name="hand.thumbsdown.fill" catalog="system" width="128" height="115"/>
         <image name="hand.thumbsup" catalog="system" width="115" height="128"/>
         <image name="hand.thumbsup.fill" catalog="system" width="128" height="115"/>
         <image name="play" catalog="system" width="112" height="128"/>

@@ -52,7 +52,7 @@ enum ApiRequest {
         return getToken() != nil
     }
 
-    static func sign(for param: [String: String]) -> [String: String] {
+    static func sign(for param: [String: Any]) -> [String: Any] {
         var newParam = param
         newParam["appkey"] = appkey
         newParam["ts"] = "\(Date().timeIntervalSince1970)"
@@ -81,14 +81,14 @@ enum ApiRequest {
                             parameters: Parameters = [:],
                             auth: Bool = true,
                             encoding: ParameterEncoding = URLEncoding.default,
-                            complete: ((Result<JSON, RequestError>) -> Void)?)
+                            complete: ((Result<JSON, RequestError>) -> Void)? = nil)
     {
-        var param = parameters.compactMapValues { $0 as? String }
+        var parameters = parameters
         if auth {
-            param["access_key"] = getToken()?.accessToken
+            parameters["access_key"] = getToken()?.accessToken
         }
-        param = sign(for: param)
-        AF.request(url, method: method, parameters: param, encoding: encoding).responseData { response in
+        parameters = sign(for: parameters)
+        AF.request(url, method: method, parameters: parameters, encoding: encoding).responseData { response in
             switch response.result {
             case let .success(data):
                 let json = JSON(data)
@@ -276,5 +276,9 @@ enum ApiRequest {
         let idx = "\(lastIdx)"
         let resp: FeedResp = try await request(EndPoint.feed, parameters: ["idx": idx, "flush": "0", "column": "4", "device": "pad", "pull": idx == "0" ? "1" : "0"])
         return resp.items
+    }
+
+    static func requestDislike(aid: Int, dislike: Bool) {
+        requestJSON("http://app.biliapi.net/x/v2/view/dislike", method: .post, parameters: ["aid": aid, "dislike": dislike ? 0 : 1])
     }
 }
