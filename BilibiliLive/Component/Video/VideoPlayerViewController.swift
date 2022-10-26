@@ -35,7 +35,9 @@ class VideoPlayerViewController: CommonPlayerViewController {
         ensureCid {
             [weak self] in
             guard let self = self else { return }
-            self.fetchVideoData()
+            Task {
+                await self.fetchVideoData()
+            }
             self.danmuProvider.cid = self.cid
             self.danmuProvider.fetchDanmuData()
         }
@@ -45,7 +47,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         }
     }
 
-    func playmedia(json: JSON) async {
+    func playmedia(info: VideoPlayURLInfo) async {
         let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
         let headers: [String: String] = [
             "User-Agent": "Bilibili/APPLE TV",
@@ -53,7 +55,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         ]
         let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         playerDelegate = BilibiliVideoResourceLoaderDelegate()
-        playerDelegate?.setBilibili(info: json)
+        playerDelegate?.setBilibili(info: info)
         asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
         let requestedKeys = ["playable"]
         await asset.loadValues(forKeys: requestedKeys)
@@ -69,25 +71,21 @@ class VideoPlayerViewController: CommonPlayerViewController {
 // MARK: - Requests
 
 extension VideoPlayerViewController {
-    func fetchVideoData() {
-        let quality = Settings.mediaQuality
-        ApiRequest.requestJSON("https://api.bilibili.com/x/player/playurl?avid=\(aid!)&cid=\(cid!)&qn=\(quality.qn)&type=&fnver=0&fnval=\(quality.fnval)&otype=json") { [weak self] resp in
-            switch resp {
-            case let .success(data):
-                Task { await self?.playmedia(json: data) }
-            case let .failure(error):
-                switch error {
-                case let .statusFail(code):
-                    self?.showErrorAlertAndExit(message: "请求失败\(code)，可能需要大会员")
-                default:
-                    self?.showErrorAlertAndExit(message: "请求失败,\(error)")
-                }
-            }
-        }
+    func fetchVideoData() async {
+        do {
+            let playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
+            print(playData)
+            await playmedia(info: playData)
 
-        Task {
             let info = await WebRequest.requestDetailVideo(aid: aid!)
             setPlayerInfo(title: info?.title, subTitle: info?.owner.name, desp: info?.desc, pic: info?.pic)
+        } catch let err {
+            if case let .statusFail(code, message) = err as? RequestError {
+                showErrorAlertAndExit(message: "请求失败\(code) \(message)，可能需要大会员")
+            } else {
+                showErrorAlertAndExit(message: "请求失败,\(err)")
+            }
+            print(err)
         }
     }
 

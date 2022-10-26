@@ -28,6 +28,7 @@ enum WebRequest {
         static let likeStatus = "http://api.bilibili.com/x/web-interface/archive/has/like"
         static let coin = "http://api.bilibili.com/x/web-interface/coin/add"
         static let playerInfo = "https://api.bilibili.com/x/player/v2"
+        static let playUrl = "https://api.bilibili.com/x/player/playurl"
     }
 
     static func requestData(method: HTTPMethod = .get,
@@ -278,6 +279,12 @@ extension WebRequest {
             }
         }
     }
+
+    static func requestPlayUrl(aid: Int, cid: Int) async throws -> VideoPlayURLInfo {
+        let quality = Settings.mediaQuality
+        return try await request(url: EndPoint.playUrl,
+                                 parameters: ["avid": aid, "cid": cid, "qn": quality.qn, "type": "", "fnver": 0, "fnval": quality.fnval, "otype": "json"])
+    }
 }
 
 // MARK: - User
@@ -397,5 +404,75 @@ struct PlayerInfo: Codable {
 
     var playTimeInSecond: Int {
         last_play_time / 1000
+    }
+}
+
+struct VideoPlayURLInfo: Codable {
+    let quality: Int
+    let format: String
+    let timelength: Int
+    let accept_format: String
+    let accept_description: [String]
+    let accept_quality: [Int]
+    let video_codecid: Int
+    let support_formats: [SupportFormate]
+    let dash: DashInfo
+
+    struct SupportFormate: Codable {
+        let quality: Int
+        let format: String
+        let new_description: String
+        let display_desc: String
+        let codecs: [String]
+    }
+
+    struct DashInfo: Codable {
+        let duration: Int
+        let minBufferTime: CGFloat
+        let video: [DashMediaInfo]
+        let audio: [DashMediaInfo]
+        let dolby: DolbyInfo?
+        let flac: FlacInfo?
+        struct DashMediaInfo: Codable {
+            let id: Int
+            let base_url: String
+            let backup_url: [String]
+            let bandwidth: Int
+            let mime_type: String
+            let codecs: String
+            let width: Int
+            let height: Int
+            let frame_rate: String
+            let sar: String
+            let start_with_sap: Int
+            let segment_base: DashSegmentBase
+            let codecid: Int
+        }
+
+        struct DashSegmentBase: Codable {
+            let initialization: String
+            let index_range: String
+        }
+
+        struct DolbyInfo: Codable {
+            let type: Int
+            let audio: [DolbyAudioInfo]
+
+            struct DolbyAudioInfo: Codable {
+                let id: Int
+                let base_url: String
+                let backup_url: [String]
+                let bandwidth: Int
+                let mime_type: String
+                let codecs: String
+                let segment_base: DashSegmentBase
+                let size: Int
+            }
+        }
+
+        struct FlacInfo: Codable {
+            let display: Bool
+            let audio: DashMediaInfo
+        }
     }
 }

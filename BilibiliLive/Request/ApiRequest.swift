@@ -78,12 +78,12 @@ enum ApiRequest {
 
     static func requestJSON(_ url: URLConvertible,
                             method: HTTPMethod = .get,
-                            parameters: [String: String] = [:],
+                            parameters: Parameters = [:],
                             auth: Bool = true,
                             encoding: ParameterEncoding = URLEncoding.default,
                             complete: ((Result<JSON, RequestError>) -> Void)?)
     {
-        var param = parameters
+        var param = parameters.compactMapValues { $0 as? String }
         if auth {
             param["access_key"] = getToken()?.accessToken
         }

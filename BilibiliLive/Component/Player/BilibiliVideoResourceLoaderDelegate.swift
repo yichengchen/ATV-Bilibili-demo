@@ -15,9 +15,6 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         static let customScheme = "atv"
         static let customPrefix = customScheme + "://"
         static let play = customPrefix + "play"
-        static let video = customPrefix + "video.m3u8"
-        static let backupVideo = customPrefix + "backupVideo.m3u8"
-        static let audio = customPrefix + "audio.m3u8"
     }
 
     private var audioPlaylist = ""
@@ -27,159 +24,85 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
     private let badRequestErrorCode = 455
 
-    func setBilibili(info: JSON) {
-        let dash = info["data"]["dash"]
-        let duration = dash["duration"].intValue
+    private var playlists = [String]()
+    private var hasAudioInMasterListAdded = false
 
-        if Settings.mediaQuality == .quality_hdr_dolby {
-            let video = dash["video"][0]
-            let videoBaseURL = video["base_url"].stringValue
-            let videoBackupURL = video["backup_url"].arrayValue.map({ $0.stringValue })
+    private func reset() {
+        playlists.removeAll()
+        masterPlaylist = """
+        #EXTM3U
+        #EXT-X-VERSION:6
 
-            let width = video["width"].intValue
-            let height = video["height"].intValue
-            let videocodecs = video["codecs"].stringValue
-            let frameRate = video["frameRate"].stringValue
-            let sar = video["sar"].stringValue
-            let videoBandwidth = video["bandwidth"].stringValue
+        """
+    }
 
-            let videoURL = videoBackupURL.first ?? videoBaseURL
+    private func addVideoPlayBackInfo(codec: String, width: Int, height: Int, frameRate: String, bandwidth: Int, duration: Int, url: String, sar: String) {
+        let content = """
+        #EXT-X-STREAM-INF:AUDIO="audio",CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth)
+        \(URLs.customPrefix)\(playlists.count)
 
-            let backupVideo = dash["video"][1]
-            let backupVideoBaseURL = backupVideo["base_url"].stringValue
-            let backupVideoBackupURL = backupVideo["backup_url"].arrayValue.map({ $0.stringValue })
+        """
+        masterPlaylist.append(content)
 
-            let backupWidth = backupVideo["width"].intValue
-            let backupHeight = backupVideo["height"].intValue
-            let backupVideocodecs = backupVideo["codecs"].stringValue
-            let backupFrameRate = backupVideo["frameRate"].stringValue
-            let backupSar = backupVideo["sar"].stringValue
-            let backupVideoBandwidth = backupVideo["bandwidth"].stringValue
-
-            let backupVideoURL = backupVideoBackupURL.first ?? backupVideoBaseURL
-
-            masterPlaylist = """
-            #EXTM3U
-            #EXT-X-VERSION:6
-            #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=YES,GROUP-ID="audio",NAME="Main",URI="\(URLs.audio)"
-            #EXT-X-STREAM-INF:AUDIO="audio",CODECS="\(videocodecs)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(videoBandwidth)
-            \(URLs.video)
-            #EXT-X-STREAM-INF:AUDIO="audio",CODECS="\(backupVideocodecs)",RESOLUTION=\(backupWidth)x\(backupHeight),FRAME-RATE=\(backupFrameRate),BANDWIDTH=\(backupVideoBandwidth)
-            \(URLs.backupVideo)
-            """
-
-            videoPlaylist = """
-            #EXTM3U
-            #EXT-X-VERSION:6
-            #EXT-X-TARGETDURATION:\(duration)
-            #EXT-X-MEDIA-SEQUENCE:1
-            #EXT-X-PLAYLIST-TYPE:EVENT
-            #EXTINF:\(duration)
-            \(videoURL)
-            #EXT-X-MLB-VIDEO-INFO:codecs="\(videocodecs)",width="\(width)",height="\(height)",sar="\(sar)",frame-duration=1
-            #EXT-X-MLB-INFO:max-bw=\(videoBandwidth),duration=\(duration)
-            #EXT-X-ENDLIST
-            """
-
-            backupVideoPlaylist = """
-            #EXTM3U
-            #EXT-X-VERSION:6
-            #EXT-X-TARGETDURATION:\(duration)
-            #EXT-X-MEDIA-SEQUENCE:1
-            #EXT-X-PLAYLIST-TYPE:EVENT
-            #EXTINF:\(duration)
-            \(backupVideoURL)
-            #EXT-X-MLB-VIDEO-INFO:codecs="\(backupVideocodecs)",width="\(backupWidth)",height="\(backupHeight)",sar="\(backupSar)",frame-duration=1
-            #EXT-X-MLB-INFO:max-bw=\(backupVideoBandwidth),duration=\(duration)
-            #EXT-X-ENDLIST
-            """
-
-        } else {
-            let video = dash["video"][1]
-            let videoBaseURL = video["base_url"].stringValue
-            let videoBackupURL = video["backup_url"].arrayValue.map({ $0.stringValue })
-
-            let width = video["width"].intValue
-            let height = video["height"].intValue
-            let videocodecs = video["codecs"].stringValue
-            let frameRate = video["frameRate"].stringValue
-            let sar = video["sar"].stringValue
-            let videoBandwidth = video["bandwidth"].stringValue
-
-            let videoURL = videoBackupURL.first ?? videoBaseURL
-
-            masterPlaylist = """
-            #EXTM3U
-            #EXT-X-VERSION:6
-            #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=YES,GROUP-ID="audio",NAME="Main",URI="\(URLs.audio)"
-            #EXT-X-STREAM-INF:AUDIO="audio",CODECS="\(videocodecs)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(videoBandwidth)
-            \(URLs.video)
-            """
-
-            videoPlaylist = """
-            #EXTM3U
-            #EXT-X-VERSION:6
-            #EXT-X-TARGETDURATION:\(duration)
-            #EXT-X-MEDIA-SEQUENCE:1
-            #EXT-X-PLAYLIST-TYPE:EVENT
-            #EXTINF:\(duration)
-            \(videoURL)
-            #EXT-X-MLB-VIDEO-INFO:codecs="\(videocodecs)",width="\(width)",height="\(height)",sar="\(sar)",frame-duration=1
-            #EXT-X-MLB-INFO:max-bw=\(videoBandwidth),duration=\(duration)
-            #EXT-X-ENDLIST
-            """
-        }
-
-        var audioBaseURL = ""
-        var audioBackupURL: [String]
-        var audioURL = ""
-        var audioCodec = ""
-        var audioBandwidth = ""
-
-        if Settings.losslessAudio == true {
-            var audio: JSON = .null
-            let dolby = dash["dolby"]
-            if dolby != .null {
-                audio = dolby["audio"][0]
-            } else {
-                let flac = dash["flac"]
-                if flac != .null {
-                    audio = flac["audio"]
-                } else {
-                    audio = dash["audio"][0]
-                }
-            }
-
-            audioBaseURL = audio["base_url"].stringValue
-            audioBackupURL = audio["backup_url"].arrayValue.map({ $0.stringValue })
-            audioURL = audioBackupURL.first ?? audioBaseURL
-
-            audioCodec = audio["codecs"].stringValue
-
-            audioBandwidth = audio["bandwidth"].stringValue
-        } else {
-            let audio = dash["audio"][0]
-            audioBaseURL = audio["base_url"].stringValue
-            audioBackupURL = audio["backup_url"].arrayValue.map({ $0.stringValue })
-            audioURL = audioBackupURL.first ?? audioBaseURL
-
-            audioCodec = audio["codecs"].stringValue
-
-            audioBandwidth = audio["bandwidth"].stringValue
-        }
-
-        audioPlaylist = """
+        let playList = """
         #EXTM3U
         #EXT-X-VERSION:6
         #EXT-X-TARGETDURATION:\(duration)
         #EXT-X-MEDIA-SEQUENCE:1
         #EXT-X-PLAYLIST-TYPE:EVENT
         #EXTINF:\(duration)
-        \(audioURL)
-        #EXT-X-MLB-AUDIO-INFO:codecs="\(audioCodec)"
-        #EXT-X-MLB-INFO:max-bw=\(audioBandwidth),duration=\(duration)
+        \(url)
+        #EXT-X-MLB-VIDEO-INFO:codecs="\(codec)",width="\(width)",height="\(height)",sar="\(sar)",frame-duration=1
+        #EXT-X-MLB-INFO:max-bw=\(bandwidth),duration=\(duration)
         #EXT-X-ENDLIST
         """
+        playlists.append(playList)
+    }
+
+    private func addAudioPlayBackInfo(codec: String, bandwidth: Int, duration: Int, url: String) {
+        let defaultStr = !hasAudioInMasterListAdded ? "YES" : "NO"
+        hasAudioInMasterListAdded = true
+        let content = """
+        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),GROUP-ID="audio",NAME="Main",URI="\(URLs.customPrefix)\(playlists.count)"
+
+        """
+        masterPlaylist.append(content)
+
+        let playList = """
+        #EXTM3U
+        #EXT-X-VERSION:6
+        #EXT-X-TARGETDURATION:\(duration)
+        #EXT-X-MEDIA-SEQUENCE:1
+        #EXT-X-PLAYLIST-TYPE:EVENT
+        #EXTINF:\(duration)
+        \(url)
+        #EXT-X-MLB-AUDIO-INFO:codecs="\(codec)"
+        #EXT-X-MLB-INFO:max-bw=\(bandwidth),duration=\(duration)
+        #EXT-X-ENDLIST
+        """
+        playlists.append(playList)
+    }
+
+    func setBilibili(info: VideoPlayURLInfo) {
+        reset()
+        for video in info.dash.video {
+            addVideoPlayBackInfo(codec: video.codecs, width: video.width, height: video.height, frameRate: video.frame_rate, bandwidth: video.bandwidth, duration: info.dash.duration, url: video.base_url, sar: video.sar)
+            break
+        }
+
+        if Settings.losslessAudio {
+            if let audios = info.dash.dolby?.audio {
+                for audio in audios {
+                    addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: audio.base_url)
+                }
+            } else if let audio = info.dash.flac?.audio {
+                // addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: audio.base_url)
+            }
+        }
+
+        for audio in info.dash.audio {
+            addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: audio.base_url)
+        }
     }
 
     private func reportError(_ loadingRequest: AVAssetResourceLoadingRequest, withErrorCode error: Int) {
@@ -216,17 +139,14 @@ private extension BilibiliVideoResourceLoaderDelegate {
             return
         }
 
-        switch customUrl {
-        case URLs.video:
-            report(loadingRequest, content: videoPlaylist)
-        case URLs.backupVideo:
-            report(loadingRequest, content: backupVideoPlaylist)
-        case URLs.audio:
-            report(loadingRequest, content: audioPlaylist)
-        case URLs.play:
+        if customUrl == URLs.play {
             report(loadingRequest, content: masterPlaylist)
-        default:
-            break
+            return
+        }
+        if let index = Int(customUrl.dropFirst(URLs.customPrefix.count)) {
+            let playlist = playlists[index]
+            report(loadingRequest, content: playlist)
+            return
         }
         print("handle loading", customUrl)
     }
