@@ -26,14 +26,21 @@ class FavoriteViewController: UIViewController {
             make.edges.equalToSuperview()
         }
         configureDataSource()
-        loadData()
     }
 
-    func loadData() {
+    @MainActor func applyData(for list: FavListData, content: [FavData]) {
+        currentSnapshot.appendItems(content, toSection: list)
+        dataSource.apply(currentSnapshot)
+    }
+}
+
+extension FavoriteViewController: BLTabBarContentVCProtocol {
+    func reloadData() {
         Task {
             guard let favList = try? await WebRequest.requestFavVideosList() else {
                 return
             }
+            currentSnapshot.deleteAllItems()
             currentSnapshot.appendSections(favList)
             favList.forEach { list in
                 Task {
@@ -43,11 +50,6 @@ class FavoriteViewController: UIViewController {
                 }
             }
         }
-    }
-
-    @MainActor func applyData(for list: FavListData, content: [FavData]) {
-        currentSnapshot.appendItems(content, toSection: list)
-        dataSource.apply(currentSnapshot)
     }
 }
 
