@@ -240,7 +240,7 @@ class VideoDetailViewController: UIViewController {
                     WebRequest.requestFavorite(aid: aid, mlid: fav.id)
                 })
             }
-            alert.addAction(UIAlertAction(title: "取消", style: .default))
+            alert.addAction(UIAlertAction(title: "取消", style: .cancel))
             present(alert, animated: true)
         }
     }
