@@ -19,7 +19,6 @@ class FavoriteViewController: UIViewController {
         super.viewDidLoad()
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
         collectionView.delegate = self
-        collectionView.remembersLastFocusedIndexPath = true
         tabBarObservedScrollView = collectionView
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { make in
@@ -127,6 +126,9 @@ extension FavoriteViewController: UICollectionViewDelegate {
     }
 
     func indexPathForPreferredFocusedView(in collectionView: UICollectionView) -> IndexPath? {
-        return IndexPath(item: 0, section: 0)
+        if let section = currentSnapshot.sectionIdentifiers.first, currentSnapshot.numberOfItems(inSection: section) > 0 {
+            return IndexPath(item: 0, section: 0)
+        }
+        return nil
     }
 }

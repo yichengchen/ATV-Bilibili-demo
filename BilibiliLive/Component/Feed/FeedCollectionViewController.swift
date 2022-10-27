@@ -81,7 +81,7 @@ class FeedCollectionViewController: UIViewController {
         vc.view.addSubview(view)
         view.makeConstraintsToBindToSuperview()
         didMove(toParent: vc)
-        vc.tabBarObservedScrollView = collectionView
+        vc.setContentScrollView(collectionView)
     }
 
     func appendData(displayData: [any DisplayData]) {
@@ -99,10 +99,8 @@ class FeedCollectionViewController: UIViewController {
         collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        collectionView.register(FeedCollectionViewCell.self, forCellWithReuseIdentifier: "1")
         collectionView.dataSource = dataSource
         collectionView.delegate = self
-        collectionView.remembersLastFocusedIndexPath = true
     }
 
     // MARK: - Private
