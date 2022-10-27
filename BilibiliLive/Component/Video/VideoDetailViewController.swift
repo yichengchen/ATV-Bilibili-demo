@@ -39,7 +39,7 @@ class VideoDetailViewController: UIViewController {
     private var epid = 0
     private var aid = 0
     private var cid = 0 { didSet { if oldValue != cid { fetchDataWithCid() } }}
-    private var mid = 0
+    private var data: VideoDetail?
     private var didSentCoins = 0 {
         didSet {
             if didSentCoins > 0 {
@@ -48,7 +48,7 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
-    private var startTime: CMTime?
+    private var startTime = 0
     private var pages = [VideoPage]()
     private var relateds = [VideoDetail]()
 
@@ -120,6 +120,7 @@ class VideoDetailViewController: UIViewController {
             guard let self else { return }
             switch response {
             case let .success(data):
+                self.data = data
                 self.update(with: data)
             case let .failure(err):
                 self.exit(with: err)
@@ -147,15 +148,12 @@ class VideoDetailViewController: UIViewController {
 
     private func fetchDataWithCid() {
         guard cid > 0 else { return }
-        if startTime == nil {
-            WebRequest.requestPlayerInfo(aid: aid, cid: cid) { [weak self] info in
-                self?.startTime = CMTime(seconds: Double(info.playTimeInSecond), preferredTimescale: 1)
-            }
+        WebRequest.requestPlayerInfo(aid: aid, cid: cid) { [weak self] info in
+            self?.startTime = info.playTimeInSecond
         }
     }
 
     private func update(with data: VideoDetail) {
-        mid = data.owner.mid
         coinButton.title = data.stat.coin.string()
         favButton.title = data.stat.favorite.string()
         likeButton.title = data.stat.like.string()
@@ -198,7 +196,7 @@ class VideoDetailViewController: UIViewController {
 
     @IBAction func actionShowUpSpace(_ sender: Any) {
         let upSpaceVC = UpSpaceViewController()
-        upSpaceVC.mid = mid
+        upSpaceVC.mid = data?.owner.mid
         present(upSpaceVC, animated: true)
     }
 
@@ -206,7 +204,9 @@ class VideoDetailViewController: UIViewController {
         let player = VideoPlayerViewController()
         player.aid = aid
         player.cid = cid
-        player.playerStartPos = startTime
+        if startTime > 0 && data!.duration - startTime > 5 {
+            player.playerStartPos = CMTime(seconds: Double(startTime), preferredTimescale: 1)
+        }
         present(player, animated: true, completion: nil)
     }
 
