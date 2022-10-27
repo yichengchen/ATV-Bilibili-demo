@@ -129,7 +129,7 @@ enum ApiRequest {
                     complete?(.success(object))
                 } catch let err {
                     print(err)
-                    complete?(.failure(.decodeFail))
+                    complete?(.failure(.decodeFail(message: err.localizedDescription + String(describing: err))))
                 }
             case let .failure(err):
                 complete?(.failure(err))

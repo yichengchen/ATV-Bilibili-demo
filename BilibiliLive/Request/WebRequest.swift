@@ -12,7 +12,7 @@ import SwiftyJSON
 enum RequestError: Error {
     case networkFail
     case statusFail(code: Int, message: String)
-    case decodeFail
+    case decodeFail(message: String)
 }
 
 enum WebRequest {
@@ -101,7 +101,7 @@ enum WebRequest {
                     complete?(.success(object))
                 } catch let err {
                     print("decode fail:", err)
-                    complete?(.failure(.decodeFail))
+                    complete?(.failure(.decodeFail(message: err.localizedDescription + String(describing: err))))
                 }
             case let .failure(err):
                 complete?(.failure(err))
