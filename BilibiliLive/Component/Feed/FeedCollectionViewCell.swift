@@ -12,7 +12,7 @@ import UIKit
 
 class FeedCollectionViewCell: BLMotionCollectionViewCell {
     var onLongPress: (() -> Void)?
-    var styleOverride: FeedDisplayStyle? { didSet { updateStyle() }}
+    var styleOverride: FeedDisplayStyle? { didSet { if oldValue != styleOverride { updateStyle() } }}
 
     private let titleLabel = MarqueeLabel()
     private let upLabel = UILabel()
@@ -115,13 +115,9 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
     }
 
     private func updateStyle() {
-        if styleOverride ?? Settings.displayStyle == .normal {
-            titleLabel.font = UIFont.systemFont(ofSize: 30, weight: .semibold)
-            upLabel.font = UIFont.systemFont(ofSize: 24)
-        } else {
-            titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-            upLabel.font = UIFont.preferredFont(forTextStyle: .footnote)
-        }
+        let style = styleOverride ?? Settings.displayStyle
+        titleLabel.font = style.titleFont
+        upLabel.font = style.upFont
     }
 
     @objc private func actionLongPress(sender: UILongPressGestureRecognizer) {
@@ -142,7 +138,7 @@ extension FeedDisplayStyle {
         switch self {
         case .large:
             return 0.33
-        case .normal:
+        case .normal, .sideBar:
             return 0.25
         }
     }
@@ -151,7 +147,7 @@ extension FeedDisplayStyle {
         switch self {
         case .large:
             return fractionalWidth / 1.5
-        case .normal:
+        case .normal, .sideBar:
             return fractionalWidth / 1.5
         }
     }
@@ -160,8 +156,30 @@ extension FeedDisplayStyle {
         switch self {
         case .large:
             return 516
-        case .normal:
+        case .normal, .sideBar:
             return 380
+        }
+    }
+
+    var titleFont: UIFont {
+        switch self {
+        case .large:
+            return UIFont.preferredFont(forTextStyle: .headline)
+        case .normal:
+            return UIFont.systemFont(ofSize: 30, weight: .semibold)
+        case .sideBar:
+            return UIFont.systemFont(ofSize: 26, weight: .semibold)
+        }
+    }
+
+    var upFont: UIFont {
+        switch self {
+        case .large:
+            return UIFont.preferredFont(forTextStyle: .footnote)
+        case .normal:
+            return UIFont.systemFont(ofSize: 24)
+        case .sideBar:
+            return UIFont.systemFont(ofSize: 20, weight: .semibold)
         }
     }
 }

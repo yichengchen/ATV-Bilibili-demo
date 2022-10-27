@@ -14,6 +14,7 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        collectionVC.styleOverride = .sideBar
         collectionVC.show(in: self)
         collectionVC.didSelect = {
             [weak self] record in

@@ -10,6 +10,11 @@ import Foundation
 enum FeedDisplayStyle: Codable, CaseIterable {
     case large
     case normal
+    case sideBar
+
+    var hideInSetting: Bool {
+        self == .sideBar
+    }
 }
 
 enum Settings {

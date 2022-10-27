@@ -12,17 +12,12 @@ import UIKit
 
 struct CellModel {
     let title: String
-    let desp: String?
-    let action: (() -> Void)?
-
-    init(title: String, desp: String? = nil, action: (() -> Void)? = nil) {
-        self.title = title
-        self.desp = desp
-        self.action = action
-    }
+    var desp: String? = nil
+    var contentVC: UIViewController? = nil
+    var action: (() -> Void)? = nil
 }
 
-class PersonalViewController: UIViewController {
+class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     static func create() -> PersonalViewController {
         return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! PersonalViewController
     }
@@ -30,14 +25,18 @@ class PersonalViewController: UIViewController {
     @IBOutlet var contentView: UIView!
     @IBOutlet var avatarImageView: UIImageView!
     @IBOutlet var usernameLabel: UILabel!
-    var currentViewController: UIViewController?
+    @IBOutlet var leftCollectionView: UICollectionView!
+    weak var currentViewController: UIViewController?
 
     var cellModels = [CellModel]()
     override func viewDidLoad() {
         super.viewDidLoad()
         setupData()
-        cellModels.first?.action?()
+        leftCollectionView.reloadData()
         avatarImageView.layer.cornerRadius = avatarImageView.frame.size.width / 2
+        leftCollectionView.register(SettingLineCell.self, forCellWithReuseIdentifier: "cell")
+        leftCollectionView.selectItem(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .top)
+        collectionView(leftCollectionView, didSelectItemAt: IndexPath(row: 0, section: 0))
 
         WebRequest.requestLoginInfo { [weak self] response in
             switch response {
@@ -51,11 +50,10 @@ class PersonalViewController: UIViewController {
     }
 
     func setupData() {
-        let setting = CellModel(title: "设置") {
-            [weak self] in
-            self?.setViewController(vc: SettingsViewController.create())
-        }
+        let setting = CellModel(title: "设置", contentVC: SettingsViewController.create())
         cellModels.append(setting)
+        cellModels.append(CellModel(title: "稍后在看", contentVC: ToViewViewController()))
+        cellModels.append(CellModel(title: "历史记录", contentVC: HistoryViewController()))
         let logout = CellModel(title: "登出") {
             [weak self] in
             self?.actionLogout()
@@ -75,6 +73,10 @@ class PersonalViewController: UIViewController {
         vc.didMove(toParent: self)
     }
 
+    func reloadData() {
+        (currentViewController as? BLTabBarContentVCProtocol)?.reloadData()
+    }
+
     func actionLogout() {
         let alert = UIAlertController(title: "确定登出？", message: nil, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "确定", style: .default) {
@@ -92,9 +94,8 @@ class PersonalViewController: UIViewController {
 
 extension PersonalViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        let label = cell.viewWithTag(1) as! UILabel
-        label.text = cellModels[indexPath.item].title
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! SettingLineCell
+        cell.titleLabel.text = cellModels[indexPath.item].title
         return cell
     }
 
@@ -105,7 +106,11 @@ extension PersonalViewController: UICollectionViewDataSource {
 
 extension PersonalViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        cellModels[indexPath.item].action?()
+        let model = cellModels[indexPath.item]
+        if let vc = model.contentVC {
+            setViewController(vc: vc)
+        }
+        model.action?()
     }
 }
 
@@ -116,5 +121,52 @@ class EmptyViewController: UIViewController {
         label.text = "Nothing Here"
         view.addSubview(label)
         label.makeConstraintsBindToCenterOfSuperview()
+    }
+}
+
+class SettingLineCell: BLMotionCollectionViewCell {
+    let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
+    let selectedWhiteView = UIView()
+    let titleLabel = UILabel()
+    override var isSelected: Bool {
+        didSet {
+            updateView()
+        }
+    }
+
+    override func setup() {
+        super.setup()
+        scaleFactor = 1.05
+        contentView.addSubview(effectView)
+        effectView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        effectView.layer.cornerRadius = 10
+        effectView.layer.cornerCurve = .continuous
+        effectView.clipsToBounds = true
+        selectedWhiteView.backgroundColor = UIColor.white
+        selectedWhiteView.isHidden = !isFocused
+        effectView.contentView.addSubview(selectedWhiteView)
+        selectedWhiteView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        effectView.contentView.addSubview(titleLabel)
+        titleLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(26)
+            make.trailing.equalToSuperview().offset(20)
+            make.top.bottom.equalToSuperview()
+        }
+        titleLabel.textAlignment = .left
+        titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+        titleLabel.textColor = .black
+    }
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        updateView()
+    }
+
+    func updateView() {
+        selectedWhiteView.isHidden = !(isFocused || isSelected)
     }
 }

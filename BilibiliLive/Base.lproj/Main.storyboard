@@ -112,10 +112,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="I1j-MC-5rx">
-                                <rect key="frame" x="0.0" y="60" width="528" height="1020"/>
+                                <rect key="frame" x="0.0" y="60" width="500" height="1020"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Q4k-CT-rwF">
-                                        <rect key="frame" x="0.0" y="0.0" width="528" height="100"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="500" height="100"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="IYb-ax-8aB">
                                                 <rect key="frame" x="20" y="0.0" width="100" height="100"/>
@@ -124,7 +124,7 @@
                                                 </constraints>
                                             </imageView>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kfL-LD-BxN">
-                                                <rect key="frame" x="140" y="27" width="368" height="46"/>
+                                                <rect key="frame" x="140" y="27" width="340" height="46"/>
                                                 <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
@@ -142,55 +142,14 @@
                                         </constraints>
                                     </view>
                                     <collectionView multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="aQJ-hM-zMM">
-                                        <rect key="frame" x="0.0" y="140" width="528" height="880"/>
-                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="4" minimumInteritemSpacing="4" id="4vE-qz-MDx">
-                                            <size key="itemSize" width="500" height="68"/>
+                                        <rect key="frame" x="0.0" y="140" width="500" height="880"/>
+                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="16" minimumInteritemSpacing="4" id="4vE-qz-MDx">
+                                            <size key="itemSize" width="460" height="60"/>
                                             <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                             <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                             <inset key="sectionInset" minX="20" minY="0.0" maxX="0.0" maxY="0.0"/>
                                         </collectionViewFlowLayout>
-                                        <cells>
-                                            <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="cell" id="kcI-in-e3C">
-                                                <rect key="frame" x="24" y="0.0" width="500" height="68"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                <collectionViewCellContentView key="contentView" opaque="NO" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="9kJ-Mn-lgD">
-                                                    <rect key="frame" x="0.0" y="0.0" width="500" height="68"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <subviews>
-                                                        <tvCardView contentMode="scaleToFill" contentHorizontalAlignment="fill" contentVerticalAlignment="fill" translatesAutoresizingMaskIntoConstraints="NO" id="eYT-cl-iZh">
-                                                            <rect key="frame" x="0.0" y="-16" width="500" height="100"/>
-                                                            <tvCardContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="biX-VV-lQf">
-                                                                <rect key="frame" x="23" y="23" width="454" height="54"/>
-                                                                <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mSu-k1-tYD">
-                                                                        <rect key="frame" x="20" y="0.0" width="434" height="54"/>
-                                                                        <fontDescription key="fontDescription" style="UICTFontTextStyleHeadline"/>
-                                                                        <nil key="textColor"/>
-                                                                        <nil key="highlightedColor"/>
-                                                                    </label>
-                                                                </subviews>
-                                                                <constraints>
-                                                                    <constraint firstItem="mSu-k1-tYD" firstAttribute="top" secondItem="biX-VV-lQf" secondAttribute="top" id="7qc-GM-5jg"/>
-                                                                    <constraint firstAttribute="bottom" secondItem="mSu-k1-tYD" secondAttribute="bottom" id="8Tp-yd-qeK"/>
-                                                                    <constraint firstItem="mSu-k1-tYD" firstAttribute="leading" secondItem="biX-VV-lQf" secondAttribute="leading" constant="20" id="XRM-Ka-49I"/>
-                                                                    <constraint firstAttribute="trailing" secondItem="mSu-k1-tYD" secondAttribute="trailing" id="bLK-9r-PQg"/>
-                                                                </constraints>
-                                                            </tvCardContentView>
-                                                            <constraints>
-                                                                <constraint firstAttribute="height" constant="100" id="AXf-ed-YU5"/>
-                                                            </constraints>
-                                                        </tvCardView>
-                                                    </subviews>
-                                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                    <constraints>
-                                                        <constraint firstItem="eYT-cl-iZh" firstAttribute="leading" secondItem="9kJ-Mn-lgD" secondAttribute="leading" id="TbI-Zn-vpi"/>
-                                                        <constraint firstItem="eYT-cl-iZh" firstAttribute="centerY" secondItem="9kJ-Mn-lgD" secondAttribute="centerY" id="YEf-oU-mrk"/>
-                                                        <constraint firstAttribute="trailing" secondItem="eYT-cl-iZh" secondAttribute="trailing" id="rY8-XC-VoT"/>
-                                                    </constraints>
-                                                </collectionViewCellContentView>
-                                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                            </collectionViewCell>
-                                        </cells>
+                                        <cells/>
                                         <connections>
                                             <outlet property="dataSource" destination="s9B-UG-Dhf" id="7ZA-0p-RoQ"/>
                                             <outlet property="delegate" destination="s9B-UG-Dhf" id="br8-i0-74O"/>
@@ -206,11 +165,11 @@
                                     <constraint firstItem="Q4k-CT-rwF" firstAttribute="top" secondItem="I1j-MC-5rx" secondAttribute="top" id="iiH-yX-fv0"/>
                                     <constraint firstItem="Q4k-CT-rwF" firstAttribute="leading" secondItem="I1j-MC-5rx" secondAttribute="leading" id="ljY-Hr-X7S"/>
                                     <constraint firstAttribute="trailing" secondItem="aQJ-hM-zMM" secondAttribute="trailing" id="uZo-AQ-Nn6"/>
-                                    <constraint firstAttribute="width" constant="528" id="xpU-Iv-nqV"/>
+                                    <constraint firstAttribute="width" constant="500" id="xpU-Iv-nqV"/>
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="LFA-Qw-Qup" userLabel="ContentView">
-                                <rect key="frame" x="536" y="60" width="1384" height="1020"/>
+                                <rect key="frame" x="508" y="60" width="1412" height="1020"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </view>
                         </subviews>
@@ -228,6 +187,7 @@
                     <connections>
                         <outlet property="avatarImageView" destination="IYb-ax-8aB" id="hMb-Z3-vPL"/>
                         <outlet property="contentView" destination="LFA-Qw-Qup" id="ETr-MN-LIA"/>
+                        <outlet property="leftCollectionView" destination="aQJ-hM-zMM" id="Iw9-F6-Lht"/>
                         <outlet property="usernameLabel" destination="kfL-LD-BxN" id="yGn-wX-MVr"/>
                     </connections>
                 </viewController>

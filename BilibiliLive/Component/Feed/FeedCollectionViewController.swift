@@ -44,6 +44,7 @@ class FeedCollectionViewController: UIViewController {
         case main
     }
 
+    var styleOverride: FeedDisplayStyle?
     var didSelect: ((any DisplayData) -> Void)?
     var didLongPress: ((any DisplayData) -> Void)?
     var loadMore: (() -> Void)?
@@ -121,22 +122,23 @@ class FeedCollectionViewController: UIViewController {
     }
 
     private func makeGridLayoutSection() -> NSCollectionLayoutSection {
-        let heightDimension = NSCollectionLayoutDimension.estimated(Settings.displayStyle.heightEstimated)
+        let style = styleOverride ?? Settings.displayStyle
+        let heightDimension = NSCollectionLayoutDimension.estimated(style.heightEstimated)
         let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(Settings.displayStyle.fractionalWidth),
+            widthDimension: .fractionalWidth(style.fractionalWidth),
             heightDimension: selfSizeingEnable ? heightDimension : .fractionalHeight(1)
         ))
-        let hSpacing: CGFloat = Settings.displayStyle == .large ? 35 : 30
+        let hSpacing: CGFloat = style == .large ? 35 : 30
         item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: hSpacing, bottom: 0, trailing: hSpacing)
         let group = NSCollectionLayoutGroup.horizontal(
             layoutSize: NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1),
-                heightDimension: selfSizeingEnable ? heightDimension : .fractionalWidth(Settings.displayStyle.fractionalHeight)
+                heightDimension: selfSizeingEnable ? heightDimension : .fractionalWidth(style.fractionalHeight)
             ),
             subitem: item,
-            count: Settings.displayStyle == .large ? 3 : 4
+            count: style.feedColCount
         )
-        let vSpacing: CGFloat = Settings.displayStyle == .large ? 24 : 16
+        let vSpacing: CGFloat = style == .large ? 24 : 16
         group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: .fixed(0), top: .fixed(vSpacing), trailing: .fixed(0), bottom: .fixed(vSpacing))
         return NSCollectionLayoutSection(group: group)
     }
@@ -146,10 +148,10 @@ class FeedCollectionViewController: UIViewController {
     }
 
     private func makeCellRegistration() -> DisplayCellRegistration {
-        DisplayCellRegistration { cell, indexPath, displayData in
+        DisplayCellRegistration { [weak self] cell, indexPath, displayData in
+            cell.styleOverride = self?.styleOverride
             cell.setup(data: displayData.data)
             cell.onLongPress = {
-                [weak self] in
                 self?.didLongPress?(displayData.data)
             }
         }
@@ -175,5 +177,14 @@ extension FeedCollectionViewController: UICollectionViewDelegate {
         }
         isLoading = true
         loadMore?()
+    }
+}
+
+extension FeedDisplayStyle {
+    var feedColCount: Int {
+        switch self {
+        case .normal: return 4
+        case .large, .sideBar: return 3
+        }
     }
 }

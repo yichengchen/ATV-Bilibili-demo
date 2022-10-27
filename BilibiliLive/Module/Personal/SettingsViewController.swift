@@ -14,6 +14,8 @@ extension FeedDisplayStyle {
             return "3行"
         case .normal:
             return "4行"
+        case .sideBar:
+            return "-"
         }
     }
 }
@@ -42,7 +44,7 @@ class SettingsViewController: UIViewController {
 
         let style = CellModel(title: "时间线显示模式", desp: Settings.displayStyle.desp) { [weak self] in
             let alert = UIAlertController(title: "显示模式", message: "重启app生效", preferredStyle: .actionSheet)
-            for style in FeedDisplayStyle.allCases {
+            for style in FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }) {
                 let action = UIAlertAction(title: style.desp, style: .default) { _ in
                     Settings.displayStyle = style
                     self?.setupData()
