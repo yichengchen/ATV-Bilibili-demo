@@ -223,7 +223,7 @@ class VideoDetailViewController: UIViewController {
                 WebRequest.requestCoin(aid: aid, num: 2)
             })
         }
-        alert.addAction(UIAlertAction(title: "取消", style: .default))
+        alert.addAction(UIAlertAction(title: "取消", style: .cancel))
         present(alert, animated: true)
     }
 
