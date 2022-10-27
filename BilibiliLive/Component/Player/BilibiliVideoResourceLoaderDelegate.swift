@@ -89,21 +89,29 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     func setBilibili(info: VideoPlayURLInfo) {
         reset()
         for video in info.dash.video {
-            addVideoPlayBackInfo(codec: video.codecs, width: video.width, height: video.height, frameRate: video.frame_rate, bandwidth: video.bandwidth, duration: info.dash.duration, url: video.base_url, sar: video.sar)
+            for url in video.playableURLs {
+                addVideoPlayBackInfo(codec: video.codecs, width: video.width, height: video.height, frameRate: video.frame_rate, bandwidth: video.bandwidth, duration: info.dash.duration, url: url, sar: video.sar)
+            }
         }
 
         if Settings.losslessAudio {
             if let audios = info.dash.dolby?.audio {
                 for audio in audios {
-                    addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: audio.base_url)
+                    for url in BVideoUrlUtils.sortUrls(base: audio.base_url, backup: audio.backup_url) {
+                        addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: url)
+                    }
                 }
             } else if let audio = info.dash.flac?.audio {
-                addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: audio.base_url)
+                for url in audio.playableURLs {
+                    addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: url)
+                }
             }
         }
 
         for audio in info.dash.audio {
-            addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: audio.base_url)
+            for url in audio.playableURLs {
+                addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: url)
+            }
         }
     }
 
@@ -151,5 +159,29 @@ private extension BilibiliVideoResourceLoaderDelegate {
             return
         }
         print("handle loading", customUrl)
+    }
+}
+
+enum BVideoUrlUtils {
+    static func sortUrls(base: String, backup: [String]) -> [String] {
+        var urls = [base]
+        urls.append(contentsOf: backup)
+        return
+            urls.sorted { lhs, rhs in
+                let lhsIsPCDN = lhs.contains("szbdyd.com") || lhs.contains("mcdn.bilivideo.cn")
+                let rhsIsPCDN = rhs.contains("szbdyd.com") || rhs.contains("mcdn.bilivideo.cn")
+                switch (lhsIsPCDN, rhsIsPCDN) {
+                case (true, false): return false
+                case (false, true): return true
+                case (true, true): fallthrough
+                case (false, false): return lhs > rhs
+                }
+            }
+    }
+}
+
+extension VideoPlayURLInfo.DashInfo.DashMediaInfo {
+    var playableURLs: [String] {
+        BVideoUrlUtils.sortUrls(base: base_url, backup: backup_url)
     }
 }
