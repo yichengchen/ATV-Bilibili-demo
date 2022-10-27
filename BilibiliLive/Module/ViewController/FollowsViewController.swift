@@ -85,23 +85,8 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
             return
         }
         if let bangumi = displayData as? BangumiData {
-            AF.request("https://api.bilibili.com/pgc/web/season/section?season_id=\(bangumi.season)").responseData { [weak self] response in
-                guard let self = self else { return }
-                switch response.result {
-                case let .success(data):
-                    let json = JSON(data)
-                    let episodes = json["result"]["main_section"]["episodes"].arrayValue
-                    for episode in episodes {
-                        if episode["id"].intValue == bangumi.episode {
-                            let detailVC = VideoDetailViewController.create(aid: episode["aid"].intValue, cid: episode["cid"].intValue)
-                            detailVC.present(from: self)
-                            break
-                        }
-                    }
-                case let .failure(error):
-                    print(error)
-                }
-            }
+            let detailVC = VideoDetailViewController.create(epid: bangumi.episode)
+            detailVC.present(from: self)
         }
     }
 }

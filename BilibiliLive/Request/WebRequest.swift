@@ -63,6 +63,7 @@ enum WebRequest {
                             url: URLConvertible,
                             parameters: Parameters = [:],
                             headers: [String: String]? = nil,
+                            dataObj: String = "data",
                             complete: ((Result<JSON, RequestError>) -> Void)? = nil)
     {
         requestData(method: method, url: url, parameters: parameters, headers: headers) { response in
@@ -76,7 +77,7 @@ enum WebRequest {
                     complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }
-                let dataj = json["data"]
+                let dataj = json[dataObj]
                 print(dataj)
                 complete?(.success(dataj))
             case let .failure(err):
@@ -90,9 +91,10 @@ enum WebRequest {
                                       parameters: Parameters = [:],
                                       headers: [String: String]? = nil,
                                       decoder: JSONDecoder? = nil,
+                                      dataObj: String = "data",
                                       complete: ((Result<T, RequestError>) -> Void)?)
     {
-        requestJSON(method: method, url: url, parameters: parameters, headers: headers) { response in
+        requestJSON(method: method, url: url, parameters: parameters, headers: headers, dataObj: dataObj) { response in
             switch response {
             case let .success(data):
                 do {
@@ -144,6 +146,20 @@ enum WebRequest {
 // MARK: - Video
 
 extension WebRequest {
+    static func requestBangumiInfo(epid: Int, complete: ((BangumiInfo.Episode) -> Void)?) {
+        request(url: "http://api.bilibili.com/pgc/view/web/season", parameters: ["ep_id": epid], dataObj: "result") {
+            (result: Result<BangumiInfo, RequestError>) in
+            if let info = try? result.get() {
+                for epi in info.episodes {
+                    if epi.id == epid {
+                        complete?(epi)
+                        break
+                    }
+                }
+            }
+        }
+    }
+
     static func requestVideoInfo(aid: Int, complete: ((Result<VideoDetail, RequestError>) -> Void)?) {
         request(url: "http://api.bilibili.com/x/web-interface/view", parameters: ["aid": aid]) { result in
             complete?(result)
@@ -324,6 +340,7 @@ struct HistoryData: DisplayData, Codable {
     let aid: Int
     let progress: Int
     let duration: Int
+//    let bangumi: BangumiData?
 }
 
 struct FavData: DisplayData, Codable {
@@ -370,6 +387,16 @@ struct VideoDetail: Codable, Hashable, DisplayData {
         formatter.unitsStyle = .brief
         return formatter.string(from: TimeInterval(duration)) ?? ""
     }
+}
+
+struct BangumiInfo: Codable, Hashable {
+    struct Episode: Codable, Hashable {
+        let id: Int
+        let aid: Int
+        let cid: Int
+    }
+
+    let episodes: [Episode] // 正片剧集列表
 }
 
 struct VideoOwner: Codable, Hashable {

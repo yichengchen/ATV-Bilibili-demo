@@ -36,8 +36,9 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var recommandCollectionView: UICollectionView!
     @IBOutlet var pageView: UIView!
 
-    private var aid: Int!
-    private var cid: Int = 0 { didSet { if oldValue != cid { fetchDataWithCid() } }}
+    private var epid = 0
+    private var aid = 0
+    private var cid = 0 { didSet { if oldValue != cid { fetchDataWithCid() } }}
     private var mid = 0
     private var didSentCoins = 0 {
         didSet {
@@ -52,9 +53,15 @@ class VideoDetailViewController: UIViewController {
     private var relateds = [VideoDetail]()
 
     static func create(aid: Int, cid: Int) -> VideoDetailViewController {
-        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: "VideoDetailViewController") as! VideoDetailViewController
+        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
         vc.aid = aid
         vc.cid = cid
+        return vc
+    }
+
+    static func create(epid: Int) -> VideoDetailViewController {
+        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
+        vc.epid = epid
         return vc
     }
 
@@ -62,7 +69,7 @@ class VideoDetailViewController: UIViewController {
         super.viewDidLoad()
         setupLoading()
         fetchData()
-        pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: "BLTextOnlyCollectionViewCell")
+        pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: BLTextOnlyCollectionViewCell.self))
         pageCollectionView.collectionViewLayout = makePageCollectionViewLayout()
     }
 
@@ -100,8 +107,17 @@ class VideoDetailViewController: UIViewController {
     }
 
     private func fetchData() {
+        guard aid != 0 else {
+            WebRequest.requestBangumiInfo(epid: epid) { [weak self] epi in
+                guard let self else { return }
+                self.aid = epi.aid
+                self.cid = epi.cid
+                self.fetchData()
+            }
+            return
+        }
         WebRequest.requestVideoInfo(aid: aid) { [weak self] response in
-            guard let self = self else { return }
+            guard let self else { return }
             switch response {
             case let .success(data):
                 self.update(with: data)
@@ -210,7 +226,7 @@ class VideoDetailViewController: UIViewController {
         WebRequest.requestTodayCoins { todayCoins in
             alert.message = "今日已投(\(todayCoins / 10)/5)个币"
         }
-        let aid = aid!
+        let aid = aid
         alert.addAction(UIAlertAction(title: "1", style: .default) { [weak self] _ in
             self?.likeButton.isOn = true
             self?.didSentCoins += 1
@@ -233,7 +249,7 @@ class VideoDetailViewController: UIViewController {
                 return
             }
             let alert = UIAlertController(title: "收藏", message: nil, preferredStyle: .actionSheet)
-            let aid = aid!
+            let aid = aid
             for fav in favList {
                 alert.addAction(UIAlertAction(title: fav.title, style: .default) { [weak self] _ in
                     self?.favButton.isOn = true

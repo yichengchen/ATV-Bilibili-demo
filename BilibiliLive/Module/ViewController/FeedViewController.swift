@@ -48,6 +48,11 @@ class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 
     func goDetail(with data: ApiRequest.FeedResp.Items) {
+        if data.goto == "bangumi" {
+            let detailVC = VideoDetailViewController.create(epid: Int(data.param)!)
+            detailVC.present(from: self)
+            return
+        }
         let aid = data.param
         let detailVC = VideoDetailViewController.create(aid: Int(aid)!, cid: 0)
         detailVC.present(from: self)

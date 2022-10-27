@@ -256,6 +256,7 @@ enum ApiRequest {
             let args: Args
             let idx: Int
             let cover: String
+            let goto: String
 
             var ownerName: String {
                 return args.up_name ?? ""
