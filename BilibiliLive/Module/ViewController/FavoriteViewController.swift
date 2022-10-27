@@ -26,6 +26,7 @@ class FavoriteViewController: UIViewController {
             make.edges.equalToSuperview()
         }
         configureDataSource()
+        reloadData()
     }
 
     @MainActor func applyData(for list: FavListData, content: [FavData]) {
