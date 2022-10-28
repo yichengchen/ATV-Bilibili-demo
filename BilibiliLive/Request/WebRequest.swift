@@ -157,6 +157,17 @@ extension WebRequest {
         return res
     }
 
+    static func requestDMSetting(dmarea: Int, complete: ((Bool) -> Void)?) {
+        requestData(method: .post, url: "https://api.bilibili.com/x/v2/dm/web/config", parameters: ["dmarea": dmarea]) { response in
+            switch response {
+            case .success:
+                complete?(true)
+            case .failure:
+                complete?(false)
+            }
+        }
+    }
+
     static func requestHistory(complete: (([HistoryData]) -> Void)?) {
         request(url: "http://api.bilibili.com/x/v2/history") {
             (result: Result<[HistoryData], RequestError>) in
