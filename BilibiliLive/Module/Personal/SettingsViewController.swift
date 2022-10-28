@@ -42,6 +42,33 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(directlyVideo)
 
+        let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.dmStyleEnum.dmStyle) { [weak self] in
+            let alert = UIAlertController(title: "弹幕显示区域", message: "设置弹幕显示区域", preferredStyle: .actionSheet)
+            for style in dmStyleEnum.allCases {
+                let action = UIAlertAction(title: style.dmStyle, style: .default) { _ in
+                    Settings.dmStyleEnum = style
+                    self?.setupData()
+                    var dmarea = 0
+                    switch style {
+                    case .style_25:
+                        dmarea = 25
+                    case .style_50:
+                        dmarea = 50
+                    case .style_75:
+                        dmarea = 75
+                    case .style_100:
+                        dmarea = 100
+                    default:
+                        break
+                    }
+                    WebRequest.requestDMSetting(dmarea: dmarea, complete: nil)
+                }
+                alert.addAction(action)
+            }
+            self?.present(alert, animated: true)
+        }
+        cellModels.append(dmStyle)
+
         let style = CellModel(title: "时间线显示模式", desp: Settings.displayStyle.desp) { [weak self] in
             let alert = UIAlertController(title: "显示模式", message: "重启app生效", preferredStyle: .actionSheet)
             for style in FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }) {
