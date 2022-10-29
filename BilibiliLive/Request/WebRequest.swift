@@ -469,7 +469,7 @@ struct VideoPlayURLInfo: Codable {
         struct DashMediaInfo: Codable {
             let id: Int
             let base_url: String
-            let backup_url: [String]
+            let backup_url: [String]?
             let bandwidth: Int
             let mime_type: String
             let codecs: String
@@ -494,7 +494,7 @@ struct VideoPlayURLInfo: Codable {
             struct DolbyAudioInfo: Codable {
                 let id: Int
                 let base_url: String
-                let backup_url: [String]
+                let backup_url: [String]?
                 let bandwidth: Int
                 let mime_type: String
                 let codecs: String

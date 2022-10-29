@@ -163,9 +163,11 @@ private extension BilibiliVideoResourceLoaderDelegate {
 }
 
 enum BVideoUrlUtils {
-    static func sortUrls(base: String, backup: [String]) -> [String] {
+    static func sortUrls(base: String, backup: [String]?) -> [String] {
         var urls = [base]
-        urls.append(contentsOf: backup)
+        if let backup {
+            urls.append(contentsOf: backup)
+        }
         return
             urls.sorted { lhs, rhs in
                 let lhsIsPCDN = lhs.contains("szbdyd.com") || lhs.contains("mcdn.bilivideo.cn")
