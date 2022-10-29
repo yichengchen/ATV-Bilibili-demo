@@ -80,6 +80,13 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(losslessAudio)
 
+        let hevc = CellModel(title: "Hevc优先", desp: Settings.preferHevc ? "开" : "关") {
+            [weak self] in
+            Settings.preferHevc.toggle()
+            self?.setupData()
+        }
+        cellModels.append(hevc)
+
         collectionView.reloadData()
     }
 }

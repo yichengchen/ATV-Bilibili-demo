@@ -88,7 +88,14 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
     func setBilibili(info: VideoPlayURLInfo) {
         reset()
-        for video in info.dash.video {
+        var videos = info.dash.video
+        if Settings.preferHevc {
+            if videos.contains(where: { $0.isHevc }) {
+                videos.removeAll(where: { !$0.isHevc })
+            }
+        }
+
+        for video in videos {
             for url in video.playableURLs {
                 addVideoPlayBackInfo(codec: video.codecs, width: video.width, height: video.height, frameRate: video.frame_rate, bandwidth: video.bandwidth, duration: info.dash.duration, url: url, sar: video.sar)
             }
@@ -185,5 +192,9 @@ enum BVideoUrlUtils {
 extension VideoPlayURLInfo.DashInfo.DashMediaInfo {
     var playableURLs: [String] {
         BVideoUrlUtils.sortUrls(base: base_url, backup: backup_url)
+    }
+
+    var isHevc: Bool {
+        return codecs.starts(with: "hev")
     }
 }

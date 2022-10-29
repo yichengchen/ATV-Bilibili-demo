@@ -32,6 +32,9 @@ enum Settings {
 
     @UserDefault("Settings.losslessAudio", defaultValue: false)
     static var losslessAudio: Bool
+
+    @UserDefault("Settings.preferHevc", defaultValue: false)
+    static var preferHevc: Bool
 }
 
 struct MediaQuality {
