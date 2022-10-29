@@ -370,6 +370,7 @@ struct VideoDetail: Codable, Hashable, DisplayData {
     let pages: [VideoPage]?
     let dynamic: String?
     let duration: Int
+    let pubdate: Int?
 
     let stat: Stat
     struct Stat: Codable, Hashable {
@@ -390,6 +391,10 @@ struct VideoDetail: Codable, Hashable, DisplayData {
 
     var avatar: URL? {
         return owner.face
+    }
+
+    var date: String? {
+        return DateFormatter.stringFor(timestamp: pubdate)
     }
 }
 
