@@ -35,7 +35,7 @@ struct CategoryInfo {
                       CategoryInfo(title: "电视剧", rid: 11)]
 }
 
-class RankingViewController: UIViewController {
+class RankingViewController: UIViewController, BLTabBarContentVCProtocol {
     struct CategoryDisplayModel {
         let title: String
         let contentVC: UIViewController
@@ -70,6 +70,10 @@ class RankingViewController: UIViewController {
         }
         typeCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .top)
         collectionView(typeCollectionView, didSelectItemAt: IndexPath(item: 0, section: 0))
+    }
+
+    func reloadData() {
+        (currentViewController as? BLTabBarContentVCProtocol)?.reloadData()
     }
 
     func setViewController(vc: UIViewController) {

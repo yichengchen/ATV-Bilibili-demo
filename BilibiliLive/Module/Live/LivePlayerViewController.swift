@@ -17,7 +17,7 @@ class LivePlayerViewController: CommonPlayerViewController {
 
     var room: LiveRoom? {
         didSet {
-            roomID = room?.roomID ?? 0
+            roomID = room?.room_id ?? 0
         }
     }
 
@@ -36,7 +36,7 @@ class LivePlayerViewController: CommonPlayerViewController {
             self.initPlayer()
         }
         danMuView.play()
-        setPlayerInfo(title: room?.title, subTitle: nil, desp: room?.ownerName, pic: room?.cover)
+        setPlayerInfo(title: room?.title, subTitle: nil, desp: room?.ownerName, pic: room?.pic)
     }
 
     override func viewWillDisappear(_ animated: Bool) {

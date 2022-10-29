@@ -13,54 +13,40 @@ import SwiftyJSON
 
 class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
     var rooms = [LiveRoom]() { didSet { collectionVC.displayDatas = rooms } }
-
+    private var page = 1
     let collectionVC = FeedCollectionViewController()
     override func viewDidLoad() {
         super.viewDidLoad()
+        collectionVC.pageSize = 10
         collectionVC.show(in: self)
         collectionVC.didSelect = {
             [weak self] in
             self?.enter(with: $0 as! LiveRoom)
         }
-        loadData()
+        collectionVC.loadMore = {
+            [weak self] in
+            self?.loadMore()
+        }
+        reloadData()
     }
 
     func reloadData() {
-        loadData()
+        Task {
+            page = 1
+            let res = try? await WebRequest.requestLiveRoom(page: page)
+            if res?.count ?? 0 < 9 { collectionVC.finished = true }
+            collectionVC.displayDatas = res ?? []
+        }
     }
 
-    func loadData(page: Int = 1, perviousPage: [LiveRoom] = []) {
-        var rooms = perviousPage
-        AF.request("https://api.live.bilibili.com/xlive/web-ucenter/v1/xfetter/GetWebList?page_size=10&page=\(page)").responseData {
-            [weak self] resp in
-            guard let self = self else { return }
-            switch resp.result {
-            case let .success(data):
-                let json = JSON(data)
-                rooms.append(contentsOf: self.process(json: json))
-                let totalCount = json["data"]["count"].intValue
-                if self.rooms.count < totalCount, page < 5 {
-                    self.loadData(page: page + 1, perviousPage: rooms)
-                } else {
-                    self.rooms = rooms
-                }
-            case let .failure(err):
-                print(err)
-                if rooms.count > 0 {
-                    self.rooms = rooms
-                }
+    func loadMore() {
+        Task {
+            do {
+                let res = try await WebRequest.requestLiveRoom(page: page + 1)
+                collectionVC.appendData(displayData: res)
+                page = page + 1
             }
         }
-    }
-
-    func process(json: JSON) -> [LiveRoom] {
-        let newRooms = json["data"]["rooms"].arrayValue.map { room in
-            LiveRoom(name: room["title"].stringValue,
-                     roomID: room["room_id"].intValue,
-                     up: room["uname"].stringValue,
-                     cover: room["keyframe"].url)
-        }
-        return newRooms
     }
 
     func enter(with room: LiveRoom) {
@@ -70,13 +56,29 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 }
 
-struct LiveRoom: DisplayData {
-    let name: String
-    let roomID: Int
-    let up: String
-    let cover: URL?
+struct LiveRoom: DisplayData, Codable {
+    let title: String
+    let room_id: Int
+    let uname: String
+    let keyframe: URL
+    let face: URL?
+    let cover_from_user: URL?
 
-    var title: String { name }
-    var ownerName: String { up }
-    var pic: URL? { cover }
+    var ownerName: String { uname }
+    var pic: URL? { keyframe }
+    var avatar: URL? { face }
+}
+
+extension WebRequest.EndPoint {
+    static let liveRoom = "https://api.live.bilibili.com/xlive/web-ucenter/v1/xfetter/GetWebList"
+}
+
+extension WebRequest {
+    static func requestLiveRoom(page: Int) async throws -> [LiveRoom] {
+        struct Resp: Codable {
+            let rooms: [LiveRoom]
+        }
+        let resp: Resp = try await request(url: EndPoint.liveRoom, parameters: ["page_size": 10, "page": page])
+        return resp.rooms
+    }
 }
