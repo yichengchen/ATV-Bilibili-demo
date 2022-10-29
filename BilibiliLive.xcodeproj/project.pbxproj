@@ -10,6 +10,7 @@
 		2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */; };
 		490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */; };
 		490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */; };
+		490EC3EB290CFEBD001E00B6 /* Anime1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */; };
 		492731EE29096677005F5B0A /* HotViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492731ED29096677005F5B0A /* HotViewController.swift */; };
 		49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */; };
 		49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */; };
@@ -22,6 +23,7 @@
 		494742112905053E005D6885 /* BLMotionCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494742102905053E005D6885 /* BLMotionCollectionViewCell.swift */; };
 		49474213290509F6005D6885 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49474212290509F6005D6885 /* DateFormatter.swift */; };
 		4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */; };
+		49735024290D0E8A0045C26B /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 49735023290D0E8A0045C26B /* Fuzi */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
@@ -71,6 +73,7 @@
 		2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewController.swift; sourceTree = "<group>"; };
 		490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLSettingLineCollectionViewCell.swift; sourceTree = "<group>"; };
+		490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Anime1ViewController.swift; sourceTree = "<group>"; };
 		492731ED29096677005F5B0A /* HotViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotViewController.swift; sourceTree = "<group>"; };
 		49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDanmuProvider.swift; sourceTree = "<group>"; };
 		49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Ext.swift"; sourceTree = "<group>"; };
@@ -133,6 +136,7 @@
 				F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */,
 				F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */,
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
+				49735024290D0E8A0045C26B /* Fuzi in Frameworks */,
 				F9171D5F2900FCFB002868C7 /* SnapKit in Frameworks */,
 				494741C329016CCE005D6885 /* MarqueeLabel in Frameworks */,
 				F9B9EAE3261AA3400045C2C6 /* SwiftyXMLParser in Frameworks */,
@@ -155,6 +159,7 @@
 				494741C5290177BB005D6885 /* UpSpaceViewController.swift */,
 				492731ED29096677005F5B0A /* HotViewController.swift */,
 				490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */,
+				490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */,
 			);
 			path = ViewController;
 			sourceTree = "<group>";
@@ -357,6 +362,7 @@
 				F9B9EAE2261AA3400045C2C6 /* SwiftyXMLParser */,
 				F9171D5E2900FCFB002868C7 /* SnapKit */,
 				494741C229016CCE005D6885 /* MarqueeLabel */,
+				49735023290D0E8A0045C26B /* Fuzi */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -396,6 +402,7 @@
 				F9B9EAE1261AA3400045C2C6 /* XCRemoteSwiftPackageReference "SwiftyXMLParser" */,
 				F9171D5D2900FCFB002868C7 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				494741C129016CCE005D6885 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
+				49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -483,6 +490,7 @@
 				F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */,
 				AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */,
 				F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */,
+				490EC3EB290CFEBD001E00B6 /* Anime1ViewController.swift in Sources */,
 				F99D28F72619F5F000F8E66A /* FollowsViewController.swift in Sources */,
 				F9D382B426359EF90070508F /* ApiRequest.swift in Sources */,
 				490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */,
@@ -714,6 +722,14 @@
 				kind = branch;
 			};
 		};
+		49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/cezheng/Fuzi";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
 		F9171D5D2900FCFB002868C7 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit";
@@ -777,6 +793,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 494741C129016CCE005D6885 /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
+		};
+		49735023290D0E8A0045C26B /* Fuzi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */;
+			productName = Fuzi;
 		};
 		F9171D5E2900FCFB002868C7 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
