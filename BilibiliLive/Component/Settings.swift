@@ -31,7 +31,7 @@ enum Settings {
     static var mediaQuality: MediaQualityEnum
 
     @UserDefaultCodable("Settings.dmStyle", defaultValue: .style_0)
-    static var dmStyleEnum: dmStyleEnum
+    static var dmStyleEnum: DmStyleEnum
 
     @UserDefault("Settings.losslessAudio", defaultValue: false)
     static var losslessAudio: Bool
@@ -42,19 +42,15 @@ struct MediaQuality {
     var fnval: Int
 }
 
-enum dmStyleEnum: Codable, CaseIterable {
+enum DmStyleEnum: Codable, CaseIterable {
     case style_100
     case style_75
     case style_50
     case style_25
     case style_0
-
-    var hideInSetting: Bool {
-        self == .style_0
-    }
 }
 
-extension dmStyleEnum {
+extension DmStyleEnum {
     var dmStyle: String {
         switch self {
         case .style_100:
