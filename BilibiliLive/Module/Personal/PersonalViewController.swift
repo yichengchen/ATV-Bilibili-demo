@@ -34,10 +34,9 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         setupData()
         leftCollectionView.reloadData()
         avatarImageView.layer.cornerRadius = avatarImageView.frame.size.width / 2
-        leftCollectionView.register(SettingLineCell.self, forCellWithReuseIdentifier: "cell")
+        leftCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         leftCollectionView.selectItem(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .top)
         collectionView(leftCollectionView, didSelectItemAt: IndexPath(row: 0, section: 0))
-
         WebRequest.requestLoginInfo { [weak self] response in
             switch response {
             case let .success(json):
@@ -94,7 +93,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
 
 extension PersonalViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! SettingLineCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! BLSettingLineCollectionViewCell
         cell.titleLabel.text = cellModels[indexPath.item].title
         return cell
     }
@@ -121,52 +120,5 @@ class EmptyViewController: UIViewController {
         label.text = "Nothing Here"
         view.addSubview(label)
         label.makeConstraintsBindToCenterOfSuperview()
-    }
-}
-
-class SettingLineCell: BLMotionCollectionViewCell {
-    let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .light))
-    let selectedWhiteView = UIView()
-    let titleLabel = UILabel()
-    override var isSelected: Bool {
-        didSet {
-            updateView()
-        }
-    }
-
-    override func setup() {
-        super.setup()
-        scaleFactor = 1.05
-        contentView.addSubview(effectView)
-        effectView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        effectView.layer.cornerRadius = 10
-        effectView.layer.cornerCurve = .continuous
-        effectView.clipsToBounds = true
-        selectedWhiteView.backgroundColor = UIColor.white
-        selectedWhiteView.isHidden = !isFocused
-        effectView.contentView.addSubview(selectedWhiteView)
-        selectedWhiteView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        effectView.contentView.addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(26)
-            make.trailing.equalToSuperview().offset(20)
-            make.top.bottom.equalToSuperview()
-        }
-        titleLabel.textAlignment = .left
-        titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-        titleLabel.textColor = .black
-    }
-
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        super.didUpdateFocus(in: context, with: coordinator)
-        updateView()
-    }
-
-    func updateView() {
-        selectedWhiteView.isHidden = !(isFocused || isSelected)
     }
 }

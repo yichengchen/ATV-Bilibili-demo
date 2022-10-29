@@ -137,8 +137,13 @@ class FeedCollectionViewController: UIViewController {
             count: style.feedColCount
         )
         let vSpacing: CGFloat = style == .large ? 24 : 16
-        group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: .fixed(0), top: .fixed(vSpacing), trailing: .fixed(0), bottom: .fixed(vSpacing))
-        return NSCollectionLayoutSection(group: group)
+        let baseSpacing: CGFloat = style == .sideBar ? 24 : 0
+        group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: .fixed(baseSpacing), top: .fixed(vSpacing), trailing: .fixed(0), bottom: .fixed(vSpacing))
+        let section = NSCollectionLayoutSection(group: group)
+        if baseSpacing > 0 {
+            section.contentInsets = NSDirectionalEdgeInsets(top: baseSpacing, leading: 0, bottom: 0, trailing: 0)
+        }
+        return section
     }
 
     private func makeDataSource() -> UICollectionViewDiffableDataSource<Section, AnyDispplayData> {

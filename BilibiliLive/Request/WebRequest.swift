@@ -387,6 +387,10 @@ struct VideoDetail: Codable, Hashable, DisplayData {
         formatter.unitsStyle = .brief
         return formatter.string(from: TimeInterval(duration)) ?? ""
     }
+
+    var avatar: URL? {
+        return owner.face
+    }
 }
 
 struct BangumiInfo: Codable, Hashable {
