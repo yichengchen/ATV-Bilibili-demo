@@ -157,8 +157,21 @@ extension WebRequest {
         return res
     }
 
-    static func requestDMSetting(dmarea: Int, complete: ((Bool) -> Void)?) {
-        requestData(method: .post, url: "https://api.bilibili.com/x/v2/dm/web/config", parameters: ["dmarea": dmarea]) { response in
+    static func requestDMSetting(style: DmStyleEnum, complete: ((Bool) -> Void)?) {
+        let dmarea: Int
+        switch style {
+        case .style_25:
+            dmarea = 25
+        case .style_50:
+            dmarea = 50
+        case .style_75:
+            dmarea = 75
+        case .style_100:
+            dmarea = 100
+        case .style_0:
+            dmarea = 0
+        }
+        requestJSON(method: .post, url: "https://api.bilibili.com/x/v2/dm/web/config", parameters: ["dm_area": dmarea]) { response in
             switch response {
             case .success:
                 complete?(true)
