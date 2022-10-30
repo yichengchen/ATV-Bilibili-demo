@@ -72,6 +72,10 @@ class CommonPlayerViewController: AVPlayerViewController {
         danMuView.stop()
     }
 
+    func extraInfoForPlayerError() -> String {
+        return ""
+    }
+
     func playerStatusDidChange() {
         print("player status: \(player?.currentItem?.status.rawValue ?? -1)")
         switch player?.currentItem?.status {
@@ -82,7 +86,7 @@ class CommonPlayerViewController: AVPlayerViewController {
             print(player?.currentItem?.error ?? "no error")
             print(player?.currentItem?.errorLog() ?? "no error log")
             if retryCount < maxRetryCount, !retryPlay() {
-                showErrorAlertAndExit(title: "播放器失败", message: playerItem?.errorLog()?.description ?? "")
+                showErrorAlertAndExit(title: "播放器失败", message: (playerItem?.errorLog()?.description ?? "") + extraInfoForPlayerError())
             }
             retryCount += 1
         default:

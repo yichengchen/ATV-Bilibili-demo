@@ -63,6 +63,10 @@ class VideoPlayerViewController: CommonPlayerViewController {
         danMuView.play()
     }
 
+    override func extraInfoForPlayerError() -> String {
+        return playerDelegate?.infoDebugText ?? "-"
+    }
+
     override func playerDidFinishPlaying() {
         dismiss(animated: true)
     }

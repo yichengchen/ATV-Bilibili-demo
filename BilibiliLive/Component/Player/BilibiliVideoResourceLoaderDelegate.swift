@@ -26,8 +26,15 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
     private var playlists = [String]()
     private var hasAudioInMasterListAdded = false
+    private(set) var playInfo: VideoPlayURLInfo?
 
-    let videoCodecBlackList = ["avc1.640034"] // high 5.2 is not supported
+    var infoDebugText: String {
+        let videoCodec = playInfo?.dash.video.map({ $0.codecs }).prefix(5).joined(separator: ",") ?? "nil"
+        let audioCodec = playInfo?.dash.audio.map({ $0.codecs }).prefix(5).joined(separator: ",") ?? "nil"
+        return "video codecs: \(videoCodec), audio: \(audioCodec)"
+    }
+
+    let videoCodecBlackList = ["avc1.640034", "hev1.2.4.L153.90"] // high 5.2 is not supported
 
     private func reset() {
         playlists.removeAll()
@@ -87,6 +94,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     }
 
     func setBilibili(info: VideoPlayURLInfo) {
+        playInfo = info
         reset()
         var videos = info.dash.video
         if Settings.preferHevc {
