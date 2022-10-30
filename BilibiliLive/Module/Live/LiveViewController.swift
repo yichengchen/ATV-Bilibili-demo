@@ -12,7 +12,6 @@ import Alamofire
 import SwiftyJSON
 
 class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
-    var rooms = [LiveRoom]() { didSet { collectionVC.displayDatas = rooms } }
     private var page = 1
     let collectionVC = FeedCollectionViewController()
     override func viewDidLoad() {

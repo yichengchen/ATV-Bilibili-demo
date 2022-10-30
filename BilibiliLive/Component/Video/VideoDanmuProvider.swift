@@ -31,6 +31,7 @@ class VideoDanmuProvider {
     var cid: Int!
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
+    private var lastTime: TimeInterval = 0
 
     var onShowDanmu: ((DanmakuTextCellModel) -> Void)?
 
@@ -60,10 +61,16 @@ class VideoDanmuProvider {
     }
 
     func playerTimeChange(time: TimeInterval) {
-        let advanceTime = time.advanced(by: 1)
-        while let first = playingDanmus.first, first.time <= advanceTime {
+        let diff = time - lastTime
+        if diff > 5 {
+            playingDanmus = Array(playingDanmus.drop { $0.time < time })
+        } else if diff < 0 {
+            playingDanmus = Array(allDanmus.drop { $0.time < time })
+        }
+        lastTime = time
+
+        while let first = playingDanmus.first, first.time <= time {
             let danmu = playingDanmus.removeFirst()
-            let offset = advanceTime - danmu.time
             let model = DanmakuTextCellModel(str: danmu.text)
             model.color = UIColor(hex: UInt32(danmu.color))
             switch danmu.mode {
@@ -76,10 +83,7 @@ class VideoDanmuProvider {
             default:
                 continue
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + offset) {
-                [weak self] in
-                self?.onShowDanmu?(model)
-            }
+            onShowDanmu?(model)
         }
     }
 }
