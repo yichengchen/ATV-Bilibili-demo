@@ -301,6 +301,15 @@ extension WebRequest {
         return try await request(url: EndPoint.playUrl,
                                  parameters: ["avid": aid, "cid": cid, "qn": quality.qn, "type": "", "fnver": 0, "fnval": quality.fnval, "otype": "json"])
     }
+
+    static func requestReplys(aid: Int, complete: ((Replys) -> Void)?) {
+        request(url: "http://api.bilibili.com/x/v2/reply", parameters: ["type": 1, "oid": aid, "sort": 1, "nohot": 0]) {
+            (result: Result<Replys, RequestError>) in
+            if let details = try? result.get() {
+                complete?(details)
+            }
+        }
+    }
 }
 
 // MARK: - User
@@ -396,6 +405,24 @@ struct VideoDetail: Codable, Hashable, DisplayData {
     var date: String? {
         return DateFormatter.stringFor(timestamp: pubdate)
     }
+}
+
+struct Replys: Codable, Hashable {
+    struct Reply: Codable, Hashable {
+        struct Member: Codable, Hashable {
+            let uname: String
+            let avatar: String
+        }
+
+        struct Content: Codable, Hashable {
+            let message: String
+        }
+
+        let member: Member
+        let content: Content
+    }
+
+    let replies: [Reply]
 }
 
 struct BangumiInfo: Codable, Hashable {

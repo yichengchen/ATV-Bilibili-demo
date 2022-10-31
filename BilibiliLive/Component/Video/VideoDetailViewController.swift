@@ -34,6 +34,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var favButton: BLCustomButton!
     @IBOutlet var pageCollectionView: UICollectionView!
     @IBOutlet var recommandCollectionView: UICollectionView!
+    @IBOutlet var replysCollectionView: UICollectionView!
     @IBOutlet var pageView: UIView!
 
     private var epid = 0
@@ -51,6 +52,7 @@ class VideoDetailViewController: UIViewController {
     private var startTime = 0
     private var pages = [VideoPage]()
     private var relateds = [VideoDetail]()
+    private var replys: Replys?
 
     static func create(aid: Int, cid: Int) -> VideoDetailViewController {
         let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
@@ -131,6 +133,11 @@ class VideoDetailViewController: UIViewController {
             [weak self] recommands in
             self?.relateds = recommands
             self?.recommandCollectionView.reloadData()
+        }
+
+        WebRequest.requestReplys(aid: aid) { [weak self] replys in
+            self?.replys = replys
+            self?.replysCollectionView.reloadData()
         }
 
         WebRequest.requestLikeStatus(aid: aid) { [weak self] isLiked in
@@ -286,13 +293,16 @@ class VideoDetailViewController: UIViewController {
 
 extension VideoDetailViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if collectionView == pageCollectionView {
+        switch collectionView {
+        case pageCollectionView:
             let page = pages[indexPath.item]
             let player = VideoPlayerViewController()
             player.aid = aid
             player.cid = page.cid
             present(player, animated: true, completion: nil)
-        } else {
+        case replysCollectionView:
+            break
+        default:
             let video = relateds[indexPath.item]
             let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
             present(detailVC, animated: true, completion: nil)
@@ -302,26 +312,38 @@ extension VideoDetailViewController: UICollectionViewDelegate {
 
 extension VideoDetailViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView == pageCollectionView {
+        switch collectionView {
+        case pageCollectionView:
             return pages.count
+        case replysCollectionView:
+            return replys?.replies.count ?? 0
+        default:
+            return relateds.count
         }
-        return relateds.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if collectionView == pageCollectionView {
+        switch collectionView {
+        case pageCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as! BLTextOnlyCollectionViewCell
             let page = pages[indexPath.item]
             cell.titleLabel.text = page.part
             return cell
+        case replysCollectionView:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ReplyCell.self), for: indexPath) as! ReplyCell
+            if let reply = replys?.replies[indexPath.item] {
+                cell.config(replay: reply)
+            }
+            return cell
+        default:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
+            let label = cell.viewWithTag(2) as! UILabel
+            let related = relateds[indexPath.row]
+            let imageView = cell.viewWithTag(1) as! UIImageView
+            label.text = related.title
+            imageView.kf.setImage(with: related.pic)
+            return cell
         }
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        let label = cell.viewWithTag(2) as! UILabel
-        let related = relateds[indexPath.row]
-        let imageView = cell.viewWithTag(1) as! UIImageView
-        label.text = related.title
-        imageView.kf.setImage(with: related.pic)
-        return cell
     }
 }
 
@@ -356,5 +378,17 @@ extension VideoDetailViewController {
 extension Int {
     func string() -> String {
         return String(self)
+    }
+}
+
+class ReplyCell: UICollectionViewCell {
+    @IBOutlet var avatarImageView: UIImageView!
+    @IBOutlet var userNameLabel: UILabel!
+    @IBOutlet var contenLabel: UILabel!
+
+    func config(replay: Replys.Reply) {
+        avatarImageView.kf.setImage(with: URL(string: replay.member.avatar), options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
+        userNameLabel.text = replay.member.uname
+        contenLabel.text = replay.content.message
     }
 }
