@@ -28,6 +28,7 @@
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
 		AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7A3B1F290298BE006FEBB0 /* Colors.swift */; };
+		AEA5FDE2290F6E2600E7C0B2 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA5FDE1290F6E2600E7C0B2 /* String.swift */; };
 		AEA6AB1628FFE951007CE72E /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA6AB1528FFE951007CE72E /* SettingsViewController.swift */; };
 		AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA6AB1828FFF3DD007CE72E /* Settings.swift */; };
 		F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90AAE03265549B5008DE7C2 /* FeedViewController.swift */; };
@@ -91,6 +92,7 @@
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteViewController.swift; sourceTree = "<group>"; };
 		AE7A3B1F290298BE006FEBB0 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		AEA5FDE1290F6E2600E7C0B2 /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		AEA6AB1528FFE951007CE72E /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		AEA6AB1828FFF3DD007CE72E /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		F90AAE03265549B5008DE7C2 /* FeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewController.swift; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 				494741C72902C45D005D6885 /* Array+..swift */,
 				AE7A3B1F290298BE006FEBB0 /* Colors.swift */,
 				49474212290509F6005D6885 /* DateFormatter.swift */,
+				AEA5FDE1290F6E2600E7C0B2 /* String.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -470,6 +473,7 @@
 				F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */,
+				AEA5FDE2290F6E2600E7C0B2 /* String.swift in Sources */,
 				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
 				49474213290509F6005D6885 /* DateFormatter.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,

@@ -212,6 +212,11 @@ class VideoDetailViewController: UIViewController {
 
     @IBAction func actionLike(_ sender: Any) {
         Task {
+            if likeButton.isOn {
+                likeButton.title? -= 1
+            } else {
+                likeButton.title? += 1
+            }
             likeButton.isOn.toggle()
             let success = await WebRequest.requestLike(aid: aid, like: likeButton.isOn)
             if !success {
@@ -228,14 +233,25 @@ class VideoDetailViewController: UIViewController {
         }
         let aid = aid
         alert.addAction(UIAlertAction(title: "1", style: .default) { [weak self] _ in
-            self?.likeButton.isOn = true
-            self?.didSentCoins += 1
+            guard let self else { return }
+            self.coinButton.title? += 1
+            if !self.likeButton.isOn {
+                self.likeButton.title? += 1
+                self.likeButton.isOn = true
+            }
+            self.didSentCoins += 1
             WebRequest.requestCoin(aid: aid, num: 1)
         })
         if didSentCoins == 0 {
             alert.addAction(UIAlertAction(title: "2", style: .default) { [weak self] _ in
-                self?.likeButton.isOn = true
-                self?.didSentCoins += 2
+                guard let self else { return }
+                self.coinButton.title? += 2
+                if !self.likeButton.isOn {
+                    self.likeButton.title? += 1
+                    self.likeButton.isOn = true
+                }
+                self.likeButton.isOn = true
+                self.didSentCoins += 2
                 WebRequest.requestCoin(aid: aid, num: 2)
             })
         }
@@ -252,6 +268,7 @@ class VideoDetailViewController: UIViewController {
             let aid = aid
             for fav in favList {
                 alert.addAction(UIAlertAction(title: fav.title, style: .default) { [weak self] _ in
+                    self?.favButton.title? += 1
                     self?.favButton.isOn = true
                     WebRequest.requestFavorite(aid: aid, mlid: fav.id)
                 })
