@@ -314,7 +314,8 @@ extension WebRequest {
     static func requestSearchResult(key: String, page: Int, complete: ((SearchResult) -> Void)?) {
         request(url: "http://api.bilibili.com/x/web-interface/search/type", parameters: ["search_type": "video", "keyword": key, "page": page]) {
             (result: Result<SearchResult, RequestError>) in
-            if let details = try? result.get() {
+            if var details = try? result.get() {
+                details.result.indices.forEach({ details.result[$0].title = details.result[$0].title.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil) })
                 complete?(details)
             }
         }
@@ -354,7 +355,7 @@ struct HistoryData: DisplayData, Codable {
     let pic: URL?
 
     let owner: VideoOwner
-    let cid: Int
+    let cid: Int?
     let aid: Int
     let progress: Int
     let duration: Int
@@ -558,11 +559,11 @@ struct SearchResult: Codable, Hashable {
         let aid: Int
 
         // DisplayData
-        let title: String
+        var title: String
         var ownerName: String { author }
         let pic: URL?
         var avatar: URL? { upic }
     }
 
-    let result: [Result]
+    var result: [Result]
 }

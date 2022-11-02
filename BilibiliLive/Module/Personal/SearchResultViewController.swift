@@ -13,9 +13,11 @@ class SearchResultViewController: UIViewController {
     var lastKey = ""
     var page = 1
 
+    @Published var searchText: String = ""
+    var cancellable: Cancellable?
+
     override func viewDidLoad() {
         super.viewDidLoad()
-
         collectionVC.show(in: self)
         collectionVC.didSelect = {
             [weak self] in
@@ -25,6 +27,19 @@ class SearchResultViewController: UIViewController {
             [weak self] in
             self?.loadMore()
         }
+
+        cancellable = $searchText
+            .filter({ $0.count > 0 })
+            .debounce(for: 0.8, scheduler: RunLoop.main)
+            .removeDuplicates()
+            .sink {
+                [weak self] key in
+                guard let self = self else { return }
+                self.page = 1
+                WebRequest.requestSearchResult(key: key, page: 1) { searchResult in
+                    self.collectionVC.displayDatas = searchResult.result
+                }
+            }
     }
 
     func loadMore() {
@@ -42,12 +57,8 @@ class SearchResultViewController: UIViewController {
 
 extension SearchResultViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
-        if let text = searchController.searchBar.text, lastKey != text {
-            lastKey = text
-            page = 1
-            WebRequest.requestSearchResult(key: lastKey, page: page) { [weak self] searchResult in
-                self?.collectionVC.displayDatas = searchResult.result
-            }
+        if let text = searchController.searchBar.text {
+            searchText = text
         }
     }
 }

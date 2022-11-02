@@ -83,7 +83,7 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
     }
 
     func setup(data: any DisplayData) {
-        titleLabel.attributedText = try! NSAttributedString(data: data.title.data(using: .unicode)!, options: [.documentType: NSAttributedString.DocumentType.html], documentAttributes: nil)
+        titleLabel.text = data.title
         upLabel.text = [data.ownerName, data.date].compactMap({ $0 }).joined(separator: " · ")
         if var pic = data.pic {
             if pic.scheme == nil {
