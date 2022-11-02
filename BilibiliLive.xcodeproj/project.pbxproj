@@ -26,6 +26,7 @@
 		49735024290D0E8A0045C26B /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 49735023290D0E8A0045C26B /* Fuzi */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
+		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
 		AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7A3B1F290298BE006FEBB0 /* Colors.swift */; };
 		AEA5FDE2290F6E2600E7C0B2 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA5FDE1290F6E2600E7C0B2 /* String.swift */; };
@@ -90,6 +91,7 @@
 		4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTextOnlyCollectionViewCell.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
+		AE2B41542912706700BF2B0B /* SearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultViewController.swift; sourceTree = "<group>"; };
 		AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteViewController.swift; sourceTree = "<group>"; };
 		AE7A3B1F290298BE006FEBB0 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		AEA5FDE1290F6E2600E7C0B2 /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
@@ -156,12 +158,9 @@
 				F90AAE03265549B5008DE7C2 /* FeedViewController.swift */,
 				F99D28F62619F5F000F8E66A /* FollowsViewController.swift */,
 				AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */,
-				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
-				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
 				494741C5290177BB005D6885 /* UpSpaceViewController.swift */,
 				492731ED29096677005F5B0A /* HotViewController.swift */,
 				490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */,
-				490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */,
 			);
 			path = ViewController;
 			sourceTree = "<group>";
@@ -260,6 +259,10 @@
 			children = (
 				49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */,
 				AEA6AB1528FFE951007CE72E /* SettingsViewController.swift */,
+				AE2B41542912706700BF2B0B /* SearchResultViewController.swift */,
+				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
+				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
+				490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */,
 			);
 			path = Personal;
 			sourceTree = "<group>";
@@ -468,6 +471,7 @@
 				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
 				F9171D6129010429002868C7 /* UICollectionView+..swift in Sources */,
+				AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */,
 				4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */,
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
 				F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */,

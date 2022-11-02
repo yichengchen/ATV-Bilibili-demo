@@ -51,6 +51,13 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     func setupData() {
         let setting = CellModel(title: "设置", contentVC: SettingsViewController.create())
         cellModels.append(setting)
+        cellModels.append(CellModel(title: "搜索", action: {
+            [weak self] in
+            let resultVC = SearchResultViewController()
+            let searchVC = UISearchController(searchResultsController: resultVC)
+            searchVC.searchResultsUpdater = resultVC
+            Self.topMostViewController().present(UISearchContainerViewController(searchController: searchVC), animated: true)
+        }))
         cellModels.append(CellModel(title: "稍后在看", contentVC: ToViewViewController()))
         cellModels.append(CellModel(title: "历史记录", contentVC: HistoryViewController()))
         cellModels.append(CellModel(title: "Anime1", contentVC: Anime1ViewController()))

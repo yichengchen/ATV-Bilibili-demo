@@ -310,6 +310,15 @@ extension WebRequest {
             }
         }
     }
+
+    static func requestSearchResult(key: String, page: Int, complete: ((SearchResult) -> Void)?) {
+        request(url: "http://api.bilibili.com/x/web-interface/search/type", parameters: ["search_type": "video", "keyword": key, "page": page]) {
+            (result: Result<SearchResult, RequestError>) in
+            if let details = try? result.get() {
+                complete?(details)
+            }
+        }
+    }
 }
 
 // MARK: - User
@@ -540,4 +549,20 @@ struct VideoPlayURLInfo: Codable {
             let audio: DashMediaInfo
         }
     }
+}
+
+struct SearchResult: Codable, Hashable {
+    struct Result: Codable, Hashable, DisplayData {
+        let author: String
+        let upic: URL
+        let aid: Int
+
+        // DisplayData
+        let title: String
+        var ownerName: String { author }
+        let pic: URL?
+        var avatar: URL? { upic }
+    }
+
+    let result: [Result]
 }

@@ -9,7 +9,7 @@ import Alamofire
 import SwiftyJSON
 import UIKit
 
-class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
+class ToViewViewController: UIViewController {
     let collectionVC = FeedCollectionViewController()
 
     override func viewDidLoad() {
@@ -30,26 +30,7 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
-        loadData()
-    }
-
-    func reloadData() {
-        loadData()
-    }
-
-    func loadData() {
-        AF.request("http://api.bilibili.com/x/v2/history/toview").responseData {
-            [weak self] response in
-            guard let self = self else { return }
-            switch response.result {
-            case let .success(data):
-                let json = JSON(data)
-                let datas = self.progrssData(json: json)
-                self.collectionVC.displayDatas = datas
-            case let .failure(error):
-                print(error)
-            }
-        }
+        reloadData()
     }
 
     func progrssData(json: JSON) -> [FeedData] {
@@ -79,6 +60,23 @@ class ToViewViewController: UIViewController, BLTabBarContentVCProtocol {
             [weak self] resp in
             print(resp.result)
             self?.reloadData()
+        }
+    }
+}
+
+extension ToViewViewController: BLTabBarContentVCProtocol {
+    func reloadData() {
+        AF.request("http://api.bilibili.com/x/v2/history/toview").responseData {
+            [weak self] response in
+            guard let self = self else { return }
+            switch response.result {
+            case let .success(data):
+                let json = JSON(data)
+                let datas = self.progrssData(json: json)
+                self.collectionVC.displayDatas = datas
+            case let .failure(error):
+                print(error)
+            }
         }
     }
 }
