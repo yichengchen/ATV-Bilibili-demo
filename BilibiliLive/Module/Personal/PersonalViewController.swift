@@ -56,7 +56,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
             let resultVC = SearchResultViewController()
             let searchVC = UISearchController(searchResultsController: resultVC)
             searchVC.searchResultsUpdater = resultVC
-            Self.topMostViewController().present(UISearchContainerViewController(searchController: searchVC), animated: true)
+            self?.present(UISearchContainerViewController(searchController: searchVC), animated: true)
         }))
         cellModels.append(CellModel(title: "稍后在看", contentVC: ToViewViewController()))
         cellModels.append(CellModel(title: "历史记录", contentVC: HistoryViewController()))
