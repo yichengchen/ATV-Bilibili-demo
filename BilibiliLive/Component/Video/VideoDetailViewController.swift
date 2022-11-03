@@ -314,6 +314,10 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             present(player, animated: true, completion: nil)
         case replysCollectionView:
             break
+        case ugcCollectionView:
+            guard let video = data?.ugc_season?.sections.first?.episodes[indexPath.item] else { return }
+            let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
+            present(detailVC, animated: true, completion: nil)
         default:
             let video = relateds[indexPath.item]
             let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)

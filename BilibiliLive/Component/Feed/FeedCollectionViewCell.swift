@@ -152,8 +152,10 @@ extension FeedDisplayStyle {
         switch self {
         case .large:
             return fractionalWidth / 1.5
-        case .normal, .sideBar:
+        case .normal:
             return fractionalWidth / 1.5
+        case .sideBar:
+            return fractionalWidth / 1.15
         }
     }
 

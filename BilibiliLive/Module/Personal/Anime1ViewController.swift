@@ -135,7 +135,7 @@ class Animate1PlayerViewController: CommonPlayerViewController {
                                         parameters: ["d": dataString])
             .serializingData().value
         let json = JSON(data)
-        guard var video = json["s"].arrayValue.first?["src"].string else { throw Animate1Error.getJsonFail }
+        guard let video = json["s"].arrayValue.first?["src"].string else { throw Animate1Error.getJsonFail }
         let asset = AVURLAsset(url: URL(string: "https:" + video)!)
         playerItem = AVPlayerItem(asset: asset)
         player = AVPlayer(playerItem: playerItem)
