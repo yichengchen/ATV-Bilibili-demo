@@ -11,7 +11,8 @@ import UIKit
 
 import Alamofire
 import Kingfisher
-import SwiftyJSON
+import MarqueeLabel
+import SnapKit
 import TVUIKit
 
 class VideoDetailViewController: UIViewController {
@@ -35,8 +36,12 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var pageCollectionView: UICollectionView!
     @IBOutlet var recommandCollectionView: UICollectionView!
     @IBOutlet var replysCollectionView: UICollectionView!
+    @IBOutlet var ugcCollectionView: UICollectionView!
+
     @IBOutlet var pageView: UIView!
 
+    @IBOutlet var ugcLabel: UILabel!
+    @IBOutlet var ugcView: UIView!
     private var epid = 0
     private var aid = 0
     private var cid = 0 { didSet { if oldValue != cid { fetchDataWithCid() } }}
@@ -54,10 +59,10 @@ class VideoDetailViewController: UIViewController {
     private var relateds = [VideoDetail]()
     private var replys: Replys?
 
-    static func create(aid: Int, cid: Int) -> VideoDetailViewController {
+    static func create(aid: Int, cid: Int?) -> VideoDetailViewController {
         let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
         vc.aid = aid
-        vc.cid = cid
+        vc.cid = cid ?? 0
         return vc
     }
 
@@ -73,6 +78,10 @@ class VideoDetailViewController: UIViewController {
         fetchData()
         pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: BLTextOnlyCollectionViewCell.self))
         pageCollectionView.collectionViewLayout = makePageCollectionViewLayout()
+        recommandCollectionView.register(RelatedVideoCell.self, forCellWithReuseIdentifier: String(describing: RelatedVideoCell.self))
+        ugcCollectionView.register(RelatedVideoCell.self, forCellWithReuseIdentifier: String(describing: RelatedVideoCell.self))
+        recommandCollectionView.collectionViewLayout = makeRelatedVideoCollectionViewLayout()
+        ugcCollectionView.collectionViewLayout = makeRelatedVideoCollectionViewLayout()
     }
 
     override var preferredFocusedView: UIView? {
@@ -167,9 +176,9 @@ class VideoDetailViewController: UIViewController {
 
         durationLabel.text = data.durationString
         titleLabel.text = data.title
-        upButton.title = data.owner.name
+        upButton.title = data.ownerName
 
-        avatarImageView.kf.setImage(with: data.owner.face, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
+        avatarImageView.kf.setImage(with: data.avatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
 
         coverImageView.kf.setImage(with: data.pic)
         backgroundImageView.kf.setImage(with: data.pic)
@@ -179,7 +188,7 @@ class VideoDetailViewController: UIViewController {
         if status.count > 1 {
             notes.append(status)
         }
-        notes.append(data.desc)
+        notes.append(data.desc ?? "")
         noteLabel.text = notes.joined(separator: "\n")
 
         pages = data.pages ?? []
@@ -199,6 +208,9 @@ class VideoDetailViewController: UIViewController {
         UIView.animate(withDuration: 0.25) {
             self.backgroundImageView.alpha = 1
         }
+        ugcCollectionView.reloadData()
+        ugcLabel.text = "合集 \(data.ugc_season?.title ?? "")  \(data.ugc_season?.sections.first?.title ?? "")"
+        ugcView.isHidden = data.ugc_season?.sections.count ?? 0 == 0
     }
 
     @IBAction func actionShowUpSpace(_ sender: Any) {
@@ -317,8 +329,12 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             return pages.count
         case replysCollectionView:
             return replys?.replies.count ?? 0
-        default:
+        case ugcCollectionView:
+            return data?.ugc_season?.sections.first?.episodes.count ?? 0
+        case recommandCollectionView:
             return relateds.count
+        default:
+            return 0
         }
     }
 
@@ -335,14 +351,19 @@ extension VideoDetailViewController: UICollectionViewDataSource {
                 cell.config(replay: reply)
             }
             return cell
-        default:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-            let label = cell.viewWithTag(2) as! UILabel
-            let related = relateds[indexPath.row]
-            let imageView = cell.viewWithTag(1) as! UIImageView
-            label.text = related.title
-            imageView.kf.setImage(with: related.pic)
+        case ugcCollectionView:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
+            if let record = data?.ugc_season?.sections.first?.episodes[indexPath.row] {
+                cell.update(data: record)
+            }
             return cell
+        case recommandCollectionView:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
+            let related = relateds[indexPath.row]
+            cell.update(data: related)
+            return cell
+        default:
+            return UICollectionViewCell()
         }
     }
 }
@@ -373,6 +394,22 @@ extension VideoDetailViewController {
             return section
         }
     }
+
+    func makeRelatedVideoCollectionViewLayout() -> UICollectionViewLayout {
+        UICollectionViewCompositionalLayout {
+            _, _ in
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                  heightDimension: .estimated(200))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.18), heightDimension: .estimated(200))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            let section = NSCollectionLayoutSection(group: group)
+            section.contentInsets = .init(top: 40, leading: 0, bottom: 0, trailing: 0)
+            section.orthogonalScrollingBehavior = .continuous
+            section.interGroupSpacing = 40
+            return section
+        }
+    }
 }
 
 extension Int {
@@ -390,5 +427,58 @@ class ReplyCell: UICollectionViewCell {
         avatarImageView.kf.setImage(with: URL(string: replay.member.avatar), options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
         userNameLabel.text = replay.member.uname
         contenLabel.text = replay.content.message
+    }
+}
+
+class RelatedVideoCell: BLMotionCollectionViewCell {
+    let titleLabel = MarqueeLabel()
+    let imageView = UIImageView()
+    override func setup() {
+        super.setup()
+        contentView.addSubview(imageView)
+        contentView.addSubview(titleLabel)
+        imageView.snp.makeConstraints { make in
+            make.top.left.right.equalToSuperview()
+            make.width.equalTo(imageView.snp.height).multipliedBy(14.0 / 9)
+        }
+        imageView.layer.cornerRadius = 12
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFill
+        titleLabel.snp.makeConstraints { make in
+            make.left.right.bottom.equalToSuperview()
+            make.top.equalTo(imageView.snp.bottom).offset(6)
+        }
+        titleLabel.setContentHuggingPriority(.required, for: .vertical)
+        titleLabel.font = UIFont.systemFont(ofSize: 28)
+        stopScroll()
+    }
+
+    func update(data: any DisplayData) {
+        titleLabel.text = data.title
+        imageView.kf.setImage(with: data.pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202)))])
+    }
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        if isFocused {
+            startScroll()
+        } else {
+            stopScroll()
+        }
+    }
+
+    private func startScroll() {
+        titleLabel.restartLabel()
+        titleLabel.holdScrolling = false
+    }
+
+    private func stopScroll() {
+        titleLabel.shutdownLabel()
+        titleLabel.holdScrolling = true
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        stopScroll()
     }
 }

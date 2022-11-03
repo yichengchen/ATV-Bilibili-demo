@@ -382,14 +382,15 @@ struct VideoDetail: Codable, Hashable, DisplayData {
     let aid: Int
     let cid: Int
     let title: String
-    let videos: Int
+    let videos: Int?
     let pic: URL?
-    let desc: String
+    let desc: String?
     let owner: VideoOwner
     let pages: [VideoPage]?
     let dynamic: String?
     let duration: Int
     let pubdate: Int?
+    let ugc_season: UgcSeason?
 
     let stat: Stat
     struct Stat: Codable, Hashable {
@@ -399,6 +400,36 @@ struct VideoDetail: Codable, Hashable, DisplayData {
         let share: Int
         let danmaku: Int
         let view: Int
+    }
+
+    struct UgcSeason: Codable, Hashable {
+        let id: Int
+        let title: String
+        let cover: URL
+        let mid: Int
+        let intro: String
+        let attribute: Int
+        let sections: [UgcSeasonDetail]
+
+        struct UgcSeasonDetail: Codable, Hashable {
+            let season_id: Int
+            let id: Int
+            let title: String
+            let episodes: [UgcVideoInfo]
+        }
+
+        struct UgcVideoInfo: Codable, Hashable, DisplayData {
+            var ownerName: String { "" }
+            var pic: URL? { arc.pic }
+            let aid: Int
+            let cid: Int
+            let arc: Arc
+            let title: String
+
+            struct Arc: Codable, Hashable {
+                let pic: URL
+            }
+        }
     }
 
     var durationString: String {
