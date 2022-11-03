@@ -27,6 +27,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private var playlists = [String]()
     private var hasAudioInMasterListAdded = false
     private(set) var playInfo: VideoPlayURLInfo?
+    private var hasSubtitle = false
 
     var infoDebugText: String {
         let videoCodec = playInfo?.dash.video.map({ $0.codecs }).prefix(5).joined(separator: ",") ?? "nil"
@@ -47,8 +48,9 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
     private func addVideoPlayBackInfo(codec: String, width: Int, height: Int, frameRate: String, bandwidth: Int, duration: Int, url: String, sar: String) {
         guard !videoCodecBlackList.contains(codec) else { return }
+        let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
         let content = """
-        #EXT-X-STREAM-INF:AUDIO="audio",CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth)
+        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth)
         \(URLs.customPrefix)\(playlists.count)
 
         """
@@ -93,9 +95,31 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         playlists.append(playList)
     }
 
-    func setBilibili(info: VideoPlayURLInfo) {
+    private func addSubtitleData(lang: String, name: String, duration: Int, content: String) {
+        let master = """
+        #EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",LANGUAGE="\(lang)",NAME="\(name)",AUTOSELECT=NO,URI="\(URLs.customPrefix)\(playlists.count)"
+
+        """
+        masterPlaylist.append(master)
+        let playList = """
+        #EXTM3U
+        #EXT-X-TARGETDURATION:\(duration)
+        #EXT-X-VERSION:3
+        #EXT-X-MEDIA-SEQUENCE:0
+        #EXT-X-PLAYLIST-TYPE:VOD
+        #EXTINF:\(duration)
+        \(URLs.customPrefix)\(playlists.count + 1)
+        #EXT-X-ENDLIST
+
+        """
+        playlists.append(playList)
+        playlists.append(content)
+    }
+
+    func setBilibili(info: VideoPlayURLInfo, subtitles: [SubtitleData]) {
         playInfo = info
         reset()
+        hasSubtitle = subtitles.count > 0
         var videos = info.dash.video
         if Settings.preferHevc {
             if videos.contains(where: { $0.isHevc }) {
@@ -127,6 +151,11 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             for url in audio.playableURLs {
                 addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: url)
             }
+        }
+
+        for subtitle in subtitles {
+            let vtt = BVideoUrlUtils.convertToVTT(subtitle: subtitle)
+            addSubtitleData(lang: subtitle.lan, name: subtitle.lan_doc, duration: info.dash.duration, content: vtt)
         }
     }
 
@@ -194,6 +223,25 @@ enum BVideoUrlUtils {
                 case (false, false): return lhs > rhs
                 }
             }
+    }
+
+    static func convertVTTFormate(_ time: CGFloat) -> String {
+        let seconds = Int(time)
+        let hour = seconds / 3600
+        let min = (seconds % 3600) / 60
+        let second = CGFloat((seconds % 3600) % 60) + time - CGFloat(Int(time))
+        return String(format: "%02d:%02d:%06.3f", hour, min, second)
+    }
+
+    static func convertToVTT(subtitle: SubtitleData) -> String {
+        var vtt = "WEBVTT\n\n"
+        for model in subtitle.subtitleContents ?? [] {
+            let from = convertVTTFormate(model.from)
+            let to = convertVTTFormate(model.to)
+            // hours:minutes:seconds.millisecond
+            vtt.append("\(from) --> \(to)\n\(model.content)\n\n")
+        }
+        return vtt
     }
 }
 

@@ -12,7 +12,7 @@ import UIKit
 class CommonPlayerViewController: AVPlayerViewController {
     let danMuView = DanmakuView()
     var allowChangeSpeed = true
-    var playerStartPos: CMTime?
+    var playerStartPos: Int?
     private var retryCount = 0
     private let maxRetryCount = 3
     private var observer: NSKeyValueObservation?
@@ -206,7 +206,7 @@ class CommonPlayerViewController: AVPlayerViewController {
     private func startPlay() {
         guard player?.rate == 0 && player?.error == nil else { return }
         if let playerStartPos = playerStartPos {
-            player?.seek(to: playerStartPos, toleranceBefore: .zero, toleranceAfter: .zero)
+            player?.seek(to: CMTime(seconds: Double(playerStartPos), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
         }
         player?.play()
     }

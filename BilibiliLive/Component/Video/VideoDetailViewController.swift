@@ -44,7 +44,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var ugcView: UIView!
     private var epid = 0
     private var aid = 0
-    private var cid = 0 { didSet { if oldValue != cid { fetchDataWithCid() } }}
+    private var cid = 0
     private var data: VideoDetail?
     private var didSentCoins = 0 {
         didSet {
@@ -58,6 +58,7 @@ class VideoDetailViewController: UIViewController {
     private var pages = [VideoPage]()
     private var relateds = [VideoDetail]()
     private var replys: Replys?
+    private var subTitles: [SubtitleData]?
 
     static func create(aid: Int, cid: Int?) -> VideoDetailViewController {
         let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
@@ -127,13 +128,12 @@ class VideoDetailViewController: UIViewController {
             }
             return
         }
-        WebRequest.requestVideoInfo(aid: aid) { [weak self] response in
-            guard let self else { return }
-            switch response {
-            case let .success(data):
+        Task {
+            do {
+                let data = try await WebRequest.requestDetailVideo(aid: self.aid)
                 self.data = data
                 self.update(with: data)
-            case let .failure(err):
+            } catch let err {
                 self.exit(with: err)
             }
         }
@@ -159,13 +159,6 @@ class VideoDetailViewController: UIViewController {
 
         WebRequest.requestFavoriteStatus(aid: aid) { [weak self] isFavorited in
             self?.favButton.isOn = isFavorited
-        }
-    }
-
-    private func fetchDataWithCid() {
-        guard cid > 0 else { return }
-        WebRequest.requestPlayerInfo(aid: aid, cid: cid) { [weak self] info in
-            self?.startTime = info.playTimeInSecond
         }
     }
 
@@ -223,9 +216,6 @@ class VideoDetailViewController: UIViewController {
         let player = VideoPlayerViewController()
         player.aid = aid
         player.cid = cid
-        if startTime > 0 && data!.duration - startTime > 5 {
-            player.playerStartPos = CMTime(seconds: Double(startTime), preferredTimescale: 1)
-        }
         present(player, animated: true, completion: nil)
     }
 

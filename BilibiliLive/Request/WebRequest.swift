@@ -160,12 +160,6 @@ extension WebRequest {
         }
     }
 
-    static func requestVideoInfo(aid: Int, complete: ((Result<VideoDetail, RequestError>) -> Void)?) {
-        request(url: "http://api.bilibili.com/x/web-interface/view", parameters: ["aid": aid]) { result in
-            complete?(result)
-        }
-    }
-
     static func requestHistory(complete: (([HistoryData]) -> Void)?) {
         request(url: "http://api.bilibili.com/x/v2/history") {
             (result: Result<[HistoryData], RequestError>) in
@@ -175,13 +169,8 @@ extension WebRequest {
         }
     }
 
-    static func requestPlayerInfo(aid: Int, cid: Int, complete: ((PlayerInfo) -> Void)? = nil) {
-        request(url: EndPoint.playerInfo, parameters: ["aid": aid, "cid": cid]) {
-            (result: Result<PlayerInfo, RequestError>) in
-            if let info = try? result.get() {
-                complete?(info)
-            }
-        }
+    static func requestPlayerInfo(aid: Int, cid: Int) async throws -> PlayerInfo {
+        await try request(url: EndPoint.playerInfo, parameters: ["aid": aid, "cid": cid])
     }
 
     static func requestRelatedVideo(aid: Int, complete: (([VideoDetail]) -> Void)? = nil) {
@@ -193,12 +182,8 @@ extension WebRequest {
         }
     }
 
-    static func requestDetailVideo(aid: Int) async -> VideoDetail? {
-        do {
-            return try await request(method: .get, url: EndPoint.info, parameters: ["aid": aid])
-        } catch {
-            return nil
-        }
+    static func requestDetailVideo(aid: Int) async throws -> VideoDetail {
+        try await request(method: .get, url: EndPoint.info, parameters: ["aid": aid])
     }
 
     static func requestFavVideosList() async throws -> [FavListData] {
@@ -319,6 +304,14 @@ extension WebRequest {
                 complete?(details)
             }
         }
+    }
+
+    static func requestSubtitle(url: URL) async throws -> [SubtitleContent] {
+        struct SubtitlContenteResp: Codable {
+            let body: [SubtitleContent]
+        }
+        let resp = try await AF.request(url).serializingDecodable(SubtitlContenteResp.self).value
+        return resp.body
     }
 }
 
@@ -448,6 +441,19 @@ struct VideoDetail: Codable, Hashable, DisplayData {
     }
 }
 
+struct SubtitleResp: Codable {
+    let subtitles: [SubtitleData]
+}
+
+struct SubtitleData: Codable, Hashable {
+    let lan_doc: String
+    let subtitle_url: URL
+    let lan: String
+
+    var url: URL { subtitle_url.addSchemeIfNeed() }
+    var subtitleContents: [SubtitleContent]?
+}
+
 struct Replys: Codable, Hashable {
     struct Reply: Codable, Hashable {
         struct Member: Codable, Hashable {
@@ -507,7 +513,7 @@ struct UpSpaceReq: Codable, Hashable {
 
 struct PlayerInfo: Codable {
     let last_play_time: Int
-
+    let subtitle: SubtitleResp?
     var playTimeInSecond: Int {
         last_play_time / 1000
     }
@@ -597,4 +603,20 @@ struct SearchResult: Codable, Hashable {
     }
 
     var result: [Result]
+}
+
+struct SubtitleContent: Codable, Hashable {
+    let from: CGFloat
+    let to: CGFloat
+    let location: Int
+    let content: String
+}
+
+extension URL {
+    func addSchemeIfNeed() -> URL {
+        if scheme == nil {
+            return URL(string: "https:\(absoluteString)")!
+        }
+        return self
+    }
 }
