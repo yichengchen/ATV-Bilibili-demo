@@ -16,7 +16,6 @@ class VideoPlayerViewController: CommonPlayerViewController {
     var cid: Int?
     var aid: Int!
     var data: VideoDetail?
-    private var subTitles: [SubtitleData]?
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
     private var playerDelegate: BilibiliVideoResourceLoaderDelegate?
@@ -48,7 +47,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         }
     }
 
-    func playmedia(info: VideoPlayURLInfo) async {
+    func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?) async {
         let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
         let headers: [String: String] = [
             "User-Agent": "Bilibili/APPLE TV",
@@ -56,7 +55,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         ]
         let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         playerDelegate = BilibiliVideoResourceLoaderDelegate()
-        playerDelegate?.setBilibili(info: info, subtitles: subTitles ?? [])
+        playerDelegate?.setBilibili(info: urlInfo, subtitles: playerInfo?.subtitle?.subtitles ?? [])
         asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
         let requestedKeys = ["playable"]
         await asset.loadValues(forKeys: requestedKeys)
@@ -76,44 +75,17 @@ class VideoPlayerViewController: CommonPlayerViewController {
 // MARK: - Requests
 
 extension VideoPlayerViewController {
-    func fetchHelperData() async {
+    func fetchVideoData() async {
+        let info = try? await WebRequest.requestPlayerInfo(aid: aid, cid: cid!)
+        let startTime = info?.playTimeInSecond
+
         do {
-            let info = try await WebRequest.requestPlayerInfo(aid: aid, cid: cid!)
-            let startTime = info.playTimeInSecond
-            if startTime > 0 {
+            let playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
+            if let startTime = startTime, playData.dash.duration - startTime > 5 {
                 playerStartPos = startTime
             }
 
-            subTitles = try await withThrowingTaskGroup(of: SubtitleData.self) { group in
-                for subtitle in info.subtitle?.subtitles ?? [] {
-                    group.addTask {
-                        var subtitle = subtitle
-                        let content = try await WebRequest.requestSubtitle(url: subtitle.url)
-                        subtitle.subtitleContents = content
-                        return subtitle
-                    }
-                }
-                var content = [SubtitleData]()
-                for try await subtitle in group {
-                    content.append(subtitle)
-                }
-                return content
-            }
-
-        } catch let err {
-            print(err)
-        }
-    }
-
-    func fetchVideoData() async {
-        await fetchHelperData()
-        do {
-            let playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
-            if let pos = playerStartPos, playData.dash.duration - pos < 5 {
-                playerStartPos = nil
-            }
-
-            await playmedia(info: playData)
+            await playmedia(urlInfo: playData, playerInfo: info)
 
             if data == nil {
                 data = try? await WebRequest.requestDetailVideo(aid: aid!)
