@@ -139,7 +139,7 @@ class RankingContentViewController: UIViewController, BLTabBarContentVCProtocol 
     }
 
     func goDetail(with record: VideoDetail) {
-        let detailVC = VideoDetailViewController.create(aid: record.aid, cid: record.cid)
+        let detailVC = VideoDetailViewController.create(aid: record.View.aid, cid: record.View.cid)
         detailVC.present(from: self)
     }
 }

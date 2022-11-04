@@ -78,7 +78,7 @@ enum WebRequest {
                     return
                 }
                 let dataj = json[dataObj]
-                print(dataj)
+                print("\(url) response: \(dataj)")
                 complete?(.success(dataj))
             case let .failure(err):
                 complete?(.failure(err))
@@ -170,12 +170,12 @@ extension WebRequest {
     }
 
     static func requestPlayerInfo(aid: Int, cid: Int) async throws -> PlayerInfo {
-        await try request(url: EndPoint.playerInfo, parameters: ["aid": aid, "cid": cid])
+        try await request(url: EndPoint.playerInfo, parameters: ["aid": aid, "cid": cid])
     }
 
-    static func requestRelatedVideo(aid: Int, complete: (([VideoDetail]) -> Void)? = nil) {
+    static func requestRelatedVideo(aid: Int, complete: (([VideoDetail.Info]) -> Void)? = nil) {
         request(method: .get, url: EndPoint.related, parameters: ["aid": aid]) {
-            (result: Result<[VideoDetail], RequestError>) in
+            (result: Result<[VideoDetail.Info], RequestError>) in
             if let details = try? result.get() {
                 complete?(details)
             }
@@ -183,7 +183,7 @@ extension WebRequest {
     }
 
     static func requestDetailVideo(aid: Int) async throws -> VideoDetail {
-        try await request(method: .get, url: EndPoint.info, parameters: ["aid": aid])
+        try await request(url: "http://api.bilibili.com/x/web-interface/view/detail", parameters: ["aid": aid])
     }
 
     static func requestFavVideosList() async throws -> [FavListData] {
@@ -369,76 +369,85 @@ struct FavListData: Codable, Hashable {
     let id: Int
 }
 
-struct VideoDetail: Codable, Hashable, DisplayData {
-    var ownerName: String { owner.name }
-
-    let aid: Int
-    let cid: Int
-    let title: String
-    let videos: Int?
-    let pic: URL?
-    let desc: String?
-    let owner: VideoOwner
-    let pages: [VideoPage]?
-    let dynamic: String?
-    let duration: Int
-    let pubdate: Int?
-    let ugc_season: UgcSeason?
-
-    let stat: Stat
-    struct Stat: Codable, Hashable {
-        let favorite: Int
-        let coin: Int
-        let like: Int
-        let share: Int
-        let danmaku: Int
-        let view: Int
-    }
-
-    struct UgcSeason: Codable, Hashable {
-        let id: Int
+struct VideoDetail: Codable, Hashable {
+    struct Info: Codable, Hashable {
+        let aid: Int
+        let cid: Int
         let title: String
-        let cover: URL
-        let mid: Int
-        let intro: String
-        let attribute: Int
-        let sections: [UgcSeasonDetail]
+        let videos: Int?
+        let pic: URL?
+        let desc: String?
+        let owner: VideoOwner
+        let pages: [VideoPage]?
+        let dynamic: String?
+        let duration: Int
+        let pubdate: Int?
+        let ugc_season: UgcSeason?
 
-        struct UgcSeasonDetail: Codable, Hashable {
-            let season_id: Int
+        let stat: Stat
+        struct Stat: Codable, Hashable {
+            let favorite: Int
+            let coin: Int
+            let like: Int
+            let share: Int
+            let danmaku: Int
+            let view: Int
+        }
+
+        struct UgcSeason: Codable, Hashable {
             let id: Int
             let title: String
-            let episodes: [UgcVideoInfo]
-        }
+            let cover: URL
+            let mid: Int
+            let intro: String
+            let attribute: Int
+            let sections: [UgcSeasonDetail]
 
-        struct UgcVideoInfo: Codable, Hashable, DisplayData {
-            var ownerName: String { "" }
-            var pic: URL? { arc.pic }
-            let aid: Int
-            let cid: Int
-            let arc: Arc
-            let title: String
+            struct UgcSeasonDetail: Codable, Hashable {
+                let season_id: Int
+                let id: Int
+                let title: String
+                let episodes: [UgcVideoInfo]
+            }
 
-            struct Arc: Codable, Hashable {
-                let pic: URL
+            struct UgcVideoInfo: Codable, Hashable, DisplayData {
+                var ownerName: String { "" }
+                var pic: URL? { arc.pic }
+                let aid: Int
+                let cid: Int
+                let arc: Arc
+                let title: String
+
+                struct Arc: Codable, Hashable {
+                    let pic: URL
+                }
             }
         }
+
+        var durationString: String {
+            let formatter = DateComponentsFormatter()
+            formatter.allowedUnits = [.hour, .minute, .second]
+            formatter.unitsStyle = .brief
+            return formatter.string(from: TimeInterval(duration)) ?? ""
+        }
     }
 
-    var durationString: String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute, .second]
-        formatter.unitsStyle = .brief
-        return formatter.string(from: TimeInterval(duration)) ?? ""
-    }
+    let View: Info
+    let Related: [Info]
+}
 
-    var avatar: URL? {
-        return owner.face
-    }
+extension VideoDetail: DisplayData {
+    var title: String { View.title }
+    var ownerName: String { View.owner.name }
+    var pic: URL? { View.pic }
+    var avatar: URL? { View.owner.face }
+    var date: String? { DateFormatter.stringFor(timestamp: View.pubdate) }
+}
 
-    var date: String? {
-        return DateFormatter.stringFor(timestamp: pubdate)
-    }
+extension VideoDetail.Info: DisplayData {
+    var ownerName: String { owner.name }
+    var avatar: URL? { owner.face }
+    var date: String? { DateFormatter.stringFor(timestamp: pubdate) }
 }
 
 struct SubtitleResp: Codable {

@@ -15,6 +15,7 @@ import UIKit
 class VideoPlayerViewController: CommonPlayerViewController {
     var cid: Int?
     var aid: Int!
+    var data: VideoDetail?
     private var subTitles: [SubtitleData]?
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
@@ -108,22 +109,22 @@ extension VideoPlayerViewController {
         await fetchHelperData()
         do {
             let playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
-            print(playData)
             if let pos = playerStartPos, playData.dash.duration - pos < 5 {
                 playerStartPos = nil
             }
 
             await playmedia(info: playData)
 
-            let info = try? await WebRequest.requestDetailVideo(aid: aid!)
-            setPlayerInfo(title: info?.title, subTitle: info?.ownerName, desp: info?.desc, pic: info?.pic)
+            if data == nil {
+                data = try? await WebRequest.requestDetailVideo(aid: aid!)
+            }
+            setPlayerInfo(title: data?.title, subTitle: data?.ownerName, desp: data?.View.desc, pic: data?.pic)
         } catch let err {
             if case let .statusFail(code, message) = err as? RequestError {
                 showErrorAlertAndExit(message: "请求失败\(code) \(message)，可能需要大会员")
             } else {
                 showErrorAlertAndExit(message: "请求失败,\(err)")
             }
-            print(err)
         }
     }
 

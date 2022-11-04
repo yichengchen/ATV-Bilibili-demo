@@ -56,7 +56,6 @@ class VideoDetailViewController: UIViewController {
 
     private var startTime = 0
     private var pages = [VideoPage]()
-    private var relateds = [VideoDetail]()
     private var replys: Replys?
     private var subTitles: [SubtitleData]?
 
@@ -114,7 +113,9 @@ class VideoDetailViewController: UIViewController {
     private func exit(with error: Error) {
         print(error)
         let alertVC = UIAlertController(title: "获取失败", message: nil, preferredStyle: .alert)
-        alertVC.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+        alertVC.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: { [weak self] action in
+            self?.dismiss(animated: true)
+        }))
         present(alertVC, animated: true, completion: nil)
     }
 
@@ -138,12 +139,6 @@ class VideoDetailViewController: UIViewController {
             }
         }
 
-        WebRequest.requestRelatedVideo(aid: aid) {
-            [weak self] recommands in
-            self?.relateds = recommands
-            self?.recommandCollectionView.reloadData()
-        }
-
         WebRequest.requestReplys(aid: aid) { [weak self] replys in
             self?.replys = replys
             self?.replysCollectionView.reloadData()
@@ -163,11 +158,11 @@ class VideoDetailViewController: UIViewController {
     }
 
     private func update(with data: VideoDetail) {
-        coinButton.title = data.stat.coin.string()
-        favButton.title = data.stat.favorite.string()
-        likeButton.title = data.stat.like.string()
+        coinButton.title = data.View.stat.coin.string()
+        favButton.title = data.View.stat.favorite.string()
+        likeButton.title = data.View.stat.like.string()
 
-        durationLabel.text = data.durationString
+        durationLabel.text = data.View.durationString
         titleLabel.text = data.title
         upButton.title = data.ownerName
 
@@ -177,14 +172,14 @@ class VideoDetailViewController: UIViewController {
         backgroundImageView.kf.setImage(with: data.pic)
 
         var notes = [String]()
-        let status = data.dynamic ?? ""
+        let status = data.View.dynamic ?? ""
         if status.count > 1 {
             notes.append(status)
         }
-        notes.append(data.desc ?? "")
+        notes.append(data.View.desc ?? "")
         noteLabel.text = notes.joined(separator: "\n")
 
-        pages = data.pages ?? []
+        pages = data.View.pages ?? []
         if pages.count > 1 {
             pageCollectionView.reloadData()
             pageView.isHidden = false
@@ -201,14 +196,17 @@ class VideoDetailViewController: UIViewController {
         UIView.animate(withDuration: 0.25) {
             self.backgroundImageView.alpha = 1
         }
+
         ugcCollectionView.reloadData()
-        ugcLabel.text = "合集 \(data.ugc_season?.title ?? "")  \(data.ugc_season?.sections.first?.title ?? "")"
-        ugcView.isHidden = data.ugc_season?.sections.count ?? 0 == 0
+        ugcLabel.text = "合集 \(data.View.ugc_season?.title ?? "")  \(data.View.ugc_season?.sections.first?.title ?? "")"
+        ugcView.isHidden = data.View.ugc_season?.sections.count ?? 0 == 0
+
+        recommandCollectionView.reloadData()
     }
 
     @IBAction func actionShowUpSpace(_ sender: Any) {
         let upSpaceVC = UpSpaceViewController()
-        upSpaceVC.mid = data?.owner.mid
+        upSpaceVC.mid = data?.View.owner.mid
         present(upSpaceVC, animated: true)
     }
 
@@ -216,6 +214,7 @@ class VideoDetailViewController: UIViewController {
         let player = VideoPlayerViewController()
         player.aid = aid
         player.cid = cid
+        player.data = data
         present(player, animated: true, completion: nil)
     }
 
@@ -301,17 +300,21 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             let player = VideoPlayerViewController()
             player.aid = aid
             player.cid = page.cid
+            player.data = data
             present(player, animated: true, completion: nil)
         case replysCollectionView:
             break
         case ugcCollectionView:
-            guard let video = data?.ugc_season?.sections.first?.episodes[indexPath.item] else { return }
+            guard let video = data?.View.ugc_season?.sections.first?.episodes[indexPath.item] else { return }
             let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
             present(detailVC, animated: true, completion: nil)
+        case recommandCollectionView:
+            if let video = data?.Related[indexPath.item] {
+                let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
+                present(detailVC, animated: true, completion: nil)
+            }
         default:
-            let video = relateds[indexPath.item]
-            let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
-            present(detailVC, animated: true, completion: nil)
+            break
         }
     }
 }
@@ -324,9 +327,9 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         case replysCollectionView:
             return replys?.replies.count ?? 0
         case ugcCollectionView:
-            return data?.ugc_season?.sections.first?.episodes.count ?? 0
+            return data?.View.ugc_season?.sections.first?.episodes.count ?? 0
         case recommandCollectionView:
-            return relateds.count
+            return data?.Related.count ?? 0
         default:
             return 0
         }
@@ -347,14 +350,15 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             return cell
         case ugcCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
-            if let record = data?.ugc_season?.sections.first?.episodes[indexPath.row] {
+            if let record = data?.View.ugc_season?.sections.first?.episodes[indexPath.row] {
                 cell.update(data: record)
             }
             return cell
         case recommandCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
-            let related = relateds[indexPath.row]
-            cell.update(data: related)
+            if let related = data?.Related[indexPath.row] {
+                cell.update(data: related)
+            }
             return cell
         default:
             return UICollectionViewCell()
