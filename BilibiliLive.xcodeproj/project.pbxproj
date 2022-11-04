@@ -24,6 +24,7 @@
 		49474213290509F6005D6885 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49474212290509F6005D6885 /* DateFormatter.swift */; };
 		4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */; };
 		49735024290D0E8A0045C26B /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 49735023290D0E8A0045C26B /* Fuzi */; };
+		497350292914A81A0045C26B /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 497350282914A81A0045C26B /* Swifter */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
@@ -146,6 +147,7 @@
 				F9B9EAE3261AA3400045C2C6 /* SwiftyXMLParser in Frameworks */,
 				F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */,
 				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
+				497350292914A81A0045C26B /* Swifter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -369,6 +371,7 @@
 				F9171D5E2900FCFB002868C7 /* SnapKit */,
 				494741C229016CCE005D6885 /* MarqueeLabel */,
 				49735023290D0E8A0045C26B /* Fuzi */,
+				497350282914A81A0045C26B /* Swifter */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -409,6 +412,7 @@
 				F9171D5D2900FCFB002868C7 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				494741C129016CCE005D6885 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */,
+				497350272914A81A0045C26B /* XCRemoteSwiftPackageReference "swifter" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -738,6 +742,14 @@
 				minimumVersion = 3.0.0;
 			};
 		};
+		497350272914A81A0045C26B /* XCRemoteSwiftPackageReference "swifter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/httpswift/swifter";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		F9171D5D2900FCFB002868C7 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit";
@@ -806,6 +818,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */;
 			productName = Fuzi;
+		};
+		497350282914A81A0045C26B /* Swifter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 497350272914A81A0045C26B /* XCRemoteSwiftPackageReference "swifter" */;
+			productName = Swifter;
 		};
 		F9171D5E2900FCFB002868C7 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -7,14 +7,16 @@
 //
 
 import AVFoundation
+import Swifter
 import SwiftyJSON
 import UIKit
 
 class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelegate {
     enum URLs {
         static let customScheme = "atv"
-        static let customPrefix = customScheme + "://"
+        static let customPrefix = customScheme + "://list/"
         static let play = customPrefix + "play"
+        static let customSubtitlePrefix = customScheme + "://subtitle/"
     }
 
     private var audioPlaylist = ""
@@ -25,9 +27,17 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private let badRequestErrorCode = 455
 
     private var playlists = [String]()
+    private var subtitles = [String]()
     private var hasAudioInMasterListAdded = false
     private(set) var playInfo: VideoPlayURLInfo?
     private var hasSubtitle = false
+    private var hasPreferSubtitleAdded = false
+
+    private var httpServer = HttpServer()
+
+    deinit {
+        httpServer.stop()
+    }
 
     var infoDebugText: String {
         let videoCodec = playInfo?.dash.video.map({ $0.codecs }).prefix(5).joined(separator: ",") ?? "nil"
@@ -96,24 +106,40 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     }
 
     private func addSubtitleData(lang: String, name: String, duration: Int, content: String) {
+        guard let port = try? httpServer.port() else { return }
+        var lang = lang
+        var canBeDefault = !hasPreferSubtitleAdded
+        if lang.hasPrefix("ai-") {
+            lang = String(lang.dropFirst(3))
+            canBeDefault = false
+        }
+        if canBeDefault {
+            hasPreferSubtitleAdded = true
+        }
+        let defaultStr = canBeDefault ? "YES" : "NO"
+
         let master = """
-        #EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",LANGUAGE="\(lang)",NAME="\(name)",AUTOSELECT=NO,URI="\(URLs.customPrefix)\(playlists.count)"
+        #EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",LANGUAGE="\(lang)",NAME="\(name)",AUTOSELECT=\(defaultStr),DEFAULT=\(defaultStr),URI="\(URLs.customPrefix)\(playlists.count)"
 
         """
         masterPlaylist.append(master)
+
         let playList = """
         #EXTM3U
         #EXT-X-TARGETDURATION:\(duration)
         #EXT-X-VERSION:3
         #EXT-X-MEDIA-SEQUENCE:0
         #EXT-X-PLAYLIST-TYPE:VOD
-        #EXTINF:\(duration)
-        \(URLs.customPrefix)\(playlists.count + 1)
+        #EXTINF:\(duration),
+
+        http://127.0.0.1:\(port)/\(subtitles.count)
         #EXT-X-ENDLIST
 
         """
+        httpServer["/\(subtitles.count)"] = { _ in HttpResponse.ok(.text(content)) }
+
         playlists.append(playList)
-        playlists.append(content)
+        subtitles.append(content)
     }
 
     func setBilibili(info: VideoPlayURLInfo, subtitles: [SubtitleData]) {
@@ -153,6 +179,9 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             }
         }
 
+        if hasSubtitle {
+            try? httpServer.start(0)
+        }
         for subtitle in subtitles {
             let vtt = BVideoUrlUtils.convertToVTT(subtitle: subtitle)
             addSubtitleData(lang: subtitle.lan, name: subtitle.lan_doc, duration: info.dash.duration, content: vtt)
@@ -197,9 +226,14 @@ private extension BilibiliVideoResourceLoaderDelegate {
             report(loadingRequest, content: masterPlaylist)
             return
         }
-        if let index = Int(customUrl.dropFirst(URLs.customPrefix.count)) {
+        if customUrl.hasPrefix(URLs.customPrefix), let index = Int(customUrl.dropFirst(URLs.customPrefix.count)) {
             let playlist = playlists[index]
             report(loadingRequest, content: playlist)
+            return
+        }
+        if customUrl.hasPrefix(URLs.customSubtitlePrefix), let index = Int(customUrl.dropFirst(URLs.customSubtitlePrefix.count)) {
+            let subtitle = subtitles[index]
+            report(loadingRequest, content: subtitle)
             return
         }
         print("handle loading", customUrl)
