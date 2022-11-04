@@ -586,7 +586,7 @@ struct VideoPlayURLInfo: Codable {
 
         struct DolbyInfo: Codable {
             let type: Int
-            let audio: [DolbyAudioInfo]
+            let audio: [DolbyAudioInfo]?
 
             struct DolbyAudioInfo: Codable {
                 let id: Int
