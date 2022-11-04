@@ -596,7 +596,7 @@ struct VideoPlayURLInfo: Codable {
                 let mime_type: String
                 let codecs: String
                 let segment_base: DashSegmentBase
-                let size: Int
+                let size: Int?
             }
         }
 
