@@ -126,7 +126,7 @@ class RankingContentViewController: UIViewController, BLTabBarContentVCProtocol 
         collectionVC.show(in: self)
         collectionVC.didSelect = {
             [weak self] in
-            self?.goDetail(with: $0 as! VideoDetail)
+            self?.goDetail(with: $0 as! VideoDetail.Info)
         }
         reloadData()
     }
@@ -138,8 +138,8 @@ class RankingContentViewController: UIViewController, BLTabBarContentVCProtocol 
         }
     }
 
-    func goDetail(with record: VideoDetail) {
-        let detailVC = VideoDetailViewController.create(aid: record.View.aid, cid: record.View.cid)
+    func goDetail(with record: VideoDetail.Info) {
+        let detailVC = VideoDetailViewController.create(aid: record.aid, cid: record.cid)
         detailVC.present(from: self)
     }
 }

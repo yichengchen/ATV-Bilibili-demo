@@ -23,6 +23,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var titleLabel: UILabel!
 
     @IBOutlet var upButton: BLCustomTextButton!
+    @IBOutlet var followButton: BLCustomButton!
     @IBOutlet var noteLabel: UILabel!
     @IBOutlet var coverImageView: UIImageView!
     @IBOutlet var playButton: BLCustomButton!
@@ -75,6 +76,8 @@ class VideoDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLoading()
+        pageView.isHidden = true
+        ugcView.isHidden = true
         fetchData()
         pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: BLTextOnlyCollectionViewCell.self))
         pageCollectionView.collectionViewLayout = makePageCollectionViewLayout()
@@ -165,6 +168,7 @@ class VideoDetailViewController: UIViewController {
         durationLabel.text = data.View.durationString
         titleLabel.text = data.title
         upButton.title = data.ownerName
+        followButton.isOn = data.Card.following
 
         avatarImageView.kf.setImage(with: data.avatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
 
@@ -208,6 +212,13 @@ class VideoDetailViewController: UIViewController {
         let upSpaceVC = UpSpaceViewController()
         upSpaceVC.mid = data?.View.owner.mid
         present(upSpaceVC, animated: true)
+    }
+
+    @IBAction func actionFollow(_ sender: Any) {
+        followButton.isOn.toggle()
+        if let mid = data?.View.owner.mid {
+            WebRequest.follow(mid: mid, follow: followButton.isOn)
+        }
     }
 
     @IBAction func actionPlay(_ sender: Any) {
@@ -407,12 +418,6 @@ extension VideoDetailViewController {
             section.interGroupSpacing = 40
             return section
         }
-    }
-}
-
-extension Int {
-    func string() -> String {
-        return String(self)
     }
 }
 

@@ -16,7 +16,7 @@ class HotViewController: UIViewController, BLTabBarContentVCProtocol {
         collectionVC.pageSize = 40
         collectionVC.didSelect = {
             [weak self] in
-            self?.goDetail(with: $0 as! VideoDetail)
+            self?.goDetail(with: $0 as! VideoDetail.Info)
         }
         collectionVC.loadMore = {
             [weak self] in
@@ -46,8 +46,8 @@ class HotViewController: UIViewController, BLTabBarContentVCProtocol {
         }
     }
 
-    func goDetail(with record: VideoDetail) {
-        let detailVC = VideoDetailViewController.create(aid: record.View.aid, cid: record.View.cid)
+    func goDetail(with record: VideoDetail.Info) {
+        let detailVC = VideoDetailViewController.create(aid: record.aid, cid: record.cid)
         detailVC.present(from: self)
     }
 }

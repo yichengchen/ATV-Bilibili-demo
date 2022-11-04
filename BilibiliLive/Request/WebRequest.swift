@@ -318,6 +318,10 @@ extension WebRequest {
 // MARK: - User
 
 extension WebRequest {
+    static func follow(mid: Int, follow: Bool) {
+        requestJSON(method: .post, url: "https://api.bilibili.com/x/relation/modify", parameters: ["fid": mid, "act": follow ? 1 : 2, "re_src": 14])
+    }
+
     static func logout(complete: (() -> Void)? = nil) {
         request(method: .post, url: EndPoint.logout) {
             (result: Result<[String: String], RequestError>) in
@@ -432,8 +436,13 @@ struct VideoDetail: Codable, Hashable {
         }
     }
 
+    struct Owner: Hashable, Codable {
+        let following: Bool
+    }
+
     let View: Info
     let Related: [Info]
+    let Card: Owner
 }
 
 extension VideoDetail: DisplayData {
