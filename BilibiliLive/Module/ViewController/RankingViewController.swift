@@ -149,9 +149,9 @@ extension WebRequest.EndPoint {
 }
 
 extension WebRequest {
-    static func requestRank(for category: Int) async throws -> [VideoDetail] {
+    static func requestRank(for category: Int) async throws -> [VideoDetail.Info] {
         struct RankResp: Codable {
-            let list: [VideoDetail]
+            let list: [VideoDetail.Info]
         }
         let resp: RankResp = try await request(url: EndPoint.rank, parameters: ["rid": category, "type": "all"])
         return resp.list

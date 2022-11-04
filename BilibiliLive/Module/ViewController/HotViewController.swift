@@ -64,5 +64,5 @@ extension WebRequest.EndPoint {
 
 struct HotData: Codable {
     let no_more: Bool
-    let list: [VideoDetail]
+    let list: [VideoDetail.Info]
 }
