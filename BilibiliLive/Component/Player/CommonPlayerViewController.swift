@@ -86,7 +86,11 @@ class CommonPlayerViewController: AVPlayerViewController {
             print(player?.currentItem?.error ?? "no error")
             print(player?.currentItem?.errorLog() ?? "no error log")
             if retryCount < maxRetryCount, !retryPlay() {
-                showErrorAlertAndExit(title: "播放器失败", message: (playerItem?.errorLog()?.description ?? "") + extraInfoForPlayerError())
+                let log = playerItem?.errorLog()
+                let errorLogData = log?.extendedLogData() ?? Data()
+                var str = String(data: errorLogData, encoding: .utf8) ?? ""
+                str = str.split(separator: "\n").dropFirst(4).joined()
+                showErrorAlertAndExit(title: "播放器失败", message: str + extraInfoForPlayerError())
             }
             retryCount += 1
         default:

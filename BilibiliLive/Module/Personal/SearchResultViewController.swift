@@ -10,7 +10,6 @@ import UIKit
 
 class SearchResultViewController: UIViewController {
     let collectionVC = FeedCollectionViewController()
-    var lastKey = ""
     var page = 1
 
     @Published var searchText: String = ""
@@ -44,7 +43,7 @@ class SearchResultViewController: UIViewController {
 
     func loadMore() {
         page += 1
-        WebRequest.requestSearchResult(key: lastKey, page: page) { [weak self] searchResult in
+        WebRequest.requestSearchResult(key: searchText, page: page) { [weak self] searchResult in
             self?.collectionVC.appendData(displayData: searchResult.result)
         }
     }
