@@ -50,6 +50,9 @@ class FeedCollectionViewController: UIViewController {
     var loadMore: (() -> Void)?
     var finished = false
     var pageSize = 20
+    var showHeader: Bool = false
+    var headerText = ""
+
     var displayDatas: [any DisplayData] {
         set {
             _displayData = newValue.map { AnyDispplayData(data: $0) }.uniqued()
@@ -143,11 +146,36 @@ class FeedCollectionViewController: UIViewController {
         if baseSpacing > 0 {
             section.contentInsets = NSDirectionalEdgeInsets(top: baseSpacing, leading: 0, bottom: 0, trailing: 0)
         }
+
+        let titleSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                               heightDimension: .estimated(44))
+        if showHeader {
+            let titleSupplementary = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: titleSize,
+                elementKind: TitleSupplementaryView.reuseIdentifier,
+                alignment: .top
+            )
+            section.boundarySupplementaryItems = [titleSupplementary]
+        }
         return section
     }
 
     private func makeDataSource() -> UICollectionViewDiffableDataSource<Section, AnyDispplayData> {
-        return UICollectionViewDiffableDataSource(collectionView: collectionView, cellProvider: makeCellRegistration().cellProvider)
+        let dataSource = UICollectionViewDiffableDataSource<Section, AnyDispplayData>(collectionView: collectionView, cellProvider: makeCellRegistration().cellProvider)
+
+        let supplementaryRegistration = UICollectionView.SupplementaryRegistration<TitleSupplementaryView>(elementKind: TitleSupplementaryView.reuseIdentifier) {
+            [weak self] supplementaryView, string, indexPath in
+            guard let self else { return }
+            supplementaryView.label.text = self.headerText
+        }
+
+        dataSource.supplementaryViewProvider = { view, kind, index in
+            return self.collectionView.dequeueConfiguredReusableSupplementary(
+                using: supplementaryRegistration, for: index
+            )
+        }
+
+        return dataSource
     }
 
     private func makeCellRegistration() -> DisplayCellRegistration {

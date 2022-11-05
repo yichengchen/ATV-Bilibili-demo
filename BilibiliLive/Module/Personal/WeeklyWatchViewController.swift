@@ -12,6 +12,7 @@ class WeeklyWatchViewController: StandardVideoCollectionViewController<VideoDeta
 
     override func setupCollectionView() {
         super.setupCollectionView()
+        collectionVC.showHeader = true
         collectionVC.styleOverride = .sideBar
     }
 
@@ -21,8 +22,9 @@ class WeeklyWatchViewController: StandardVideoCollectionViewController<VideoDeta
 
     override func request(page: Int) async throws -> [VideoDetail.Info] {
         list = try await WebRequest.requestWeeklyWatchList()
-        if let number = list.first?.number {
-            let data = try await WebRequest.requestWeeklyWatch(wid: number)
+        if let item = list.first {
+            collectionVC.headerText = "\(item.name)  \(item.subject)"
+            let data = try await WebRequest.requestWeeklyWatch(wid: item.number)
             return data
         } else {
             throw NSError(domain: "", code: -1)
