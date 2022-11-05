@@ -313,6 +313,6 @@ extension VideoPlayURLInfo.DashInfo.DashMediaInfo {
     }
 
     var isHevc: Bool {
-        return codecs.starts(with: "hev")
+        return codecs.starts(with: "hev") || codecs.starts(with: "hvc")
     }
 }
