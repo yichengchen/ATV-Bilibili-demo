@@ -214,6 +214,7 @@ class CommonPlayerViewController: AVPlayerViewController {
     private func initDanmuView() {
         view.addSubview(danMuView)
         danMuView.makeConstraintsToBindToSuperview()
+        danMuView.isHidden = !Settings.defaultDanmuStatus
     }
 }
 

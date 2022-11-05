@@ -35,6 +35,9 @@ enum Settings {
 
     @UserDefault("Settings.preferHevc", defaultValue: false)
     static var preferHevc: Bool
+
+    @UserDefault("Settings.defaultDanmuStatus", defaultValue: true)
+    static var defaultDanmuStatus: Bool
 }
 
 struct MediaQuality {
