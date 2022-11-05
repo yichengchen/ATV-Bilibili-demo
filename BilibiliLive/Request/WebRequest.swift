@@ -127,10 +127,11 @@ enum WebRequest {
                                       url: URLConvertible,
                                       parameters: Parameters = [:],
                                       headers: [String: String]? = nil,
-                                      decoder: JSONDecoder? = nil) async throws -> T
+                                      decoder: JSONDecoder? = nil,
+                                      dataObj: String = "data") async throws -> T
     {
         return try await withCheckedThrowingContinuation { configure in
-            request(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder) {
+            request(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder, dataObj: dataObj) {
                 (res: Result<T, RequestError>) in
                 switch res {
                 case let .success(content):
@@ -146,18 +147,14 @@ enum WebRequest {
 // MARK: - Video
 
 extension WebRequest {
-    static func requestBangumiInfo(epid: Int, complete: ((BangumiInfo.Episode) -> Void)?) {
-        request(url: "http://api.bilibili.com/pgc/view/web/season", parameters: ["ep_id": epid], dataObj: "result") {
-            (result: Result<BangumiInfo, RequestError>) in
-            if let info = try? result.get() {
-                for epi in info.episodes {
-                    if epi.id == epid {
-                        complete?(epi)
-                        break
-                    }
-                }
-            }
-        }
+    static func requestBangumiInfo(epid: Int) async throws -> BangumiInfo {
+        let info: BangumiInfo = try await request(url: "http://api.bilibili.com/pgc/view/web/season", parameters: ["ep_id": epid], dataObj: "result")
+        return info
+    }
+
+    static func requestBangumiInfo(seasonID: Int) async throws -> BangumiSeasonInfo {
+        let res: BangumiSeasonInfo = try await request(url: "https://api.bilibili.com/pgc/web/season/section", parameters: ["season_id": seasonID], dataObj: "result")
+        return res
     }
 
     static func requestHistory(complete: (([HistoryData]) -> Void)?) {
@@ -490,11 +487,19 @@ struct Replys: Codable, Hashable {
     let replies: [Reply]
 }
 
+struct BangumiSeasonInfo: Codable {
+    let main_section: BangumiInfo
+    let section: [BangumiInfo]
+}
+
 struct BangumiInfo: Codable, Hashable {
     struct Episode: Codable, Hashable {
         let id: Int
         let aid: Int
         let cid: Int
+        let cover: URL
+        let long_title: String
+        let title: String
     }
 
     let episodes: [Episode] // 正片剧集列表

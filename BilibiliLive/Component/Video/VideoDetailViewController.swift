@@ -44,6 +44,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var ugcLabel: UILabel!
     @IBOutlet var ugcView: UIView!
     private var epid = 0
+    private var seasonId = 0
     private var aid = 0
     private var cid = 0
     private var data: VideoDetail?
@@ -55,6 +56,7 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
+    private var isBangumi = false
     private var startTime = 0
     private var pages = [VideoPage]()
     private var replys: Replys?
@@ -73,12 +75,19 @@ class VideoDetailViewController: UIViewController {
         return vc
     }
 
+    static func create(seasonId: Int) -> VideoDetailViewController {
+        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
+        vc.seasonId = seasonId
+        return vc
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupLoading()
         pageView.isHidden = true
         ugcView.isHidden = true
-        fetchData()
+        Task { await fetchData() }
+
         pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: BLTextOnlyCollectionViewCell.self))
         pageCollectionView.collectionViewLayout = makePageCollectionViewLayout()
         recommandCollectionView.register(RelatedVideoCell.self, forCellWithReuseIdentifier: String(describing: RelatedVideoCell.self))
@@ -122,24 +131,32 @@ class VideoDetailViewController: UIViewController {
         present(alertVC, animated: true, completion: nil)
     }
 
-    private func fetchData() {
-        guard aid != 0 else {
-            WebRequest.requestBangumiInfo(epid: epid) { [weak self] epi in
-                guard let self else { return }
-                self.aid = epi.aid
-                self.cid = epi.cid
-                self.fetchData()
+    private func fetchData() async {
+        do {
+            if seasonId > 0 {
+                isBangumi = true
+                let info = try await WebRequest.requestBangumiInfo(seasonID: seasonId)
+                if let epi = info.main_section.episodes.first ?? info.section.first?.episodes.first {
+                    aid = epi.aid
+                    cid = epi.cid
+                }
+                pages = info.main_section.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, from: "", part: $0.title) })
+            } else if epid > 0 {
+                isBangumi = true
+                let info = try await WebRequest.requestBangumiInfo(epid: epid)
+                if let epi = info.episodes.first(where: { $0.id == epid }) ?? info.episodes.first {
+                    aid = epi.aid
+                    cid = epi.cid
+                } else {
+                    throw NSError(domain: "get epi fail", code: -1)
+                }
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, from: "", part: $0.title) })
             }
-            return
-        }
-        Task {
-            do {
-                let data = try await WebRequest.requestDetailVideo(aid: self.aid)
-                self.data = data
-                self.update(with: data)
-            } catch let err {
-                self.exit(with: err)
-            }
+            let data = try await WebRequest.requestDetailVideo(aid: aid)
+            self.data = data
+            update(with: data)
+        } catch let err {
+            self.exit(with: err)
         }
 
         WebRequest.requestReplys(aid: aid) { [weak self] replys in
@@ -153,6 +170,12 @@ class VideoDetailViewController: UIViewController {
 
         WebRequest.requestCoinStatus(aid: aid) { [weak self] coins in
             self?.didSentCoins = coins
+        }
+
+        if isBangumi {
+            favButton.isHidden = true
+            recommandCollectionView.superview?.isHidden = true
+            return
         }
 
         WebRequest.requestFavoriteStatus(aid: aid) { [weak self] isFavorited in
@@ -182,8 +205,9 @@ class VideoDetailViewController: UIViewController {
         }
         notes.append(data.View.desc ?? "")
         noteLabel.text = notes.joined(separator: "\n")
-
-        pages = data.View.pages ?? []
+        if !isBangumi {
+            pages = data.View.pages ?? []
+        }
         if pages.count > 1 {
             pageCollectionView.reloadData()
             pageView.isHidden = false
@@ -309,9 +333,9 @@ extension VideoDetailViewController: UICollectionViewDelegate {
         case pageCollectionView:
             let page = pages[indexPath.item]
             let player = VideoPlayerViewController()
-            player.aid = aid
+            player.aid = isBangumi ? page.page : aid
             player.cid = page.cid
-            player.data = data
+            player.data = isBangumi ? nil : data
             present(player, animated: true, completion: nil)
         case replysCollectionView:
             break

@@ -11,18 +11,19 @@ import UIKit
 struct CategoryInfo {
     let title: String
     let rid: Int
+    var isSeason = false
 
     static let all = [CategoryInfo(title: "全站", rid: 0),
                       CategoryInfo(title: "动画", rid: 1),
-                      CategoryInfo(title: "番剧", rid: 13),
-                      CategoryInfo(title: "国创", rid: 167),
+                      CategoryInfo(title: "番剧", rid: 1, isSeason: true),
+                      CategoryInfo(title: "国创", rid: 4, isSeason: true),
                       CategoryInfo(title: "音乐", rid: 3),
                       CategoryInfo(title: "舞蹈", rid: 129),
                       CategoryInfo(title: "游戏", rid: 4),
                       CategoryInfo(title: "知识", rid: 39),
                       CategoryInfo(title: "科技", rid: 188),
                       CategoryInfo(title: "运动", rid: 234),
-                      CategoryInfo(title: "汽车", rid: 233),
+                      CategoryInfo(title: "汽车", rid: 223),
                       CategoryInfo(title: "生活", rid: 160),
                       CategoryInfo(title: "美食", rid: 211),
                       CategoryInfo(title: "动物圈", rid: 217),
@@ -49,7 +50,7 @@ class RankingViewController: UIViewController, BLTabBarContentVCProtocol {
         super.viewDidLoad()
         categories = CategoryInfo.all
             .map {
-                CategoryDisplayModel(title: $0.title, contentVC: RankingContentViewController(rid: $0.rid))
+                CategoryDisplayModel(title: $0.title, contentVC: RankingContentViewController(info: $0))
             }
         typeCollectionView = UICollectionView(frame: .zero, collectionViewLayout: BLSettingLineCollectionViewCell.makeLayout())
         typeCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
@@ -108,10 +109,10 @@ extension RankingViewController: UICollectionViewDelegate {
 
 class RankingContentViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
-    let rid: Int
+    let info: CategoryInfo
 
-    init(rid: Int) {
-        self.rid = rid
+    init(info: CategoryInfo) {
+        self.info = info
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -126,21 +127,29 @@ class RankingContentViewController: UIViewController, BLTabBarContentVCProtocol 
         collectionVC.show(in: self)
         collectionVC.didSelect = {
             [weak self] in
-            self?.goDetail(with: $0 as! VideoDetail.Info)
+            self?.goDetail(with: $0)
         }
         reloadData()
     }
 
     func reloadData() {
         Task {
-            let res = try? await WebRequest.requestRank(for: rid)
-            collectionVC.displayDatas = res ?? []
+            if info.isSeason {
+                collectionVC.displayDatas = try await WebRequest.requestSeasonRank(for: info.rid)
+            } else {
+                collectionVC.displayDatas = try await WebRequest.requestRank(for: info.rid)
+            }
         }
     }
 
-    func goDetail(with record: VideoDetail.Info) {
-        let detailVC = VideoDetailViewController.create(aid: record.aid, cid: record.cid)
-        detailVC.present(from: self)
+    func goDetail(with record: any DisplayData) {
+        if let record = record as? VideoDetail.Info {
+            let detailVC = VideoDetailViewController.create(aid: record.aid, cid: record.cid)
+            detailVC.present(from: self)
+        } else if let record = record as? Season {
+            let detailVC = VideoDetailViewController.create(seasonId: record.season_id)
+            detailVC.present(from: self)
+        }
     }
 }
 
@@ -156,4 +165,27 @@ extension WebRequest {
         let resp: RankResp = try await request(url: EndPoint.rank, parameters: ["rid": category, "type": "all"])
         return resp.list
     }
+
+    static func requestSeasonRank(for category: Int) async throws -> [Season] {
+        struct Resp: Codable {
+            let list: [Season]
+        }
+        let res: Resp = try await request(url: "https://api.bilibili.com/pgc/web/rank/list", parameters: ["day": 3, "season_type": category], dataObj: "result")
+        return res.list
+    }
+}
+
+struct Season: Codable, DisplayData {
+    struct NewEP: Codable, Hashable {
+        let cover: URL
+        let index_show: String
+    }
+
+    var ownerName: String { new_ep.index_show }
+    var pic: URL? { cover }
+
+    let title: String
+    let cover: URL
+    let season_id: Int
+    let new_ep: NewEP
 }
