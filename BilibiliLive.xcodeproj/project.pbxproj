@@ -25,6 +25,8 @@
 		4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */; };
 		49735024290D0E8A0045C26B /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 49735023290D0E8A0045C26B /* Fuzi */; };
 		497350292914A81A0045C26B /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 497350282914A81A0045C26B /* Swifter */; };
+		4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502A29161B770045C26B /* WeeklyWatchViewController.swift */; };
+		4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
@@ -91,6 +93,8 @@
 		494742102905053E005D6885 /* BLMotionCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLMotionCollectionViewCell.swift; sourceTree = "<group>"; };
 		49474212290509F6005D6885 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
 		4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTextOnlyCollectionViewCell.swift; sourceTree = "<group>"; };
+		4973502A29161B770045C26B /* WeeklyWatchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWatchViewController.swift; sourceTree = "<group>"; };
+		4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardVideoCollectionViewController.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		AE2B41542912706700BF2B0B /* SearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultViewController.swift; sourceTree = "<group>"; };
@@ -268,6 +272,7 @@
 				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
 				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
 				490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */,
+				4973502A29161B770045C26B /* WeeklyWatchViewController.swift */,
 			);
 			path = Personal;
 			sourceTree = "<group>";
@@ -278,6 +283,7 @@
 				F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */,
 				F9171D6329010DF1002868C7 /* FeedCollectionViewCell.swift */,
 				F9171D6529026AC5002868C7 /* TitleSupplementaryView.swift */,
+				4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */,
 			);
 			path = Feed;
 			sourceTree = "<group>";
@@ -466,6 +472,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */,
+				4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */,
 				AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */,
 				49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */,
 				494741C82902C45D005D6885 /* Array+..swift in Sources */,
@@ -483,6 +490,7 @@
 				4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */,
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
 				F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */,
+				4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */,
 				AEA5FDE2290F6E2600E7C0B2 /* String.swift in Sources */,

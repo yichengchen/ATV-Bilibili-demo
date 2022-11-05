@@ -2,59 +2,29 @@
 //  FeedViewController.swift
 //  BilibiliLive
 //
-//  Created by Etan Chen on 2021/5/19.
+//  Created by yicheng on 2021/5/19.
 //
 
 import UIKit
 
-class FeedViewController: UIViewController, BLTabBarContentVCProtocol {
-    let collectionVC = FeedCollectionViewController()
-    var loading = false
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        collectionVC.show(in: self)
-        collectionVC.didSelect = {
-            [weak self] record in
-            self?.goDetail(with: record as! ApiRequest.FeedResp.Items)
-        }
+class FeedViewController: StandardVideoCollectionViewController<ApiRequest.FeedResp.Items> {
+    override func setupCollectionView() {
+        super.setupCollectionView()
         collectionVC.pageSize = 1
-        collectionVC.loadMore = {
-            [weak self] in
-            self?.loadMore()
-        }
-        reloadData()
     }
 
-    func reloadData() {
-        if loading { return }
-        Task {
-            loading = true
-            let feeds = try? await ApiRequest.getFeeds()
-            collectionVC.displayDatas = feeds ?? []
-            loading = false
+    override func request(page: Int) async throws -> [ApiRequest.FeedResp.Items] {
+        if page == 1 {
+            return try await ApiRequest.getFeeds()
+        } else if let last = (collectionVC.displayDatas.last as? ApiRequest.FeedResp.Items)?.idx {
+            return try await ApiRequest.getFeeds(lastIdx: last)
+        } else {
+            throw NSError(domain: "", code: -1)
         }
     }
+}
 
-    func loadMore() {
-        guard let last = (collectionVC.displayDatas.last as? ApiRequest.FeedResp.Items)?.idx else {
-            return
-        }
-        Task {
-            loading = true
-            let newData = try? await ApiRequest.getFeeds(lastIdx: last)
-            collectionVC.appendData(displayData: newData ?? [])
-            loading = false
-        }
-    }
-
-    func goDetail(with data: ApiRequest.FeedResp.Items) {
-        if data.goto == "bangumi" {
-            let detailVC = VideoDetailViewController.create(epid: Int(data.param)!)
-            detailVC.present(from: self)
-            return
-        }
-        let aid = data.param
-        let detailVC = VideoDetailViewController.create(aid: Int(aid)!, cid: 0)
-        detailVC.present(from: self)
-    }
+extension ApiRequest.FeedResp.Items: PlayableData {
+    var aid: Int { Int(param) ?? 0 }
+    var cid: Int { 0 }
 }

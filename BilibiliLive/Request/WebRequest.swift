@@ -453,7 +453,7 @@ extension VideoDetail: DisplayData {
     var date: String? { DateFormatter.stringFor(timestamp: View.pubdate) }
 }
 
-extension VideoDetail.Info: DisplayData {
+extension VideoDetail.Info: DisplayData, PlayableData {
     var ownerName: String { owner.name }
     var avatar: URL? { owner.face }
     var date: String? { DateFormatter.stringFor(timestamp: pubdate) }
@@ -517,7 +517,7 @@ struct UpSpaceReq: Codable, Hashable {
     let list: List
     struct List: Codable, Hashable {
         let vlist: [VListData]
-        struct VListData: Codable, Hashable, DisplayData {
+        struct VListData: Codable, Hashable, DisplayData, PlayableData {
             let title: String
             let author: String
             let aid: Int
@@ -525,6 +525,8 @@ struct UpSpaceReq: Codable, Hashable {
             var ownerName: String {
                 return author
             }
+
+            var cid: Int { return 0 }
         }
     }
 }

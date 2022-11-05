@@ -11,46 +11,19 @@ import UIKit
 import Alamofire
 import SwiftyJSON
 
-class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
-    private var page = 1
-    let collectionVC = FeedCollectionViewController()
-    override func viewDidLoad() {
-        super.viewDidLoad()
+class LiveViewController: StandardVideoCollectionViewController<LiveRoom> {
+    override func setupCollectionView() {
+        super.setupCollectionView()
         collectionVC.pageSize = 10
-        collectionVC.show(in: self)
-        collectionVC.didSelect = {
-            [weak self] in
-            self?.enter(with: $0 as! LiveRoom)
-        }
-        collectionVC.loadMore = {
-            [weak self] in
-            self?.loadMore()
-        }
-        reloadData()
     }
 
-    func reloadData() {
-        Task {
-            page = 1
-            let res = try? await WebRequest.requestLiveRoom(page: page)
-            if res?.count ?? 0 < 9 { collectionVC.finished = true }
-            collectionVC.displayDatas = res ?? []
-        }
+    override func request(page: Int) async throws -> [LiveRoom] {
+        try await WebRequest.requestLiveRoom(page: page)
     }
 
-    func loadMore() {
-        Task {
-            do {
-                let res = try await WebRequest.requestLiveRoom(page: page + 1)
-                collectionVC.appendData(displayData: res)
-                page = page + 1
-            }
-        }
-    }
-
-    func enter(with room: LiveRoom) {
+    override func goDetail(with record: LiveRoom) {
         let playerVC = LivePlayerViewController()
-        playerVC.room = room
+        playerVC.room = record
         present(playerVC, animated: true, completion: nil)
     }
 }
@@ -66,6 +39,11 @@ struct LiveRoom: DisplayData, Codable {
     var ownerName: String { uname }
     var pic: URL? { keyframe }
     var avatar: URL? { face }
+}
+
+extension LiveRoom: PlayableData {
+    var cid: Int { 0 }
+    var aid: Int { 0 }
 }
 
 extension WebRequest.EndPoint {
