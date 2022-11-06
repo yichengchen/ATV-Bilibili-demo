@@ -32,7 +32,6 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private(set) var playInfo: VideoPlayURLInfo?
     private var hasSubtitle = false
     private var hasPreferSubtitleAdded = false
-
     private var httpServer = HttpServer()
 
     deinit {
@@ -61,7 +60,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
         let content = """
         #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth)
-        \(URLs.customPrefix)\(playlists.count)
+        \(URLs.customPrefix)\(playlists.count)?codec=\(codec)&rate=\(frameRate)&width=\(width)&host=\(URL(string: url)?.host ?? "none")
 
         """
         masterPlaylist.append(content)
@@ -213,22 +212,23 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
 private extension BilibiliVideoResourceLoaderDelegate {
     func handleCustomPlaylistRequest(_ loadingRequest: AVAssetResourceLoadingRequest) {
-        guard let customUrl = loadingRequest.request.url?.absoluteString else {
+        guard let customUrl = loadingRequest.request.url else {
             reportError(loadingRequest, withErrorCode: badRequestErrorCode)
             return
         }
-
-        if customUrl == URLs.play {
+        let urlStr = customUrl.absoluteString
+        if urlStr == URLs.play {
             report(loadingRequest, content: masterPlaylist)
             return
         }
-        if customUrl.hasPrefix(URLs.customPrefix), let index = Int(customUrl.dropFirst(URLs.customPrefix.count)) {
+
+        if urlStr.hasPrefix(URLs.customPrefix), let index = Int(customUrl.lastPathComponent) {
             let playlist = playlists[index]
             report(loadingRequest, content: playlist)
             return
         }
-        if customUrl.hasPrefix(URLs.customSubtitlePrefix) {
-            let url = String(customUrl.dropFirst(URLs.customSubtitlePrefix.count))
+        if urlStr.hasPrefix(URLs.customSubtitlePrefix) {
+            let url = String(urlStr.dropFirst(URLs.customSubtitlePrefix.count))
             let req = url.removingPercentEncoding ?? url
             Task {
                 do {
