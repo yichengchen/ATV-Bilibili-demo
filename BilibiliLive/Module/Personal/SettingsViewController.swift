@@ -42,13 +42,12 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(directlyVideo)
 
-        let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.dmStyleEnum.dmStyle) { [weak self] in
+        let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.danmuArea.title) { [weak self] in
             let alert = UIAlertController(title: "弹幕显示区域", message: "设置弹幕显示区域", preferredStyle: .actionSheet)
-            for style in DmStyleEnum.allCases {
-                let action = UIAlertAction(title: style.dmStyle, style: .default) { _ in
-                    Settings.dmStyleEnum = style
+            for style in DanmuArea.allCases {
+                let action = UIAlertAction(title: style.title, style: .default) { _ in
+                    Settings.danmuArea = style
                     self?.setupData()
-//                    WebRequest.requestDMSetting(style: style, complete: nil)
                 }
                 alert.addAction(action)
             }

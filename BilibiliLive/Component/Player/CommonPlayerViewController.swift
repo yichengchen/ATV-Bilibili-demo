@@ -67,7 +67,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         danMuView.recaculateTracks()
         danMuView.paddingTop = 5
         danMuView.trackHeight = 50
-        danMuView.displayArea = 0.8
+        danMuView.displayArea = Settings.danmuArea.percent
     }
 
     override func viewWillDisappear(_ animated: Bool) {

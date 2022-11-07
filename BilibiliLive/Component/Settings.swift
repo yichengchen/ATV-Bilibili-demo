@@ -30,8 +30,8 @@ enum Settings {
     @UserDefaultCodable("Settings.mediaQuality", defaultValue: .quality_1080p)
     static var mediaQuality: MediaQualityEnum
 
-    @UserDefaultCodable("Settings.dmStyle", defaultValue: .style_0)
-    static var dmStyleEnum: DmStyleEnum
+    @UserDefaultCodable("Settings.danmuArea", defaultValue: .style_75)
+    static var danmuArea: DanmuArea
 
     @UserDefault("Settings.losslessAudio", defaultValue: false)
     static var losslessAudio: Bool
@@ -48,19 +48,16 @@ struct MediaQuality {
     var fnval: Int
 }
 
-enum DmStyleEnum: Codable, CaseIterable {
-    case style_100
+enum DanmuArea: Codable, CaseIterable {
     case style_75
     case style_50
     case style_25
     case style_0
 }
 
-extension DmStyleEnum {
-    var dmStyle: String {
+extension DanmuArea {
+    var title: String {
         switch self {
-        case .style_100:
-            return "不重叠"
         case .style_75:
             return "3/4屏"
         case .style_50:
@@ -69,6 +66,19 @@ extension DmStyleEnum {
             return "1/4屏"
         case .style_0:
             return "不限制"
+        }
+    }
+
+    var percent: CGFloat {
+        switch self {
+        case .style_75:
+            return 0.75
+        case .style_50:
+            return 0.5
+        case .style_25:
+            return 0.25
+        case .style_0:
+            return 1
         }
     }
 }
