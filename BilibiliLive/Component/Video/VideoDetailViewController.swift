@@ -32,6 +32,8 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var dislikeButton: BLCustomButton!
 
     @IBOutlet var durationLabel: UILabel!
+    @IBOutlet var playCountLabel: UILabel!
+    @IBOutlet var danmakuLabel: UILabel!
     @IBOutlet var avatarImageView: UIImageView!
     @IBOutlet var favButton: BLCustomButton!
     @IBOutlet var pageCollectionView: UICollectionView!
@@ -184,6 +186,8 @@ class VideoDetailViewController: UIViewController {
     }
 
     private func update(with data: VideoDetail) {
+        playCountLabel.text = data.View.stat.view.numberString()
+        danmakuLabel.text = data.View.stat.danmaku.numberString()
         coinButton.title = data.View.stat.coin.string()
         favButton.title = data.View.stat.favorite.string()
         likeButton.title = data.View.stat.like.string()
