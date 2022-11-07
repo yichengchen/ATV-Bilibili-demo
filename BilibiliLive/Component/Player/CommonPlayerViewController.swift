@@ -56,6 +56,8 @@ class CommonPlayerViewController: AVPlayerViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        allowsPictureInPicturePlayback = true
+        delegate = self
         initDanmuView()
         setupPlayerMenu()
     }
@@ -290,6 +292,38 @@ class CommonPlayerViewController: AVPlayerViewController {
         view.addSubview(danMuView)
         danMuView.makeConstraintsToBindToSuperview()
         danMuView.isHidden = !Settings.defaultDanmuStatus
+    }
+}
+
+extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
+    @objc func playerViewControllerShouldDismiss(_ playerViewController: AVPlayerViewController) -> Bool {
+        if let presentedViewController = UIViewController.topMostViewController() as? AVPlayerViewController,
+           presentedViewController == playerViewController
+        {
+            return true
+        }
+        return false
+    }
+
+    @objc func playerViewControllerShouldAutomaticallyDismissAtPictureInPictureStart(_ playerViewController: AVPlayerViewController) -> Bool {
+        return true
+    }
+
+    @objc func playerViewController(_ playerViewController: AVPlayerViewController,
+                                    restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void)
+    {
+        let presentedViewController = UIViewController.topMostViewController()
+        if presentedViewController is AVPlayerViewController {
+            let parent = presentedViewController.presentingViewController
+            presentedViewController.dismiss(animated: false) {
+                parent?.present(playerViewController, animated: false)
+                completionHandler(true)
+            }
+        } else {
+            presentedViewController.present(playerViewController, animated: false) {
+                completionHandler(true)
+            }
+        }
     }
 }
 
