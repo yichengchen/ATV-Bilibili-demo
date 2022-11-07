@@ -15,7 +15,7 @@ import UIKit
 class VideoPlayerViewController: CommonPlayerViewController {
     var cid: Int?
     var aid: Int!
-
+    var data: VideoDetail?
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
     private var playerDelegate: BilibiliVideoResourceLoaderDelegate?
@@ -47,7 +47,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         }
     }
 
-    func playmedia(info: VideoPlayURLInfo) async {
+    func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?) async {
         let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
         let headers: [String: String] = [
             "User-Agent": "Bilibili/APPLE TV",
@@ -55,12 +55,16 @@ class VideoPlayerViewController: CommonPlayerViewController {
         ]
         let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         playerDelegate = BilibiliVideoResourceLoaderDelegate()
-        playerDelegate?.setBilibili(info: info)
+        playerDelegate?.setBilibili(info: urlInfo, subtitles: playerInfo?.subtitle?.subtitles ?? [])
         asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
         let requestedKeys = ["playable"]
         await asset.loadValues(forKeys: requestedKeys)
         prepare(toPlay: asset, withKeys: requestedKeys)
         danMuView.play()
+    }
+
+    override func extraInfoForPlayerError() -> String {
+        return playerDelegate?.infoDebugText ?? "-"
     }
 
     override func playerDidFinishPlaying() {
@@ -72,20 +76,27 @@ class VideoPlayerViewController: CommonPlayerViewController {
 
 extension VideoPlayerViewController {
     func fetchVideoData() async {
+        let info = try? await WebRequest.requestPlayerInfo(aid: aid, cid: cid!)
+        let startTime = info?.playTimeInSecond
+
         do {
             let playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
-            print(playData)
-            await playmedia(info: playData)
+            if let startTime = startTime, playData.dash.duration - startTime > 5 {
+                playerStartPos = startTime
+            }
 
-            let info = await WebRequest.requestDetailVideo(aid: aid!)
-            setPlayerInfo(title: info?.title, subTitle: info?.owner.name, desp: info?.desc, pic: info?.pic)
+            await playmedia(urlInfo: playData, playerInfo: info)
+
+            if data == nil {
+                data = try? await WebRequest.requestDetailVideo(aid: aid!)
+            }
+            setPlayerInfo(title: data?.title, subTitle: data?.ownerName, desp: data?.View.desc, pic: data?.pic)
         } catch let err {
             if case let .statusFail(code, message) = err as? RequestError {
                 showErrorAlertAndExit(message: "请求失败\(code) \(message)，可能需要大会员")
             } else {
                 showErrorAlertAndExit(message: "请求失败,\(err)")
             }
-            print(err)
         }
     }
 

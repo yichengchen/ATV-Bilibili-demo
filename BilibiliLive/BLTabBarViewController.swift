@@ -39,6 +39,10 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         hotVC.tabBarItem.title = "热门"
         vcs.append(hotVC)
 
+        let rank = RankingViewController()
+        rank.tabBarItem.title = "排行榜"
+        vcs.append(rank)
+
         let followVC = FollowsViewController()
         followVC.tabBarItem.title = "关注"
         vcs.append(followVC)

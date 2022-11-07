@@ -64,7 +64,7 @@ class BLCustomButton: BLButton {
     }
 
     private func updateTitleLabel(force: Bool = false) {
-        let shouldHide = title?.count == 0
+        let shouldHide = title == nil || title?.count == 0
         titleLabel.text = title
         if force || titleLabel.isHidden != shouldHide {
             titleLabel.isHidden = shouldHide

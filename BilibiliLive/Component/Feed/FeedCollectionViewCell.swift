@@ -85,7 +85,12 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
     func setup(data: any DisplayData) {
         titleLabel.text = data.title
         upLabel.text = [data.ownerName, data.date].compactMap({ $0 }).joined(separator: " · ")
-        imageView.kf.setImage(with: data.pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202)))])
+        if var pic = data.pic {
+            if pic.scheme == nil {
+                pic = URL(string: "http:\(pic.absoluteString)")!
+            }
+            imageView.kf.setImage(with: pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202)))])
+        }
         if let avatar = data.avatar {
             avatarView.isHidden = false
             avatarView.kf.setImage(with: avatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
@@ -147,8 +152,10 @@ extension FeedDisplayStyle {
         switch self {
         case .large:
             return fractionalWidth / 1.5
-        case .normal, .sideBar:
+        case .normal:
             return fractionalWidth / 1.5
+        case .sideBar:
+            return fractionalWidth / 1.15
         }
     }
 

@@ -257,6 +257,7 @@ enum ApiRequest {
             let idx: Int
             let cover: String
             let goto: String
+            let rcmd_reason: String?
 
             var ownerName: String {
                 return args.up_name ?? ""
@@ -265,6 +266,8 @@ enum ApiRequest {
             var pic: URL? {
                 return URL(string: cover)
             }
+
+            var date: String? { rcmd_reason }
         }
 
         struct Args: Codable, Hashable {
@@ -276,7 +279,7 @@ enum ApiRequest {
     static func getFeeds(lastIdx: Int = 0) async throws -> [FeedResp.Items] {
         let idx = "\(lastIdx)"
         let resp: FeedResp = try await request(EndPoint.feed, parameters: ["idx": idx, "flush": "0", "column": "4", "device": "pad", "pull": idx == "0" ? "1" : "0"])
-        return resp.items
+        return resp.items.filter({ $0.goto == "av" })
     }
 
     static func requestDislike(aid: Int, dislike: Bool) {

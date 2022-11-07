@@ -7,14 +7,16 @@
 //
 
 import AVFoundation
+import Swifter
 import SwiftyJSON
 import UIKit
 
 class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelegate {
     enum URLs {
         static let customScheme = "atv"
-        static let customPrefix = customScheme + "://"
+        static let customPrefix = customScheme + "://list/"
         static let play = customPrefix + "play"
+        static let customSubtitlePrefix = customScheme + "://subtitle/"
     }
 
     private var audioPlaylist = ""
@@ -25,9 +27,24 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private let badRequestErrorCode = 455
 
     private var playlists = [String]()
+    private var subtitles = [String: String]()
     private var hasAudioInMasterListAdded = false
+    private(set) var playInfo: VideoPlayURLInfo?
+    private var hasSubtitle = false
+    private var hasPreferSubtitleAdded = false
+    private var httpServer = HttpServer()
 
-    let videoCodecBlackList = ["avc1.640034"] // high 5.2 is not supported
+    deinit {
+        httpServer.stop()
+    }
+
+    var infoDebugText: String {
+        let videoCodec = playInfo?.dash.video.map({ $0.codecs }).prefix(5).joined(separator: ",") ?? "nil"
+        let audioCodec = playInfo?.dash.audio.map({ $0.codecs }).prefix(5).joined(separator: ",") ?? "nil"
+        return "video codecs: \(videoCodec), audio: \(audioCodec)"
+    }
+
+    let videoCodecBlackList = ["avc1.640034", "hev1.2.4.L153.90"] // high 5.2 is not supported
 
     private func reset() {
         playlists.removeAll()
@@ -40,9 +57,10 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
     private func addVideoPlayBackInfo(codec: String, width: Int, height: Int, frameRate: String, bandwidth: Int, duration: Int, url: String, sar: String) {
         guard !videoCodecBlackList.contains(codec) else { return }
+        let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
         let content = """
-        #EXT-X-STREAM-INF:AUDIO="audio",CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth)
-        \(URLs.customPrefix)\(playlists.count)
+        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth)
+        \(URLs.customPrefix)\(playlists.count)?codec=\(codec)&rate=\(frameRate)&width=\(width)&host=\(URL(string: url)?.host ?? "none")
 
         """
         masterPlaylist.append(content)
@@ -86,9 +104,51 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         playlists.append(playList)
     }
 
-    func setBilibili(info: VideoPlayURLInfo) {
+    private func addSubtitleData(lang: String, name: String, duration: Int, url: String) {
+        var lang = lang
+        var canBeDefault = !hasPreferSubtitleAdded
+        if lang.hasPrefix("ai-") {
+            lang = String(lang.dropFirst(3))
+            canBeDefault = false
+        }
+        if canBeDefault {
+            hasPreferSubtitleAdded = true
+        }
+        let defaultStr = canBeDefault ? "YES" : "NO"
+
+        let master = """
+        #EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",LANGUAGE="\(lang)",NAME="\(name)",AUTOSELECT=\(defaultStr),DEFAULT=\(defaultStr),URI="\(URLs.customPrefix)\(playlists.count)"
+
+        """
+        masterPlaylist.append(master)
+
+        let playList = """
+        #EXTM3U
+        #EXT-X-TARGETDURATION:\(duration)
+        #EXT-X-VERSION:3
+        #EXT-X-MEDIA-SEQUENCE:0
+        #EXT-X-PLAYLIST-TYPE:VOD
+        #EXTINF:\(duration),
+
+        \(URLs.customSubtitlePrefix)\(url.addingPercentEncoding(withAllowedCharacters: .afURLQueryAllowed) ?? url)
+        #EXT-X-ENDLIST
+
+        """
+        playlists.append(playList)
+    }
+
+    func setBilibili(info: VideoPlayURLInfo, subtitles: [SubtitleData]) {
+        playInfo = info
         reset()
-        for video in info.dash.video {
+        hasSubtitle = subtitles.count > 0
+        var videos = info.dash.video
+        if Settings.preferHevc {
+            if videos.contains(where: { $0.isHevc }) {
+                videos.removeAll(where: { !$0.isHevc })
+            }
+        }
+
+        for video in videos {
             for url in video.playableURLs {
                 addVideoPlayBackInfo(codec: video.codecs, width: video.width, height: video.height, frameRate: video.frame_rate, bandwidth: video.bandwidth, duration: info.dash.duration, url: url, sar: video.sar)
             }
@@ -112,6 +172,14 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             for url in audio.playableURLs {
                 addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: url)
             }
+        }
+
+        if hasSubtitle {
+            try? httpServer.start(0)
+            bindHttpServer()
+        }
+        for subtitle in subtitles {
+            addSubtitleData(lang: subtitle.lan, name: subtitle.lan_doc, duration: info.dash.duration, url: subtitle.url.absoluteString)
         }
     }
 
@@ -144,28 +212,68 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
 private extension BilibiliVideoResourceLoaderDelegate {
     func handleCustomPlaylistRequest(_ loadingRequest: AVAssetResourceLoadingRequest) {
-        guard let customUrl = loadingRequest.request.url?.absoluteString else {
+        guard let customUrl = loadingRequest.request.url else {
             reportError(loadingRequest, withErrorCode: badRequestErrorCode)
             return
         }
-
-        if customUrl == URLs.play {
+        let urlStr = customUrl.absoluteString
+        if urlStr == URLs.play {
             report(loadingRequest, content: masterPlaylist)
             return
         }
-        if let index = Int(customUrl.dropFirst(URLs.customPrefix.count)) {
+
+        if urlStr.hasPrefix(URLs.customPrefix), let index = Int(customUrl.lastPathComponent) {
             let playlist = playlists[index]
             report(loadingRequest, content: playlist)
             return
         }
+        if urlStr.hasPrefix(URLs.customSubtitlePrefix) {
+            let url = String(urlStr.dropFirst(URLs.customSubtitlePrefix.count))
+            let req = url.removingPercentEncoding ?? url
+            Task {
+                do {
+                    if subtitles[req] == nil {
+                        let content = try await WebRequest.requestSubtitle(url: URL(string: req)!)
+                        let vtt = BVideoUrlUtils.convertToVTT(subtitle: content)
+                        subtitles[req] = vtt
+                    }
+                    let port = try self.httpServer.port()
+                    let url = "http://127.0.0.1:\(port)/subtitle?u=" + url
+                    let redirectRequest = URLRequest(url: URL(string: url)!)
+                    let redirectResponse = HTTPURLResponse(url: URL(string: url)!, statusCode: 302, httpVersion: nil, headerFields: nil)
+
+                    loadingRequest.redirect = redirectRequest
+                    loadingRequest.response = redirectResponse
+                    loadingRequest.finishLoading()
+                    return
+                } catch let err {
+                    loadingRequest.finishLoading(with: err)
+                }
+            }
+            return
+        }
         print("handle loading", customUrl)
+    }
+
+    func bindHttpServer() {
+        httpServer["/subtitle"] = { [weak self] req in
+            if let url = req.queryParams.first(where: { $0.0 == "u" })?.1 {
+                let req = url.removingPercentEncoding ?? url
+                if let content = self?.subtitles[req] {
+                    return HttpResponse.ok(.text(content))
+                }
+            }
+            return HttpResponse.notFound
+        }
     }
 }
 
 enum BVideoUrlUtils {
-    static func sortUrls(base: String, backup: [String]) -> [String] {
+    static func sortUrls(base: String, backup: [String]?) -> [String] {
         var urls = [base]
-        urls.append(contentsOf: backup)
+        if let backup {
+            urls.append(contentsOf: backup)
+        }
         return
             urls.sorted { lhs, rhs in
                 let lhsIsPCDN = lhs.contains("szbdyd.com") || lhs.contains("mcdn.bilivideo.cn")
@@ -178,10 +286,33 @@ enum BVideoUrlUtils {
                 }
             }
     }
+
+    static func convertVTTFormate(_ time: CGFloat) -> String {
+        let seconds = Int(time)
+        let hour = seconds / 3600
+        let min = (seconds % 3600) / 60
+        let second = CGFloat((seconds % 3600) % 60) + time - CGFloat(Int(time))
+        return String(format: "%02d:%02d:%06.3f", hour, min, second)
+    }
+
+    static func convertToVTT(subtitle: [SubtitleContent]) -> String {
+        var vtt = "WEBVTT\n\n"
+        for model in subtitle {
+            let from = convertVTTFormate(model.from)
+            let to = convertVTTFormate(model.to)
+            // hours:minutes:seconds.millisecond
+            vtt.append("\(from) --> \(to)\n\(model.content)\n\n")
+        }
+        return vtt
+    }
 }
 
 extension VideoPlayURLInfo.DashInfo.DashMediaInfo {
     var playableURLs: [String] {
         BVideoUrlUtils.sortUrls(base: base_url, backup: backup_url)
+    }
+
+    var isHevc: Bool {
+        return codecs.starts(with: "hev") || codecs.starts(with: "hvc")
     }
 }

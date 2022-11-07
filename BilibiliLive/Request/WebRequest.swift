@@ -78,7 +78,7 @@ enum WebRequest {
                     return
                 }
                 let dataj = json[dataObj]
-                print(dataj)
+                print("\(url) response: \(dataj)")
                 complete?(.success(dataj))
             case let .failure(err):
                 complete?(.failure(err))
@@ -127,10 +127,11 @@ enum WebRequest {
                                       url: URLConvertible,
                                       parameters: Parameters = [:],
                                       headers: [String: String]? = nil,
-                                      decoder: JSONDecoder? = nil) async throws -> T
+                                      decoder: JSONDecoder? = nil,
+                                      dataObj: String = "data") async throws -> T
     {
         return try await withCheckedThrowingContinuation { configure in
-            request(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder) {
+            request(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder, dataObj: dataObj) {
                 (res: Result<T, RequestError>) in
                 switch res {
                 case let .success(content):
@@ -146,24 +147,14 @@ enum WebRequest {
 // MARK: - Video
 
 extension WebRequest {
-    static func requestBangumiInfo(epid: Int, complete: ((BangumiInfo.Episode) -> Void)?) {
-        request(url: "http://api.bilibili.com/pgc/view/web/season", parameters: ["ep_id": epid], dataObj: "result") {
-            (result: Result<BangumiInfo, RequestError>) in
-            if let info = try? result.get() {
-                for epi in info.episodes {
-                    if epi.id == epid {
-                        complete?(epi)
-                        break
-                    }
-                }
-            }
-        }
+    static func requestBangumiInfo(epid: Int) async throws -> BangumiInfo {
+        let info: BangumiInfo = try await request(url: "http://api.bilibili.com/pgc/view/web/season", parameters: ["ep_id": epid], dataObj: "result")
+        return info
     }
 
-    static func requestVideoInfo(aid: Int, complete: ((Result<VideoDetail, RequestError>) -> Void)?) {
-        request(url: "http://api.bilibili.com/x/web-interface/view", parameters: ["aid": aid]) { result in
-            complete?(result)
-        }
+    static func requestBangumiInfo(seasonID: Int) async throws -> BangumiSeasonInfo {
+        let res: BangumiSeasonInfo = try await request(url: "https://api.bilibili.com/pgc/web/season/section", parameters: ["season_id": seasonID], dataObj: "result")
+        return res
     }
 
     static func requestDMSetting(style: DmStyleEnum, complete: ((Bool) -> Void)?) {
@@ -199,30 +190,21 @@ extension WebRequest {
         }
     }
 
-    static func requestPlayerInfo(aid: Int, cid: Int, complete: ((PlayerInfo) -> Void)? = nil) {
-        request(url: EndPoint.playerInfo, parameters: ["aid": aid, "cid": cid]) {
-            (result: Result<PlayerInfo, RequestError>) in
-            if let info = try? result.get() {
-                complete?(info)
-            }
-        }
+    static func requestPlayerInfo(aid: Int, cid: Int) async throws -> PlayerInfo {
+        try await request(url: EndPoint.playerInfo, parameters: ["aid": aid, "cid": cid])
     }
 
-    static func requestRelatedVideo(aid: Int, complete: (([VideoDetail]) -> Void)? = nil) {
+    static func requestRelatedVideo(aid: Int, complete: (([VideoDetail.Info]) -> Void)? = nil) {
         request(method: .get, url: EndPoint.related, parameters: ["aid": aid]) {
-            (result: Result<[VideoDetail], RequestError>) in
+            (result: Result<[VideoDetail.Info], RequestError>) in
             if let details = try? result.get() {
                 complete?(details)
             }
         }
     }
 
-    static func requestDetailVideo(aid: Int) async -> VideoDetail? {
-        do {
-            return try await request(method: .get, url: EndPoint.info, parameters: ["aid": aid])
-        } catch {
-            return nil
-        }
+    static func requestDetailVideo(aid: Int) async throws -> VideoDetail {
+        try await request(url: "http://api.bilibili.com/x/web-interface/view/detail", parameters: ["aid": aid])
     }
 
     static func requestFavVideosList() async throws -> [FavListData] {
@@ -325,11 +307,42 @@ extension WebRequest {
         return try await request(url: EndPoint.playUrl,
                                  parameters: ["avid": aid, "cid": cid, "qn": quality.qn, "type": "", "fnver": 0, "fnval": quality.fnval, "otype": "json"])
     }
+
+    static func requestReplys(aid: Int, complete: ((Replys) -> Void)?) {
+        request(url: "http://api.bilibili.com/x/v2/reply", parameters: ["type": 1, "oid": aid, "sort": 1, "nohot": 0]) {
+            (result: Result<Replys, RequestError>) in
+            if let details = try? result.get() {
+                complete?(details)
+            }
+        }
+    }
+
+    static func requestSearchResult(key: String, page: Int, complete: ((SearchResult) -> Void)?) {
+        request(url: "http://api.bilibili.com/x/web-interface/search/type", parameters: ["search_type": "video", "keyword": key, "page": page]) {
+            (result: Result<SearchResult, RequestError>) in
+            if var details = try? result.get() {
+                details.result.indices.forEach({ details.result[$0].title = details.result[$0].title.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil) })
+                complete?(details)
+            }
+        }
+    }
+
+    static func requestSubtitle(url: URL) async throws -> [SubtitleContent] {
+        struct SubtitlContenteResp: Codable {
+            let body: [SubtitleContent]
+        }
+        let resp = try await AF.request(url).serializingDecodable(SubtitlContenteResp.self).value
+        return resp.body
+    }
 }
 
 // MARK: - User
 
 extension WebRequest {
+    static func follow(mid: Int, follow: Bool) {
+        requestJSON(method: .post, url: "https://api.bilibili.com/x/relation/modify", parameters: ["fid": mid, "act": follow ? 1 : 2, "re_src": 14])
+    }
+
     static func logout(complete: (() -> Void)? = nil) {
         request(method: .post, url: EndPoint.logout) {
             (result: Result<[String: String], RequestError>) in
@@ -360,7 +373,7 @@ struct HistoryData: DisplayData, Codable {
     let pic: URL?
 
     let owner: VideoOwner
-    let cid: Int
+    let cid: Int?
     let aid: Int
     let progress: Int
     let duration: Int
@@ -381,36 +394,126 @@ struct FavListData: Codable, Hashable {
     let id: Int
 }
 
-struct VideoDetail: Codable, Hashable, DisplayData {
+struct VideoDetail: Codable, Hashable {
+    struct Info: Codable, Hashable {
+        let aid: Int
+        let cid: Int
+        let title: String
+        let videos: Int?
+        let pic: URL?
+        let desc: String?
+        let owner: VideoOwner
+        let pages: [VideoPage]?
+        let dynamic: String?
+        let duration: Int
+        let pubdate: Int?
+        let ugc_season: UgcSeason?
+
+        let stat: Stat
+        struct Stat: Codable, Hashable {
+            let favorite: Int
+            let coin: Int
+            let like: Int
+            let share: Int
+            let danmaku: Int
+            let view: Int
+        }
+
+        struct UgcSeason: Codable, Hashable {
+            let id: Int
+            let title: String
+            let cover: URL
+            let mid: Int
+            let intro: String
+            let attribute: Int
+            let sections: [UgcSeasonDetail]
+
+            struct UgcSeasonDetail: Codable, Hashable {
+                let season_id: Int
+                let id: Int
+                let title: String
+                let episodes: [UgcVideoInfo]
+            }
+
+            struct UgcVideoInfo: Codable, Hashable, DisplayData {
+                var ownerName: String { "" }
+                var pic: URL? { arc.pic }
+                let aid: Int
+                let cid: Int
+                let arc: Arc
+                let title: String
+
+                struct Arc: Codable, Hashable {
+                    let pic: URL
+                }
+            }
+        }
+
+        var durationString: String {
+            let formatter = DateComponentsFormatter()
+            formatter.allowedUnits = [.hour, .minute, .second]
+            formatter.unitsStyle = .brief
+            return formatter.string(from: TimeInterval(duration)) ?? ""
+        }
+    }
+
+    struct Owner: Hashable, Codable {
+        let following: Bool
+    }
+
+    let View: Info
+    let Related: [Info]
+    let Card: Owner
+}
+
+extension VideoDetail: DisplayData {
+    var title: String { View.title }
+    var ownerName: String { View.owner.name }
+    var pic: URL? { View.pic }
+    var avatar: URL? { View.owner.face }
+    var date: String? { DateFormatter.stringFor(timestamp: View.pubdate) }
+}
+
+extension VideoDetail.Info: DisplayData, PlayableData {
     var ownerName: String { owner.name }
+    var avatar: URL? { owner.face }
+    var date: String? { DateFormatter.stringFor(timestamp: pubdate) }
+}
 
-    let aid: Int
-    let cid: Int
-    let title: String
-    let videos: Int
-    let pic: URL?
-    let desc: String
-    let owner: VideoOwner
-    let pages: [VideoPage]?
-    let dynamic: String?
-    let duration: Int
+struct SubtitleResp: Codable {
+    let subtitles: [SubtitleData]
+}
 
-    let stat: Stat
-    struct Stat: Codable, Hashable {
-        let favorite: Int
-        let coin: Int
-        let like: Int
-        let share: Int
-        let danmaku: Int
-        let view: Int
+struct SubtitleData: Codable, Hashable {
+    let lan_doc: String
+    let subtitle_url: URL
+    let lan: String
+
+    var url: URL { subtitle_url.addSchemeIfNeed() }
+    var subtitleContents: [SubtitleContent]?
+}
+
+struct Replys: Codable, Hashable {
+    struct Reply: Codable, Hashable {
+        struct Member: Codable, Hashable {
+            let uname: String
+            let avatar: String
+        }
+
+        struct Content: Codable, Hashable {
+            let message: String
+        }
+
+        let member: Member
+        let content: Content
     }
 
-    var durationString: String {
-        let formatter = DateComponentsFormatter()
-        formatter.allowedUnits = [.hour, .minute, .second]
-        formatter.unitsStyle = .brief
-        return formatter.string(from: TimeInterval(duration)) ?? ""
-    }
+    let replies: [Reply]
+}
+
+struct BangumiSeasonInfo: Codable {
+    let main_section: BangumiInfo
+    let section: [BangumiInfo]
 }
 
 struct BangumiInfo: Codable, Hashable {
@@ -418,6 +521,9 @@ struct BangumiInfo: Codable, Hashable {
         let id: Int
         let aid: Int
         let cid: Int
+        let cover: URL
+        let long_title: String
+        let title: String
     }
 
     let episodes: [Episode] // 正片剧集列表
@@ -440,7 +546,7 @@ struct UpSpaceReq: Codable, Hashable {
     let list: List
     struct List: Codable, Hashable {
         let vlist: [VListData]
-        struct VListData: Codable, Hashable, DisplayData {
+        struct VListData: Codable, Hashable, DisplayData, PlayableData {
             let title: String
             let author: String
             let aid: Int
@@ -448,13 +554,15 @@ struct UpSpaceReq: Codable, Hashable {
             var ownerName: String {
                 return author
             }
+
+            var cid: Int { return 0 }
         }
     }
 }
 
 struct PlayerInfo: Codable {
     let last_play_time: Int
-
+    let subtitle: SubtitleResp?
     var playTimeInSecond: Int {
         last_play_time / 1000
     }
@@ -489,7 +597,7 @@ struct VideoPlayURLInfo: Codable {
         struct DashMediaInfo: Codable {
             let id: Int
             let base_url: String
-            let backup_url: [String]
+            let backup_url: [String]?
             let bandwidth: Int
             let mime_type: String
             let codecs: String
@@ -509,17 +617,17 @@ struct VideoPlayURLInfo: Codable {
 
         struct DolbyInfo: Codable {
             let type: Int
-            let audio: [DolbyAudioInfo]
+            let audio: [DolbyAudioInfo]?
 
             struct DolbyAudioInfo: Codable {
                 let id: Int
                 let base_url: String
-                let backup_url: [String]
+                let backup_url: [String]?
                 let bandwidth: Int
                 let mime_type: String
                 let codecs: String
                 let segment_base: DashSegmentBase
-                let size: Int
+                let size: Int?
             }
         }
 
@@ -527,5 +635,37 @@ struct VideoPlayURLInfo: Codable {
             let display: Bool
             let audio: DashMediaInfo
         }
+    }
+}
+
+struct SearchResult: Codable, Hashable {
+    struct Result: Codable, Hashable, DisplayData {
+        let author: String
+        let upic: URL
+        let aid: Int
+
+        // DisplayData
+        var title: String
+        var ownerName: String { author }
+        let pic: URL?
+        var avatar: URL? { upic }
+    }
+
+    var result: [Result]
+}
+
+struct SubtitleContent: Codable, Hashable {
+    let from: CGFloat
+    let to: CGFloat
+    let location: Int
+    let content: String
+}
+
+extension URL {
+    func addSchemeIfNeed() -> URL {
+        if scheme == nil {
+            return URL(string: "https:\(absoluteString)")!
+        }
+        return self
     }
 }

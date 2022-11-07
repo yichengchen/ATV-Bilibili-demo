@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */; };
+		490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */; };
+		490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */; };
+		490EC3EB290CFEBD001E00B6 /* Anime1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */; };
 		492731EE29096677005F5B0A /* HotViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492731ED29096677005F5B0A /* HotViewController.swift */; };
 		49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */; };
 		49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */; };
@@ -20,10 +23,17 @@
 		494742112905053E005D6885 /* BLMotionCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 494742102905053E005D6885 /* BLMotionCollectionViewCell.swift */; };
 		49474213290509F6005D6885 /* DateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49474212290509F6005D6885 /* DateFormatter.swift */; };
 		4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */; };
+		49735024290D0E8A0045C26B /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 49735023290D0E8A0045C26B /* Fuzi */; };
+		497350292914A81A0045C26B /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 497350282914A81A0045C26B /* Swifter */; };
+		4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502A29161B770045C26B /* WeeklyWatchViewController.swift */; };
+		4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
+		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
+		AE2B41572914C02000BF2B0B /* Int.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41562914C02000BF2B0B /* Int.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
 		AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7A3B1F290298BE006FEBB0 /* Colors.swift */; };
+		AEA5FDE2290F6E2600E7C0B2 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA5FDE1290F6E2600E7C0B2 /* String.swift */; };
 		AEA6AB1628FFE951007CE72E /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA6AB1528FFE951007CE72E /* SettingsViewController.swift */; };
 		AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA6AB1828FFF3DD007CE72E /* Settings.swift */; };
 		F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F90AAE03265549B5008DE7C2 /* FeedViewController.swift */; };
@@ -67,6 +77,9 @@
 
 /* Begin PBXFileReference section */
 		2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
+		490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewController.swift; sourceTree = "<group>"; };
+		490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLSettingLineCollectionViewCell.swift; sourceTree = "<group>"; };
+		490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Anime1ViewController.swift; sourceTree = "<group>"; };
 		492731ED29096677005F5B0A /* HotViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotViewController.swift; sourceTree = "<group>"; };
 		49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDanmuProvider.swift; sourceTree = "<group>"; };
 		49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Ext.swift"; sourceTree = "<group>"; };
@@ -80,10 +93,15 @@
 		494742102905053E005D6885 /* BLMotionCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLMotionCollectionViewCell.swift; sourceTree = "<group>"; };
 		49474212290509F6005D6885 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
 		4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTextOnlyCollectionViewCell.swift; sourceTree = "<group>"; };
+		4973502A29161B770045C26B /* WeeklyWatchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWatchViewController.swift; sourceTree = "<group>"; };
+		4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardVideoCollectionViewController.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
+		AE2B41542912706700BF2B0B /* SearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultViewController.swift; sourceTree = "<group>"; };
+		AE2B41562914C02000BF2B0B /* Int.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Int.swift; sourceTree = "<group>"; };
 		AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteViewController.swift; sourceTree = "<group>"; };
 		AE7A3B1F290298BE006FEBB0 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		AEA5FDE1290F6E2600E7C0B2 /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		AEA6AB1528FFE951007CE72E /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		AEA6AB1828FFF3DD007CE72E /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		F90AAE03265549B5008DE7C2 /* FeedViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedViewController.swift; sourceTree = "<group>"; };
@@ -129,11 +147,13 @@
 				F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */,
 				F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */,
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
+				49735024290D0E8A0045C26B /* Fuzi in Frameworks */,
 				F9171D5F2900FCFB002868C7 /* SnapKit in Frameworks */,
 				494741C329016CCE005D6885 /* MarqueeLabel in Frameworks */,
 				F9B9EAE3261AA3400045C2C6 /* SwiftyXMLParser in Frameworks */,
 				F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */,
 				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
+				497350292914A81A0045C26B /* Swifter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,10 +166,9 @@
 				F90AAE03265549B5008DE7C2 /* FeedViewController.swift */,
 				F99D28F62619F5F000F8E66A /* FollowsViewController.swift */,
 				AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */,
-				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
-				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
 				494741C5290177BB005D6885 /* UpSpaceViewController.swift */,
 				492731ED29096677005F5B0A /* HotViewController.swift */,
+				490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */,
 			);
 			path = ViewController;
 			sourceTree = "<group>";
@@ -195,6 +214,8 @@
 				494741C72902C45D005D6885 /* Array+..swift */,
 				AE7A3B1F290298BE006FEBB0 /* Colors.swift */,
 				49474212290509F6005D6885 /* DateFormatter.swift */,
+				AEA5FDE1290F6E2600E7C0B2 /* String.swift */,
+				AE2B41562914C02000BF2B0B /* Int.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -205,6 +226,7 @@
 				494741E6290391A7005D6885 /* BLButton.swift */,
 				494742102905053E005D6885 /* BLMotionCollectionViewCell.swift */,
 				4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */,
+				490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -246,6 +268,11 @@
 			children = (
 				49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */,
 				AEA6AB1528FFE951007CE72E /* SettingsViewController.swift */,
+				AE2B41542912706700BF2B0B /* SearchResultViewController.swift */,
+				F9B9EAEC261B25E40045C2C6 /* ToViewViewController.swift */,
+				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
+				490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */,
+				4973502A29161B770045C26B /* WeeklyWatchViewController.swift */,
 			);
 			path = Personal;
 			sourceTree = "<group>";
@@ -256,6 +283,7 @@
 				F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */,
 				F9171D6329010DF1002868C7 /* FeedCollectionViewCell.swift */,
 				F9171D6529026AC5002868C7 /* TitleSupplementaryView.swift */,
+				4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */,
 			);
 			path = Feed;
 			sourceTree = "<group>";
@@ -351,6 +379,8 @@
 				F9B9EAE2261AA3400045C2C6 /* SwiftyXMLParser */,
 				F9171D5E2900FCFB002868C7 /* SnapKit */,
 				494741C229016CCE005D6885 /* MarqueeLabel */,
+				49735023290D0E8A0045C26B /* Fuzi */,
+				497350282914A81A0045C26B /* Swifter */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -390,6 +420,8 @@
 				F9B9EAE1261AA3400045C2C6 /* XCRemoteSwiftPackageReference "SwiftyXMLParser" */,
 				F9171D5D2900FCFB002868C7 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				494741C129016CCE005D6885 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
+				49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */,
+				497350272914A81A0045C26B /* XCRemoteSwiftPackageReference "swifter" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -440,11 +472,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */,
+				4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */,
 				AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */,
 				49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */,
 				494741C82902C45D005D6885 /* Array+..swift in Sources */,
 				AEA6AB1628FFE951007CE72E /* SettingsViewController.swift in Sources */,
 				49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */,
+				AE2B41572914C02000BF2B0B /* Int.swift in Sources */,
 				F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */,
 				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,
 				F9171D6629026AC5002868C7 /* TitleSupplementaryView.swift in Sources */,
@@ -452,11 +486,14 @@
 				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
 				F9171D6129010429002868C7 /* UICollectionView+..swift in Sources */,
+				AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */,
 				4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */,
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
 				F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */,
+				4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */,
+				AEA5FDE2290F6E2600E7C0B2 /* String.swift in Sources */,
 				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
 				49474213290509F6005D6885 /* DateFormatter.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,
@@ -464,6 +501,7 @@
 				494742112905053E005D6885 /* BLMotionCollectionViewCell.swift in Sources */,
 				494741E7290391A7005D6885 /* BLButton.swift in Sources */,
 				F927ED992610AD8D00EAB8E3 /* LiveViewController.swift in Sources */,
+				490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */,
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
 				49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
@@ -476,8 +514,10 @@
 				F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */,
 				AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */,
 				F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */,
+				490EC3EB290CFEBD001E00B6 /* Anime1ViewController.swift in Sources */,
 				F99D28F72619F5F000F8E66A /* FollowsViewController.swift in Sources */,
 				F9D382B426359EF90070508F /* ApiRequest.swift in Sources */,
+				490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */,
 				F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */,
 				F9EDADD3262AA421007CB99F /* VideoDetailViewController.swift in Sources */,
 				F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */,
@@ -706,6 +746,22 @@
 				kind = branch;
 			};
 		};
+		49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/cezheng/Fuzi";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+		497350272914A81A0045C26B /* XCRemoteSwiftPackageReference "swifter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/httpswift/swifter";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
 		F9171D5D2900FCFB002868C7 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit";
@@ -769,6 +825,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 494741C129016CCE005D6885 /* XCRemoteSwiftPackageReference "MarqueeLabel" */;
 			productName = MarqueeLabel;
+		};
+		49735023290D0E8A0045C26B /* Fuzi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */;
+			productName = Fuzi;
+		};
+		497350282914A81A0045C26B /* Swifter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 497350272914A81A0045C26B /* XCRemoteSwiftPackageReference "swifter" */;
+			productName = Swifter;
 		};
 		F9171D5E2900FCFB002868C7 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;

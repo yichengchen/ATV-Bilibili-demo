@@ -5,6 +5,7 @@
 //  Created by Etan on 2021/3/27.
 //
 
+import AVFoundation
 import UIKit
 
 @main
@@ -30,6 +31,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             window?.rootViewController = LoginViewController.create()
         }
         window?.makeKeyAndVisible()
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
         return true
     }
 
