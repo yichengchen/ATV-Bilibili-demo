@@ -188,9 +188,9 @@ class VideoDetailViewController: UIViewController {
     private func update(with data: VideoDetail) {
         playCountLabel.text = data.View.stat.view.numberString()
         danmakuLabel.text = data.View.stat.danmaku.numberString()
-        coinButton.title = data.View.stat.coin.string()
-        favButton.title = data.View.stat.favorite.string()
-        likeButton.title = data.View.stat.like.string()
+        coinButton.title = data.View.stat.coin.numberString()
+        favButton.title = data.View.stat.favorite.numberString()
+        likeButton.title = data.View.stat.like.numberString()
 
         durationLabel.text = data.View.durationString
         titleLabel.text = data.title
