@@ -9,4 +9,21 @@ platform :tvos do
       destination: "platform=tvOS Simulator,name=Apple TV"
   )
   end
+
+  lane :build_unsign_ipa do
+    sh "cd .. && rm -rf Payload *.xcarchive *.ipa *.zip"
+    build_app(
+    codesigning_identity:"",
+    skip_codesigning: true,
+    skip_package_ipa: true,
+    archive_path: "App.xcarchive",
+    )
+    FastlaneCore::CommandExecutor.execute(command: "cd .. && mv App.xcarchive/Products/Applications ./Payload")
+    zip(
+      path: "./Payload",
+      output_path: "BilbiliAtvDemo"
+    )
+    sh "cd .. && mv BilbiliAtvDemo.zip BilbiliAtvDemo.ipa"
+    sh "cd .. && rm -rf Payload *.xcarchive *.zip || true"
+  end
 end
