@@ -8,6 +8,7 @@
 import AVKit
 import Kingfisher
 import UIKit
+import Vision
 
 class CommonPlayerViewController: AVPlayerViewController {
     let danMuView = DanmakuView()
@@ -44,11 +45,16 @@ class CommonPlayerViewController: AVPlayerViewController {
                         self.danMuView.pause()
                     }
                 }
+                player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
+                    self?.bodyDetect()
+                }
             } else {
                 rateObserver = nil
             }
         }
     }
+
+    var videoOutput: AVPlayerItemVideoOutput?
 
     private var playerInfo: [AVMetadataItem]?
 
@@ -86,6 +92,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         print("player status: \(player?.currentItem?.status.rawValue ?? -1)")
         switch player?.currentItem?.status {
         case .readyToPlay:
+            setUpOutput()
             startPlay()
         case .failed:
             removeObservarPlayerItem()
@@ -310,6 +317,42 @@ class CommonPlayerViewController: AVPlayerViewController {
         view.addSubview(danMuView)
         danMuView.makeConstraintsToBindToSuperview()
         danMuView.isHidden = !Settings.defaultDanmuStatus
+    }
+
+    func setUpOutput() {
+        guard videoOutput == nil, let videoItem = player?.currentItem else { return }
+        let pixelBuffAttributes = [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
+        ]
+        let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBuffAttributes)
+        videoItem.add(videoOutput)
+        self.videoOutput = videoOutput
+    }
+
+    func bodyDetect() {
+        guard let videoOutput, let currentItem = player?.currentItem else { return }
+        let time = currentItem.currentTime()
+        guard videoOutput.hasNewPixelBuffer(forItemTime: time),
+              let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil) else { return }
+
+        do {
+            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer)
+            let request = VNDetectHumanRectanglesRequest()
+            try handler.perform([request])
+            guard let observations = request.results, observations.count > 0 else { return }
+            let coordTransform = CGAffineTransform(scaleX: view.frame.width, y: view.frame.height)
+            let finalTransform = coordTransform.scaledBy(x: 1, y: -1).translatedBy(x: 0, y: -1)
+            let maskLayer = CAShapeLayer()
+            let path = UIBezierPath(rect: view.frame)
+            for observation in observations {
+                let frame = observation.boundingBox.applying(finalTransform)
+                path.append(UIBezierPath(rect: frame).reversing())
+            }
+            maskLayer.path = path.cgPath
+            danMuView.layer.mask = maskLayer
+        } catch {
+            print("Vision error: \(error.localizedDescription)")
+        }
     }
 }
 
