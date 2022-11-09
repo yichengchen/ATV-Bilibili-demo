@@ -8,6 +8,7 @@
 import Alamofire
 import AVFoundation
 import AVKit
+import Kingfisher
 import SwiftyJSON
 import SwiftyXMLParser
 import UIKit
@@ -47,7 +48,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         }
     }
 
-    func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?) async {
+    private func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?) async {
         let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
         let headers: [String: String] = [
             "User-Agent": "Bilibili/APPLE TV",
@@ -61,6 +62,24 @@ class VideoPlayerViewController: CommonPlayerViewController {
         await asset.loadValues(forKeys: requestedKeys)
         prepare(toPlay: asset, withKeys: requestedKeys)
         danMuView.play()
+        updatePlayerCharpter(playerInfo: playerInfo)
+    }
+
+    private func updatePlayerCharpter(playerInfo: PlayerInfo?) {
+        let group = DispatchGroup()
+        var metas = [AVTimedMetadataGroup]()
+        for viewPoint in playerInfo?.view_points ?? [] {
+            group.enter()
+            convertTimedMetadataGroup(viewPoint: viewPoint) {
+                metas.append($0)
+                group.leave()
+            }
+        }
+        group.notify(queue: .main) {
+            if metas.count > 0 {
+                self.playerItem?.navigationMarkerGroups = [AVNavigationMarkersGroup(title: nil, timedNavigationMarkers: metas)]
+            }
+        }
     }
 
     override func extraInfoForPlayerError() -> String {
@@ -69,6 +88,35 @@ class VideoPlayerViewController: CommonPlayerViewController {
 
     override func playerDidFinishPlaying() {
         dismiss(animated: true)
+    }
+
+    private func convertTimedMetadataGroup(viewPoint: PlayerInfo.ViewPoint, onResult: ((AVTimedMetadataGroup) -> Void)? = nil) {
+        let mapping: [AVMetadataIdentifier: Any?] = [
+            .commonIdentifierTitle: viewPoint.content,
+        ]
+
+        var metadatas = mapping.compactMap { createMetadataItem(for: $0, value: $1) }
+        let timescale: Int32 = 600
+        let cmStartTime = CMTimeMakeWithSeconds(viewPoint.from, preferredTimescale: timescale)
+        let cmEndTime = CMTimeMakeWithSeconds(viewPoint.to, preferredTimescale: timescale)
+        let timeRange = CMTimeRangeFromTimeToTime(start: cmStartTime, end: cmEndTime)
+        if let pic = viewPoint.imgUrl?.addSchemeIfNeed() {
+            let resource = ImageResource(downloadURL: pic)
+            KingfisherManager.shared.retrieveImage(with: resource) {
+                [weak self] result in
+                guard let self = self,
+                      let data = try? result.get().image.pngData(),
+                      let item = self.createMetadataItem(for: .commonIdentifierArtwork, value: data)
+                else {
+                    onResult?(AVTimedMetadataGroup(items: metadatas, timeRange: timeRange))
+                    return
+                }
+                metadatas.append(item)
+                onResult?(AVTimedMetadataGroup(items: metadatas, timeRange: timeRange))
+            }
+        } else {
+            onResult?(AVTimedMetadataGroup(items: metadatas, timeRange: timeRange))
+        }
     }
 }
 

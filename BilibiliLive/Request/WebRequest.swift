@@ -539,8 +539,22 @@ struct UpSpaceReq: Codable, Hashable {
 struct PlayerInfo: Codable {
     let last_play_time: Int
     let subtitle: SubtitleResp?
+    let view_points: [ViewPoint]?
+    let dm_mask: MaskInfo?
     var playTimeInSecond: Int {
         last_play_time / 1000
+    }
+
+    struct ViewPoint: Codable {
+        let type: Int
+        let from: TimeInterval
+        let to: TimeInterval
+        let content: String
+        let imgUrl: URL?
+    }
+
+    struct MaskInfo: Codable {
+        let mask_url: URL?
     }
 }
 

@@ -128,8 +128,8 @@ class CommonPlayerViewController: AVPlayerViewController {
         }
     }
 
-    private func createMetadataItem(for identifier: AVMetadataIdentifier,
-                                    value: Any?) -> AVMetadataItem?
+    func createMetadataItem(for identifier: AVMetadataIdentifier,
+                            value: Any?) -> AVMetadataItem?
     {
         if value == nil { return nil }
         let item = AVMutableMetadataItem()
