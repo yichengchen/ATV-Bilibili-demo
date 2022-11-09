@@ -51,6 +51,8 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         masterPlaylist = """
         #EXTM3U
         #EXT-X-VERSION:6
+        #EXT-X-INDEPENDENT-SEGMENTS
+
 
         """
     }
@@ -67,14 +69,13 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
         let playList = """
         #EXTM3U
-        #EXT-X-VERSION:6
+        #EXT-X-VERSION:7
         #EXT-X-TARGETDURATION:\(duration)
         #EXT-X-MEDIA-SEQUENCE:1
-        #EXT-X-PLAYLIST-TYPE:EVENT
+        #EXT-X-INDEPENDENT-SEGMENTS
+        #EXT-X-PLAYLIST-TYPE:VOD
         #EXTINF:\(duration)
         \(url)
-        #EXT-X-MLB-VIDEO-INFO:codecs="\(codec)",width="\(width)",height="\(height)",sar="\(sar)",frame-duration=1
-        #EXT-X-MLB-INFO:max-bw=\(bandwidth),duration=\(duration)
         #EXT-X-ENDLIST
         """
         playlists.append(playList)
@@ -93,12 +94,11 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         #EXTM3U
         #EXT-X-VERSION:6
         #EXT-X-TARGETDURATION:\(duration)
+        #EXT-X-INDEPENDENT-SEGMENTS
         #EXT-X-MEDIA-SEQUENCE:1
-        #EXT-X-PLAYLIST-TYPE:EVENT
+        #EXT-X-PLAYLIST-TYPE:VOD
         #EXTINF:\(duration)
         \(url)
-        #EXT-X-MLB-AUDIO-INFO:codecs="\(codec)"
-        #EXT-X-MLB-INFO:max-bw=\(bandwidth),duration=\(duration)
         #EXT-X-ENDLIST
         """
         playlists.append(playList)
