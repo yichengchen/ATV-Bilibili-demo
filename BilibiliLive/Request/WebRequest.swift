@@ -555,6 +555,7 @@ struct PlayerInfo: Codable {
 
     struct MaskInfo: Codable {
         let mask_url: URL?
+        let fps: Int
     }
 }
 

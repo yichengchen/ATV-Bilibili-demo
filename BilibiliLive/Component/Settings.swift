@@ -41,6 +41,9 @@ enum Settings {
 
     @UserDefault("Settings.defaultDanmuStatus", defaultValue: true)
     static var defaultDanmuStatus: Bool
+
+    @UserDefault("Settings.danmuMask", defaultValue: false)
+    static var danmuMask: Bool
 }
 
 struct MediaQuality {

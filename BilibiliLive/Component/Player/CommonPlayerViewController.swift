@@ -18,6 +18,9 @@ class CommonPlayerViewController: AVPlayerViewController {
     private var observer: NSKeyValueObservation?
     private var rateObserver: NSKeyValueObservation?
     private var debugView: UILabel?
+    var maskProvider: BMaskProvider?
+    var timer: Timer?
+
     var playerItem: AVPlayerItem? {
         didSet {
             if let playerItem = playerItem {
@@ -205,6 +208,20 @@ class CommonPlayerViewController: AVPlayerViewController {
                                                selector: #selector(playerDidFinishPlaying),
                                                name: .AVPlayerItemDidPlayToEndTime,
                                                object: playerItem)
+    }
+
+    func setupMask(fps: Int) {
+        guard let maskProvider else { return }
+//        danMuView.backgroundColor = UIColor.red.withAlphaComponent(0.5)
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0 / CGFloat(fps), repeats: true, block: {
+            [weak self, weak maskProvider] _ in
+            guard let self, let time = self.player?.currentTime() else { return }
+
+            maskProvider?.getMask(for: time.seconds, frame: self.danMuView.frame) {
+                maskLayer in
+                self.danMuView.layer.mask = maskLayer
+            }
+        })
     }
 
     func retryPlay() -> Bool {

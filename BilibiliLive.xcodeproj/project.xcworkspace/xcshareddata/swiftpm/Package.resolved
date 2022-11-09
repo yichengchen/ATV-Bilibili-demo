@@ -46,6 +46,15 @@
       }
     },
     {
+      "identity" : "pocketsvg",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/pocketsvg/PocketSVG.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "42078d1040cb35b45d9af167ad3aa88d8e69e4f2"
+      }
+    },
+    {
       "identity" : "snapkit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/SnapKit/SnapKit",

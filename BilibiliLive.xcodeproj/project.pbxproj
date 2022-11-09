@@ -3,11 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */; };
+		49078E47291BEA2400F556BD /* PocketSVG in Frameworks */ = {isa = PBXBuildFile; productRef = 49078E46291BEA2400F556BD /* PocketSVG */; };
 		490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */; };
 		490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */; };
 		490EC3EB290CFEBD001E00B6 /* Anime1ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */; };
@@ -27,6 +28,7 @@
 		497350292914A81A0045C26B /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 497350282914A81A0045C26B /* Swifter */; };
 		4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502A29161B770045C26B /* WeeklyWatchViewController.swift */; };
 		4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */; };
+		498DB1DF291BC24700F95607 /* BMaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498DB1DE291BC24700F95607 /* BMaskProvider.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
@@ -95,6 +97,7 @@
 		4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTextOnlyCollectionViewCell.swift; sourceTree = "<group>"; };
 		4973502A29161B770045C26B /* WeeklyWatchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWatchViewController.swift; sourceTree = "<group>"; };
 		4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardVideoCollectionViewController.swift; sourceTree = "<group>"; };
+		498DB1DE291BC24700F95607 /* BMaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMaskProvider.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		AE2B41542912706700BF2B0B /* SearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultViewController.swift; sourceTree = "<group>"; };
@@ -146,6 +149,7 @@
 			files = (
 				F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */,
 				F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */,
+				49078E47291BEA2400F556BD /* PocketSVG in Frameworks */,
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
 				49735024290D0E8A0045C26B /* Fuzi in Frameworks */,
 				F9171D5F2900FCFB002868C7 /* SnapKit in Frameworks */,
@@ -200,6 +204,7 @@
 				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
 				F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */,
 				49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */,
+				498DB1DE291BC24700F95607 /* BMaskProvider.swift */,
 			);
 			path = Video;
 			sourceTree = "<group>";
@@ -381,6 +386,7 @@
 				494741C229016CCE005D6885 /* MarqueeLabel */,
 				49735023290D0E8A0045C26B /* Fuzi */,
 				497350282914A81A0045C26B /* Swifter */,
+				49078E46291BEA2400F556BD /* PocketSVG */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -422,6 +428,7 @@
 				494741C129016CCE005D6885 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
 				49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */,
 				497350272914A81A0045C26B /* XCRemoteSwiftPackageReference "swifter" */,
+				49078E45291BEA2400F556BD /* XCRemoteSwiftPackageReference "PocketSVG" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -448,6 +455,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		4947421429050FAF005D6885 /* Swift formate */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -510,6 +518,7 @@
 				492731EE29096677005F5B0A /* HotViewController.swift in Sources */,
 				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,
 				49D39F28263AD40000F14497 /* WebRequest.swift in Sources */,
+				498DB1DF291BC24700F95607 /* BMaskProvider.swift in Sources */,
 				494741C029002797005D6885 /* UserDefault+..swift in Sources */,
 				F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */,
 				AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */,
@@ -738,6 +747,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		49078E45291BEA2400F556BD /* XCRemoteSwiftPackageReference "PocketSVG" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pocketsvg/PocketSVG.git";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		494741C129016CCE005D6885 /* XCRemoteSwiftPackageReference "MarqueeLabel" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cbpowell/MarqueeLabel";
@@ -821,6 +838,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		49078E46291BEA2400F556BD /* PocketSVG */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49078E45291BEA2400F556BD /* XCRemoteSwiftPackageReference "PocketSVG" */;
+			productName = PocketSVG;
+		};
 		494741C229016CCE005D6885 /* MarqueeLabel */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 494741C129016CCE005D6885 /* XCRemoteSwiftPackageReference "MarqueeLabel" */;

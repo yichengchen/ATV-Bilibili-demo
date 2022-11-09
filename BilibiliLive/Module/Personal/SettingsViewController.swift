@@ -107,6 +107,13 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(danmu)
 
+        let mask = CellModel(title: "智能防档弹幕", desp: Settings.danmuMask ? "开" : "关") {
+            [weak self] in
+            Settings.danmuMask.toggle()
+            self?.setupData()
+        }
+        cellModels.append(mask)
+
         collectionView.reloadData()
     }
 }
