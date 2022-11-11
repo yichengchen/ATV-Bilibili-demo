@@ -1,8 +1,6 @@
 name: Build workflow
 on:
   push:
-    branches: [ "main", "ci" ]
-  pull_request:
     branches: [ "main" ]
 
 jobs:
@@ -24,13 +22,6 @@ jobs:
           bundle install -j 4
           bundle exec fastlane build_unsign_ipa
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - name: Store artifact's name
-        id: artifact-name
-        run: echo "{name}=${GITHUB_REF##*/}-nosign.ipa" >> $GITHUB_OUTPUT
-
       - name: List, filter and delete artifacts
         uses: actions/github-script@v6
         id: artifact
@@ -44,12 +35,11 @@ jobs:
             })
             
             res.data.artifacts
-              .filter(({ name }) => name === '${{ steps.artifact-name.outputs.value }}')
               .forEach(({ id }) => { github.rest.actions.deleteArtifact({ owner, repo, artifact_id: id, }) })
 
       - name: Upload latest artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ steps.artifact-name.outputs.value }}
+          name: main-unsigned.ipa
           path: BilbiliAtvDemo.ipa
           retention-days: 30
