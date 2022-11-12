@@ -121,6 +121,13 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(mask)
 
+        let localMask = CellModel(title: "按需本地运算智能防档弹幕(Exp)", desp: Settings.vnMask ? "开" : "关") {
+            [weak self] in
+            Settings.vnMask.toggle()
+            self?.setupData()
+        }
+        cellModels.append(localMask)
+
         let match = CellModel(title: "匹配视频内容", desp: Settings.contentMatch ? "开" : "关") {
             [weak self] in
             Settings.contentMatch.toggle()

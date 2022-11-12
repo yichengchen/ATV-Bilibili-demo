@@ -67,6 +67,10 @@ class LivePlayerViewController: CommonPlayerViewController {
             playerItem = AVPlayerItem(asset: asset)
             player = AVPlayer(playerItem: playerItem)
         }
+        if Settings.danmuMask, Settings.vnMask {
+            maskProvider = VMaskProvider()
+            setupMask()
+        }
     }
 
     func endWithError(err: Error) {

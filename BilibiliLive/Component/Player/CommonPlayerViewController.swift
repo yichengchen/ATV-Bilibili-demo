@@ -14,6 +14,7 @@ protocol MaskProvider: AnyObject {
     func getMask(for time: CMTime, frame: CGRect, onGet: @escaping (CALayer) -> Void)
     func needVideoOutput() -> Bool
     func setVideoOutout(ouput: AVPlayerItemVideoOutput)
+    func preferFPS() -> Int
 }
 
 class CommonPlayerViewController: AVPlayerViewController {
@@ -222,10 +223,10 @@ class CommonPlayerViewController: AVPlayerViewController {
                                                object: playerItem)
     }
 
-    func setupMask(fps: Int) {
+    func setupMask() {
         guard let maskProvider else { return }
 //        danMuView.backgroundColor = UIColor.red.withAlphaComponent(0.5)
-        let interval = CMTime(seconds: 1.0 / CGFloat(fps),
+        let interval = CMTime(seconds: 1.0 / CGFloat(maskProvider.preferFPS()),
                               preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         player?.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: {
             [weak self, weak maskProvider] time in

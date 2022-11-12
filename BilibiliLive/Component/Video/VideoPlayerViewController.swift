@@ -134,12 +134,16 @@ extension VideoPlayerViewController {
 
             await playmedia(urlInfo: playData, playerInfo: info)
 
-            if Settings.danmuMask, let mask = info?.dm_mask,
-               let video = playData.dash.video.first,
-               let fps = info?.dm_mask?.fps, fps > 0
-            {
-                maskProvider = BMaskProvider(info: mask, videoSize: CGSize(width: video.width, height: video.height), duration: playData.dash.duration)
-                setupMask(fps: fps)
+            if Settings.danmuMask {
+                if let mask = info?.dm_mask,
+                   let video = playData.dash.video.first,
+                   let fps = info?.dm_mask?.fps, fps > 0
+                {
+                    maskProvider = BMaskProvider(info: mask, videoSize: CGSize(width: video.width, height: video.height), duration: playData.dash.duration)
+                } else if Settings.vnMask {
+                    maskProvider = VMaskProvider()
+                }
+                setupMask()
             }
 
             if data == nil {
