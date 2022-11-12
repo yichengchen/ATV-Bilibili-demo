@@ -10,6 +10,12 @@ import Kingfisher
 import UIKit
 import Vision
 
+protocol MaskProvider: AnyObject {
+    func getMask(for time: CMTime, frame: CGRect, onGet: @escaping (CALayer) -> Void)
+    func needVideoOutput() -> Bool
+    func setVideoOutout(ouput: AVPlayerItemVideoOutput)
+}
+
 class CommonPlayerViewController: AVPlayerViewController {
     let danMuView = DanmakuView()
     var allowChangeSpeed = true
@@ -19,7 +25,7 @@ class CommonPlayerViewController: AVPlayerViewController {
     private var observer: NSKeyValueObservation?
     private var rateObserver: NSKeyValueObservation?
     private var debugView: UILabel?
-    var maskProvider: BMaskProvider?
+    var maskProvider: MaskProvider?
 
     var playerItem: AVPlayerItem? {
         didSet {
@@ -44,9 +50,6 @@ class CommonPlayerViewController: AVPlayerViewController {
                     } else if player.rate == 0, self.danMuView.status == .play {
                         self.danMuView.pause()
                     }
-                }
-                player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
-                    self?.bodyDetect()
                 }
             } else {
                 rateObserver = nil
@@ -92,7 +95,9 @@ class CommonPlayerViewController: AVPlayerViewController {
         print("player status: \(player?.currentItem?.status.rawValue ?? -1)")
         switch player?.currentItem?.status {
         case .readyToPlay:
-            setUpOutput()
+            if maskProvider?.needVideoOutput() == true {
+                setUpOutput()
+            }
             startPlay()
         case .failed:
             removeObservarPlayerItem()
@@ -225,7 +230,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         player?.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: {
             [weak self, weak maskProvider] time in
             guard let self else { return }
-            maskProvider?.getMask(for: time.seconds, frame: self.danMuView.frame) {
+            maskProvider?.getMask(for: time, frame: self.danMuView.frame) {
                 maskLayer in
                 self.danMuView.layer.mask = maskLayer
             }
@@ -327,32 +332,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBuffAttributes)
         videoItem.add(videoOutput)
         self.videoOutput = videoOutput
-    }
-
-    func bodyDetect() {
-        guard let videoOutput, let currentItem = player?.currentItem else { return }
-        let time = currentItem.currentTime()
-        guard videoOutput.hasNewPixelBuffer(forItemTime: time),
-              let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil) else { return }
-
-        do {
-            let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer)
-            let request = VNDetectHumanRectanglesRequest()
-            try handler.perform([request])
-            guard let observations = request.results, observations.count > 0 else { return }
-            let coordTransform = CGAffineTransform(scaleX: view.frame.width, y: view.frame.height)
-            let finalTransform = coordTransform.scaledBy(x: 1, y: -1).translatedBy(x: 0, y: -1)
-            let maskLayer = CAShapeLayer()
-            let path = UIBezierPath(rect: view.frame)
-            for observation in observations {
-                let frame = observation.boundingBox.applying(finalTransform)
-                path.append(UIBezierPath(rect: frame).reversing())
-            }
-            maskLayer.path = path.cgPath
-            danMuView.layer.mask = maskLayer
-        } catch {
-            print("Vision error: \(error.localizedDescription)")
-        }
+        maskProvider?.setVideoOutout(ouput: videoOutput)
     }
 }
 
