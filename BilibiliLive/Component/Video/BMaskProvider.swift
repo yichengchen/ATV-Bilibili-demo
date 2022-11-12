@@ -6,11 +6,12 @@
 //
 
 import Alamofire
+import AVFoundation
 import Foundation
 import PocketSVG
 import UIKit
 
-class BMaskProvider {
+class BMaskProvider: MaskProvider {
     let info: PlayerInfo.MaskInfo
     let videoSize: CGSize
     var svgs = [[UIBezierPath]]()
@@ -107,7 +108,8 @@ class BMaskProvider {
         svgs = total
     }
 
-    func getMask(for time: TimeInterval, frame: CGRect, onGet: ((CALayer) -> Void)? = nil) {
+    func getMask(for time: CMTime, frame: CGRect, onGet: (CALayer) -> Void) {
+        let time = time.seconds
         guard time != lastTime else { return }
         lastTime = time
         if time < 0 { return }
@@ -123,8 +125,14 @@ class BMaskProvider {
             layer.addSublayer(shapeLayer)
         }
         layer.frame = frame
-        onGet?(layer)
+        onGet(layer)
     }
+
+    func needVideoOutput() -> Bool {
+        return false
+    }
+
+    func setVideoOutout(ouput: AVPlayerItemVideoOutput) {}
 }
 
 extension BMaskProvider {
