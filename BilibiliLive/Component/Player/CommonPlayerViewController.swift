@@ -19,6 +19,8 @@ class CommonPlayerViewController: AVPlayerViewController {
     private var observer: NSKeyValueObservation?
     private var rateObserver: NSKeyValueObservation?
     private var debugView: UILabel?
+    var maskProvider: BMaskProvider?
+
     var playerItem: AVPlayerItem? {
         didSet {
             if let playerItem = playerItem {
@@ -62,6 +64,7 @@ class CommonPlayerViewController: AVPlayerViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
         allowsPictureInPicturePlayback = true
         delegate = self
         initDanmuView()
@@ -212,6 +215,21 @@ class CommonPlayerViewController: AVPlayerViewController {
                                                selector: #selector(playerDidFinishPlaying),
                                                name: .AVPlayerItemDidPlayToEndTime,
                                                object: playerItem)
+    }
+
+    func setupMask(fps: Int) {
+        guard let maskProvider else { return }
+//        danMuView.backgroundColor = UIColor.red.withAlphaComponent(0.5)
+        let interval = CMTime(seconds: 1.0 / CGFloat(fps),
+                              preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        player?.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: {
+            [weak self, weak maskProvider] time in
+            guard let self else { return }
+            maskProvider?.getMask(for: time.seconds, frame: self.danMuView.frame) {
+                maskLayer in
+                self.danMuView.layer.mask = maskLayer
+            }
+        })
     }
 
     func retryPlay() -> Bool {

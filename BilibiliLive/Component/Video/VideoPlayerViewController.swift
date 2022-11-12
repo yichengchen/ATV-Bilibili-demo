@@ -126,14 +126,21 @@ extension VideoPlayerViewController {
     func fetchVideoData() async {
         let info = try? await WebRequest.requestPlayerInfo(aid: aid, cid: cid!)
         let startTime = info?.playTimeInSecond
-
         do {
             let playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
-            if let startTime = startTime, playData.dash.duration - startTime > 5 {
+            if let startTime = startTime, playData.dash.duration - startTime > 5, Settings.continuePlay {
                 playerStartPos = startTime
             }
 
             await playmedia(urlInfo: playData, playerInfo: info)
+
+            if Settings.danmuMask, let mask = info?.dm_mask,
+               let video = playData.dash.video.first,
+               let fps = info?.dm_mask?.fps, fps > 0
+            {
+                maskProvider = BMaskProvider(info: mask, videoSize: CGSize(width: video.width, height: video.height), duration: playData.dash.duration)
+                setupMask(fps: fps)
+            }
 
             if data == nil {
                 data = try? await WebRequest.requestDetailVideo(aid: aid!)

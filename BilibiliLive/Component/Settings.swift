@@ -41,6 +41,18 @@ enum Settings {
 
     @UserDefault("Settings.defaultDanmuStatus", defaultValue: true)
     static var defaultDanmuStatus: Bool
+
+    @UserDefault("Settings.danmuMask", defaultValue: false)
+    static var danmuMask: Bool
+
+    @UserDefault("Settings.loadHighestVideoOnly", defaultValue: false)
+    static var loadHighestVideoOnly: Bool
+
+    @UserDefault("Settings.contentMatch", defaultValue: true)
+    static var contentMatch: Bool
+
+    @UserDefault("Settings.continuePlay", defaultValue: true)
+    static var continuePlay: Bool
 }
 
 struct MediaQuality {

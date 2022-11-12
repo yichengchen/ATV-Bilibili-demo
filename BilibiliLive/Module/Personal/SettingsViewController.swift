@@ -74,6 +74,13 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(liveHack)
 
+        let continuePlay = CellModel(title: "继续播放", desp: Settings.continuePlay ? "开" : "关") {
+            [weak self] in
+            Settings.continuePlay.toggle()
+            self?.setupData()
+        }
+        cellModels.append(continuePlay)
+
         let quality = CellModel(title: "最高画质", desp: Settings.mediaQuality.desp) { [weak self] in
             let alert = UIAlertController(title: "最高画质", message: "4k以上需要大会员", preferredStyle: .actionSheet)
             for quality in MediaQualityEnum.allCases {
@@ -106,6 +113,20 @@ class SettingsViewController: UIViewController {
             self?.setupData()
         }
         cellModels.append(danmu)
+
+        let mask = CellModel(title: "智能防档弹幕", desp: Settings.danmuMask ? "开" : "关") {
+            [weak self] in
+            Settings.danmuMask.toggle()
+            self?.setupData()
+        }
+        cellModels.append(mask)
+
+        let match = CellModel(title: "匹配视频内容", desp: Settings.contentMatch ? "开" : "关") {
+            [weak self] in
+            Settings.contentMatch.toggle()
+            self?.setupData()
+        }
+        cellModels.append(match)
 
         collectionView.reloadData()
     }

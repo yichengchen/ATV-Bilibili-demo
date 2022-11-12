@@ -2,12 +2,10 @@ name: Build workflow
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
-    name: Build simulator
+    name: Build ipa
     runs-on: macos-12
 
     steps:
@@ -22,5 +20,26 @@ jobs:
           platform: ${{ 'iOS Simulator' }}
         run: |
           bundle install -j 4
-          bundle exec fastlane build_simulator
-      
+          bundle exec fastlane build_unsign_ipa
+
+      - name: List, filter and delete artifacts
+        uses: actions/github-script@v6
+        id: artifact
+        with:
+          script: |
+            const { owner, repo } = context.issue
+            
+            const res = await github.rest.actions.listArtifactsForRepo({
+              owner,
+              repo,
+            })
+            
+            res.data.artifacts
+              .forEach(({ id }) => { github.rest.actions.deleteArtifact({ owner, repo, artifact_id: id, }) })
+
+      - name: Upload latest artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: main-unsigned.ipa
+          path: BilbiliAtvDemo.ipa
+          retention-days: 30
