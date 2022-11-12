@@ -42,8 +42,11 @@ enum Settings {
     @UserDefault("Settings.defaultDanmuStatus", defaultValue: true)
     static var defaultDanmuStatus: Bool
 
-    @UserDefault("Settings.danmuMask", defaultValue: false)
+    @UserDefault("Settings.danmuMask", defaultValue: true)
     static var danmuMask: Bool
+
+    @UserDefault("Settings.vnMask", defaultValue: false)
+    static var vnMask: Bool
 
     @UserDefault("Settings.loadHighestVideoOnly", defaultValue: false)
     static var loadHighestVideoOnly: Bool

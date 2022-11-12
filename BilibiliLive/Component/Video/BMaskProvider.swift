@@ -133,6 +133,9 @@ class BMaskProvider: MaskProvider {
     }
 
     func setVideoOutout(ouput: AVPlayerItemVideoOutput) {}
+    func preferFPS() -> Int {
+        return info.fps
+    }
 }
 
 extension BMaskProvider {
