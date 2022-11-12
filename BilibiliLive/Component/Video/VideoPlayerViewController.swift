@@ -128,7 +128,7 @@ extension VideoPlayerViewController {
         let startTime = info?.playTimeInSecond
         do {
             let playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
-            if let startTime = startTime, playData.dash.duration - startTime > 5 {
+            if let startTime = startTime, playData.dash.duration - startTime > 5, Settings.continuePlay {
                 playerStartPos = startTime
             }
 

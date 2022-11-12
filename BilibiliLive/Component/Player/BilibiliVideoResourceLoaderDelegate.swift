@@ -57,12 +57,13 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         """
     }
 
-    private func addVideoPlayBackInfo(codec: String, width: Int, height: Int, frameRate: String, bandwidth: Int, duration: Int, url: String, sar: String) {
+    private func addVideoPlayBackInfo(codec: String, width: Int, height: Int, frameRate: String, bandwidth: Int, duration: Int, url: String, sar: String, quality: Int) {
         guard !videoCodecBlackList.contains(codec) else { return }
         let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
+        let videoRange = quality == MediaQualityEnum.quality_hdr_dolby.qn ? "PQ" : "SDR"
         let content = """
-        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth)
-        \(URLs.customPrefix)\(playlists.count)?codec=\(codec)&rate=\(frameRate)&width=\(width)&host=\(URL(string: url)?.host ?? "none")
+        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth),VIDEO-RANGE=\(videoRange)
+        \(URLs.customPrefix)\(playlists.count)?codec=\(codec)&rate=\(frameRate)&width=\(width)&host=\(URL(string: url)?.host ?? "none")&range=\(quality)
 
         """
         masterPlaylist.append(content)
@@ -150,7 +151,10 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
         for video in videos {
             for url in video.playableURLs {
-                addVideoPlayBackInfo(codec: video.codecs, width: video.width, height: video.height, frameRate: video.frame_rate, bandwidth: video.bandwidth, duration: info.dash.duration, url: url, sar: video.sar)
+                addVideoPlayBackInfo(codec: video.codecs, width: video.width, height: video.height, frameRate: video.frame_rate, bandwidth: video.bandwidth, duration: info.dash.duration, url: url, sar: video.sar, quality: video.id)
+            }
+            if Settings.loadHighestVideoOnly {
+                break
             }
         }
 
@@ -313,6 +317,6 @@ extension VideoPlayURLInfo.DashInfo.DashMediaInfo {
     }
 
     var isHevc: Bool {
-        return codecs.starts(with: "hev") || codecs.starts(with: "hvc")
+        return codecs.starts(with: "hev") || codecs.starts(with: "hvc") || codecs.starts(with: "dvh1")
     }
 }

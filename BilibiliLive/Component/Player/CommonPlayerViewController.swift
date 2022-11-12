@@ -58,6 +58,7 @@ class CommonPlayerViewController: AVPlayerViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
         allowsPictureInPicturePlayback = true
         delegate = self
         initDanmuView()
