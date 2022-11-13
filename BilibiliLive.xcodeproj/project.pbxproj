@@ -32,6 +32,7 @@
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		49FB8EC0291F4C520045D5DE /* VMaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FB8EBF291F4C520045D5DE /* VMaskProvider.swift */; };
+		49FB8EE929208EBE0045D5DE /* SidxParseUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */; };
 		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
 		AE2B41572914C02000BF2B0B /* Int.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41562914C02000BF2B0B /* Int.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
@@ -102,6 +103,7 @@
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		49FB8EBF291F4C520045D5DE /* VMaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMaskProvider.swift; sourceTree = "<group>"; };
+		49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidxParseUtil.swift; sourceTree = "<group>"; };
 		AE2B41542912706700BF2B0B /* SearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultViewController.swift; sourceTree = "<group>"; };
 		AE2B41562914C02000BF2B0B /* Int.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Int.swift; sourceTree = "<group>"; };
 		AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteViewController.swift; sourceTree = "<group>"; };
@@ -324,6 +326,7 @@
 			children = (
 				49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */,
 				F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */,
+				49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -497,6 +500,7 @@
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
 				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
+				49FB8EE929208EBE0045D5DE /* SidxParseUtil.swift in Sources */,
 				F9171D6129010429002868C7 /* UICollectionView+..swift in Sources */,
 				AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */,
 				4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */,

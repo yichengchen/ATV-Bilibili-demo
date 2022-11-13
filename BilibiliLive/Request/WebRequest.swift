@@ -585,7 +585,7 @@ struct VideoPlayURLInfo: Codable {
         let audio: [DashMediaInfo]
         let dolby: DolbyInfo?
         let flac: FlacInfo?
-        struct DashMediaInfo: Codable {
+        struct DashMediaInfo: Codable, Hashable {
             let id: Int
             let base_url: String
             let backup_url: [String]?
@@ -601,7 +601,7 @@ struct VideoPlayURLInfo: Codable {
             let codecid: Int
         }
 
-        struct DashSegmentBase: Codable {
+        struct DashSegmentBase: Codable, Hashable {
             let initialization: String
             let index_range: String
         }

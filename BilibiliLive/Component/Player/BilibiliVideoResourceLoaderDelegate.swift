@@ -6,6 +6,7 @@
 //  Copyright © 2022 yicheng. All rights reserved.
 //
 
+import Alamofire
 import AVFoundation
 import Swifter
 import SwiftyJSON
@@ -17,6 +18,13 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         static let customPrefix = customScheme + "://list/"
         static let play = customPrefix + "play"
         static let customSubtitlePrefix = customScheme + "://subtitle/"
+        static let customVideoPrefix = customScheme + "://video/"
+    }
+
+    struct PlaybackInfo {
+        let info: VideoPlayURLInfo.DashInfo.DashMediaInfo
+        let url: String
+        let duration: Int
     }
 
     private var audioPlaylist = ""
@@ -28,11 +36,14 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
     private var playlists = [String]()
     private var subtitles = [String: String]()
+    private var videoInfo = [PlaybackInfo]()
+    private var segmentInfoCache = [VideoPlayURLInfo.DashInfo.DashMediaInfo: SidxParseUtil.Sidx]()
     private var hasAudioInMasterListAdded = false
     private(set) var playInfo: VideoPlayURLInfo?
     private var hasSubtitle = false
     private var hasPreferSubtitleAdded = false
     private var httpServer = HttpServer()
+    private var aid = 0
 
     deinit {
         httpServer.stop()
@@ -55,6 +66,81 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
 
         """
+    }
+
+    private func addVideoPlayBackInfo(info: VideoPlayURLInfo.DashInfo.DashMediaInfo, url: String, duration: Int) {
+        guard !videoCodecBlackList.contains(info.codecs) else { return }
+        let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
+        let videoRange = info.id == MediaQualityEnum.quality_hdr_dolby.qn ? "PQ" : "SDR"
+        let content = """
+        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(info.codecs)",RESOLUTION=\(info.width)x\(info.height),FRAME-RATE=\(info.frame_rate),BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
+        \(URLs.customVideoPrefix)\(videoInfo.count)?codec=\(info.codecs)&rate=\(info.frame_rate)&width=\(info.width)&host=\(URL(string: url)?.host ?? "none")&range=\(info.id)
+
+        """
+        masterPlaylist.append(content)
+        videoInfo.append(PlaybackInfo(info: info, url: url, duration: duration))
+    }
+
+    private func getVideoPlayList(info: PlaybackInfo) async -> String {
+        var segment = segmentInfoCache[info.info]
+        if segment == nil {
+            let range = info.info.segment_base.index_range
+            if let res = try? await AF.request(info.url,
+                                               headers: ["Range": "bytes=\(range)",
+                                                         "Referer": "https://www.bilibili.com/video/av\(aid)"])
+                .serializingData().result.get()
+            {
+                segment = SidxParseUtil.processIndexData(data: res)
+            }
+        } else {
+            print("cache hit")
+        }
+        let inits = info.info.segment_base.initialization.components(separatedBy: "-")
+        guard let moovIdxStr = inits.last,
+              let moovIdx = Int(moovIdxStr),
+              let moovOffset = inits.first,
+              let offsetStr = info.info.segment_base.index_range.components(separatedBy: "-").last,
+              var offset = Int(offsetStr),
+              let segment = segment
+        else {
+            return """
+            #EXTM3U
+            #EXT-X-VERSION:7
+            #EXT-X-TARGETDURATION:\(info.duration)
+            #EXT-X-MEDIA-SEQUENCE:1
+            #EXT-X-INDEPENDENT-SEGMENTS
+            #EXT-X-PLAYLIST-TYPE:VOD
+            #EXTINF:\(info.duration)
+            \(info.url)
+            #EXT-X-ENDLIST
+            """
+        }
+
+        var playList = """
+        #EXTM3U
+        #EXT-X-VERSION:7
+        #EXT-X-TARGETDURATION:\(info.duration)
+        #EXT-X-MEDIA-SEQUENCE:1
+        #EXT-X-INDEPENDENT-SEGMENTS
+        #EXT-X-PLAYLIST-TYPE:VOD
+        #EXT-X-MAP:URI="\(info.url)",BYTERANGE="\(moovIdx - 1)@\(moovOffset)"
+
+        """
+        offset -= 1
+        for segInfo in segment.segments {
+            let segStr = """
+            #EXTINF:\(Double(segInfo.duration) / Double(segment.timescale)),
+            #EXT-X-BYTERANGE:\(segInfo.size - 1)@\(offset)
+            \(info.url)
+
+            """
+            playList.append(segStr)
+            offset += (segInfo.size - 1)
+        }
+
+        playList.append("\n#EXT-X-ENDLIST")
+
+        return playList
     }
 
     private func addVideoPlayBackInfo(codec: String, width: Int, height: Int, frameRate: String, bandwidth: Int, duration: Int, url: String, sar: String, quality: Int) {
@@ -138,8 +224,9 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         playlists.append(playList)
     }
 
-    func setBilibili(info: VideoPlayURLInfo, subtitles: [SubtitleData]) {
+    func setBilibili(info: VideoPlayURLInfo, subtitles: [SubtitleData], aid: Int) {
         playInfo = info
+        self.aid = aid
         reset()
         hasSubtitle = subtitles.count > 0
         var videos = info.dash.video
@@ -151,10 +238,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
         for video in videos {
             for url in video.playableURLs {
-                addVideoPlayBackInfo(codec: video.codecs, width: video.width, height: video.height, frameRate: video.frame_rate, bandwidth: video.bandwidth, duration: info.dash.duration, url: url, sar: video.sar, quality: video.id)
-            }
-            if Settings.loadHighestVideoOnly {
-                break
+                addVideoPlayBackInfo(info: video, url: url, duration: info.dash.duration)
             }
         }
 
@@ -230,6 +314,12 @@ private extension BilibiliVideoResourceLoaderDelegate {
             let playlist = playlists[index]
             report(loadingRequest, content: playlist)
             return
+        }
+        if urlStr.hasPrefix(URLs.customVideoPrefix), let index = Int(customUrl.lastPathComponent) {
+            let info = videoInfo[index]
+            Task {
+                report(loadingRequest, content: await getVideoPlayList(info: info))
+            }
         }
         if urlStr.hasPrefix(URLs.customSubtitlePrefix) {
             let url = String(urlStr.dropFirst(URLs.customSubtitlePrefix.count))
