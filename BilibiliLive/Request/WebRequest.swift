@@ -624,7 +624,7 @@ struct VideoPlayURLInfo: Codable {
 
         struct FlacInfo: Codable {
             let display: Bool
-            let audio: DashMediaInfo
+            let audio: DashMediaInfo?
         }
     }
 }
