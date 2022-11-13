@@ -123,19 +123,19 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         #EXT-X-MEDIA-SEQUENCE:1
         #EXT-X-INDEPENDENT-SEGMENTS
         #EXT-X-PLAYLIST-TYPE:VOD
-        #EXT-X-MAP:URI="\(info.url)",BYTERANGE="\(moovIdx - 1)@\(moovOffset)"
+        #EXT-X-MAP:URI="\(info.url)",BYTERANGE="\(moovIdx)@\(moovOffset)"
 
         """
-        offset -= 1
+
         for segInfo in segment.segments {
             let segStr = """
             #EXTINF:\(Double(segInfo.duration) / Double(segment.timescale)),
-            #EXT-X-BYTERANGE:\(segInfo.size - 1)@\(offset)
+            #EXT-X-BYTERANGE:\(segInfo.size)@\(offset)
             \(info.url)
 
             """
             playList.append(segStr)
-            offset += (segInfo.size - 1)
+            offset += (segInfo.size)
         }
 
         playList.append("\n#EXT-X-ENDLIST")
