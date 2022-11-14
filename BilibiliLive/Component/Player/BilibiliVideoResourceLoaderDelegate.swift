@@ -71,9 +71,28 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private func addVideoPlayBackInfo(info: VideoPlayURLInfo.DashInfo.DashMediaInfo, url: String, duration: Int) {
         guard !videoCodecBlackList.contains(info.codecs) else { return }
         let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
-        let videoRange = info.id == MediaQualityEnum.quality_hdr_dolby.qn ? "PQ" : "SDR"
+        var videoRange = info.id == MediaQualityEnum.quality_hdr_dolby.qn ? "HLG" : "SDR"
+        var codecs = info.codecs
+        var supplementCodesc = ""
+        // TODO: Need update all codecs with https://developer.apple.com/documentation/http_live_streaming/http_live_streaming_hls_authoring_specification_for_apple_devices/hls_authoring_specification_for_apple_devices_appendixes
+        if info.id == MediaQualityEnum.quality_hdr_dolby.qn {
+            if codecs == "dvh1.08.07" {
+                supplementCodesc = codecs
+                codecs = "hvc1.2.4.L153.b0"
+                videoRange = "HLG"
+            } else if codecs == "dvh1.08.06" {
+                supplementCodesc = codecs
+                codecs = "hvc1.2.4.L150"
+                videoRange = "PQ"
+            } else {
+                videoRange = "PQ"
+            }
+        }
+        if supplementCodesc.count > 0 {
+            supplementCodesc = ",SUPPLEMENTAL-CODECS=\"\(supplementCodesc)\""
+        }
         let content = """
-        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(info.codecs)",RESOLUTION=\(info.width ?? 0)x\(info.height ?? 0),FRAME-RATE=\(info.frame_rate ?? "25"),BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
+        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codecs)"\(supplementCodesc),RESOLUTION=\(info.width ?? 0)x\(info.height ?? 0),FRAME-RATE=\(info.frame_rate ?? "25"),BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
         \(URLs.customDashPrefix)\(videoInfo.count)?codec=\(info.codecs)&rate=\(info.frame_rate ?? "25")&width=\(info.width ?? 0)&host=\(URL(string: url)?.host ?? "none")&range=\(info.id)
 
         """
@@ -256,6 +275,8 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         for subtitle in subtitles {
             addSubtitleData(lang: subtitle.lan, name: subtitle.lan_doc, duration: info.dash.duration, url: subtitle.url.absoluteString)
         }
+
+        masterPlaylist.append("\n#EXT-X-ENDLIST\n")
     }
 
     private func reportError(_ loadingRequest: AVAssetResourceLoadingRequest, withErrorCode error: Int) {
@@ -292,6 +313,7 @@ private extension BilibiliVideoResourceLoaderDelegate {
             return
         }
         let urlStr = customUrl.absoluteString
+        print("handleCustomPlaylistRequest: \(urlStr)")
         if urlStr == URLs.play {
             report(loadingRequest, content: masterPlaylist)
             return
