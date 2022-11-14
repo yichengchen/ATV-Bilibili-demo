@@ -18,7 +18,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         static let customPrefix = customScheme + "://list/"
         static let play = customPrefix + "play"
         static let customSubtitlePrefix = customScheme + "://subtitle/"
-        static let customVideoPrefix = customScheme + "://video/"
+        static let customDashPrefix = customScheme + "://dash/"
     }
 
     struct PlaybackInfo {
@@ -73,8 +73,8 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
         let videoRange = info.id == MediaQualityEnum.quality_hdr_dolby.qn ? "PQ" : "SDR"
         let content = """
-        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(info.codecs)",RESOLUTION=\(info.width)x\(info.height),FRAME-RATE=\(info.frame_rate),BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
-        \(URLs.customVideoPrefix)\(videoInfo.count)?codec=\(info.codecs)&rate=\(info.frame_rate)&width=\(info.width)&host=\(URL(string: url)?.host ?? "none")&range=\(info.id)
+        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(info.codecs)",RESOLUTION=\(info.width ?? 0)x\(info.height ?? 0),FRAME-RATE=\(info.frame_rate ?? "25"),BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
+        \(URLs.customDashPrefix)\(videoInfo.count)?codec=\(info.codecs)&rate=\(info.frame_rate ?? "25")&width=\(info.width ?? 0)&host=\(URL(string: url)?.host ?? "none")&range=\(info.id)
 
         """
         masterPlaylist.append(content)
@@ -119,7 +119,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         var playList = """
         #EXTM3U
         #EXT-X-VERSION:7
-        #EXT-X-TARGETDURATION:\(info.duration)
+        #EXT-X-TARGETDURATION:\(segment.maxSegmentDuration() ?? info.duration)
         #EXT-X-MEDIA-SEQUENCE:1
         #EXT-X-INDEPENDENT-SEGMENTS
         #EXT-X-PLAYLIST-TYPE:VOD
@@ -143,29 +143,16 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         return playList
     }
 
-    private func addVideoPlayBackInfo(codec: String, width: Int, height: Int, frameRate: String, bandwidth: Int, duration: Int, url: String, sar: String, quality: Int) {
-        guard !videoCodecBlackList.contains(codec) else { return }
-        let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
-        let videoRange = quality == MediaQualityEnum.quality_hdr_dolby.qn ? "PQ" : "SDR"
+    private func addAudioPlayBackInfo(info: VideoPlayURLInfo.DashInfo.DashMediaInfo, url: String, duration: Int) {
+        guard !videoCodecBlackList.contains(info.codecs) else { return }
+        let defaultStr = !hasAudioInMasterListAdded ? "YES" : "NO"
         let content = """
-        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codec)",RESOLUTION=\(width)x\(height),FRAME-RATE=\(frameRate),BANDWIDTH=\(bandwidth),VIDEO-RANGE=\(videoRange)
-        \(URLs.customPrefix)\(playlists.count)?codec=\(codec)&rate=\(frameRate)&width=\(width)&host=\(URL(string: url)?.host ?? "none")&range=\(quality)
+        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),GROUP-ID="audio",NAME="Main",URI="\(URLs.customDashPrefix)\(videoInfo.count)"
 
         """
+
         masterPlaylist.append(content)
-
-        let playList = """
-        #EXTM3U
-        #EXT-X-VERSION:7
-        #EXT-X-TARGETDURATION:\(duration)
-        #EXT-X-MEDIA-SEQUENCE:1
-        #EXT-X-INDEPENDENT-SEGMENTS
-        #EXT-X-PLAYLIST-TYPE:VOD
-        #EXTINF:\(duration)
-        \(url)
-        #EXT-X-ENDLIST
-        """
-        playlists.append(playList)
+        videoInfo.append(PlaybackInfo(info: info, url: url, duration: duration))
     }
 
     private func addAudioPlayBackInfo(codec: String, bandwidth: Int, duration: Int, url: String) {
@@ -246,19 +233,19 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             if let audios = info.dash.dolby?.audio {
                 for audio in audios {
                     for url in BVideoUrlUtils.sortUrls(base: audio.base_url, backup: audio.backup_url) {
-                        addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: url)
+                        addAudioPlayBackInfo(info: audio, url: url, duration: info.dash.duration)
                     }
                 }
             } else if let audio = info.dash.flac?.audio {
                 for url in audio.playableURLs {
-                    addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: url)
+                    addAudioPlayBackInfo(info: audio, url: url, duration: info.dash.duration)
                 }
             }
         }
 
         for audio in info.dash.audio {
             for url in audio.playableURLs {
-                addAudioPlayBackInfo(codec: audio.codecs, bandwidth: audio.bandwidth, duration: info.dash.duration, url: url)
+                addAudioPlayBackInfo(info: audio, url: url, duration: info.dash.duration)
             }
         }
 
@@ -315,7 +302,7 @@ private extension BilibiliVideoResourceLoaderDelegate {
             report(loadingRequest, content: playlist)
             return
         }
-        if urlStr.hasPrefix(URLs.customVideoPrefix), let index = Int(customUrl.lastPathComponent) {
+        if urlStr.hasPrefix(URLs.customDashPrefix), let index = Int(customUrl.lastPathComponent) {
             let info = videoInfo[index]
             Task {
                 report(loadingRequest, content: await getVideoPlayList(info: info))

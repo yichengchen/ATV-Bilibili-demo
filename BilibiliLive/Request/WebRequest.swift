@@ -592,13 +592,13 @@ struct VideoPlayURLInfo: Codable {
             let bandwidth: Int
             let mime_type: String
             let codecs: String
-            let width: Int
-            let height: Int
-            let frame_rate: String
-            let sar: String
-            let start_with_sap: Int
+            let width: Int?
+            let height: Int?
+            let frame_rate: String?
+            let sar: String?
+            let start_with_sap: Int?
             let segment_base: DashSegmentBase
-            let codecid: Int
+            let codecid: Int?
         }
 
         struct DashSegmentBase: Codable, Hashable {
@@ -608,18 +608,7 @@ struct VideoPlayURLInfo: Codable {
 
         struct DolbyInfo: Codable {
             let type: Int
-            let audio: [DolbyAudioInfo]?
-
-            struct DolbyAudioInfo: Codable {
-                let id: Int
-                let base_url: String
-                let backup_url: [String]?
-                let bandwidth: Int
-                let mime_type: String
-                let codecs: String
-                let segment_base: DashSegmentBase
-                let size: Int?
-            }
+            let audio: [DashMediaInfo]?
         }
 
         struct FlacInfo: Codable {

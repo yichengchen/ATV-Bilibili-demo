@@ -21,6 +21,13 @@ enum SidxParseUtil {
             let sap_type: Int
             let sap_delta: Int
         }
+
+        func maxSegmentDuration() -> Int? {
+            if let duration = segments.map({ Double($0.duration) / Double(timescale) }).max() {
+                return Int(duration + 1)
+            }
+            return nil
+        }
     }
 
     static func processIndexData(data: Data) -> Sidx? {
