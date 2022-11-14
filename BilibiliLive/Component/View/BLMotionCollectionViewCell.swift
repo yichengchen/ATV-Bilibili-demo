@@ -23,7 +23,7 @@ class BLMotionCollectionViewCell: UICollectionViewCell {
     }
 
     func setup() {
-        motionEffectV = UIInterpolatingMotionEffect(keyPath: "center.x", type: .tiltAlongVerticalAxis)
+        motionEffectV = UIInterpolatingMotionEffect(keyPath: "center.y", type: .tiltAlongVerticalAxis)
         motionEffectV.maximumRelativeValue = 8
         motionEffectV.minimumRelativeValue = -8
         motionEffectH = UIInterpolatingMotionEffect(keyPath: "center.x", type: .tiltAlongHorizontalAxis)
