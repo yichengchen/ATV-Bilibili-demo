@@ -55,7 +55,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         return "video codecs: \(videoCodec), audio: \(audioCodec)"
     }
 
-    let videoCodecBlackList = ["avc1.640034", "hev1.2.4.L153.90"] // high 5.2 is not supported
+    let videoCodecBlackList = ["avc1.640034"] // high 5.2 is not supported
 
     private func reset() {
         playlists.removeAll()
@@ -80,6 +80,13 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         var codecs = info.codecs
         var supplementCodesc = ""
         // TODO: Need update all codecs with https://developer.apple.com/documentation/http_live_streaming/http_live_streaming_hls_authoring_specification_for_apple_devices/hls_authoring_specification_for_apple_devices_appendixes
+        var framerate = info.frame_rate ?? "25"
+        if isHDR10 {
+            videoRange = "PQ"
+            if let value = Int(framerate), value <= 30 {} else {
+                framerate = "30"
+            }
+        }
         if codecs == "dvh1.08.07" {
             supplementCodesc = codecs
             codecs = "hvc1.2.4.L153.b0"
@@ -91,8 +98,8 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             supplementCodesc = ",SUPPLEMENTAL-CODECS=\"\(supplementCodesc)\""
         }
         let content = """
-        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codecs)"\(supplementCodesc),RESOLUTION=\(info.width ?? 0)x\(info.height ?? 0),FRAME-RATE=\(info.frame_rate ?? "25"),BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
-        \(URLs.customDashPrefix)\(videoInfo.count)?codec=\(info.codecs)&rate=\(info.frame_rate ?? "25")&width=\(info.width ?? 0)&host=\(URL(string: url)?.host ?? "none")&range=\(info.id)
+        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codecs)"\(supplementCodesc),RESOLUTION=\(info.width ?? 0)x\(info.height ?? 0),FRAME-RATE=\(framerate),HDCP-LEVEL=TYPE-1,BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
+        \(URLs.customDashPrefix)\(videoInfo.count)?codec=\(info.codecs)&rate=\(framerate)&width=\(info.width ?? 0)&host=\(URL(string: url)?.host ?? "none")&range=\(info.id)
 
         """
         masterPlaylist.append(content)
