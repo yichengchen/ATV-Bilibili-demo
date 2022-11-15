@@ -71,22 +71,21 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private func addVideoPlayBackInfo(info: VideoPlayURLInfo.DashInfo.DashMediaInfo, url: String, duration: Int) {
         guard !videoCodecBlackList.contains(info.codecs) else { return }
         let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
-        var videoRange = info.id == MediaQualityEnum.quality_hdr_dolby.qn ? "HLG" : "SDR"
+        let isDolby = info.id == MediaQualityEnum.quality_hdr_dolby.qn
+        let isHDR10 = info.id == 125
+        // hdr 10 formate exp: hev1.2.4.L156.90
+        //  Codec.Profile.Flags.TierLevel.Constraints
+        let isHDR = isDolby || isHDR10
+        var videoRange = isHDR ? "HLG" : "SDR"
         var codecs = info.codecs
         var supplementCodesc = ""
         // TODO: Need update all codecs with https://developer.apple.com/documentation/http_live_streaming/http_live_streaming_hls_authoring_specification_for_apple_devices/hls_authoring_specification_for_apple_devices_appendixes
-        if info.id == MediaQualityEnum.quality_hdr_dolby.qn {
-            if codecs == "dvh1.08.07" {
-                supplementCodesc = codecs
-                codecs = "hvc1.2.4.L153.b0"
-                videoRange = "HLG"
-            } else if codecs == "dvh1.08.06" {
-                supplementCodesc = codecs
-                codecs = "hvc1.2.4.L150"
-                videoRange = "PQ"
-            } else {
-                videoRange = "PQ"
-            }
+        if codecs == "dvh1.08.07" {
+            supplementCodesc = codecs
+            codecs = "hvc1.2.4.L153.b0"
+        } else if codecs == "dvh1.08.06" {
+            supplementCodesc = codecs
+            codecs = "hvc1.2.4.L150"
         }
         if supplementCodesc.count > 0 {
             supplementCodesc = ",SUPPLEMENTAL-CODECS=\"\(supplementCodesc)\""
