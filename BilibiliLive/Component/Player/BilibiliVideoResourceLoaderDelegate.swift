@@ -98,7 +98,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             supplementCodesc = ",SUPPLEMENTAL-CODECS=\"\(supplementCodesc)\""
         }
         let content = """
-        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codecs)"\(supplementCodesc),RESOLUTION=\(info.width ?? 0)x\(info.height ?? 0),FRAME-RATE=\(framerate),HDCP-LEVEL=TYPE-1,BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
+        #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codecs)"\(supplementCodesc),RESOLUTION=\(info.width ?? 0)x\(info.height ?? 0),FRAME-RATE=\(framerate),BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
         \(URLs.customDashPrefix)\(videoInfo.count)?codec=\(info.codecs)&rate=\(framerate)&width=\(info.width ?? 0)&host=\(URL(string: url)?.host ?? "none")&range=\(info.id)
 
         """
