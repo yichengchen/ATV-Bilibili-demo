@@ -15,6 +15,10 @@ protocol PlayableData: DisplayData {
 class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
     private var page = 0
+    override var preferredFocusEnvironments: [UIFocusEnvironment] {
+        return [collectionVC.collectionView]
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCollectionView()

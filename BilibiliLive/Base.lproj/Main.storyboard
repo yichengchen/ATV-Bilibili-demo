@@ -733,6 +733,7 @@
                     </view>
                     <extendedEdge key="edgesForExtendedLayout"/>
                     <connections>
+                        <outlet property="actionButtonSpaceView" destination="D4E-g6-BwX" id="70M-Qk-vde"/>
                         <outlet property="avatarImageView" destination="pnX-um-kBa" id="TFy-HY-Iei"/>
                         <outlet property="backgroundImageView" destination="Kie-Aa-AFL" id="1Th-ka-RPV"/>
                         <outlet property="coinButton" destination="Olx-aY-Y43" id="a4a-wo-J4P"/>

@@ -31,6 +31,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var coinButton: BLCustomButton!
     @IBOutlet var dislikeButton: BLCustomButton!
 
+    @IBOutlet var actionButtonSpaceView: UIView!
     @IBOutlet var durationLabel: UILabel!
     @IBOutlet var playCountLabel: UILabel!
     @IBOutlet var danmakuLabel: UILabel!
@@ -96,6 +97,26 @@ class VideoDetailViewController: UIViewController {
         ugcCollectionView.register(RelatedVideoCell.self, forCellWithReuseIdentifier: String(describing: RelatedVideoCell.self))
         recommandCollectionView.collectionViewLayout = makeRelatedVideoCollectionViewLayout()
         ugcCollectionView.collectionViewLayout = makeRelatedVideoCollectionViewLayout()
+
+        var focusGuide = UIFocusGuide()
+        view.addLayoutGuide(focusGuide)
+        NSLayoutConstraint.activate([
+            focusGuide.topAnchor.constraint(equalTo: upButton.topAnchor),
+            focusGuide.leftAnchor.constraint(equalTo: followButton.rightAnchor),
+            focusGuide.rightAnchor.constraint(equalTo: coverImageView.leftAnchor),
+            focusGuide.bottomAnchor.constraint(equalTo: upButton.bottomAnchor),
+        ])
+        focusGuide.preferredFocusEnvironments = [followButton]
+
+        focusGuide = UIFocusGuide()
+        view.addLayoutGuide(focusGuide)
+        NSLayoutConstraint.activate([
+            focusGuide.topAnchor.constraint(equalTo: actionButtonSpaceView.topAnchor),
+            focusGuide.leftAnchor.constraint(equalTo: actionButtonSpaceView.leftAnchor),
+            focusGuide.rightAnchor.constraint(equalTo: actionButtonSpaceView.rightAnchor),
+            focusGuide.bottomAnchor.constraint(equalTo: actionButtonSpaceView.bottomAnchor),
+        ])
+        focusGuide.preferredFocusEnvironments = [dislikeButton]
     }
 
     override var preferredFocusedView: UIView? {
