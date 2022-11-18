@@ -51,7 +51,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
     var infoDebugText: String {
         let videoCodec = playInfo?.dash.video.map({ $0.codecs }).prefix(5).joined(separator: ",") ?? "nil"
-        let audioCodec = playInfo?.dash.audio.map({ $0.codecs }).prefix(5).joined(separator: ",") ?? "nil"
+        let audioCodec = playInfo?.dash.audio?.map({ $0.codecs }).prefix(5).joined(separator: ",") ?? "nil"
         return "video codecs: \(videoCodec), audio: \(audioCodec)"
     }
 
@@ -268,7 +268,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             }
         }
 
-        for audio in info.dash.audio {
+        for audio in info.dash.audio ?? [] {
             for url in audio.playableURLs {
                 addAudioPlayBackInfo(info: audio, url: url, duration: info.dash.duration)
             }

@@ -582,7 +582,7 @@ struct VideoPlayURLInfo: Codable {
         let duration: Int
         let minBufferTime: CGFloat
         let video: [DashMediaInfo]
-        let audio: [DashMediaInfo]
+        let audio: [DashMediaInfo]?
         let dolby: DolbyInfo?
         let flac: FlacInfo?
         struct DashMediaInfo: Codable, Hashable {
