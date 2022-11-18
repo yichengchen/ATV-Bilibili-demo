@@ -41,7 +41,7 @@ class SettingsViewController: UIViewController {
             self?.setupData()
         }
         cellModels.append(directlyVideo)
-
+        let cancelAction = UIAlertAction(title: nil, style: .cancel)
         let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.danmuArea.title) { [weak self] in
             let alert = UIAlertController(title: "弹幕显示区域", message: "设置弹幕显示区域", preferredStyle: .actionSheet)
             for style in DanmuArea.allCases {
@@ -51,6 +51,7 @@ class SettingsViewController: UIViewController {
                 }
                 alert.addAction(action)
             }
+            alert.addAction(cancelAction)
             self?.present(alert, animated: true)
         }
         cellModels.append(dmStyle)
@@ -64,6 +65,7 @@ class SettingsViewController: UIViewController {
                 }
                 alert.addAction(action)
             }
+            alert.addAction(cancelAction)
             self?.present(alert, animated: true)
         }
         cellModels.append(style)
@@ -90,6 +92,7 @@ class SettingsViewController: UIViewController {
                 }
                 alert.addAction(action)
             }
+            alert.addAction(cancelAction)
             self?.present(alert, animated: true)
         }
         cellModels.append(quality)
