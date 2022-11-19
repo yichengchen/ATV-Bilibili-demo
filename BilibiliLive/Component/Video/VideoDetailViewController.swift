@@ -374,7 +374,9 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             player.data = isBangumi ? nil : data
             present(player, animated: true, completion: nil)
         case replysCollectionView:
-            break
+            guard let reply = replys?.replies[indexPath.item] else { return }
+            let detail = ContentDetailViewController.createReply(content: reply.content.message)
+            present(detail, animated: true)
         case ugcCollectionView:
             guard let video = data?.View.ugc_season?.sections.first?.episodes[indexPath.item] else { return }
             let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
@@ -634,6 +636,13 @@ class ContentDetailViewController: UIViewController {
     static func createDesp(content: String) -> ContentDetailViewController {
         let vc = ContentDetailViewController()
         vc.titleLabel.text = "简介"
+        vc.contentTextView.text = content
+        return vc
+    }
+
+    static func createReply(content: String) -> ContentDetailViewController {
+        let vc = ContentDetailViewController()
+        vc.titleLabel.text = "评论"
         vc.contentTextView.text = content
         return vc
     }
