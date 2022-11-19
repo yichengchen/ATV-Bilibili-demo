@@ -24,17 +24,20 @@ class VideoDetailViewController: UIViewController {
 
     @IBOutlet var upButton: BLCustomTextButton!
     @IBOutlet var followButton: BLCustomButton!
-    @IBOutlet var noteLabel: UILabel!
     @IBOutlet var coverImageView: UIImageView!
     @IBOutlet var playButton: BLCustomButton!
     @IBOutlet var likeButton: BLCustomButton!
     @IBOutlet var coinButton: BLCustomButton!
+    @IBOutlet var noteView: NoteDetailView!
     @IBOutlet var dislikeButton: BLCustomButton!
 
     @IBOutlet var actionButtonSpaceView: UIView!
     @IBOutlet var durationLabel: UILabel!
     @IBOutlet var playCountLabel: UILabel!
     @IBOutlet var danmakuLabel: UILabel!
+    @IBOutlet var uploadTimeLabel: UILabel!
+    @IBOutlet var bvidLabel: UILabel!
+    @IBOutlet var followersLabel: UILabel!
     @IBOutlet var avatarImageView: UIImageView!
     @IBOutlet var favButton: BLCustomButton!
     @IBOutlet var pageCollectionView: UICollectionView!
@@ -97,6 +100,11 @@ class VideoDetailViewController: UIViewController {
         ugcCollectionView.register(RelatedVideoCell.self, forCellWithReuseIdentifier: String(describing: RelatedVideoCell.self))
         recommandCollectionView.collectionViewLayout = makeRelatedVideoCollectionViewLayout()
         ugcCollectionView.collectionViewLayout = makeRelatedVideoCollectionViewLayout()
+        noteView.onPrimaryAction = {
+            [weak self] note in
+            let detail = ContentDetailViewController.createDesp(content: note.label.text ?? "")
+            self?.present(detail, animated: true)
+        }
 
         var focusGuide = UIFocusGuide()
         view.addLayoutGuide(focusGuide)
@@ -209,6 +217,9 @@ class VideoDetailViewController: UIViewController {
     private func update(with data: VideoDetail) {
         playCountLabel.text = data.View.stat.view.numberString()
         danmakuLabel.text = data.View.stat.danmaku.numberString()
+        followersLabel.text = (data.Card.follower ?? 0).numberString() + "粉丝"
+        uploadTimeLabel.text = data.View.date
+        bvidLabel.text = data.View.bvid
         coinButton.title = data.View.stat.coin.numberString()
         favButton.title = data.View.stat.favorite.numberString()
         likeButton.title = data.View.stat.like.numberString()
@@ -229,7 +240,7 @@ class VideoDetailViewController: UIViewController {
             notes.append(status)
         }
         notes.append(data.View.desc ?? "")
-        noteLabel.text = notes.joined(separator: "\n")
+        noteView.label.text = notes.joined(separator: "\n")
         if !isBangumi {
             pages = data.View.pages ?? []
         }
@@ -532,5 +543,124 @@ class RelatedVideoCell: BLMotionCollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         stopScroll()
+    }
+}
+
+class DetailLabel: UILabel {
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        coordinator.addCoordinatedAnimations {
+            if self.isFocused {
+                self.backgroundColor = .white
+            } else {
+                self.backgroundColor = .clear
+            }
+        }
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        isUserInteractionEnabled = true
+    }
+
+    override var canBecomeFocused: Bool {
+        return true
+    }
+
+    override func drawText(in rect: CGRect) {
+        let insets = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5)
+        super.drawText(in: rect.inset(by: insets))
+    }
+}
+
+class NoteDetailView: UIControl {
+    let label = UILabel()
+    var onPrimaryAction: ((NoteDetailView) -> Void)?
+    private let backgroundView = UIView()
+    init() {
+        super.init(frame: .zero)
+        setup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+
+    func setup() {
+        addSubview(backgroundView)
+        backgroundView.backgroundColor = UIColor.white
+        backgroundView.layer.shadowOffset = CGSizeMake(0, 10)
+        backgroundView.layer.shadowOpacity = 0.15
+        backgroundView.layer.shadowRadius = 16.0
+        backgroundView.layer.cornerRadius = 20
+        backgroundView.layer.cornerCurve = .continuous
+        backgroundView.isHidden = !isFocused
+        backgroundView.snp.makeConstraints { make in
+            make.top.bottom.equalToSuperview()
+            make.left.equalToSuperview().offset(-20)
+            make.right.equalToSuperview().offset(20)
+        }
+
+        addSubview(label)
+        label.numberOfLines = 0
+        label.font = UIFont.systemFont(ofSize: 29)
+        label.textColor = UIColor.black.withAlphaComponent(0.9)
+        label.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.top.equalToSuperview().offset(14)
+            make.bottom.lessThanOrEqualToSuperview().offset(-14)
+        }
+    }
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        backgroundView.isHidden = !isFocused
+    }
+
+    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        super.pressesEnded(presses, with: event)
+        if presses.first?.type == .select {
+            sendActions(for: .primaryActionTriggered)
+            onPrimaryAction?(self)
+        }
+    }
+}
+
+class ContentDetailViewController: UIViewController {
+    private let titleLabel = UILabel()
+    private let contentTextView = UITextView()
+
+    static func createDesp(content: String) -> ContentDetailViewController {
+        let vc = ContentDetailViewController()
+        vc.titleLabel.text = "简介"
+        vc.contentTextView.text = content
+        return vc
+    }
+
+    override var preferredFocusEnvironments: [UIFocusEnvironment] {
+        [contentTextView]
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.addSubview(titleLabel)
+        view.addSubview(contentTextView)
+        titleLabel.font = UIFont.systemFont(ofSize: 60, weight: .semibold)
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(80)
+            make.centerX.equalToSuperview()
+        }
+        contentTextView.panGestureRecognizer.allowedTouchTypes = [NSNumber(value: UITouch.TouchType.indirect.rawValue)]
+        contentTextView.isScrollEnabled = true
+        contentTextView.isUserInteractionEnabled = true
+        contentTextView.isSelectable = true
+        contentTextView.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom)
+            make.centerX.equalToSuperview()
+            make.leading.equalToSuperview().offset(60)
+            make.trailing.equalToSuperview().inset(60)
+            make.bottom.equalToSuperview().inset(80)
+        }
     }
 }

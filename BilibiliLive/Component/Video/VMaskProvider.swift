@@ -102,7 +102,7 @@ class VMaskProvider: MaskProvider {
     }
 
     func preferFPS() -> Int {
-        return 15
+        return 10
     }
 
     func bodyDetect(buffer: CVPixelBuffer, videoSize: CGSize) -> CGImage? {
