@@ -185,6 +185,13 @@ class VideoDetailViewController: UIViewController {
             }
             let data = try await WebRequest.requestDetailVideo(aid: aid)
             self.data = data
+
+            if let redirect = data.View.redirect_url?.lastPathComponent, redirect.starts(with: "ep"), let id = Int(redirect.dropFirst(2)), !isBangumi {
+                isBangumi = true
+                epid = id
+                let info = try await WebRequest.requestBangumiInfo(epid: epid)
+                pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, from: "", part: $0.title + " " + $0.long_title) })
+            }
             update(with: data)
         } catch let err {
             self.exit(with: err)
@@ -233,6 +240,7 @@ class VideoDetailViewController: UIViewController {
 
         coverImageView.kf.setImage(with: data.pic)
         backgroundImageView.kf.setImage(with: data.pic)
+        recommandCollectionView.superview?.isHidden = data.Related.count == 0
 
         var notes = [String]()
         let status = data.View.dynamic ?? ""

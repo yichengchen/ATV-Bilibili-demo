@@ -20,7 +20,7 @@ struct CategoryInfo {
                       CategoryInfo(title: "音乐", rid: 3),
                       CategoryInfo(title: "舞蹈", rid: 129),
                       CategoryInfo(title: "游戏", rid: 4),
-                      CategoryInfo(title: "知识", rid: 39),
+                      CategoryInfo(title: "知识", rid: 36),
                       CategoryInfo(title: "科技", rid: 188),
                       CategoryInfo(title: "运动", rid: 234),
                       CategoryInfo(title: "汽车", rid: 223),

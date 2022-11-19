@@ -385,7 +385,7 @@ struct VideoDetail: Codable, Hashable {
         let duration: Int
         let pubdate: Int?
         let ugc_season: UgcSeason?
-
+        let redirect_url: URL?
         let stat: Stat
         struct Stat: Codable, Hashable {
             let favorite: Int
