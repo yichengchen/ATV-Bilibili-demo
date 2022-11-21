@@ -388,11 +388,11 @@ extension VideoDetailViewController: UICollectionViewDelegate {
         case ugcCollectionView:
             guard let video = data?.View.ugc_season?.sections.first?.episodes[indexPath.item] else { return }
             let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
-            present(detailVC, animated: true, completion: nil)
+            detailVC.present(from: self)
         case recommandCollectionView:
             if let video = data?.Related[indexPath.item] {
                 let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
-                present(detailVC, animated: true, completion: nil)
+                detailVC.present(from: self)
             }
         default:
             break
