@@ -140,8 +140,8 @@ class VideoDetailViewController: UIViewController {
         loadingView.makeConstraintsBindToCenterOfSuperview()
     }
 
-    func present(from vc: UIViewController) {
-        if !Settings.direatlyEnterVideo {
+    func present(from vc: UIViewController, direatlyEnterVideo: Bool = Settings.direatlyEnterVideo) {
+        if !direatlyEnterVideo {
             vc.present(self, animated: true)
         } else {
             vc.present(self, animated: false) { [self] in

@@ -10,6 +10,15 @@
       }
     },
     {
+      "identity" : "cocoaasyncsocket",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/robbiehanson/CocoaAsyncSocket.git",
+      "state" : {
+        "revision" : "dbdc00669c1ced63b27c3c5f052ee4d28f10150c",
+        "version" : "7.6.5"
+      }
+    },
+    {
       "identity" : "fuzi",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/cezheng/Fuzi",
@@ -75,10 +84,10 @@
     {
       "identity" : "swifter",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/httpswift/swifter",
+      "location" : "https://github.com/yichengchen/swifter.git",
       "state" : {
-        "revision" : "9483a5d459b45c3ffd059f7b55f9638e268632fd",
-        "version" : "1.5.0"
+        "branch" : "stable",
+        "revision" : "4850fa96759cbfb81f4178bf7ba9d58afe55d7fd"
       }
     },
     {

@@ -86,7 +86,20 @@ class VideoPlayerViewController: CommonPlayerViewController {
         return playerDelegate?.infoDebugText ?? "-"
     }
 
+    override func playerStatusDidChange() {
+        super.playerStatusDidChange()
+        switch player?.status {
+        case .readyToPlay:
+            BiliBiliUpnpDMR.shared.sendStatus(status: .playing)
+        case .failed:
+            BiliBiliUpnpDMR.shared.sendStatus(status: .stop)
+        default:
+            break
+        }
+    }
+
     override func playerDidFinishPlaying() {
+        BiliBiliUpnpDMR.shared.sendStatus(status: .end)
         dismiss(animated: true)
     }
 
@@ -207,6 +220,10 @@ extension VideoPlayerViewController {
         player = AVPlayer(playerItem: playerItem)
         player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
             self?.danmuProvider.playerTimeChange(time: time.seconds)
+
+            if let duration = self?.data?.View.duration {
+                BiliBiliUpnpDMR.shared.sendProgress(duration: duration, current: Int(time.seconds))
+            }
         }
     }
 }

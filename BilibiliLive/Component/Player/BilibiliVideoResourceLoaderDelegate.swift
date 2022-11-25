@@ -372,7 +372,7 @@ private extension BilibiliVideoResourceLoaderDelegate {
                     return HttpResponse.ok(.text(content))
                 }
             }
-            return HttpResponse.notFound
+            return HttpResponse.notFound()
         }
     }
 }
