@@ -88,6 +88,13 @@ class CommonPlayerViewController: AVPlayerViewController {
         danMuView.stop()
     }
 
+    func playWithUrl(_ urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        let asset = AVURLAsset(url: url)
+        playerItem = AVPlayerItem(asset: asset)
+        player = AVPlayer(playerItem: playerItem)
+    }
+
     func extraInfoForPlayerError() -> String {
         return ""
     }

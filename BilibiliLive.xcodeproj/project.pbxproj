@@ -33,6 +33,11 @@
 		498DB1DF291BC24700F95607 /* BMaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498DB1DE291BC24700F95607 /* BMaskProvider.swift */; };
 		499C75EC293058C9003160FB /* CocoaAsyncSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 499C75EB293058C9003160FB /* CocoaAsyncSocket */; };
 		499C75EE29305A1E003160FB /* BiliBiliUpnpDMR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499C75ED29305A1E003160FB /* BiliBiliUpnpDMR.swift */; };
+		499C760629309F74003160FB /* DlnaServer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 499C760529309F74003160FB /* DlnaServer.mm */; };
+		499C76072930A8C6003160FB /* Neptune.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 499C75FA2930996A003160FB /* Neptune.framework */; };
+		499C76082930A8C6003160FB /* Neptune.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 499C75FA2930996A003160FB /* Neptune.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		499C76092930A8C7003160FB /* Platinum.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 499C760229309F2B003160FB /* Platinum.framework */; };
+		499C760A2930A8C7003160FB /* Platinum.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 499C760229309F2B003160FB /* Platinum.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		499C760F2930E068003160FB /* NVASocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499C760E2930E068003160FB /* NVASocket.swift */; };
 		499C76132931A781003160FB /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76122931A781003160FB /* Swifter */; };
 		499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76152931A7AE003160FB /* SwiftyXMLParser */; };
@@ -96,6 +101,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				499C760A2930A8C7003160FB /* Platinum.framework in Embed Frameworks */,
+				499C76082930A8C6003160FB /* Neptune.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -125,6 +132,10 @@
 		4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardVideoCollectionViewController.swift; sourceTree = "<group>"; };
 		498DB1DE291BC24700F95607 /* BMaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMaskProvider.swift; sourceTree = "<group>"; };
 		499C75ED29305A1E003160FB /* BiliBiliUpnpDMR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiliBiliUpnpDMR.swift; sourceTree = "<group>"; };
+		499C75FA2930996A003160FB /* Neptune.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Neptune.framework; sourceTree = "<group>"; };
+		499C760229309F2B003160FB /* Platinum.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Platinum.framework; sourceTree = "<group>"; };
+		499C760429309F74003160FB /* DlnaServer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DlnaServer.h; sourceTree = "<group>"; };
+		499C760529309F74003160FB /* DlnaServer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = DlnaServer.mm; sourceTree = "<group>"; };
 		499C760E2930E068003160FB /* NVASocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NVASocket.swift; sourceTree = "<group>"; };
 		49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpsViewController.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
@@ -187,11 +198,14 @@
 				499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */,
 				49508E112943420100D26812 /* CocoaLumberjackSwift in Frameworks */,
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
+				499C76072930A8C6003160FB /* Neptune.framework in Frameworks */,
 				49735024290D0E8A0045C26B /* Fuzi in Frameworks */,
 				F9171D5F2900FCFB002868C7 /* SnapKit in Frameworks */,
 				494741C329016CCE005D6885 /* MarqueeLabel in Frameworks */,
+				499C76092930A8C7003160FB /* Platinum.framework in Frameworks */,
 				499C76132931A781003160FB /* Swifter in Frameworks */,
 				49508E0F2943420100D26812 /* CocoaLumberjack in Frameworks */,
+				499C75EC293058C9003160FB /* CocoaAsyncSocket in Frameworks */,
 				499C75EC293058C9003160FB /* CocoaAsyncSocket in Frameworks */,
 				F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */,
 				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
@@ -277,6 +291,8 @@
 		499C76172931A833003160FB /* DLNA */ = {
 			isa = PBXGroup;
 			children = (
+				499C760429309F74003160FB /* DlnaServer.h */,
+				499C760529309F74003160FB /* DlnaServer.mm */,
 				499C75ED29305A1E003160FB /* BiliBiliUpnpDMR.swift */,
 				499C760E2930E068003160FB /* NVASocket.swift */,
 				49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */,
@@ -348,6 +364,8 @@
 		F927ED6A2610391000EAB8E3 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
+				499C75FA2930996A003160FB /* Neptune.framework */,
+				499C760229309F2B003160FB /* Platinum.framework */,
 				F927ED6B2610395300EAB8E3 /* DanmakuKit */,
 			);
 			path = Vendor;
@@ -440,11 +458,11 @@
 				494741C229016CCE005D6885 /* MarqueeLabel */,
 				49735023290D0E8A0045C26B /* Fuzi */,
 				49078E46291BEA2400F556BD /* PocketSVG */,
-				499C75EB293058C9003160FB /* CocoaAsyncSocket */,
 				499C76122931A781003160FB /* Swifter */,
 				499C76152931A7AE003160FB /* SwiftyXMLParser */,
 				49508E0E2943420100D26812 /* CocoaLumberjack */,
 				49508E102943420100D26812 /* CocoaLumberjackSwift */,
+				499C75EB293058C9003160FB /* CocoaAsyncSocket */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -555,6 +573,7 @@
 				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,
 				F9171D6629026AC5002868C7 /* TitleSupplementaryView.swift in Sources */,
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
+				499C760629309F74003160FB /* DlnaServer.mm in Sources */,
 				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
 				49FB8EE929208EBE0045D5DE /* SidxParseUtil.swift in Sources */,

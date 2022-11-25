@@ -21,6 +21,7 @@ class BiliBiliUpnpDMR: NSObject {
     private var udpStarted = false
     private var ip: String?
 
+    private var commonDlna: DlnaServer = .init()
     private lazy var serverInfo: String = {
         let file = Bundle.main.url(forResource: "DLNAInfo", withExtension: "xml")!
         return try! String(contentsOf: file).replacingOccurrences(of: "{{UUID}}", with: bUuid)
@@ -51,7 +52,15 @@ class BiliBiliUpnpDMR: NSObject {
         return randomString
     }()
 
-    override private init() { super.init() }
+    override private init() {
+        super.init()
+        commonDlna.setup()
+        commonDlna.onPlayAction = {
+            [weak self] url in
+            self?.playNormalUrl(url: url)
+        }
+    }
+
     func start() {
         startUdpIfNeed()
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
@@ -141,6 +150,7 @@ class BiliBiliUpnpDMR: NSObject {
         if !udpStarted {
             do {
                 udp = GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
+                try udp.enableReusePort(true)
                 try udp.enableBroadcast(true)
                 try udp.bind(toPort: 1900)
                 try udp.joinMulticastGroup("239.255.255.250")
@@ -151,6 +161,7 @@ class BiliBiliUpnpDMR: NSObject {
             } catch let err {
                 Logger.warn("dmr start fail", err.localizedDescription)
             }
+            commonDlna.start()
         }
     }
 
@@ -198,6 +209,18 @@ class BiliBiliUpnpDMR: NSObject {
         DATE: \(formatter.string(from: Date())) GMT
 
         """
+    }
+
+    func playNormalUrl(url: String) {
+        let playerVC = CommonPlayerViewController()
+        if let _ = AppDelegate.shared.window!.rootViewController?.presentedViewController {
+            AppDelegate.shared.window!.rootViewController?.dismiss(animated: false) {
+                UIViewController.topMostViewController().present(playerVC, animated: true)
+            }
+        } else {
+            UIViewController.topMostViewController().present(playerVC, animated: true)
+        }
+        playerVC.playWithUrl(url)
     }
 
     func handleEvent(frame: NVASession.NVAFrame, session: NVASession) {

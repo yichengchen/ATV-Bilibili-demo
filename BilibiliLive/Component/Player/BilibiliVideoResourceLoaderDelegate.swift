@@ -25,6 +25,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         let info: VideoPlayURLInfo.DashInfo.DashMediaInfo
         let url: String
         let duration: Int
+        let isIframe: Bool
     }
 
     private var audioPlaylist = ""
@@ -62,7 +63,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         playlists.removeAll()
         masterPlaylist = """
         #EXTM3U
-        #EXT-X-VERSION:6
+        #EXT-X-VERSION:7
         #EXT-X-INDEPENDENT-SEGMENTS
 
 
@@ -111,7 +112,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
         """
         masterPlaylist.append(content)
-        videoInfo.append(PlaybackInfo(info: info, url: url, duration: duration))
+        videoInfo.append(PlaybackInfo(info: info, url: url, duration: duration, isIframe: false))
     }
 
     private func getVideoPlayList(info: PlaybackInfo) async -> String {
@@ -129,20 +130,24 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             Logger.debug("cache hit")
         }
         let inits = info.info.segment_base.initialization.components(separatedBy: "-")
+        let additionHeader = info.isIframe ? "#EXT-X-I-FRAMES-ONLY\n" : ""
+        if info.isIframe {
+            print("[cyc]")
+        }
         guard let moovIdxStr = inits.last,
               let moovIdx = Int(moovIdxStr),
               let moovOffset = inits.first,
               let offsetStr = info.info.segment_base.index_range.components(separatedBy: "-").last,
               var offset = Int(offsetStr),
-              let segment = segment
+              let segment = segment, !info.isIframe
         else {
             return """
             #EXTM3U
             #EXT-X-VERSION:7
-            #EXT-X-TARGETDURATION:\(info.duration)
-            #EXT-X-MEDIA-SEQUENCE:1
-            #EXT-X-INDEPENDENT-SEGMENTS
             #EXT-X-PLAYLIST-TYPE:VOD
+            #EXT-X-INDEPENDENT-SEGMENTS
+            #EXT-X-MEDIA-SEQUENCE:1
+            \(additionHeader)
             #EXTINF:\(info.duration)
             \(info.url)
             #EXT-X-ENDLIST
@@ -156,6 +161,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         #EXT-X-MEDIA-SEQUENCE:1
         #EXT-X-INDEPENDENT-SEGMENTS
         #EXT-X-PLAYLIST-TYPE:VOD
+        \(additionHeader)
         #EXT-X-MAP:URI="\(info.url)",BYTERANGE="\(moovIdx)@\(moovOffset)"
 
         """
@@ -185,30 +191,17 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         """
 
         masterPlaylist.append(content)
-        videoInfo.append(PlaybackInfo(info: info, url: url, duration: duration))
+        videoInfo.append(PlaybackInfo(info: info, url: url, duration: duration, isIframe: false))
     }
 
-    private func addAudioPlayBackInfo(codec: String, bandwidth: Int, duration: Int, url: String) {
-        let defaultStr = !hasAudioInMasterListAdded ? "YES" : "NO"
-        hasAudioInMasterListAdded = true
+    private func addIframePlayBackInfo(info: VideoPlayURLInfo.DashInfo.DashMediaInfo, url: String, duration: Int) {
         let content = """
-        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),GROUP-ID="audio",NAME="Main",URI="\(URLs.customPrefix)\(playlists.count)"
+        #EXT-X-I-FRAME-STREAM-INF:RESOLUTION=\(info.width ?? 0)x\(info.height ?? 0),CODECS="\(info.codecs)",BANDWIDTH=\(info.bandwidth),URI="\(URLs.customDashPrefix)\(videoInfo.count)"
 
         """
+
         masterPlaylist.append(content)
-
-        let playList = """
-        #EXTM3U
-        #EXT-X-VERSION:6
-        #EXT-X-TARGETDURATION:\(duration)
-        #EXT-X-INDEPENDENT-SEGMENTS
-        #EXT-X-MEDIA-SEQUENCE:1
-        #EXT-X-PLAYLIST-TYPE:VOD
-        #EXTINF:\(duration)
-        \(url)
-        #EXT-X-ENDLIST
-        """
-        playlists.append(playList)
+        videoInfo.append(PlaybackInfo(info: info, url: url, duration: duration, isIframe: true))
     }
 
     private func addSubtitleData(lang: String, name: String, duration: Int, url: String) {
@@ -232,7 +225,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         let playList = """
         #EXTM3U
         #EXT-X-TARGETDURATION:\(duration)
-        #EXT-X-VERSION:3
+        #EXT-X-VERSION:7
         #EXT-X-MEDIA-SEQUENCE:0
         #EXT-X-PLAYLIST-TYPE:VOD
         #EXTINF:\(duration),
@@ -260,7 +253,14 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             for url in video.playableURLs {
                 addVideoPlayBackInfo(info: video, url: url, duration: info.dash.duration)
             }
+            if !video.isHevc {
+                addIframePlayBackInfo(info: video, url: video.base_url, duration: info.dash.duration)
+            }
         }
+
+//        if let last = videos.filter({ $0.isHevc }).last {
+//            addIframePlayBackInfo(info: last, url: last.base_url, duration: info.dash.duration)
+//        }
 
         if Settings.losslessAudio {
             if let audios = info.dash.dolby?.audio {
