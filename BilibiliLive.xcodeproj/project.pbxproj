@@ -35,6 +35,9 @@
 		499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76152931A7AE003160FB /* SwiftyXMLParser */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
+		49F9186E2931E3C9001D3EC3 /* DLNAInfo.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */; };
+		49F918702931E473001D3EC3 /* NirvanaControl.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F9186F2931E473001D3EC3 /* NirvanaControl.xml */; };
+		49F918722931E927001D3EC3 /* AvTransportScpd.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F918712931E927001D3EC3 /* AvTransportScpd.xml */; };
 		49FB8EC0291F4C520045D5DE /* VMaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FB8EBF291F4C520045D5DE /* VMaskProvider.swift */; };
 		49FB8EE929208EBE0045D5DE /* SidxParseUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */; };
 		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
@@ -120,6 +123,9 @@
 		499C760E2930E068003160FB /* NVASocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NVASocket.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
+		49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DLNAInfo.xml; sourceTree = "<group>"; };
+		49F9186F2931E473001D3EC3 /* NirvanaControl.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = NirvanaControl.xml; sourceTree = "<group>"; };
+		49F918712931E927001D3EC3 /* AvTransportScpd.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = AvTransportScpd.xml; sourceTree = "<group>"; };
 		49FB8EBF291F4C520045D5DE /* VMaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMaskProvider.swift; sourceTree = "<group>"; };
 		49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidxParseUtil.swift; sourceTree = "<group>"; };
 		AE2B41542912706700BF2B0B /* SearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultViewController.swift; sourceTree = "<group>"; };
@@ -265,6 +271,9 @@
 			children = (
 				499C75ED29305A1E003160FB /* BiliBiliUpnpDMR.swift */,
 				499C760E2930E068003160FB /* NVASocket.swift */,
+				49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */,
+				49F9186F2931E473001D3EC3 /* NirvanaControl.xml */,
+				49F918712931E927001D3EC3 /* AvTransportScpd.xml */,
 			);
 			path = DLNA;
 			sourceTree = "<group>";
@@ -482,8 +491,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49F918702931E473001D3EC3 /* NirvanaControl.xml in Resources */,
+				49F918722931E927001D3EC3 /* AvTransportScpd.xml in Resources */,
 				F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */,
 				F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */,
+				49F9186E2931E3C9001D3EC3 /* DLNAInfo.xml in Resources */,
 				F9B57359260F5F7400771ED5 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

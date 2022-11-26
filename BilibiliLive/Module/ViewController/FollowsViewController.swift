@@ -15,7 +15,7 @@ class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionVC.show(in: self)
-        collectionVC.pageSize = 40
+        collectionVC.pageSize = 10
         collectionVC.didSelect = {
             [weak self] in
             self?.goDetail(with: $0)

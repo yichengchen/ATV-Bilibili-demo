@@ -56,6 +56,9 @@ enum Settings {
 
     @UserDefault("Settings.continuePlay", defaultValue: true)
     static var continuePlay: Bool
+
+    @UserDefault("DLNA.uuid", defaultValue: "")
+    static var uuid: String
 }
 
 struct MediaQuality {

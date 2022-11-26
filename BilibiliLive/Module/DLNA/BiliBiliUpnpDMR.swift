@@ -17,81 +17,54 @@ class BiliBiliUpnpDMR: NSObject {
     private var udp: GCDAsyncUdpSocket!
     private var httpServer = HttpServer()
     private var connectedSockets = [GCDAsyncSocket]()
-    private var uuid = UUID().uuidString.components(separatedBy: "-").last!
     private var sessions = Set<NVASession>()
+
+    private lazy var serverInfo: String = {
+        let file = Bundle.main.url(forResource: "DLNAInfo", withExtension: "xml")!
+        return try! String(contentsOf: file).replacingOccurrences(of: "{{UUID}}", with: bUuid)
+    }()
+
+    private lazy var nirvanaControl: String = {
+        let file = Bundle.main.url(forResource: "NirvanaControl", withExtension: "xml")!
+        return try! String(contentsOf: file)
+    }()
+
+    private lazy var avTransportScpd: String = {
+        let file = Bundle.main.url(forResource: "AvTransportScpd", withExtension: "xml")!
+        return try! String(contentsOf: file)
+    }()
+
+    private lazy var bUuid: String = {
+        if Settings.uuid.count > 0 {
+            return Settings.uuid
+        }
+        let letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        var randomString = ""
+        for _ in 0..<35 {
+            let rand = arc4random_uniform(36)
+            let nextChar = letters[letters.index(letters.startIndex, offsetBy: Int(rand))]
+            randomString.append(nextChar)
+        }
+        Settings.uuid = randomString
+        return randomString
+    }()
 
     override private init() { super.init() }
     func start() {
         udp = GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
         try? udp.enableBroadcast(true)
+        try? udp.enableReusePort(true)
         try? udp.bind(toPort: 1900)
         try? udp.joinMulticastGroup("239.255.255.250")
         try? udp.beginReceiving()
         try? httpServer.start(9958)
 
-        httpServer["/"] = { req in
-            print("handel TxMediaRenderer_desc")
-            let content = """
-            <root xmlns:dlna="urn:schemas-dlna-org:device-1-0" xmlns="urn:schemas-upnp-org:device-1-0">
-            <specVersion>
-              <major>1</major>
-              <minor>0</minor>
-            </specVersion>
-            <device>
-              <deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType>
-              <UDN>uuid:cfb75dca-261e-4705-8f0c-d931a5c419fd</UDN>
-              <friendlyName>我的小电视</friendlyName>
-              <manufacturer>Bilibili Inc.</manufacturer>
-              <manufacturerURL>https://bilibili.com/</manufacturerURL>
-              <modelDescription>云视听小电视</modelDescription>
-              <modelName>16s</modelName>
-              <modelNumber>1024</modelNumber>
-              <modelURL>https://app.bilibili.com/</modelURL>
-              <serialNumber>1024</serialNumber>
-              <X_brandName>Meizu</X_brandName>
-              <hostVersion>25</hostVersion>
-              <ottVersion>104600</ottVersion>
-              <channelName>master</channelName>
-              <capability>254</capability>
-              <dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMR-1.50</dlna:X_DLNADOC>
-              <dlna:X_DLNACAP xmlns:dlna="urn:schemas-dlna-org:device-1-0">playcontainer-1-0</dlna:X_DLNACAP>
-              <serviceList>
-              <service>
-                <serviceType>urn:schemas-upnp-org:service:AVTransport:1</serviceType>
-                <serviceId>urn:upnp-org:serviceId:AVTransport</serviceId>
-                <controlURL>AVTransport/action</controlURL>
-                <eventSubURL>AVTransport/event</eventSubURL>
-                <SCPDURL>dlna/AVTransport.xml</SCPDURL>
-              </service>
-              <service>
-                <serviceType>urn:schemas-upnp-org:service:RenderingControl:1</serviceType>
-                <serviceId>urn:upnp-org:serviceId:RenderingControl</serviceId>
-                <controlURL>RenderingControl/action</controlURL>
-                <eventSubURL>RenderingControl/event</eventSubURL>
-                <SCPDURL>dlna/RenderingControl.xml</SCPDURL>
-              </service>
-              <service>
-                <serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
-                <serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId>
-                <controlURL>ConnectionManager/action</controlURL>
-                <eventSubURL>ConnectionManager/event</eventSubURL>
-                <SCPDURL>dlna/ConnectionManager.xml</SCPDURL>
-              </service>
-              <service>
-                <serviceType>urn:app-bilibili-com:service:NirvanaControl:3</serviceType>
-                <serviceId>urn:app-bilibili-com:serviceId:NirvanaControl</serviceId>
-                <controlURL>NirvanaControl/action</controlURL>
-                <eventSubURL>NirvanaControl/event</eventSubURL>
-                <SCPDURL>dlna/NirvanaControl.xml</SCPDURL>
-              </service>
-              </serviceList>
-            </device>
-            </root>
-            """
-            return HttpResponse.ok(.text(content))
+        httpServer["/description.xml"] = { [weak self] req in
+            print("handel serverInfo")
+            return HttpResponse.ok(.text(self?.serverInfo ?? ""))
         }
 
-        httpServer["projection"] = nvasocket(uuid: "XY12345ABCDE12345ABCDE12345ABCDE12345", didConnect: { [weak self] session in
+        httpServer["projection"] = nvasocket(uuid: bUuid, didConnect: { [weak self] session in
             self?.sessions.insert(session)
         }, didDisconnect: { [weak self] session in
             self?.sessions.remove(session)
@@ -102,17 +75,29 @@ class BiliBiliUpnpDMR: NSObject {
         })
 
         httpServer["/dlna/NirvanaControl.xml"] = {
-            req in
+            [weak self] req in
             print("handle NirvanaControl")
-            let txt = """
-            <actionList>
-            <action>
-            <name>GetAppInfo</name>
-            <argumentList></argumentList>
-            </action>
-            </actionList>
-            """
+            let txt = self?.nirvanaControl ?? ""
             return HttpResponse.ok(.text(txt))
+        }
+
+        httpServer.get["/dlna/AVTransport.xml"] = {
+            [weak self] req in
+            print("handle AVTransport.xml")
+            let txt = self?.avTransportScpd ?? ""
+            return HttpResponse.ok(.text(""))
+        }
+
+        httpServer.post["/AVTransport/action"] = {
+            req in
+            let str = String(data: Data(req.body), encoding: .utf8)
+            print("handle AVTransport.xml", str)
+            return HttpResponse.ok(.text(""))
+        }
+
+        httpServer["AVTransport/event"] = {
+            req in
+            return HttpResponse.internalServerError(nil)
         }
     }
 
@@ -142,16 +127,20 @@ class BiliBiliUpnpDMR: NSObject {
     private func getSSDPResp() -> String {
         guard let ip = getIPAddress() else { assertionFailure(); return "" }
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "E, d MMM yyyy HH:mm:ss"
         return """
         HTTP/1.1 200 OK
-        Location: http://\(ip):9958/
-        Cache-Control: max-age=1800
-        Server: UPnP/1.0 DLNADOC/1.50 Platinum/1.0.4.2
+        LOCATION: http://\(ip):9958/description.xml
+        CACHE-CONTROL: max-age=30
+        SERVER: Linux/3.0.0, UPnP/1.0, Platinum/1.0.5.13
         EXT:
-        USN: uuid:atvbilibili&\(uuid)::urn:schemas-upnp-org:service:AVTransport:1
-        ST: urn:schemas-upnp-org:service:AVTransport:1
-        Date: \(formatter.string(from: Date())) GMT
+        BOOTID.UPNP.ORG: 1669443520
+        CONFIGID.UPNP.ORG: 10177363
+        USN: uuid:atvbilibili&\(bUuid)::upnp:rootdevice
+        ST: upnp:rootdevice
+        DATE: \(formatter.string(from: Date())) GMT
+
         """
     }
 
@@ -234,7 +223,7 @@ extension BiliBiliUpnpDMR: GCDAsyncUdpSocketDelegate {
         ipAddress = ipAddress.replacingOccurrences(of: "::ffff:", with: "")
         let str = String(data: data, encoding: .utf8)
         if str?.contains("ssdp:discover") == true {}
-
+        print(ipAddress)
         let data = getSSDPResp().data(using: .utf8)!
         sock.send(data, toAddress: address, withTimeout: -1, tag: 0)
     }
