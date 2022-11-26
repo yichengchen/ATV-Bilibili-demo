@@ -17,6 +17,8 @@
  ![](imgs/2.png)
  ![](imgs/3.png)
 
+### 本项目没有任何授权的 Testflight 发放以及任何收费版本，请注意辨别和考虑安全性问题。
+
 ### 未签名iPA文件
   登录Github账号并在GitHub Action 页面 https://github.com/yichengchen/ATV-Bilibili-demo/actions/workflows/build.yml 寻找最新 run 的底部 Artifacts 下载。
 
