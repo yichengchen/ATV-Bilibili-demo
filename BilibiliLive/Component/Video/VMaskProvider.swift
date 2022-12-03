@@ -60,7 +60,6 @@ class VMaskProvider: MaskProvider {
 
             var paddingPaths = [UIBezierPath]()
             if x > 0 {
-                let layer = CALayer()
                 paddingPaths.append(UIBezierPath(rect: CGRect(x: 0, y: 0, width: x, height: size.height)))
                 paddingPaths.append(UIBezierPath(rect: CGRect(x: size.width - x, y: 0, width: x, height: size.height)))
             } else if y > 0 {
