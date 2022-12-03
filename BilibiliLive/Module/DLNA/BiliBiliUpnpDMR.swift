@@ -18,6 +18,8 @@ class BiliBiliUpnpDMR: NSObject {
     private var httpServer = HttpServer()
     private var connectedSockets = [GCDAsyncSocket]()
     private var sessions = Set<NVASession>()
+    private var udpStarted = false
+    private var ip: String?
 
     private lazy var serverInfo: String = {
         let file = Bundle.main.url(forResource: "DLNAInfo", withExtension: "xml")!
@@ -51,13 +53,10 @@ class BiliBiliUpnpDMR: NSObject {
 
     override private init() { super.init() }
     func start() {
-        udp = GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
-        try? udp.enableBroadcast(true)
-        try? udp.enableReusePort(true)
-        try? udp.bind(toPort: 1900)
-        try? udp.joinMulticastGroup("239.255.255.250")
-        try? udp.beginReceiving()
+        startUdpIfNeed()
         try? httpServer.start(9958)
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
 
         httpServer["/description.xml"] = { [weak self] req in
             print("handel serverInfo")
@@ -85,19 +84,44 @@ class BiliBiliUpnpDMR: NSObject {
             [weak self] req in
             print("handle AVTransport.xml")
             let txt = self?.avTransportScpd ?? ""
-            return HttpResponse.ok(.text(""))
+            return HttpResponse.ok(.text(txt))
         }
 
         httpServer.post["/AVTransport/action"] = {
             req in
-            let str = String(data: Data(req.body), encoding: .utf8)
+            let str = String(data: Data(req.body), encoding: .utf8) ?? ""
             print("handle AVTransport.xml", str)
-            return HttpResponse.ok(.text(""))
+            return HttpResponse.ok(.text(str))
         }
 
         httpServer["AVTransport/event"] = {
             req in
             return HttpResponse.internalServerError(nil)
+        }
+    }
+
+    @objc func didEnterBackground() {
+        startUdpIfNeed()
+    }
+
+    @objc func willEnterForeground() {
+        udp?.close()
+    }
+
+    private func startUdpIfNeed() {
+        ip = getIPAddress()
+        if !udpStarted {
+            do {
+                udp = GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
+                try udp.enableBroadcast(true)
+                try udp.enableReusePort(true)
+                try udp.bind(toPort: 1900)
+                try udp.joinMulticastGroup("239.255.255.250")
+                try udp.beginReceiving()
+                udpStarted = true
+            } catch let err {
+                print(err)
+            }
         }
     }
 
@@ -112,7 +136,7 @@ class BiliBiliUpnpDMR: NSObject {
                 let addrFamily = interface.ifa_addr.pointee.sa_family
                 if addrFamily == UInt8(AF_INET) {
                     let name = String(cString: interface.ifa_name)
-                    if name == "en0" || name == "en2" || name == "en3" || name == "en4" || name == "pdp_ip0" || name == "pdp_ip1" || name == "pdp_ip2" || name == "pdp_ip3" {
+                    if name == "en0" || name == "en2" || name == "en3" || name == "en4" {
                         var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
                         getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST)
                         address = String(cString: hostname)
@@ -125,7 +149,10 @@ class BiliBiliUpnpDMR: NSObject {
     }
 
     private func getSSDPResp() -> String {
-        guard let ip = getIPAddress() else { assertionFailure(); return "" }
+        guard let ip = ip ?? getIPAddress() else {
+            print("no ip")
+            return ""
+        }
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "E, d MMM yyyy HH:mm:ss"
@@ -160,8 +187,8 @@ class BiliBiliUpnpDMR: NSObject {
             } else {
                 player = VideoDetailViewController.create(aid: aid, cid: cid)
             }
-            if topMost is CommonPlayerViewController {
-                topMost.dismiss(animated: false) {
+            if let _ = AppDelegate.shared.window!.rootViewController?.presentedViewController {
+                AppDelegate.shared.window!.rootViewController?.dismiss(animated: false) {
                     player.present(from: UIViewController.topMostViewController(), direatlyEnterVideo: true)
                 }
             } else {
@@ -207,6 +234,13 @@ class BiliBiliUpnpDMR: NSObject {
     func sendProgress(duration: Int, current: Int) {
         Array(sessions).forEach { $0.sendCommand(action: "OnProgress", content: ["duration": duration, "position": current]) }
     }
+
+    func sendVideoSwitch(aid: Int, cid: Int, title: String) {
+        // causing client crash
+//        let playItem = ["aid": "\(aid)", "cid": "\(cid)", "contentType": "1", "epId": "0", "seasonId": "0"] as [String: Any]
+//        let data = ["playItem": playItem, "qnDesc": "112", "title": title] as [String: Any]
+//        Array(sessions).forEach { $0.sendCommand(action: "OnEpisodeSwitch", content: data) }
+    }
 }
 
 extension BiliBiliUpnpDMR: GCDAsyncUdpSocketDelegate {
@@ -222,9 +256,10 @@ extension BiliBiliUpnpDMR: GCDAsyncUdpSocketDelegate {
         var ipAddress = String(cString: hostname)
         ipAddress = ipAddress.replacingOccurrences(of: "::ffff:", with: "")
         let str = String(data: data, encoding: .utf8)
-        if str?.contains("ssdp:discover") == true {}
-        print(ipAddress)
-        let data = getSSDPResp().data(using: .utf8)!
-        sock.send(data, toAddress: address, withTimeout: -1, tag: 0)
+        if str?.contains("ssdp:discover") == true {
+            print("handle ssdp discover from:", ipAddress)
+            let data = getSSDPResp().data(using: .utf8)!
+            sock.send(data, toAddress: address, withTimeout: -1, tag: 0)
+        }
     }
 }

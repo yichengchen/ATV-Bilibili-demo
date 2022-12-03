@@ -29,6 +29,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         if let aid = aid, let cid = cid, cid > 0 {
             WebRequest.reportWatchHistory(aid: aid, cid: cid, currentTime: Int(currentTime))
         }
+        BiliBiliUpnpDMR.shared.sendStatus(status: .stop)
     }
 
     override func viewDidLoad() {
@@ -63,6 +64,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         prepare(toPlay: asset, withKeys: requestedKeys)
         danMuView.play()
         updatePlayerCharpter(playerInfo: playerInfo)
+        BiliBiliUpnpDMR.shared.sendVideoSwitch(aid: aid, cid: cid ?? 0, title: data?.title ?? "")
     }
 
     private func updatePlayerCharpter(playerInfo: PlayerInfo?) {
