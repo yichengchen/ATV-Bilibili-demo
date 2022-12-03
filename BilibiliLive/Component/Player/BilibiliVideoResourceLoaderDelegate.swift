@@ -83,7 +83,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         var framerate = info.frame_rate ?? "25"
         if isHDR10 {
             videoRange = "PQ"
-            if let value = Int(framerate), value <= 30 {} else {
+            if let value = Double(framerate), value <= 30 {} else {
                 framerate = "30"
             }
         }
@@ -94,12 +94,17 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             supplementCodesc = codecs
             codecs = "hvc1.2.4.L150"
         }
+
+        if let value = Double(framerate), value >= 60 {
+            framerate = "60"
+        }
+
         if supplementCodesc.count > 0 {
             supplementCodesc = ",SUPPLEMENTAL-CODECS=\"\(supplementCodesc)\""
         }
         let content = """
         #EXT-X-STREAM-INF:AUDIO="audio"\(subtitlePlaceHolder),CODECS="\(codecs)"\(supplementCodesc),RESOLUTION=\(info.width ?? 0)x\(info.height ?? 0),FRAME-RATE=\(framerate),BANDWIDTH=\(info.bandwidth),VIDEO-RANGE=\(videoRange)
-        \(URLs.customDashPrefix)\(videoInfo.count)?codec=\(info.codecs)&rate=\(framerate)&width=\(info.width ?? 0)&host=\(URL(string: url)?.host ?? "none")&range=\(info.id)
+        \(URLs.customDashPrefix)\(videoInfo.count)?codec=\(info.codecs)&rate=\(info.frame_rate ?? framerate)&width=\(info.width ?? 0)&host=\(URL(string: url)?.host ?? "none")&range=\(info.id)
 
         """
         masterPlaylist.append(content)
