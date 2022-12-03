@@ -226,11 +226,13 @@ class CommonPlayerViewController: AVPlayerViewController {
     func setupMask() {
         guard let maskProvider else { return }
 //        danMuView.backgroundColor = UIColor.red.withAlphaComponent(0.5)
+        print("mask provider is \(maskProvider)")
         let interval = CMTime(seconds: 1.0 / CGFloat(maskProvider.preferFPS()),
                               preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         player?.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: {
             [weak self, weak maskProvider] time in
             guard let self else { return }
+            guard self.danMuView.isHidden == false else { return }
             maskProvider?.getMask(for: time, frame: self.danMuView.frame) {
                 maskLayer in
                 self.danMuView.layer.mask = maskLayer
@@ -287,6 +289,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         bitrate audio:\(bitrateStr(averageAudioBitrate)), video: \(bitrateStr(averageVideoBitrate))
         observedBitrate:\(bitrateStr(observedBitrate))
         indicatedAverageBitrate:\(bitrateStr(indicatedBitrate))
+        maskProvider: \(String(describing: maskProvider))
         """
     }
 

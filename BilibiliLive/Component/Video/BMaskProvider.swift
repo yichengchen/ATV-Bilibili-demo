@@ -14,7 +14,8 @@ import UIKit
 class BMaskProvider: MaskProvider {
     let info: PlayerInfo.MaskInfo
     let videoSize: CGSize
-    var svgs = [[UIBezierPath]]()
+    private var svgs = [UIBezierPath]()
+    private lazy var shapeLayer = CAShapeLayer()
 
     private var lastTime: TimeInterval = 0
     private var duration: Int
@@ -48,7 +49,7 @@ class BMaskProvider: MaskProvider {
         buffer = buffer.subdata(in: 16..<buffer.count)
         let num = segmentsData.count
         var length: UInt32 = 0
-        var total = [[UIBezierPath]]()
+        var total = [UIBezierPath]()
 
         let size = await UIScreen.main.bounds.size
         let videoSize = CGSize.aspectFit(aspectRatio: videoSize, boundingSize: size)
@@ -94,14 +95,16 @@ class BMaskProvider: MaskProvider {
 
                 let paths = SVGBezierPath.paths(fromSVGString: decodedString)
 
-                for path in paths {
-                    let coordTransform = CGAffineTransform(translationX: x, y: y).scaledBy(x: videoSize.width / path.bounds.width, y: videoSize.height / path.bounds.height)
-                    let finalTransform = coordTransform.scaledBy(x: 1, y: -1).translatedBy(x: 0, y: 0 - path.bounds.height - path.bounds.origin.y)
-                    path.apply(finalTransform)
-                    paddingPaths.forEach { path.append($0) }
+                let mergedPath = paths.first ?? UIBezierPath(rect: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+                for path in paths.dropFirst() {
+                    mergedPath.append(path)
                 }
 
-                total.append(paths.map { $0.reversing() })
+                let coordTransform = CGAffineTransform(translationX: x, y: y).scaledBy(x: videoSize.width / mergedPath.bounds.width, y: videoSize.height / mergedPath.bounds.height)
+                let finalTransform = coordTransform.scaledBy(x: 1, y: -1).translatedBy(x: 0, y: 0 - mergedPath.bounds.height - mergedPath.bounds.origin.y)
+                mergedPath.apply(finalTransform)
+                paddingPaths.forEach { mergedPath.append($0) }
+                total.append(mergedPath.reversing())
             }
             SVGBezierPath.resetCache()
         }
@@ -113,19 +116,16 @@ class BMaskProvider: MaskProvider {
         guard time != lastTime else { return }
         lastTime = time
         if time < 0 { return }
-        let idx = Int(Double(time) * Double(info.fps))
+        let idx = Int(Double(time) * Double(info.fps)) + 1
         guard idx < svgs.count else { return }
-        let layer = CALayer()
-        for path in svgs[idx] {
-            let shapeLayer = CAShapeLayer()
-            shapeLayer.path = path.cgPath
-            shapeLayer.fillColor = UIColor.white.cgColor
-            shapeLayer.backgroundColor = UIColor.white.cgColor
-            shapeLayer.strokeColor = UIColor.white.cgColor
-            layer.addSublayer(shapeLayer)
-        }
-        layer.frame = frame
-        onGet(layer)
+        let path = svgs[idx]
+        shapeLayer.path = path.cgPath
+        shapeLayer.fillColor = UIColor.white.cgColor
+        shapeLayer.backgroundColor = UIColor.white.cgColor
+        shapeLayer.strokeColor = UIColor.white.cgColor
+        shapeLayer.backgroundColor = UIColor.clear.cgColor
+        shapeLayer.frame = frame
+        onGet(shapeLayer)
     }
 
     func needVideoOutput() -> Bool {
