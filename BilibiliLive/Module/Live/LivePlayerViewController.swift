@@ -7,6 +7,7 @@
 
 import Alamofire
 import AVKit
+import Foundation
 import SwiftyJSON
 import UIKit
 
@@ -24,6 +25,7 @@ class LivePlayerViewController: CommonPlayerViewController {
     private var roomID: Int = 0
     private var danMuProvider: LiveDanMuProvider?
     private var url: URL?
+    private var playInfo: PlayInfo?
 
     override func viewDidLoad() {
         allowChangeSpeed = false
@@ -33,7 +35,12 @@ class LivePlayerViewController: CommonPlayerViewController {
             [weak self] in
             guard let self = self else { return }
             self.initDataSource()
-            self.initPlayer()
+            Task {
+                let success = await self.initPlayer()
+                if !success {
+                    self.initPlayerBackUp()
+                }
+            }
         }
         danMuView.play()
         setPlayerInfo(title: room?.title, subTitle: nil, desp: room?.ownerName, pic: room?.pic)
@@ -50,17 +57,12 @@ class LivePlayerViewController: CommonPlayerViewController {
     }
 
     func play() {
-        if var url = url {
-            if Settings.livePlayerHack {
-                var components = URLComponents(string: url.absoluteString)!
-                components.query = nil
-                url = components.url ?? url
-                danMuProvider?.start()
-                danMuView.play()
-            }
+        if let url = url {
+            danMuProvider?.start()
+            danMuView.play()
 
             let headers: [String: String] = [
-                "User-Agent": "Bilibili/APPLE TV",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
                 "Referer": "https://live.bilibili.com",
             ]
             let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
@@ -122,7 +124,52 @@ class LivePlayerViewController: CommonPlayerViewController {
         danMuProvider?.start()
     }
 
-    func initPlayer() {
+    override func additionDebugInfo() -> String {
+        return "\n\(playInfo?.formate ?? "")\n\(playInfo?.url ?? "")"
+    }
+
+    struct PlayInfo {
+        let formate: String?
+        let url: String
+    }
+
+    func initPlayer() async -> Bool {
+        let requestUrl = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?room_id=\(roomID)&protocol=1&format=0,1,2&codec=0,1&qn=10000&platform=web&ptype=8&dolby=5&panorama=1"
+        guard let data = try? await AF.request(requestUrl).serializingData().result.get() else {
+            return false
+        }
+        var playInfos = [PlayInfo]()
+        let json = JSON(data)
+
+        for stream in json["data"]["playurl_info"]["playurl"]["stream"].arrayValue {
+            for content in stream["format"].arrayValue {
+                let formate = content["format_name"].stringValue
+                let codecs = content["codec"].arrayValue
+
+                for codec in codecs {
+                    let baseUrl = codec["base_url"].stringValue
+                    for url_info in codec["url_info"].arrayValue {
+                        let host = url_info["host"]
+                        let extra = url_info["extra"]
+                        let url = "\(host)\(baseUrl)\(extra)"
+                        let playInfo = PlayInfo(formate: formate, url: url)
+                        playInfos.append(playInfo)
+                    }
+                }
+            }
+        }
+
+        if let info = playInfos.first(where: { $0.formate == "fmp4" }) ?? playInfos.first {
+            print("play =>", info)
+            url = URL(string: info.url)!
+            playInfo = info
+            play()
+            return true
+        }
+        return false
+    }
+
+    func initPlayerBackUp() {
         let requestUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=\(roomID)&platform=h5&otype=json&quality=10000"
         AF.request(requestUrl).responseData {
             [unowned self] resp in
@@ -130,7 +177,10 @@ class LivePlayerViewController: CommonPlayerViewController {
             case let .success(object):
                 let json = JSON(object)
                 if let playUrl = json["data"]["durl"].arrayValue.first?["url"].string {
-                    self.url = URL(string: playUrl)!
+                    var components = URLComponents(string: playUrl)!
+                    components.query = nil
+                    self.url = components.url ?? URL(string: playUrl)!
+                    playInfo = PlayInfo(formate: "old", url: playUrl)
                     self.play()
                 } else {
                     dismiss(animated: true, completion: nil)

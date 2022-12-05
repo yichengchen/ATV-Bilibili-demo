@@ -69,12 +69,6 @@ class SettingsViewController: UIViewController {
             self?.present(alert, animated: true)
         }
         cellModels.append(style)
-        let liveHack = CellModel(title: "直播播放黑屏修复", desp: Settings.livePlayerHack ? "开" : "关") {
-            [weak self] in
-            Settings.livePlayerHack.toggle()
-            self?.setupData()
-        }
-        cellModels.append(liveHack)
 
         let continuePlay = CellModel(title: "继续播放", desp: Settings.continuePlay ? "开" : "关") {
             [weak self] in

@@ -24,9 +24,6 @@ enum Settings {
     @UserDefault("Settings.direatlyEnterVideo", defaultValue: false)
     static var direatlyEnterVideo: Bool
 
-    @UserDefault("Settings.livePlayerHack", defaultValue: true)
-    static var livePlayerHack: Bool
-
     @UserDefaultCodable("Settings.mediaQuality", defaultValue: .quality_1080p)
     static var mediaQuality: MediaQualityEnum
 
