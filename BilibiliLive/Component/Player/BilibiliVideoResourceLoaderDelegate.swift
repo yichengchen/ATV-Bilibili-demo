@@ -44,6 +44,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private var hasPreferSubtitleAdded = false
     private var httpServer = HttpServer()
     private var aid = 0
+    private(set) var httpPort = 0
 
     deinit {
         httpServer.stop()
@@ -282,6 +283,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         if hasSubtitle {
             try? httpServer.start(0)
             bindHttpServer()
+            httpPort = (try? httpServer.port()) ?? 0
         }
         for subtitle in subtitles {
             addSubtitleData(lang: subtitle.lan, name: subtitle.lan_doc, duration: info.dash.duration, url: subtitle.url.absoluteString)
@@ -378,6 +380,11 @@ private extension BilibiliVideoResourceLoaderDelegate {
                 }
             }
             return HttpResponse.notFound()
+        }
+
+        httpServer["/debug"] = {
+            [weak self] req in
+            return HttpResponse.ok(.text(self?.masterPlaylist ?? "/"))
         }
     }
 }

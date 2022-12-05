@@ -101,11 +101,14 @@ class BiliBiliUpnpDMR: NSObject {
     }
 
     @objc func didEnterBackground() {
-        startUdpIfNeed()
+        udp?.close()
+        udpStarted = false
     }
 
     @objc func willEnterForeground() {
-        udp?.close()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.startUdpIfNeed()
+        }
     }
 
     private func startUdpIfNeed() {

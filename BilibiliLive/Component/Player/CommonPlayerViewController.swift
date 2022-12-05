@@ -289,9 +289,11 @@ class CommonPlayerViewController: AVPlayerViewController {
         bitrate audio:\(bitrateStr(averageAudioBitrate)), video: \(bitrateStr(averageVideoBitrate))
         observedBitrate:\(bitrateStr(observedBitrate))
         indicatedAverageBitrate:\(bitrateStr(indicatedBitrate))
-        maskProvider: \(String(describing: maskProvider))
+        maskProvider: \(String(describing: maskProvider))  \(additionDebugInfo())
         """
     }
+
+    func additionDebugInfo() -> String { return "" }
 
     var debugTimer: Timer?
     var debugEnable: Bool { debugTimer?.isValid ?? false }

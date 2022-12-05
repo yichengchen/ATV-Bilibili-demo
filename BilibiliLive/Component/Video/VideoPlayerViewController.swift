@@ -88,6 +88,13 @@ class VideoPlayerViewController: CommonPlayerViewController {
         return playerDelegate?.infoDebugText ?? "-"
     }
 
+    override func additionDebugInfo() -> String {
+        if let port = playerDelegate?.httpPort.string() {
+            return " :" + port
+        }
+        return ""
+    }
+
     override func playerStatusDidChange() {
         super.playerStatusDidChange()
         switch player?.status {
