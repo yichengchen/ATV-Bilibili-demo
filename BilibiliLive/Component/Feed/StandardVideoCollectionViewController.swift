@@ -62,6 +62,7 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
                 alert.addAction(.init(title: "Ok", style: .cancel))
                 present(alert, animated: true)
             }
+            updateFocusIfNeeded()
         }
     }
 

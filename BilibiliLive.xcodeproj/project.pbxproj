@@ -33,6 +33,7 @@
 		499C760F2930E068003160FB /* NVASocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499C760E2930E068003160FB /* NVASocket.swift */; };
 		499C76132931A781003160FB /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76122931A781003160FB /* Swifter */; };
 		499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76152931A7AE003160FB /* SwiftyXMLParser */; };
+		49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		49F9186E2931E3C9001D3EC3 /* DLNAInfo.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */; };
@@ -121,6 +122,7 @@
 		498DB1DE291BC24700F95607 /* BMaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMaskProvider.swift; sourceTree = "<group>"; };
 		499C75ED29305A1E003160FB /* BiliBiliUpnpDMR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiliBiliUpnpDMR.swift; sourceTree = "<group>"; };
 		499C760E2930E068003160FB /* NVASocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NVASocket.swift; sourceTree = "<group>"; };
+		49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpsViewController.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DLNAInfo.xml; sourceTree = "<group>"; };
@@ -321,6 +323,7 @@
 				2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */,
 				490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */,
 				4973502A29161B770045C26B /* WeeklyWatchViewController.swift */,
+				49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */,
 			);
 			path = Personal;
 			sourceTree = "<group>";
@@ -567,6 +570,7 @@
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
 				49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
+				49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */,
 				AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */,
 				494741C6290177BB005D6885 /* UpSpaceViewController.swift in Sources */,
 				492731EE29096677005F5B0A /* HotViewController.swift in Sources */,
