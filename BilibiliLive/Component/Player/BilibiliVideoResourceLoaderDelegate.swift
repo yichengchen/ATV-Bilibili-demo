@@ -88,12 +88,14 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
                 framerate = "30"
             }
         }
-        if codecs == "dvh1.08.07" {
+        if codecs == "dvh1.08.07" || codecs == "dvh1.08.03" {
             supplementCodesc = codecs
+            videoRange = "HLG"
             codecs = "hvc1.2.4.L153.b0"
         } else if codecs == "dvh1.08.06" {
             supplementCodesc = codecs
             codecs = "hvc1.2.4.L150"
+            videoRange = "PQ"
         }
 
         if let value = Double(framerate), value >= 60 {
