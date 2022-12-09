@@ -26,7 +26,7 @@ public func nvasocket(
                 while true {
                     let frame = try session.readFrame()
                     if frame.paramCount == 0 {
-                        print("get pong")
+                        Logger.debug("get pong")
                     } else {
                         if frame.isCommand {
                             processor?(session, frame)
@@ -38,7 +38,7 @@ public func nvasocket(
             do {
                 try read()
             } catch let err {
-                print(err)
+                Logger.warn(err)
             }
             didDisconnect?(session)
         }
@@ -81,7 +81,7 @@ public class NVASession: Hashable, Equatable {
         let versions = try socket.read(length: 4)
         let version = Data(versions).reversed().withUnsafeBytes({ $0.load(as: UInt32.self) })
         frame.version = Int(version)
-        print("version=\(frame.version)")
+        Logger.debug("version=\(frame.version)")
         currentVersion = frame.version
 
         if frame.paramCount == 0 {
@@ -93,7 +93,7 @@ public class NVASession: Hashable, Equatable {
         frame.command = String(bytes: try socket.read(length: Int(frame.commandLength)).reversed(), encoding: .utf8)!
 
         if fst != 0xe0 || frame.paramCount == 1 {
-            print("reply:", frame.command)
+            Logger.debug("reply:", frame.command)
             return frame
         }
 

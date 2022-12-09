@@ -160,7 +160,7 @@ class LivePlayerViewController: CommonPlayerViewController {
         }
 
         if let info = playInfos.first(where: { $0.formate == "fmp4" }) ?? playInfos.first {
-            print("play =>", info)
+            Logger.debug("play =>", info)
             url = URL(string: info.url)!
             playInfo = info
             play()
@@ -186,7 +186,7 @@ class LivePlayerViewController: CommonPlayerViewController {
                     dismiss(animated: true, completion: nil)
                 }
             case let .failure(err):
-                print(err)
+                Logger.warn(err)
                 dismiss(animated: true, completion: nil)
             }
         }

@@ -126,7 +126,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
                 segment = SidxParseUtil.processIndexData(data: res)
             }
         } else {
-            print("cache hit")
+            Logger.debug("cache hit")
         }
         let inits = info.info.segment_base.initialization.components(separatedBy: "-")
         guard let moovIdxStr = inits.last,
@@ -292,6 +292,8 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         }
 
         masterPlaylist.append("\n#EXT-X-ENDLIST\n")
+
+        Logger.debug("masterPlaylist:", masterPlaylist)
     }
 
     private func reportError(_ loadingRequest: AVAssetResourceLoadingRequest, withErrorCode error: Int) {
@@ -328,7 +330,7 @@ private extension BilibiliVideoResourceLoaderDelegate {
             return
         }
         let urlStr = customUrl.absoluteString
-        print("handleCustomPlaylistRequest: \(urlStr)")
+        Logger.debug("handleCustomPlaylistRequest: \(urlStr)")
         if urlStr == URLs.play {
             report(loadingRequest, content: masterPlaylist)
             return
@@ -370,7 +372,7 @@ private extension BilibiliVideoResourceLoaderDelegate {
             }
             return
         }
-        print("handle loading", customUrl)
+        Logger.debug("handle loading", customUrl)
     }
 
     func bindHttpServer() {
@@ -382,11 +384,6 @@ private extension BilibiliVideoResourceLoaderDelegate {
                 }
             }
             return HttpResponse.notFound()
-        }
-
-        httpServer["/debug"] = {
-            [weak self] req in
-            return HttpResponse.ok(.text(self?.masterPlaylist ?? "/"))
         }
     }
 }

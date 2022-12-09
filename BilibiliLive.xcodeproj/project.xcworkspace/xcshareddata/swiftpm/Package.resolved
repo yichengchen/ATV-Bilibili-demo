@@ -19,6 +19,15 @@
       }
     },
     {
+      "identity" : "cocoalumberjack",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/CocoaLumberjack/CocoaLumberjack.git",
+      "state" : {
+        "revision" : "0188d31089b5881a269e01777be74c7316924346",
+        "version" : "3.8.0"
+      }
+    },
+    {
       "identity" : "fuzi",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/cezheng/Fuzi",
@@ -79,6 +88,15 @@
       "state" : {
         "revision" : "df8d82047f6654d8e4b655d1b1525c64e1059d21",
         "version" : "4.0.4"
+      }
+    },
+    {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log.git",
+      "state" : {
+        "revision" : "6fe203dc33195667ce1759bf0182975e4653ba1c",
+        "version" : "1.4.4"
       }
     },
     {

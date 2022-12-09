@@ -93,7 +93,7 @@ class CommonPlayerViewController: AVPlayerViewController {
     }
 
     func playerStatusDidChange() {
-        print("player status: \(player?.currentItem?.status.rawValue ?? -1)")
+        Logger.debug("player status: \(player?.currentItem?.status.rawValue ?? -1)")
         switch player?.currentItem?.status {
         case .readyToPlay:
             if maskProvider?.needVideoOutput() == true {
@@ -102,8 +102,8 @@ class CommonPlayerViewController: AVPlayerViewController {
             startPlay()
         case .failed:
             removeObservarPlayerItem()
-            print(player?.currentItem?.error ?? "no error")
-            print(player?.currentItem?.errorLog() ?? "no error log")
+            Logger.debug(player?.currentItem?.error ?? "no error")
+            Logger.debug(player?.currentItem?.errorLog() ?? "no error log")
             if retryCount < maxRetryCount, !retryPlay() {
                 let log = playerItem?.errorLog()
                 let errorLogData = log?.extendedLogData() ?? Data()
@@ -226,7 +226,7 @@ class CommonPlayerViewController: AVPlayerViewController {
     func setupMask() {
         guard let maskProvider else { return }
 //        danMuView.backgroundColor = UIColor.red.withAlphaComponent(0.5)
-        print("mask provider is \(maskProvider)")
+        Logger.info("mask provider is \(maskProvider)")
         let interval = CMTime(seconds: 1.0 / CGFloat(maskProvider.preferFPS()),
                               preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         player?.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: {

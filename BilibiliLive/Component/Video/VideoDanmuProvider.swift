@@ -43,7 +43,7 @@ class VideoDanmuProvider {
             case let .success(data):
                 self.parseDanmuData(data: data)
             case let .failure(err):
-                print(err)
+                Logger.warn(err)
             }
         }
     }
@@ -56,7 +56,7 @@ class VideoDanmuProvider {
         allDanmus.sort {
             $0.time < $1.time
         }
-        print("danmu count: \(allDanmus.count)")
+        Logger.debug("danmu count: \(allDanmus.count)")
         playingDanmus = allDanmus
     }
 

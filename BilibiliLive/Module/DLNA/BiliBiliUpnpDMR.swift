@@ -54,12 +54,11 @@ class BiliBiliUpnpDMR: NSObject {
     override private init() { super.init() }
     func start() {
         startUdpIfNeed()
-        try? httpServer.start(9958)
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
 
         httpServer["/description.xml"] = { [weak self] req in
-            print("handel serverInfo")
+            Logger.debug("handel serverInfo")
             return HttpResponse.ok(.text(self?.serverInfo ?? ""))
         }
 
@@ -75,14 +74,14 @@ class BiliBiliUpnpDMR: NSObject {
 
         httpServer["/dlna/NirvanaControl.xml"] = {
             [weak self] req in
-            print("handle NirvanaControl")
+            Logger.debug("handle NirvanaControl")
             let txt = self?.nirvanaControl ?? ""
             return HttpResponse.ok(.text(txt))
         }
 
         httpServer.get["/dlna/AVTransport.xml"] = {
             [weak self] req in
-            print("handle AVTransport.xml")
+            Logger.debug("handle AVTransport.xml")
             let txt = self?.avTransportScpd ?? ""
             return HttpResponse.ok(.text(txt))
         }
@@ -90,7 +89,7 @@ class BiliBiliUpnpDMR: NSObject {
         httpServer.post["/AVTransport/action"] = {
             req in
             let str = String(data: Data(req.body), encoding: .utf8) ?? ""
-            print("handle AVTransport.xml", str)
+            Logger.debug("handle AVTransport.xml \(str)")
             return HttpResponse.ok(.text(str))
         }
 
@@ -98,11 +97,37 @@ class BiliBiliUpnpDMR: NSObject {
             req in
             return HttpResponse.internalServerError(nil)
         }
+
+        httpServer["/debug/log"] = {
+            req in
+            if let path = Logger.latestLogPath(),
+               let str = try? String(contentsOf: URL(fileURLWithPath: path))
+            {
+                return HttpResponse.ok(.text(str))
+            }
+            return HttpResponse.internalServerError(nil)
+        }
+
+        httpServer["/debug/old"] = {
+            req in
+            if let path = Logger.oldestLogPath(),
+               let str = try? String(contentsOf: URL(fileURLWithPath: path))
+            {
+                return HttpResponse.ok(.text(str))
+            }
+            return HttpResponse.internalServerError(nil)
+        }
+    }
+
+    func stop() {
+        udp?.close()
+        httpServer.stop()
+        udpStarted = false
+        Logger.info("dmr stopped")
     }
 
     @objc func didEnterBackground() {
-        udp?.close()
-        udpStarted = false
+        stop()
     }
 
     @objc func willEnterForeground() {
@@ -117,13 +142,14 @@ class BiliBiliUpnpDMR: NSObject {
             do {
                 udp = GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
                 try udp.enableBroadcast(true)
-                try udp.enableReusePort(true)
                 try udp.bind(toPort: 1900)
                 try udp.joinMulticastGroup("239.255.255.250")
                 try udp.beginReceiving()
+                try httpServer.start(9958)
                 udpStarted = true
+                Logger.info("dmr started")
             } catch let err {
-                print(err)
+                Logger.warn(err.localizedDescription)
             }
         }
     }
@@ -153,7 +179,7 @@ class BiliBiliUpnpDMR: NSObject {
 
     private func getSSDPResp() -> String {
         guard let ip = ip ?? getIPAddress() else {
-            print("no ip")
+            Logger.debug("no ip")
             return ""
         }
         let formatter = DateFormatter()
@@ -216,7 +242,7 @@ class BiliBiliUpnpDMR: NSObject {
             (topMost as? VideoPlayerViewController)?.dismiss(animated: true)
             session.sendEmpty()
         default:
-            print("action:", frame.action)
+            Logger.debug("action:", frame.action)
             session.sendEmpty()
         }
     }
@@ -230,7 +256,7 @@ class BiliBiliUpnpDMR: NSObject {
     }
 
     func sendStatus(status: PlayStatus) {
-        print("send status:", status)
+        Logger.debug("send status:", status)
         Array(sessions).forEach { $0.sendCommand(action: "OnPlayState", content: ["playState": status.rawValue]) }
     }
 
@@ -260,7 +286,7 @@ extension BiliBiliUpnpDMR: GCDAsyncUdpSocketDelegate {
         ipAddress = ipAddress.replacingOccurrences(of: "::ffff:", with: "")
         let str = String(data: data, encoding: .utf8)
         if str?.contains("ssdp:discover") == true {
-            print("handle ssdp discover from:", ipAddress)
+            Logger.debug("handle ssdp discover from: \(ipAddress)")
             let data = getSSDPResp().data(using: .utf8)!
             sock.send(data, toAddress: address, withTimeout: -1, tag: 0)
         }

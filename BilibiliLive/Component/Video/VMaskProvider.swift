@@ -33,7 +33,7 @@ class VMaskProvider: MaskProvider {
 
     func getMask(for time: CMTime, frame: CGRect, onGet: @escaping (CALayer) -> Void) {
         guard !processing else {
-            print("drop frame")
+            Logger.debug("drop frame")
             return
         }
         guard let videoOutput else {
@@ -43,7 +43,7 @@ class VMaskProvider: MaskProvider {
         guard videoOutput.hasNewPixelBuffer(forItemTime: time),
               let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil)
         else {
-            print("no video buff")
+            Logger.debug("no video buff")
             processing = false
             return
         }
@@ -120,7 +120,7 @@ class VMaskProvider: MaskProvider {
             }
             return nil
         } catch {
-            print("Vision error: \(error.localizedDescription)")
+            Logger.warn("Vision error: \(error.localizedDescription)")
             return nil
         }
     }

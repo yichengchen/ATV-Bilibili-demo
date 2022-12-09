@@ -197,7 +197,7 @@ extension VideoPlayerViewController {
                 callback?()
             case let .failure(err):
                 self.showErrorAlertAndExit(message: "请求cid失败")
-                print(err)
+                Logger.warn(err)
             }
         }
     }
