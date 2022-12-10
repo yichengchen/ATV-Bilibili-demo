@@ -26,7 +26,7 @@ public func nvasocket(
                 while true {
                     let frame = try session.readFrame()
                     if frame.paramCount == 0 {
-                        Logger.debug("get pong")
+                        print("get pong")
                     } else {
                         if frame.isCommand {
                             processor?(session, frame)
@@ -56,7 +56,10 @@ public class NVASession: Hashable, Equatable {
         lhs.socket == rhs.socket
     }
 
+    var timer: Timer?
+
     var currentVersion = 1
+    lazy var socketQueue = DispatchQueue(label: "nva-socket")
 
     public struct NVAFrame {
         // e0
@@ -81,7 +84,6 @@ public class NVASession: Hashable, Equatable {
         let versions = try socket.read(length: 4)
         let version = Data(versions).reversed().withUnsafeBytes({ $0.load(as: UInt32.self) })
         frame.version = Int(version)
-        Logger.debug("version=\(frame.version)")
         currentVersion = frame.version
 
         if frame.paramCount == 0 {
@@ -110,6 +112,12 @@ public class NVASession: Hashable, Equatable {
         return frame
     }
 
+    func writeData(_ data: Data) {
+        socketQueue.async { [weak self] in
+            try? self?.socket.writeData(data)
+        }
+    }
+
     func sendReply(content: [String: Any]) {
         let str = try! JSON(content).rawData()
         let length = UInt32(str.count)
@@ -119,7 +127,14 @@ public class NVASession: Hashable, Equatable {
         arr.append(contentsOf: length.toUInt8s)
         var data = Data(arr)
         data.append(str)
-        try? socket.writeData(data)
+        writeData(data)
+    }
+
+    func sendPing() {
+        var arr: [UInt8] = [0xe4, 0x00]
+        currentVersion += 1
+        arr.append(contentsOf: UInt32(currentVersion).toUInt8s)
+        writeData(Data(arr))
     }
 
     func sendCommand(action: String, content: [String: Any]) {
@@ -138,22 +153,30 @@ public class NVASession: Hashable, Equatable {
 
         arr.append(contentsOf: length.toUInt8s)
         arr.append(str)
-        try? socket.writeData(arr)
+        writeData(arr)
     }
 
     func sendEmpty() {
         var arr: [UInt8] = [0xc0, 0x00]
         currentVersion += 1
         arr.append(contentsOf: UInt32(currentVersion).toUInt8s)
+        writeData(Data(arr))
     }
 
     let socket: Socket
 
     init(_ socket: Socket) {
         self.socket = socket
+//        DispatchQueue.main.async {
+//            self.timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
+//                print("send ping")
+//                self?.sendPing()
+//            }
+//        }
     }
 
     deinit {
+        timer?.invalidate()
         socket.close()
     }
 

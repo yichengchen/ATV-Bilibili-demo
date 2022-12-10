@@ -281,21 +281,23 @@ class BiliBiliUpnpDMR: NSObject {
     }
 
     func sendVideoSwitch(aid: Int, cid: Int) {
-        let playItem = ["aid": aid, "cid": cid, "contentType": 0, "epId": 0, "seasonId": 0, "roomId": 0] as [String: Any]
-        let mockQnDesc = ["curQn": 0,
-                          "supportQnList": [
-                              [
-                                  "description": "",
-                                  "displayDesc": "",
-                                  "needLogin": false,
-                                  "needVip": false,
-                                  "quality": 0,
-                                  "superscript": "",
-                              ],
-                          ],
-                          "userDesireQn": 0] as [String: Any]
-        let data = ["playItem": playItem, "qnDesc": mockQnDesc, "title": "null"] as [String: Any]
-        Array(sessions).forEach { $0.sendCommand(action: "OnEpisodeSwitch", content: data) }
+        /* this might cause client disconnect for unkown reason
+         let playItem = ["aid": aid, "cid": cid, "contentType": 0, "epId": 0, "seasonId": 0, "roomId": 0] as [String: Any]
+         let mockQnDesc = ["curQn": 0,
+                           "supportQnList": [
+                               [
+                                   "description": "",
+                                   "displayDesc": "",
+                                   "needLogin": false,
+                                   "needVip": false,
+                                   "quality": 0,
+                                   "superscript": "",
+                               ],
+                           ],
+                           "userDesireQn": 0] as [String: Any]
+         let data = ["playItem": playItem, "qnDesc": mockQnDesc, "title": "null"] as [String: Any]
+         Array(sessions).forEach { $0.sendCommand(action: "OnEpisodeSwitch", content: data) }
+          */
     }
 }
 
