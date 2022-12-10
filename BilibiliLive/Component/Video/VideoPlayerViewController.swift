@@ -64,7 +64,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         prepare(toPlay: asset, withKeys: requestedKeys)
         danMuView.play()
         updatePlayerCharpter(playerInfo: playerInfo)
-        BiliBiliUpnpDMR.shared.sendVideoSwitch(aid: aid, cid: cid ?? 0, title: data?.title ?? "")
+        BiliBiliUpnpDMR.shared.sendVideoSwitch(aid: aid, cid: cid ?? 0)
     }
 
     private func updatePlayerCharpter(playerInfo: PlayerInfo?) {

@@ -149,7 +149,7 @@ class BiliBiliUpnpDMR: NSObject {
                 udpStarted = true
                 Logger.info("dmr started")
             } catch let err {
-                Logger.warn(err.localizedDescription)
+                Logger.warn("dmr start fail", err.localizedDescription)
             }
         }
     }
@@ -206,7 +206,7 @@ class BiliBiliUpnpDMR: NSObject {
         case "GetVolume":
             session.sendReply(content: ["volume": 30])
         case "Play":
-            handlePlay(json: JSON(frame.body))
+            handlePlay(json: JSON(parseJSON: frame.body))
             session.sendEmpty()
         case "Pause":
             (topMost as? VideoPlayerViewController)?.player?.pause()
@@ -280,11 +280,22 @@ class BiliBiliUpnpDMR: NSObject {
         Array(sessions).forEach { $0.sendCommand(action: "OnProgress", content: ["duration": duration, "position": current]) }
     }
 
-    func sendVideoSwitch(aid: Int, cid: Int, title: String) {
-        // causing client crash
-//        let playItem = ["aid": "\(aid)", "cid": "\(cid)", "contentType": "1", "epId": "0", "seasonId": "0"] as [String: Any]
-//        let data = ["playItem": playItem, "qnDesc": "112", "title": title] as [String: Any]
-//        Array(sessions).forEach { $0.sendCommand(action: "OnEpisodeSwitch", content: data) }
+    func sendVideoSwitch(aid: Int, cid: Int) {
+        let playItem = ["aid": aid, "cid": cid, "contentType": 0, "epId": 0, "seasonId": 0, "roomId": 0] as [String: Any]
+        let mockQnDesc = ["curQn": 0,
+                          "supportQnList": [
+                              [
+                                  "description": "",
+                                  "displayDesc": "",
+                                  "needLogin": false,
+                                  "needVip": false,
+                                  "quality": 0,
+                                  "superscript": "",
+                              ],
+                          ],
+                          "userDesireQn": 0] as [String: Any]
+        let data = ["playItem": playItem, "qnDesc": mockQnDesc, "title": "null"] as [String: Any]
+        Array(sessions).forEach { $0.sendCommand(action: "OnEpisodeSwitch", content: data) }
     }
 }
 
