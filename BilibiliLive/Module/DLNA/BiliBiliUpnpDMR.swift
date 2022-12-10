@@ -17,7 +17,7 @@ class BiliBiliUpnpDMR: NSObject {
     private var udp: GCDAsyncUdpSocket!
     private var httpServer = HttpServer()
     private var connectedSockets = [GCDAsyncSocket]()
-    private var sessions = Set<NVASession>()
+    @MainActor private var sessions = Set<NVASession>()
     private var udpStarted = false
     private var ip: String?
 
@@ -63,9 +63,15 @@ class BiliBiliUpnpDMR: NSObject {
         }
 
         httpServer["projection"] = nvasocket(uuid: bUuid, didConnect: { [weak self] session in
-            self?.sessions.insert(session)
+            Logger.info("session connected", session)
+            DispatchQueue.main.async {
+                self?.sessions.insert(session)
+            }
         }, didDisconnect: { [weak self] session in
-            self?.sessions.remove(session)
+            Logger.info("session disconnect", session)
+            DispatchQueue.main.async {
+                self?.sessions.remove(session)
+            }
         }, processor: { [weak self] session, frame in
             DispatchQueue.main.async {
                 self?.handleEvent(frame: frame, session: session)
@@ -271,12 +277,12 @@ class BiliBiliUpnpDMR: NSObject {
         case stop = 7
     }
 
-    func sendStatus(status: PlayStatus) {
+    @MainActor func sendStatus(status: PlayStatus) {
         Logger.debug("send status:", status)
         Array(sessions).forEach { $0.sendCommand(action: "OnPlayState", content: ["playState": status.rawValue]) }
     }
 
-    func sendProgress(duration: Int, current: Int) {
+    @MainActor func sendProgress(duration: Int, current: Int) {
         Array(sessions).forEach { $0.sendCommand(action: "OnProgress", content: ["duration": duration, "position": current]) }
     }
 
