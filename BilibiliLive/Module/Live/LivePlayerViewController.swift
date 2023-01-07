@@ -125,7 +125,7 @@ class LivePlayerViewController: CommonPlayerViewController {
     }
 
     override func additionDebugInfo() -> String {
-        return "\n\(playInfo?.formate ?? "")\n\(playInfo?.url ?? "")"
+        return "\n\(playInfo?.formate ?? "")"
     }
 
     struct PlayInfo {

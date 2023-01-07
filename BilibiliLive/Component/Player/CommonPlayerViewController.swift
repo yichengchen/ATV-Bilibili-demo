@@ -327,6 +327,7 @@ class CommonPlayerViewController: AVPlayerViewController {
 
     private func initDanmuView() {
         view.addSubview(danMuView)
+        danMuView.accessibilityLabel = "danmuView"
         danMuView.makeConstraintsToBindToSuperview()
         danMuView.isHidden = !Settings.defaultDanmuStatus
     }
@@ -340,6 +341,11 @@ class CommonPlayerViewController: AVPlayerViewController {
         videoItem.add(videoOutput)
         self.videoOutput = videoOutput
         maskProvider?.setVideoOutout(ouput: videoOutput)
+    }
+
+    func ensureDanmuViewFront() {
+        view.bringSubviewToFront(danMuView)
+        danMuView.play()
     }
 }
 
@@ -366,10 +372,12 @@ extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
             presentedViewController.dismiss(animated: false) {
                 parent?.present(playerViewController, animated: false)
                 completionHandler(true)
+                (playerViewController as? CommonPlayerViewController)?.ensureDanmuViewFront()
             }
         } else {
             presentedViewController.present(playerViewController, animated: false) {
                 completionHandler(true)
+                (playerViewController as? CommonPlayerViewController)?.ensureDanmuViewFront()
             }
         }
     }
