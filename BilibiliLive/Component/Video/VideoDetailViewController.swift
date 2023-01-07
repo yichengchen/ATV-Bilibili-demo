@@ -146,11 +146,10 @@ class VideoDetailViewController: UIViewController {
         if !direatlyEnterVideo {
             vc.present(self, animated: true)
         } else {
-            vc.present(self, animated: false) { [self] in
-                let player = VideoPlayerViewController()
-                player.aid = aid
-                player.cid = cid
-                present(player, animated: true)
+            vc.present(self, animated: false) { [weak self] in
+                guard let self else { return }
+                let player = VideoPlayerViewController(playInfo: PlayInfo(aid: self.aid, cid: self.cid))
+                self.present(player, animated: true)
             }
         }
     }
@@ -295,13 +294,16 @@ class VideoDetailViewController: UIViewController {
     }
 
     @IBAction func actionPlay(_ sender: Any) {
-        let player = VideoPlayerViewController()
-        player.aid = aid
-        player.cid = cid
-        if isBangumi {
-            player.isBangumi = true
-        }
+        let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, isBangumi: isBangumi))
         player.data = data
+        if pages.count > 0, let index = pages.firstIndex(where: { $0.cid == cid }) {
+            let seq = pages.dropFirst(index + 1).map({ PlayInfo(aid: aid, cid: $0.cid, isBangumi: isBangumi) })
+            if seq.count > 0 {
+                let nextProvider = VideoNextProvider()
+                nextProvider.playSeq = seq
+                player.nextProvider = nextProvider
+            }
+        }
         present(player, animated: true, completion: nil)
     }
 
@@ -384,11 +386,15 @@ extension VideoDetailViewController: UICollectionViewDelegate {
         switch collectionView {
         case pageCollectionView:
             let page = pages[indexPath.item]
-            let player = VideoPlayerViewController()
-            player.aid = isBangumi ? page.page : aid
-            player.cid = page.cid
+            let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, isBangumi: isBangumi))
             player.data = isBangumi ? nil : data
-            player.isBangumi = isBangumi
+
+            let seq = pages.dropFirst(indexPath.item + 1).map({ PlayInfo(aid: aid, cid: $0.cid, isBangumi: isBangumi) })
+            if seq.count > 0 {
+                let nextProvider = VideoNextProvider()
+                nextProvider.playSeq = seq
+                player.nextProvider = nextProvider
+            }
             present(player, animated: true, completion: nil)
         case replysCollectionView:
             guard let reply = replys?.replies[indexPath.item] else { return }

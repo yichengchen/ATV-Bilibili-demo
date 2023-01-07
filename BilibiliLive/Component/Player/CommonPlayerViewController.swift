@@ -163,6 +163,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         let danmuAction = UIAction(title: "Show Danmu", image: danMuView.isHidden ? danmuImageDisable : danmuImage) {
             [weak self] action in
             guard let self = self else { return }
+            Settings.defaultDanmuStatus.toggle()
             self.danMuView.isHidden.toggle()
             action.image = self.danMuView.isHidden ? danmuImageDisable : danmuImage
         }

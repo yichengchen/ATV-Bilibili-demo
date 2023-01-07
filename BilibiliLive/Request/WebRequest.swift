@@ -334,6 +334,12 @@ extension WebRequest {
         let resp = try await AF.request(url).serializingDecodable(SubtitlContenteResp.self).value
         return resp.body
     }
+
+    static func requestCid(aid: Int) async throws -> Int {
+        let res = try await requestJSON(url: "https://api.bilibili.com/x/player/pagelist?aid=\(aid)&jsonp=jsonp")
+        let cid = res[0]["cid"].intValue
+        return cid
+    }
 }
 
 // MARK: - User

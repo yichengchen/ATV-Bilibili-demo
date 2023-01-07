@@ -104,12 +104,12 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(hevc)
 
-        let danmu = CellModel(title: "默认弹幕开关", desp: Settings.defaultDanmuStatus ? "开" : "关") {
+        let continouslyPlay = CellModel(title: "连续播放", desp: Settings.continouslyPlay ? "开" : "关") {
             [weak self] in
-            Settings.defaultDanmuStatus.toggle()
+            Settings.continouslyPlay.toggle()
             self?.setupData()
         }
-        cellModels.append(danmu)
+        cellModels.append(continouslyPlay)
 
         let mask = CellModel(title: "智能防档弹幕", desp: Settings.danmuMask ? "开" : "关") {
             [weak self] in

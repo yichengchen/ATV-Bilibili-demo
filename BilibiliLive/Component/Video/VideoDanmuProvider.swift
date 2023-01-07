@@ -35,6 +35,12 @@ class VideoDanmuProvider {
 
     var onShowDanmu: ((DanmakuTextCellModel) -> Void)?
 
+    func reset() {
+        allDanmus.removeAll()
+        playingDanmus.removeAll()
+        lastTime = 0
+    }
+
     func fetchDanmuData() {
         AF.request("https://api.bilibili.com/x/v1/dm/list.so?oid=\(cid!)").responseString(encoding: .utf8) {
             [weak self] resp in
