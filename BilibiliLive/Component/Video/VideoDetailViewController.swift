@@ -68,6 +68,8 @@ class VideoDetailViewController: UIViewController {
     private var replys: Replys?
     private var subTitles: [SubtitleData]?
 
+    private var allUgcEpisodes = [VideoDetail.Info.UgcSeason.UgcVideoInfo]()
+
     static func create(aid: Int, cid: Int?) -> VideoDetailViewController {
         let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
         vc.aid = aid
@@ -269,9 +271,12 @@ class VideoDetailViewController: UIViewController {
             self.backgroundImageView.alpha = 1
         }
 
+        if let season = data.View.ugc_season {
+            allUgcEpisodes = Array((season.sections.map { $0.episodes }.joined()))
+        }
         ugcCollectionView.reloadData()
         ugcLabel.text = "合集 \(data.View.ugc_season?.title ?? "")  \(data.View.ugc_season?.sections.first?.title ?? "")"
-        ugcView.isHidden = data.View.ugc_season?.sections.count ?? 0 == 0
+        ugcView.isHidden = allUgcEpisodes.count == 0
 
         recommandCollectionView.reloadData()
     }
@@ -386,7 +391,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             let detail = ContentDetailViewController.createReply(content: reply.content.message)
             present(detail, animated: true)
         case ugcCollectionView:
-            guard let video = data?.View.ugc_season?.sections.first?.episodes[indexPath.item] else { return }
+            let video = allUgcEpisodes[indexPath.item]
             let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
             detailVC.present(from: self)
         case recommandCollectionView:
@@ -408,7 +413,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         case replysCollectionView:
             return replys?.replies.count ?? 0
         case ugcCollectionView:
-            return data?.View.ugc_season?.sections.first?.episodes.count ?? 0
+            return allUgcEpisodes.count
         case recommandCollectionView:
             return data?.Related.count ?? 0
         default:
@@ -431,9 +436,8 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             return cell
         case ugcCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
-            if let record = data?.View.ugc_season?.sections.first?.episodes[indexPath.row] {
-                cell.update(data: record)
-            }
+            let record = allUgcEpisodes[indexPath.row]
+            cell.update(data: record)
             return cell
         case recommandCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
