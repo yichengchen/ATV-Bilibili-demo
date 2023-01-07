@@ -22,7 +22,8 @@ class VideoPlayerViewController: CommonPlayerViewController {
     private var playingDanmus = [Danmu]()
     private var playerDelegate: BilibiliVideoResourceLoaderDelegate?
     private let danmuProvider = VideoDanmuProvider()
-
+    private var clipInfos: [VideoPlayURLInfo.ClipInfo]?
+    private var skipAction: UIAction?
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         guard let currentTime = player?.currentTime().seconds, currentTime > 0 else { return }
@@ -153,6 +154,7 @@ extension VideoPlayerViewController {
             let playData: VideoPlayURLInfo
             if isBangumi {
                 playData = try await WebRequest.requestPcgPlayUrl(aid: aid, cid: cid!)
+                clipInfos = playData.clip_info_list
             } else {
                 playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
             }
@@ -234,10 +236,32 @@ extension VideoPlayerViewController {
         playerItem = AVPlayerItem(asset: asset)
         player = AVPlayer(playerItem: playerItem)
         player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
-            self?.danmuProvider.playerTimeChange(time: time.seconds)
+            guard let self else { return }
+            let seconds = time.seconds
+            self.danmuProvider.playerTimeChange(time: seconds)
 
-            if let duration = self?.data?.View.duration {
-                BiliBiliUpnpDMR.shared.sendProgress(duration: duration, current: Int(time.seconds))
+            if let duration = self.data?.View.duration {
+                BiliBiliUpnpDMR.shared.sendProgress(duration: duration, current: Int(seconds))
+            }
+
+            if let clipInfos = self.clipInfos {
+                var matched = false
+                for clip in clipInfos {
+                    if seconds > clip.start, seconds < clip.end {
+                        if self.skipAction?.accessibilityLabel != clip.a11Tag {
+                            self.skipAction = UIAction(title: clip.customText) { _ in
+                                self.player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                            }
+                            self.skipAction?.accessibilityLabel = clip.a11Tag
+                        }
+                        self.contextualActions = [self.skipAction!]
+                        matched = true
+                        break
+                    }
+                }
+                if !matched {
+                    self.contextualActions = []
+                }
             }
         }
     }

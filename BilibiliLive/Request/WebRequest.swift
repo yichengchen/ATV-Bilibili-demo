@@ -595,6 +595,27 @@ struct VideoPlayURLInfo: Codable {
     let video_codecid: Int
     let support_formats: [SupportFormate]
     let dash: DashInfo
+    let clip_info_list: [ClipInfo]?
+
+    struct ClipInfo: Codable {
+        let start: CGFloat
+        let end: CGFloat
+        let clipType: String?
+        let toastText: String?
+        var a11Tag: String {
+            "\(start)\(end)"
+        }
+
+        var customText: String {
+            if clipType == "CLIP_TYPE_OP" {
+                return "跳过片头"
+            } else if clipType == "CLIP_TYPE_ED" {
+                return "跳过片尾"
+            } else {
+                return toastText ?? "跳过"
+            }
+        }
+    }
 
     struct SupportFormate: Codable {
         let quality: Int
