@@ -16,6 +16,7 @@ import UIKit
 class VideoPlayerViewController: CommonPlayerViewController {
     var cid: Int?
     var aid: Int!
+    var isBangumi: Bool = false
     var data: VideoDetail?
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
@@ -149,7 +150,12 @@ extension VideoPlayerViewController {
         let info = try? await WebRequest.requestPlayerInfo(aid: aid, cid: cid!)
         let startTime = info?.playTimeInSecond
         do {
-            let playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
+            let playData: VideoPlayURLInfo
+            if isBangumi {
+                playData = try await WebRequest.requestPcgPlayUrl(aid: aid, cid: cid!)
+            } else {
+                playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid!)
+            }
             if let startTime = startTime, playData.dash.duration - startTime > 5, Settings.continuePlay {
                 playerStartPos = startTime
             }

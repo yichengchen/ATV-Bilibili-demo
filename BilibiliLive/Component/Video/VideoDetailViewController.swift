@@ -298,6 +298,9 @@ class VideoDetailViewController: UIViewController {
         let player = VideoPlayerViewController()
         player.aid = aid
         player.cid = cid
+        if isBangumi {
+            player.isBangumi = true
+        }
         player.data = data
         present(player, animated: true, completion: nil)
     }
@@ -385,6 +388,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             player.aid = isBangumi ? page.page : aid
             player.cid = page.cid
             player.data = isBangumi ? nil : data
+            player.isBangumi = isBangumi
             present(player, animated: true, completion: nil)
         case replysCollectionView:
             guard let reply = replys?.replies[indexPath.item] else { return }

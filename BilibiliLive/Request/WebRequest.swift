@@ -17,18 +17,19 @@ enum RequestError: Error {
 
 enum WebRequest {
     enum EndPoint {
-        static let related = "http://api.bilibili.com/x/web-interface/archive/related"
-        static let logout = "http://passport.bilibili.com/login/exit/v2"
-        static let info = "http://api.bilibili.com/x/web-interface/view"
-        static let fav = "http://api.bilibili.com/x/v3/fav/resource/list"
-        static let favList = "http://api.bilibili.com/x/v3/fav/folder/created/list-all"
+        static let related = "https://api.bilibili.com/x/web-interface/archive/related"
+        static let logout = "https://passport.bilibili.com/login/exit/v2"
+        static let info = "https://api.bilibili.com/x/web-interface/view"
+        static let fav = "https://api.bilibili.com/x/v3/fav/resource/list"
+        static let favList = "https://api.bilibili.com/x/v3/fav/folder/created/list-all"
         static let reportHistory = "https://api.bilibili.com/x/v2/history/report"
-        static let upSpace = "http://api.bilibili.com/x/space/arc/search"
-        static let like = "http://api.bilibili.com/x/web-interface/archive/like"
-        static let likeStatus = "http://api.bilibili.com/x/web-interface/archive/has/like"
-        static let coin = "http://api.bilibili.com/x/web-interface/coin/add"
+        static let upSpace = "https://api.bilibili.com/x/space/arc/search"
+        static let like = "https://api.bilibili.com/x/web-interface/archive/like"
+        static let likeStatus = "https://api.bilibili.com/x/web-interface/archive/has/like"
+        static let coin = "https://api.bilibili.com/x/web-interface/coin/add"
         static let playerInfo = "https://api.bilibili.com/x/player/v2"
         static let playUrl = "https://api.bilibili.com/x/player/playurl"
+        static let pcgPlayUrl = "https://api.bilibili.com/pgc/player/web/playurl"
     }
 
     static func requestData(method: HTTPMethod = .get,
@@ -42,11 +43,27 @@ enum WebRequest {
             parameters["biliCSRF"] = CookieHandler.shared.csrf()
             parameters["csrf"] = CookieHandler.shared.csrf()
         }
+
+        var afheaders = HTTPHeaders()
+        if let headers {
+            for (k, v) in headers {
+                afheaders.add(HTTPHeader(name: k, value: v))
+            }
+        }
+
+        if !afheaders.contains(where: { $0.name == "User-Agent" }) {
+            afheaders.add(.userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15"))
+        }
+
+        if !afheaders.contains(where: { $0.name == "Referer" }) {
+            afheaders.add(HTTPHeader(name: "Referer", value: "https://www.bilibili.com"))
+        }
+
         AF.request(url,
                    method: method,
                    parameters: parameters,
                    encoding: URLEncoding.default,
-                   // headers: [.userAgent("ATVBilbili/1.0")],
+                   headers: afheaders,
                    interceptor: nil)
             .responseData { response in
                 switch response.result {
@@ -78,7 +95,7 @@ enum WebRequest {
                     return
                 }
                 let dataj = json[dataObj]
-                print("\(url) response: \(dataj)")
+                print("\(url) response: \(json)")
                 complete?(.success(dataj))
             case let .failure(err):
                 complete?(.failure(err))
@@ -282,6 +299,13 @@ extension WebRequest {
         let quality = Settings.mediaQuality
         return try await request(url: EndPoint.playUrl,
                                  parameters: ["avid": aid, "cid": cid, "qn": quality.qn, "type": "", "fnver": 0, "fnval": quality.fnval, "otype": "json"])
+    }
+
+    static func requestPcgPlayUrl(aid: Int, cid: Int) async throws -> VideoPlayURLInfo {
+        let quality = Settings.mediaQuality
+        return try await request(url: EndPoint.pcgPlayUrl,
+                                 parameters: ["avid": aid, "cid": cid, "qn": quality.qn, "support_multi_audio": true, "fnver": 0, "fnval": quality.fnval, "fourk": 1],
+                                 dataObj: "result")
     }
 
     static func requestReplys(aid: Int, complete: ((Replys) -> Void)?) {

@@ -177,7 +177,7 @@ extension WebRequest {
 
 struct Season: Codable, DisplayData {
     struct NewEP: Codable, Hashable {
-        let cover: URL
+        let cover: String
         let index_show: String
     }
 
