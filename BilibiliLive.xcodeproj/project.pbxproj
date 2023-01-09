@@ -38,6 +38,7 @@
 		499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76152931A7AE003160FB /* SwiftyXMLParser */; };
 		49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
+		49DA01A0296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DA019F296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		49F9186E2931E3C9001D3EC3 /* DLNAInfo.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */; };
 		49F918702931E473001D3EC3 /* NirvanaControl.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F9186F2931E473001D3EC3 /* NirvanaControl.xml */; };
@@ -128,6 +129,7 @@
 		499C760E2930E068003160FB /* NVASocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NVASocket.swift; sourceTree = "<group>"; };
 		49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpsViewController.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
+		49DA019F296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AVInfoPanelCollectionViewThumbnailCell+Hook.swift"; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DLNAInfo.xml; sourceTree = "<group>"; };
 		49F9186F2931E473001D3EC3 /* NirvanaControl.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = NirvanaControl.xml; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 				49474212290509F6005D6885 /* DateFormatter.swift */,
 				AEA5FDE1290F6E2600E7C0B2 /* String.swift */,
 				AE2B41562914C02000BF2B0B /* Int.swift */,
+				49DA019F296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -583,6 +586,7 @@
 				49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */,
 				AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */,
 				494741C6290177BB005D6885 /* UpSpaceViewController.swift in Sources */,
+				49DA01A0296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift in Sources */,
 				492731EE29096677005F5B0A /* HotViewController.swift in Sources */,
 				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,
 				49D39F28263AD40000F14497 /* WebRequest.swift in Sources */,
