@@ -14,6 +14,8 @@ import UIKit
 class LivePlayerViewController: CommonPlayerViewController {
     enum LiveError: Error {
         case noLiving
+        case noPlaybackUrl
+        case fetchApiFail
     }
 
     var room: LiveRoom? {
@@ -24,26 +26,31 @@ class LivePlayerViewController: CommonPlayerViewController {
 
     private var roomID: Int = 0
     private var danMuProvider: LiveDanMuProvider?
-    private var url: URL?
-    private var playInfo: PlayInfo?
+    private var failCount = 0
+    private var playInfo = [PlayInfo]()
 
     override func viewDidLoad() {
         allowChangeSpeed = false
         requiresLinearPlayback = true
         super.viewDidLoad()
-        refreshRoomsID {
-            [weak self] in
-            guard let self = self else { return }
-            self.initDataSource()
-            Task {
-                let success = await self.initPlayer()
-                if !success {
-                    self.initPlayerBackUp()
-                }
+
+        Task {
+            do {
+                try await refreshRoomsID()
+                initDataSource()
+                try await initPlayer()
+            } catch let err {
+                endWithError(err: err)
+            }
+            if let info = try? await WebRequest.requestLiveBaseInfo(roomID: roomID) {
+                let subtitle = "\(room?.ownerName ?? "")·\(info.parent_area_name) \(info.area_name)"
+                let desp = "\(info.description)\nTags:\(info.tags ?? "")\n Hot words:\(info.hot_words?.joined(separator: ",") ?? "")"
+                setPlayerInfo(title: info.title, subTitle: subtitle, desp: desp, pic: room?.pic)
+            } else {
+                setPlayerInfo(title: room?.title, subTitle: "nil", desp: room?.ownerName, pic: room?.pic)
             }
         }
         danMuView.play()
-        setPlayerInfo(title: room?.title, subTitle: nil, desp: room?.ownerName, pic: room?.pic)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -52,12 +59,16 @@ class LivePlayerViewController: CommonPlayerViewController {
     }
 
     override func retryPlay() -> Bool {
+        failCount += 1
+        if playInfo.count > 0 {
+            playInfo = Array(playInfo.dropFirst())
+        }
         play()
         return true
     }
 
     func play() {
-        if let url = url {
+        if let url = playInfo.first?.url {
             danMuProvider?.start()
             danMuView.play()
 
@@ -65,9 +76,11 @@ class LivePlayerViewController: CommonPlayerViewController {
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
                 "Referer": "https://live.bilibili.com",
             ]
-            let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+            let asset = AVURLAsset(url: URL(string: url)!, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
             playerItem = AVPlayerItem(asset: asset)
             player = AVPlayer(playerItem: playerItem)
+        } else {
+            showErrorAlertAndExit(title: "url is nil")
         }
         if Settings.danmuMask, Settings.vnMask {
             maskProvider = VMaskProvider()
@@ -84,26 +97,21 @@ class LivePlayerViewController: CommonPlayerViewController {
         present(alert, animated: true, completion: nil)
     }
 
-    func refreshRoomsID(complete: (() -> Void)? = nil) {
+    func refreshRoomsID() async throws {
         let url = "https://api.live.bilibili.com/room/v1/Room/room_init?id=\(roomID)"
-        AF.request(url).responseData {
-            [weak self] resp in
-            guard let self = self else { return }
-            switch resp.result {
-            case let .success(object):
-                let json = JSON(object)
-                let isLive = json["data"]["live_status"].intValue == 1
-                if !isLive {
-                    self.endWithError(err: LiveError.noLiving)
-                    return
-                }
-                if let newID = json["data"]["room_id"].int {
-                    self.roomID = newID
-                }
-                complete?()
-            case let .failure(error):
-                self.endWithError(err: error)
+        let resp = await AF.request(url).serializingData().result
+        switch resp {
+        case let .success(object):
+            let json = JSON(object)
+            let isLive = json["data"]["live_status"].intValue == 1
+            if !isLive {
+                throw LiveError.noLiving
             }
+            if let newID = json["data"]["room_id"].int {
+                roomID = newID
+            }
+        case let .failure(error):
+            throw error
         }
     }
 
@@ -125,18 +133,19 @@ class LivePlayerViewController: CommonPlayerViewController {
     }
 
     override func additionDebugInfo() -> String {
-        return "\n\(playInfo?.formate ?? "")"
+        return "\n\(playInfo.first?.formate ?? "") \(playInfo.first?.current_qn ?? 0) failed: \(failCount)"
     }
 
     struct PlayInfo {
         let formate: String?
         let url: String
+        let current_qn: Int?
     }
 
-    func initPlayer() async -> Bool {
+    func initPlayer() async throws {
         let requestUrl = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo?room_id=\(roomID)&protocol=1&format=0,1,2&codec=0,1&qn=10000&platform=web&ptype=8&dolby=5&panorama=1"
         guard let data = try? await AF.request(requestUrl).serializingData().result.get() else {
-            return false
+            throw LiveError.fetchApiFail
         }
         var playInfos = [PlayInfo]()
         let json = JSON(data)
@@ -147,48 +156,41 @@ class LivePlayerViewController: CommonPlayerViewController {
                 let codecs = content["codec"].arrayValue
 
                 for codec in codecs {
+                    let qn = codec["current_qn"].intValue
                     let baseUrl = codec["base_url"].stringValue
                     for url_info in codec["url_info"].arrayValue {
                         let host = url_info["host"]
                         let extra = url_info["extra"]
                         let url = "\(host)\(baseUrl)\(extra)"
-                        let playInfo = PlayInfo(formate: formate, url: url)
+                        let playInfo = PlayInfo(formate: formate, url: url, current_qn: qn)
                         playInfos.append(playInfo)
                     }
                 }
             }
         }
 
-        if let info = playInfos.first(where: { $0.formate == "fmp4" }) ?? playInfos.first {
+        let info = playInfos.filter({ $0.formate == "fmp4" })
+        if info.count > 0 {
             Logger.debug("play =>", info)
-            url = URL(string: info.url)!
             playInfo = info
             play()
-            return true
+        } else {
+            throw LiveError.noPlaybackUrl
         }
-        return false
+    }
+}
+
+extension WebRequest {
+    struct LiveRoomInfo: Codable {
+        let description: String
+        let parent_area_name: String
+        let title: String
+        let tags: String?
+        let area_name: String
+        let hot_words: [String]?
     }
 
-    func initPlayerBackUp() {
-        let requestUrl = "https://api.live.bilibili.com/room/v1/Room/playUrl?cid=\(roomID)&platform=h5&otype=json&quality=10000"
-        AF.request(requestUrl).responseData {
-            [unowned self] resp in
-            switch resp.result {
-            case let .success(object):
-                let json = JSON(object)
-                if let playUrl = json["data"]["durl"].arrayValue.first?["url"].string {
-                    var components = URLComponents(string: playUrl)!
-                    components.query = nil
-                    self.url = components.url ?? URL(string: playUrl)!
-                    playInfo = PlayInfo(formate: "old", url: playUrl)
-                    self.play()
-                } else {
-                    dismiss(animated: true, completion: nil)
-                }
-            case let .failure(err):
-                Logger.warn(err)
-                dismiss(animated: true, completion: nil)
-            }
-        }
+    static func requestLiveBaseInfo(roomID: Int) async throws -> LiveRoomInfo {
+        return try await request(url: "https://api.live.bilibili.com/room/v1/Room/get_info", parameters: ["room_id": roomID])
     }
 }
