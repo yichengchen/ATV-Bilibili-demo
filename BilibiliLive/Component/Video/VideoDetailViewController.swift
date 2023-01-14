@@ -542,7 +542,7 @@ class RelatedVideoCell: BLMotionCollectionViewCell {
 
     func update(data: any DisplayData) {
         titleLabel.text = data.title
-        imageView.kf.setImage(with: data.pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202)))])
+        imageView.kf.setImage(with: data.pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202))), .cacheOriginalImage])
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {

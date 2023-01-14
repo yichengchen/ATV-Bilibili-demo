@@ -89,7 +89,7 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
             if pic.scheme == nil {
                 pic = URL(string: "http:\(pic.absoluteString)")!
             }
-            imageView.kf.setImage(with: pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202)))])
+            imageView.kf.setImage(with: pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202))), .cacheOriginalImage])
         }
         if let avatar = data.avatar {
             avatarView.isHidden = false
