@@ -76,36 +76,39 @@ class BMaskProvider: MaskProvider {
             var buffer2 = buffer.subdata(in: 0..<Data.Index(length))
             buffer = buffer.subdata(in: Int(length)..<buffer.count)
             buffer2 = try! buffer2.gunzipped()
-            while buffer2.count > 0 {
-                let offset = buffer2[0..<4].withUnsafeBytes({ $0.load(as: UInt32.self) }).bigEndian
-                let time = buffer2[8..<12].withUnsafeBytes({ $0.load(as: UInt32.self) }).bigEndian
+            autoreleasepool {
+                while buffer2.count > 0 {
+                    let offset = buffer2[0..<4].withUnsafeBytes({ $0.load(as: UInt32.self) }).bigEndian
+                    let time = buffer2[8..<12].withUnsafeBytes({ $0.load(as: UInt32.self) }).bigEndian
 
-                defer {
-                    buffer2 = buffer2.subdata(in: 12 + Int(offset)..<buffer2.count)
+                    defer {
+                        buffer2 = buffer2.subdata(in: 12 + Int(offset)..<buffer2.count)
+                    }
+                    if time == lastTime {
+                        continue
+                    }
+                    lastTime = time
+                    let b64Data = buffer2[12..<12 + Int(offset)]
+                    var b64String = String(data: b64Data, encoding: .utf8)!.replacingOccurrences(of: "\n", with: "")
+                    b64String = String(b64String.components(separatedBy: ";base64,").last ?? b64String)
+                    let newb64Data = Data(base64Encoded: b64String)!
+                    let decodedString = String(data: newb64Data, encoding: .utf8)!
+
+                    let paths = SVGBezierPath.paths(fromSVGString: decodedString)
+
+                    let mergedPath = paths.first ?? UIBezierPath(rect: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+                    for path in paths.dropFirst() {
+                        mergedPath.append(path)
+                    }
+
+                    let coordTransform = CGAffineTransform(translationX: x, y: y).scaledBy(x: videoSize.width / mergedPath.bounds.width, y: videoSize.height / mergedPath.bounds.height)
+                    let finalTransform = coordTransform.scaledBy(x: 1, y: -1).translatedBy(x: 0, y: 0 - mergedPath.bounds.height - mergedPath.bounds.origin.y)
+                    mergedPath.apply(finalTransform)
+                    paddingPaths.forEach { mergedPath.append($0) }
+                    total.append(mergedPath.reversing())
                 }
-                if time == lastTime {
-                    continue
-                }
-                lastTime = time
-                let b64Data = buffer2[12..<12 + Int(offset)]
-                var b64String = String(data: b64Data, encoding: .utf8)!.replacingOccurrences(of: "\n", with: "")
-                b64String = String(b64String.components(separatedBy: ";base64,").last ?? b64String)
-                let newb64Data = Data(base64Encoded: b64String)!
-                let decodedString = String(data: newb64Data, encoding: .utf8)!
-
-                let paths = SVGBezierPath.paths(fromSVGString: decodedString)
-
-                let mergedPath = paths.first ?? UIBezierPath(rect: CGRect(x: 0, y: 0, width: size.width, height: size.height))
-                for path in paths.dropFirst() {
-                    mergedPath.append(path)
-                }
-
-                let coordTransform = CGAffineTransform(translationX: x, y: y).scaledBy(x: videoSize.width / mergedPath.bounds.width, y: videoSize.height / mergedPath.bounds.height)
-                let finalTransform = coordTransform.scaledBy(x: 1, y: -1).translatedBy(x: 0, y: 0 - mergedPath.bounds.height - mergedPath.bounds.origin.y)
-                mergedPath.apply(finalTransform)
-                paddingPaths.forEach { mergedPath.append($0) }
-                total.append(mergedPath.reversing())
             }
+
             SVGBezierPath.resetCache()
         }
         svgs = total
