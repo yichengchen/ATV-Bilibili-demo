@@ -75,7 +75,6 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
             alert.addAction(.init(title: "Ok", style: .cancel))
             present(alert, animated: true)
         }
-        collectionVC.collectionView.reloadData()
     }
 
     // MARK: - Private
@@ -93,7 +92,7 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
 
     func autoReloadIfNeed() {
         guard isViewLoaded, view.window != nil else { return }
-        guard Date().timeIntervalSince(lastReloadDate) > 600 else { return }
+        guard Date().timeIntervalSince(lastReloadDate) > 3600 else { return }
         Task {
             await reallyReloadData()
         }
