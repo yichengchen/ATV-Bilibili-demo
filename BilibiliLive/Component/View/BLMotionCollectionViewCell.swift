@@ -34,25 +34,32 @@ class BLMotionCollectionViewCell: UICollectionViewCell {
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
         if isFocused {
-            let scaleFactor = self.scaleFactor
             coordinator.addCoordinatedAnimations {
-                self.transform = CGAffineTransformMakeScale(scaleFactor, scaleFactor)
-                let scaleDiff = (self.bounds.size.height * scaleFactor - self.bounds.size.height) / 2
-                self.transform = CGAffineTransformTranslate(self.transform, 0, -scaleDiff)
-                self.layer.shadowOffset = CGSizeMake(0, 16)
-                self.layer.shadowOpacity = 0.2
-                self.layer.shadowRadius = 18.0
+                self.updateTransform()
                 self.addMotionEffect(self.motionEffectH)
                 self.addMotionEffect(self.motionEffectV)
             }
         } else {
             coordinator.addCoordinatedAnimations {
-                self.transform = CGAffineTransformIdentity
-                self.layer.shadowOpacity = 0
-                self.layer.shadowOffset = CGSizeMake(0, 0)
+                self.updateTransform()
                 self.removeMotionEffect(self.motionEffectH)
                 self.removeMotionEffect(self.motionEffectV)
             }
+        }
+    }
+
+    func updateTransform() {
+        if isFocused {
+            transform = CGAffineTransformMakeScale(scaleFactor, scaleFactor)
+            let scaleDiff = (bounds.size.height * scaleFactor - bounds.size.height) / 2
+            transform = CGAffineTransformTranslate(transform, 0, -scaleDiff)
+            layer.shadowOffset = CGSizeMake(0, 16)
+            layer.shadowOpacity = 0.2
+            layer.shadowRadius = 18.0
+        } else {
+            transform = CGAffineTransformIdentity
+            layer.shadowOpacity = 0
+            layer.shadowOffset = CGSizeMake(0, 0)
         }
     }
 }

@@ -14,6 +14,7 @@ protocol PlayableData: DisplayData {
 
 class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
+    var lastReloadDate = Date()
     private var page = 0
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
         return [collectionVC.collectionView]
@@ -24,6 +25,12 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
         setupCollectionView()
         collectionVC.show(in: self)
         reloadData()
+        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        autoReloadIfNeed()
     }
 
     func setupCollectionView() {
@@ -53,17 +60,22 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
 
     func reloadData() {
         Task {
-            page = 1
-            do {
-                let res = try await request(page: 1)
-                collectionVC.displayDatas = res
-            } catch let err {
-                let alert = UIAlertController(title: "Error", message: err.localizedDescription, preferredStyle: .alert)
-                alert.addAction(.init(title: "Ok", style: .cancel))
-                present(alert, animated: true)
-            }
-            updateFocusIfNeeded()
+            await reallyReloadData()
         }
+    }
+
+    func reallyReloadData() async {
+        lastReloadDate = Date()
+        page = 1
+        do {
+            let res = try await request(page: 1)
+            collectionVC.displayDatas = res
+        } catch let err {
+            let alert = UIAlertController(title: "Error", message: err.localizedDescription, preferredStyle: .alert)
+            alert.addAction(.init(title: "Ok", style: .cancel))
+            present(alert, animated: true)
+        }
+        collectionVC.collectionView.reloadData()
     }
 
     // MARK: - Private
@@ -77,5 +89,17 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
                 page = page + 1
             }
         }
+    }
+
+    func autoReloadIfNeed() {
+        guard isViewLoaded, view.window != nil else { return }
+        guard Date().timeIntervalSince(lastReloadDate) > 600 else { return }
+        Task {
+            await reallyReloadData()
+        }
+    }
+
+    @objc private func didBecomeActive() {
+        autoReloadIfNeed()
     }
 }

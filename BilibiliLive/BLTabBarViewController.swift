@@ -58,8 +58,6 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
 
         setViewControllers(vcs, animated: false)
         selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
-
-        NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
@@ -75,9 +73,5 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
 
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         UserDefaults.standard.set(tabBarController.selectedIndex, forKey: selectedIndexKey)
-    }
-
-    @objc func didBecomeActive() {
-        (selectedViewController as? BLTabBarContentVCProtocol)?.reloadData()
     }
 }

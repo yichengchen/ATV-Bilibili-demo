@@ -209,6 +209,12 @@ extension FeedCollectionViewController: UICollectionViewDelegate {
         isLoading = true
         loadMore?()
     }
+
+    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
+        collectionView.visibleCells.compactMap { $0 as? BLMotionCollectionViewCell }.forEach { cell in
+            cell.updateTransform()
+        }
+    }
 }
 
 extension FeedDisplayStyle {

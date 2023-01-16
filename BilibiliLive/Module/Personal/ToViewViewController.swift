@@ -9,16 +9,13 @@ import Alamofire
 import SwiftyJSON
 import UIKit
 
-class ToViewViewController: UIViewController {
-    let collectionVC = FeedCollectionViewController()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
+class ToViewViewController: StandardVideoCollectionViewController<ToViewData> {
+    override func setupCollectionView() {
+        super.setupCollectionView()
         collectionVC.styleOverride = .sideBar
-        collectionVC.show(in: self)
         collectionVC.didSelect = {
             [weak self] record in
-            self?.goDetail(with: record as! FeedData)
+            self?.goDetail(with: record as! ToViewData)
         }
         collectionVC.didLongPress = {
             [weak self] record in
@@ -30,25 +27,13 @@ class ToViewViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
-        reloadData()
     }
 
-    func progrssData(json: JSON) -> [FeedData] {
-        let datas = json["data"]["list"].arrayValue.map { data -> FeedData in
-            let title = data["title"].stringValue
-            let cid = data["cid"].intValue
-            let avid = data["aid"].intValue
-            let owner = data["owner"]["name"].stringValue
-            let pic = data["pic"].url!
-            let avatar = data["owner"]["face"].url
-            let timestamp = data["pubdate"].int
-            let date = DateFormatter.stringFor(timestamp: timestamp)
-            return FeedData(title: title, cid: cid, aid: avid, ownerName: owner, pic: pic, avatar: avatar, date: date)
-        }
-        return datas
+    override func supportPullToLoad() -> Bool {
+        return false
     }
 
-    func goDetail(with feed: FeedData) {
+    override func goDetail(with feed: ToViewData) {
         let vc = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid)
         vc.present(from: self)
     }
@@ -62,21 +47,39 @@ class ToViewViewController: UIViewController {
             self?.reloadData()
         }
     }
+
+    override func request(page: Int) async throws -> [ToViewData] {
+        return try await WebRequest.requestToView()
+    }
 }
 
-extension ToViewViewController: BLTabBarContentVCProtocol {
-    func reloadData() {
-        AF.request("http://api.bilibili.com/x/v2/history/toview").responseData {
-            [weak self] response in
-            guard let self = self else { return }
-            switch response.result {
-            case let .success(data):
-                let json = JSON(data)
-                let datas = self.progrssData(json: json)
-                self.collectionVC.displayDatas = datas
-            case let .failure(error):
-                print(error)
-            }
+struct ToViewData: PlayableData, Codable {
+    let title: String
+    let cid: Int
+    let aid: Int
+    let owner: VideoOwner
+    let pic: URL?
+    let pubdate: Int
+
+    var ownerName: String {
+        return owner.name
+    }
+
+    var avatar: URL? {
+        return owner.face
+    }
+
+    var date: String? {
+        return DateFormatter.stringFor(timestamp: pubdate)
+    }
+}
+
+extension WebRequest {
+    static func requestToView() async throws -> [ToViewData] {
+        struct Resp: Codable {
+            var list: [ToViewData]
         }
+        let res: Resp = try await request(url: "https://api.bilibili.com/x/v2/history/toview")
+        return res.list
     }
 }
