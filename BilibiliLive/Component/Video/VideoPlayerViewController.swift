@@ -213,7 +213,7 @@ extension VideoPlayerViewController {
                    let video = playData.dash.video.first,
                    let fps = info?.dm_mask?.fps, fps > 0
                 {
-                    maskProvider = BMaskProvider(info: mask, videoSize: CGSize(width: video.width ?? 0, height: video.height ?? 0), duration: playData.dash.duration)
+                    maskProvider = BMaskProvider(info: mask, videoSize: CGSize(width: video.width ?? 0, height: video.height ?? 0))
                 } else if Settings.vnMask {
                     maskProvider = VMaskProvider()
                 }
