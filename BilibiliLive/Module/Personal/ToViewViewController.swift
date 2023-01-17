@@ -22,7 +22,7 @@ class ToViewViewController: StandardVideoCollectionViewController<ToViewData> {
             guard let self = self else { return }
             let alert = UIAlertController(title: "Delete?", message: nil, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { _ in
-                self.del(with: record as! FeedData)
+                self.del(with: record as! ToViewData)
             }))
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
             self.present(alert, animated: true, completion: nil)
@@ -38,8 +38,8 @@ class ToViewViewController: StandardVideoCollectionViewController<ToViewData> {
         vc.present(from: self)
     }
 
-    func del(with feed: FeedData) {
-        let aid = feed.aid
+    func del(with toViewItem: ToViewData) {
+        let aid = toViewItem.aid
         guard let csrf = CookieHandler.shared.csrf() else { return }
         AF.request("http://api.bilibili.com/x/v2/history/toview/del", method: .post, parameters: ["aid": aid, "csrf": csrf]).responseData {
             [weak self] resp in
