@@ -14,15 +14,13 @@ import UIKit
 class BMaskProvider: MaskProvider {
     let info: PlayerInfo.MaskInfo
     let videoSize: CGSize
-    private var svgs = [UIBezierPath]()
+    private var maskFrames = [(time: UInt32, mask: UIBezierPath)]()
     private lazy var shapeLayer = CAShapeLayer()
 
     private var lastTime: TimeInterval = 0
-    private var duration: Int
-    init(info: PlayerInfo.MaskInfo, videoSize: CGSize, duration: Int) {
+    init(info: PlayerInfo.MaskInfo, videoSize: CGSize) {
         self.info = info
         self.videoSize = videoSize
-        self.duration = duration
         Task.detached {
             try? await self.download()
         }
@@ -49,7 +47,6 @@ class BMaskProvider: MaskProvider {
         buffer = buffer.subdata(in: 16..<buffer.count)
         let num = segmentsData.count
         var length: UInt32 = 0
-        var total = [UIBezierPath]()
 
         let size = await UIScreen.main.bounds.size
         let videoSize = CGSize.aspectFit(aspectRatio: videoSize, boundingSize: size)
@@ -105,13 +102,14 @@ class BMaskProvider: MaskProvider {
                     let finalTransform = coordTransform.scaledBy(x: 1, y: -1).translatedBy(x: 0, y: 0 - mergedPath.bounds.height - mergedPath.bounds.origin.y)
                     mergedPath.apply(finalTransform)
                     paddingPaths.forEach { mergedPath.append($0) }
-                    total.append(mergedPath.reversing())
+                    maskFrames.append((time, mergedPath.reversing()))
                 }
             }
 
             SVGBezierPath.resetCache()
         }
-        svgs = total
+        // the frames are mostly already sorted, and this is just in case.
+        maskFrames.sort(by: { $0.time < $1.time })
     }
 
     func getMask(for time: CMTime, frame: CGRect, onGet: (CALayer) -> Void) {
@@ -119,16 +117,41 @@ class BMaskProvider: MaskProvider {
         guard time != lastTime else { return }
         lastTime = time
         if time < 0 { return }
-        let idx = Int(Double(time) * Double(info.fps)) + 1
-        guard idx < svgs.count else { return }
-        let path = svgs[idx]
-        shapeLayer.path = path.cgPath
-        shapeLayer.fillColor = UIColor.white.cgColor
-        shapeLayer.backgroundColor = UIColor.white.cgColor
-        shapeLayer.strokeColor = UIColor.white.cgColor
-        shapeLayer.backgroundColor = UIColor.clear.cgColor
-        shapeLayer.frame = frame
-        onGet(shapeLayer)
+        let path = getLatestMaskFrame(byMiliSeconds: UInt32(time * Double(1000)))
+        if path != nil {
+            shapeLayer.path = path!.cgPath
+            shapeLayer.fillColor = UIColor.white.cgColor
+            shapeLayer.backgroundColor = UIColor.white.cgColor
+            shapeLayer.strokeColor = UIColor.white.cgColor
+            shapeLayer.backgroundColor = UIColor.clear.cgColor
+            shapeLayer.frame = frame
+            onGet(shapeLayer)
+        }
+    }
+
+    private func getLatestMaskFrame(byMiliSeconds time: UInt32) -> UIBezierPath? {
+        // using bisect to find the latest. The methods returns an index to the maskFrames array
+        // where every frame in the array with a smaller index will have a smaller timestamp.
+        func bisectLeft(_ target: UInt32, _ min: Int = 0, _ max: Int? = nil) -> Int {
+            // This implementation is modified from https://gist.github.com/joanromano/adc55ea8a2115e905c19d28fed14bc68
+            precondition(min >= 0, "min must be non-negative")
+            let max = max ?? maskFrames.count
+            guard min < max else { return min }
+
+            let mid = min + (max - min) / 2
+
+            if maskFrames[mid].time < target { return bisectLeft(target, mid + 1, max) }
+            else { return bisectLeft(target, min, mid) }
+        }
+        let idx = bisectLeft(time) - 1
+        // Checking for stale mask frame. We only want the data if it's within 1 seonds.
+        // This is because we are using the mask frames while they are still being generated,
+        // and if the video starts playing from the middle, we need to wait for the processing to catch up
+        if idx >= 0 && time - maskFrames[idx].time < 1000 {
+            return maskFrames[idx].mask
+        } else {
+            return nil
+        }
     }
 
     func needVideoOutput() -> Bool {
