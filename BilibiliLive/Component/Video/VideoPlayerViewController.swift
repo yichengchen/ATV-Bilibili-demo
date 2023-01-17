@@ -193,7 +193,6 @@ extension VideoPlayerViewController {
         let aid = playInfo.aid
         let cid = playInfo.cid!
         let info = try? await WebRequest.requestPlayerInfo(aid: aid, cid: cid)
-        let startTime = info?.playTimeInSecond
         do {
             let playData: VideoPlayURLInfo
             if playInfo.isBangumi {
@@ -202,7 +201,7 @@ extension VideoPlayerViewController {
             } else {
                 playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid)
             }
-            if let startTime = startTime, playData.dash.duration - startTime > 5, Settings.continuePlay {
+            if info?.last_play_cid == cid, let startTime = info?.playTimeInSecond, playData.dash.duration - startTime > 5, Settings.continuePlay {
                 playerStartPos = startTime
             }
 

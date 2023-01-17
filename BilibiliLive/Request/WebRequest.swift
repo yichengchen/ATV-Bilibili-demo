@@ -573,6 +573,7 @@ struct PlayerInfo: Codable {
     let subtitle: SubtitleResp?
     let view_points: [ViewPoint]?
     let dm_mask: MaskInfo?
+    let last_play_cid: Int
     var playTimeInSecond: Int {
         last_play_time / 1000
     }
