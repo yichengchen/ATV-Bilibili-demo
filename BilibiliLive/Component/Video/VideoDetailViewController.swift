@@ -276,6 +276,9 @@ class VideoDetailViewController: UIViewController {
         ugcCollectionView.reloadData()
         ugcLabel.text = "合集 \(data.View.ugc_season?.title ?? "")  \(data.View.ugc_season?.sections.first?.title ?? "")"
         ugcView.isHidden = allUgcEpisodes.count == 0
+        if allUgcEpisodes.count > 0 {
+            ugcCollectionView.scrollToItem(at: IndexPath(item: allUgcEpisodes.map { $0.aid }.firstIndex(of: aid) ?? 0, section: 0), at: .left, animated: false)
+        }
 
         recommandCollectionView.reloadData()
     }
