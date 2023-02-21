@@ -176,7 +176,7 @@ class LivePlayerViewController: CommonPlayerViewController {
             play()
         } else {
             if playInfos.count > 0 {
-                Logger.debug("play =>", info)
+                Logger.debug("no fmp4 found, play directly")
                 playInfo = playInfos
                 play()
                 return
