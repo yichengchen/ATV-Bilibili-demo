@@ -169,29 +169,6 @@ class CommonPlayerViewController: AVPlayerViewController {
         }
         menus.append(danmuAction)
 
-        if allowChangeSpeed {
-            let playSpeedArray = [PlaySpeed(name: "0.5X", value: 0.5),
-                                  PlaySpeed(name: "0.75X", value: 0.75),
-                                  PlaySpeed(name: "1X", value: 1),
-                                  PlaySpeed(name: "1.25X", value: 1.25),
-                                  PlaySpeed(name: "1.5X", value: 1.5),
-                                  PlaySpeed(name: "2X", value: 2)]
-
-            if #available(tvOS 16.0, *) {
-                speeds = playSpeedArray.map { AVPlaybackSpeed(rate: $0.value, localizedName: $0.name) }
-            } else {
-                let speedActions = playSpeedArray.map { playSpeed in
-                    UIAction(title: playSpeed.name, state: player?.rate ?? 1 == playSpeed.value ? .on : .off) { [weak self] action in
-                        self?.player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
-                        self?.player?.rate = playSpeed.value
-                        self?.danMuView.playingSpeed = playSpeed.value
-                    }
-                }
-                let playSpeedMenu = UIMenu(title: "播放速度", image: UIImage(systemName: "speedometer"), options: [.singleSelection], children: speedActions)
-                menus.append(playSpeedMenu)
-            }
-        }
-
         let debugEnableImage = UIImage(systemName: "terminal.fill")
         let debugDisableImage = UIImage(systemName: "terminal")
         let debugAction = UIAction(title: "Debug", image: debugEnable ? debugEnableImage : debugDisableImage) {
@@ -205,7 +182,40 @@ class CommonPlayerViewController: AVPlayerViewController {
                 self.startDebug()
             }
         }
-        menus.append(debugAction)
+
+        if allowChangeSpeed {
+            // Create ∞ and ⚙ images.
+            let loopImage = UIImage(systemName: "infinity")
+            let gearImage = UIImage(systemName: "gearshape")
+
+            // Create an action to enable looping playback.
+            let loopAction = UIAction(title: "循环播放", image: loopImage, state: Settings.loopPlay ? .on : .off) {
+                [weak self] action in
+                action.state = (action.state == .off) ? .on : .off
+                Settings.loopPlay = action.state == .on
+            }
+
+            let playSpeedArray = [PlaySpeed(name: "0.5X", value: 0.5),
+                                  PlaySpeed(name: "0.75X", value: 0.75),
+                                  PlaySpeed(name: "1X", value: 1),
+                                  PlaySpeed(name: "1.25X", value: 1.25),
+                                  PlaySpeed(name: "1.5X", value: 1.5),
+                                  PlaySpeed(name: "2X", value: 2)]
+
+            let speedActions = playSpeedArray.map { playSpeed in
+                UIAction(title: playSpeed.name, state: player?.rate ?? 1 == playSpeed.value ? .on : .off) { [weak self] action in
+                    self?.player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
+                    self?.player?.rate = playSpeed.value
+                    self?.danMuView.playingSpeed = playSpeed.value
+                }
+            }
+            let playSpeedMenu = UIMenu(title: "播放速度", options: [.displayInline, .singleSelection], children: speedActions)
+            let menu = UIMenu(title: "播放设置", image: gearImage, children: [playSpeedMenu, loopAction, debugAction])
+            menus.append(menu)
+        } else {
+            menus.append(debugAction)
+        }
+
         transportBarCustomMenuItems = menus
     }
 
@@ -245,9 +255,11 @@ class CommonPlayerViewController: AVPlayerViewController {
         return false
     }
 
-    @objc func playerDidFinishPlaying() {
-        // need override
+    @objc private func playerDidFinishPlaying() {
+        playDidEnd()
     }
+
+    func playDidEnd() {}
 
     func showErrorAlertAndExit(title: String = "播放失败", message: String = "未知错误") {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)

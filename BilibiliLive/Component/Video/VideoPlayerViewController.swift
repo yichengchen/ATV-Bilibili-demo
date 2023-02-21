@@ -24,9 +24,22 @@ struct PlayInfo {
 }
 
 class VideoNextProvider {
-    var playSeq = [PlayInfo]()
+    init(seq: [PlayInfo]) {
+        playSeq = seq
+    }
+
+    private var index = 1
+    private let playSeq: [PlayInfo]
+    func reset() {
+        index = 0
+    }
+
     func getNext() -> PlayInfo? {
-        return playSeq.removeFirst()
+        index += 1
+        if index < playSeq.count {
+            return playSeq[index]
+        }
+        return nil
     }
 }
 
@@ -143,14 +156,28 @@ class VideoPlayerViewController: CommonPlayerViewController {
         }
     }
 
-    override func playerDidFinishPlaying() {
-        BiliBiliUpnpDMR.shared.sendStatus(status: .end)
+    func playNext() -> Bool {
         if let next = nextProvider?.getNext() {
             playInfo = next
             Task {
                 await initPlayer()
             }
-        } else {
+            return true
+        }
+        return false
+    }
+
+    override func playDidEnd() {
+        BiliBiliUpnpDMR.shared.sendStatus(status: .end)
+        if !playNext() {
+            if Settings.loopPlay {
+                nextProvider?.reset()
+                if !playNext() {
+                    playerItem?.seek(to: .zero, completionHandler: nil)
+                    player?.play()
+                }
+                return
+            }
             dismiss(animated: true)
         }
     }

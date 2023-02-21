@@ -59,6 +59,9 @@ enum Settings {
 
     @UserDefault("Settings.continouslyPlay", defaultValue: true)
     static var continouslyPlay: Bool
+
+    @UserDefault("Settings.loopPlay", defaultValue: false)
+    static var loopPlay: Bool
 }
 
 struct MediaQuality {

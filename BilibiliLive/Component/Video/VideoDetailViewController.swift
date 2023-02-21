@@ -300,10 +300,9 @@ class VideoDetailViewController: UIViewController {
         let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, isBangumi: isBangumi))
         player.data = data
         if pages.count > 0, let index = pages.firstIndex(where: { $0.cid == cid }) {
-            let seq = pages.dropFirst(index + 1).map({ PlayInfo(aid: aid, cid: $0.cid, isBangumi: isBangumi) })
+            let seq = pages.dropFirst(index).map({ PlayInfo(aid: aid, cid: $0.cid, isBangumi: isBangumi) })
             if seq.count > 0 {
-                let nextProvider = VideoNextProvider()
-                nextProvider.playSeq = seq
+                let nextProvider = VideoNextProvider(seq: seq)
                 player.nextProvider = nextProvider
             }
         }
@@ -392,10 +391,9 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, isBangumi: isBangumi))
             player.data = isBangumi ? nil : data
 
-            let seq = pages.dropFirst(indexPath.item + 1).map({ PlayInfo(aid: aid, cid: $0.cid, isBangumi: isBangumi) })
+            let seq = pages.dropFirst(indexPath.item).map({ PlayInfo(aid: aid, cid: $0.cid, isBangumi: isBangumi) })
             if seq.count > 0 {
-                let nextProvider = VideoNextProvider()
-                nextProvider.playSeq = seq
+                let nextProvider = VideoNextProvider(seq: seq)
                 player.nextProvider = nextProvider
             }
             present(player, animated: true, completion: nil)
