@@ -168,13 +168,20 @@ class LivePlayerViewController: CommonPlayerViewController {
                 }
             }
         }
-
+        Logger.debug("info arry:\(playInfos)")
         let info = playInfos.filter({ $0.formate == "fmp4" })
         if info.count > 0 {
             Logger.debug("play =>", info)
             playInfo = info
             play()
         } else {
+            if playInfos.count > 0 {
+                Logger.debug("play =>", info)
+                playInfo = playInfos
+                play()
+                return
+            }
+
             throw LiveError.noPlaybackUrl
         }
     }
