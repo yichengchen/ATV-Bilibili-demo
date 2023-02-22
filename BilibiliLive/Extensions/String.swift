@@ -9,10 +9,14 @@ import Foundation
 
 extension String {
     static func += (lhs: inout String, rhs: Int) {
-        lhs = String((Int(lhs) ?? 0) + rhs)
+        if let number = Int(lhs) {
+            lhs = String(number + rhs)
+        }
     }
 
     static func -= (lhs: inout String, rhs: Int) {
-        lhs = String((Int(lhs) ?? 0) - rhs)
+        if let number = Int(lhs) {
+            lhs = String(number - rhs)
+        }
     }
 }
