@@ -28,8 +28,8 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         autoReloadIfNeed()
     }
 
