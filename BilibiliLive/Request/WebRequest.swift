@@ -604,7 +604,7 @@ struct VideoPlayURLInfo: Codable {
     let dash: DashInfo
     let clip_info_list: [ClipInfo]?
 
-    struct ClipInfo: Codable {
+    class ClipInfo: Codable {
         let start: CGFloat
         let end: CGFloat
         let clipType: String?
@@ -612,6 +612,8 @@ struct VideoPlayURLInfo: Codable {
         var a11Tag: String {
             "\(start)\(end)"
         }
+
+        var skipped = false
 
         var customText: String {
             if clipType == "CLIP_TYPE_OP" {
@@ -621,6 +623,13 @@ struct VideoPlayURLInfo: Codable {
             } else {
                 return toastText ?? "跳过"
             }
+        }
+
+        init(start: CGFloat, end: CGFloat, clipType: String?, toastText: String?) {
+            self.start = start
+            self.end = end
+            self.clipType = clipType
+            self.toastText = toastText
         }
     }
 

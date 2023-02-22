@@ -62,6 +62,9 @@ enum Settings {
 
     @UserDefault("Settings.loopPlay", defaultValue: false)
     static var loopPlay: Bool
+
+    @UserDefault("Settings.play.autoSkip", defaultValue: true)
+    static var autoSkip: Bool
 }
 
 struct MediaQuality {

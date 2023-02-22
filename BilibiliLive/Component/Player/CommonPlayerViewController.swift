@@ -190,7 +190,7 @@ class CommonPlayerViewController: AVPlayerViewController {
 
             // Create an action to enable looping playback.
             let loopAction = UIAction(title: "循环播放", image: loopImage, state: Settings.loopPlay ? .on : .off) {
-                [weak self] action in
+                action in
                 action.state = (action.state == .off) ? .on : .off
                 Settings.loopPlay = action.state == .on
             }

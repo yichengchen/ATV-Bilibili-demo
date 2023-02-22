@@ -77,6 +77,13 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(continuePlay)
 
+        let autoSkip = CellModel(title: "自动跳过片头片尾", desp: Settings.autoSkip ? "开" : "关") {
+            [weak self] in
+            Settings.autoSkip.toggle()
+            self?.setupData()
+        }
+        cellModels.append(autoSkip)
+
         let quality = CellModel(title: "最高画质", desp: Settings.mediaQuality.desp) { [weak self] in
             let alert = UIAlertController(title: "最高画质", message: "4k以上需要大会员", preferredStyle: .actionSheet)
             for quality in MediaQualityEnum.allCases {

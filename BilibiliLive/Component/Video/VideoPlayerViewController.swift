@@ -297,13 +297,21 @@ extension VideoPlayerViewController {
                 var matched = false
                 for clip in clipInfos {
                     if seconds > clip.start, seconds < clip.end {
-                        if self.skipAction?.accessibilityLabel != clip.a11Tag {
+                        let action = {
+                            clip.skipped = true
+                            self.player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                        }
+                        if !clip.skipped, Settings.autoSkip {
+                            action()
+                            self.skipAction = nil
+                        } else if self.skipAction?.accessibilityLabel != clip.a11Tag {
                             self.skipAction = UIAction(title: clip.customText) { _ in
-                                self.player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                                action()
                             }
                             self.skipAction?.accessibilityLabel = clip.a11Tag
                         }
-                        self.contextualActions = [self.skipAction!]
+
+                        self.contextualActions = [self.skipAction].compactMap { $0 }
                         matched = true
                         break
                     }
