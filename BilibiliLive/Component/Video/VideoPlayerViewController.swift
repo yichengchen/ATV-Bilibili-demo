@@ -301,7 +301,7 @@ extension VideoPlayerViewController {
                             clip.skipped = true
                             self.player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
                         }
-                        if !clip.skipped, Settings.autoSkip {
+                        if !(clip.skipped ?? false), Settings.autoSkip {
                             action()
                             self.skipAction = nil
                         } else if self.skipAction?.accessibilityLabel != clip.a11Tag {

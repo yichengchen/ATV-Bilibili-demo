@@ -613,7 +613,7 @@ struct VideoPlayURLInfo: Codable {
             "\(start)\(end)"
         }
 
-        var skipped = false
+        var skipped: Bool? = false
 
         var customText: String {
             if clipType == "CLIP_TYPE_OP" {
