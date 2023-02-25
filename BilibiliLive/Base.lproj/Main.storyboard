@@ -779,6 +779,7 @@
                         <outlet property="playCountLabel" destination="ahl-Fa-Qpg" id="q6V-be-wNj"/>
                         <outlet property="recommandCollectionView" destination="nw1-cq-9yk" id="w8m-bc-mWQ"/>
                         <outlet property="replysCollectionView" destination="zj0-CY-pLt" id="8h4-LO-bUs"/>
+                        <outlet property="scrollView" destination="Dm8-CL-kxU" id="R6I-to-71J"/>
                         <outlet property="titleLabel" destination="kwE-Zo-p5T" id="3Fx-I9-hrS"/>
                         <outlet property="ugcCollectionView" destination="m2m-Xp-hi5" id="gzJ-A2-7q5"/>
                         <outlet property="ugcLabel" destination="6ED-PD-paJ" id="ewB-Kj-Iq3"/>

@@ -65,6 +65,9 @@ enum Settings {
 
     @UserDefault("Settings.play.autoSkip", defaultValue: true)
     static var autoSkip: Bool
+
+    @UserDefault("Settings.showRelatedVideoInCurrentVC", defaultValue: true)
+    static var showRelatedVideoInCurrentVC: Bool
 }
 
 struct MediaQuality {

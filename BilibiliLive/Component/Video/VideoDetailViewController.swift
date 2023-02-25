@@ -54,6 +54,7 @@ class VideoDetailViewController: UIViewController {
     private var aid = 0
     private var cid = 0
     private var data: VideoDetail?
+    @IBOutlet var scrollView: UIScrollView!
     private var didSentCoins = 0 {
         didSet {
             if didSentCoins > 0 {
@@ -91,9 +92,6 @@ class VideoDetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupLoading()
-        pageView.isHidden = true
-        ugcView.isHidden = true
         Task { await fetchData() }
 
         pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: BLTextOnlyCollectionViewCell.self))
@@ -164,6 +162,13 @@ class VideoDetailViewController: UIViewController {
     }
 
     private func fetchData() async {
+        scrollView.setContentOffset(.zero, animated: false)
+        setNeedsFocusUpdate()
+        updateFocusIfNeeded()
+        backgroundImageView.alpha = 0
+        setupLoading()
+        pageView.isHidden = true
+        ugcView.isHidden = true
         do {
             if seasonId > 0 {
                 isBangumi = true
@@ -265,7 +270,6 @@ class VideoDetailViewController: UIViewController {
         loadingView.stopAnimating()
         loadingView.removeFromSuperview()
         effectContainerView.isHidden = false
-        backgroundImageView.alpha = 0
         UIView.animate(withDuration: 0.25) {
             self.backgroundImageView.alpha = 1
         }
@@ -403,12 +407,24 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             present(detail, animated: true)
         case ugcCollectionView:
             let video = allUgcEpisodes[indexPath.item]
-            let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
-            detailVC.present(from: self)
-        case recommandCollectionView:
-            if let video = data?.Related[indexPath.item] {
+            if Settings.showRelatedVideoInCurrentVC {
+                aid = video.aid
+                cid = video.cid
+                Task { await fetchData() }
+            } else {
                 let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
                 detailVC.present(from: self)
+            }
+        case recommandCollectionView:
+            if let video = data?.Related[indexPath.item] {
+                if Settings.showRelatedVideoInCurrentVC {
+                    aid = video.aid
+                    cid = video.cid
+                    Task { await fetchData() }
+                } else {
+                    let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
+                    detailVC.present(from: self)
+                }
             }
         default:
             break

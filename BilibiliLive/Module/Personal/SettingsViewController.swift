@@ -70,6 +70,21 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(style)
 
+        let relatedVideoLoadMode = CellModel(title: "视频详情相关推荐加载模式", desp: Settings.showRelatedVideoInCurrentVC ? "页面刷新" : "新页面中打开") { [weak self] in
+            let alert = UIAlertController(title: "视频详情相关推荐加载模式", message: "", preferredStyle: .actionSheet)
+            alert.addAction(UIAlertAction(title: "页面刷新", style: .default) { _ in
+                Settings.showRelatedVideoInCurrentVC = true
+                self?.setupData()
+            })
+            alert.addAction(UIAlertAction(title: "新页面中打开", style: .default) { _ in
+                Settings.showRelatedVideoInCurrentVC = false
+                self?.setupData()
+            })
+            alert.addAction(cancelAction)
+            self?.present(alert, animated: true)
+        }
+        cellModels.append(relatedVideoLoadMode)
+
         let continuePlay = CellModel(title: "继续播放", desp: Settings.continuePlay ? "开" : "关") {
             [weak self] in
             Settings.continuePlay.toggle()

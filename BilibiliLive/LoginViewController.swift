@@ -62,7 +62,7 @@ class LoginViewController: UIViewController {
     }
 
     func startValidationTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 4, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             self.currentLevel += 1
             if self.currentLevel > self.finalLevel {
