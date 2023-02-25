@@ -113,7 +113,7 @@ class BMaskProvider: MaskProvider {
     }
 
     func getMask(for time: CMTime, frame: CGRect, onGet: (CALayer) -> Void) {
-        let time = time.seconds
+        let time = time.seconds + 0.1
         guard time != lastTime else { return }
         lastTime = time
         if time < 0 { return }
