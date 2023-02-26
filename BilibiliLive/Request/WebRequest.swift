@@ -302,6 +302,12 @@ extension WebRequest {
                                  parameters: ["avid": aid, "cid": cid, "qn": quality.qn, "type": "", "fnver": 0, "fnval": quality.fnval, "otype": "json"])
     }
 
+    static func requestPlayUrlLowResolution(aid: Int, cid: Int) async throws -> VideoPlayURLInfo {
+        let quality = Settings.mediaQuality
+        return try await request(url: EndPoint.playUrl,
+                                 parameters: ["avid": aid, "cid": cid, "qn": 6, "type": "", "fnver": 0, "fnval": 1, "otype": "json", "platform": "html5"])
+    }
+
     static func requestPcgPlayUrl(aid: Int, cid: Int) async throws -> VideoPlayURLInfo {
         let quality = Settings.mediaQuality
         return try await request(url: EndPoint.pcgPlayUrl,

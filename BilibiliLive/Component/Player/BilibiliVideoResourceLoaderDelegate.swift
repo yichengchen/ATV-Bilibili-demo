@@ -19,6 +19,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         static let play = customPrefix + "play"
         static let customSubtitlePrefix = customScheme + "://subtitle/"
         static let customDashPrefix = customScheme + "://dash/"
+        static let iframe = customPrefix + "iframe"
     }
 
     struct PlaybackInfo {
@@ -45,6 +46,19 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private var httpServer = HttpServer()
     private var aid = 0
     private(set) var httpPort = 0
+
+    private let iframePlayList = """
+    #EXTM3U
+    #EXT-X-VERSION:6
+    #EXT-X-I-FRAMES-ONLY
+    #EXT-X-TARGETDURATION:350
+    #EXT-X-INDEPENDENT-SEGMENTS
+    #EXTINF:300
+    http://192.168.50.79:8080/1.mp4
+    #EXT-X-ENDLIST
+
+
+    """
 
     deinit {
         httpServer.stop()
@@ -256,10 +270,11 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             }
         }
 
-        for video in videos {
+        for video in videos.reversed() {
             for url in video.playableURLs {
                 addVideoPlayBackInfo(info: video, url: url, duration: info.dash.duration)
             }
+            break
         }
 
         if Settings.losslessAudio {
@@ -291,6 +306,11 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             addSubtitleData(lang: subtitle.lan, name: subtitle.lan_doc, duration: info.dash.duration, url: subtitle.url.absoluteString)
         }
 
+        masterPlaylist.append("""
+
+        #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=1000,CODECS="avc1.42e00a",URI="\(URLs.iframe)"
+
+        """)
         masterPlaylist.append("\n#EXT-X-ENDLIST\n")
 
         Logger.debug("masterPlaylist:", masterPlaylist)
@@ -333,6 +353,11 @@ private extension BilibiliVideoResourceLoaderDelegate {
         Logger.debug("handleCustomPlaylistRequest: \(urlStr)")
         if urlStr == URLs.play {
             report(loadingRequest, content: masterPlaylist)
+            return
+        }
+
+        if urlStr == URLs.iframe {
+            report(loadingRequest, content: iframePlayList)
             return
         }
 
