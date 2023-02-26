@@ -146,8 +146,8 @@ class UpCell: BLMotionCollectionViewCell {
 
         nameLabel.font = UIFont.systemFont(ofSize: 30, weight: .semibold)
         despLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
-        despLabel.textColor = UIColor.black.withAlphaComponent(0.7)
-        contentView.backgroundColor = UIColor.white.withAlphaComponent(0.8)
+        despLabel.textColor = UIColor(named: "titleColor")
+        contentView.backgroundColor = UIColor(named: "bgColor")
         contentView.layer.cornerRadius = 16
     }
 
