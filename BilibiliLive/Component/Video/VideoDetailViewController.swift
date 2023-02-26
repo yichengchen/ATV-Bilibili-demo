@@ -486,6 +486,7 @@ class BLCardView: TVCardView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
+        cardBackgroundColor = UIColor(named: "bgColor")
     }
 }
 
@@ -630,7 +631,7 @@ class NoteDetailView: UIControl {
 
     func setup() {
         addSubview(backgroundView)
-        backgroundView.backgroundColor = UIColor.white
+        backgroundView.backgroundColor = UIColor(named: "bgColor")
         backgroundView.layer.shadowOffset = CGSizeMake(0, 10)
         backgroundView.layer.shadowOpacity = 0.15
         backgroundView.layer.shadowRadius = 16.0
@@ -646,7 +647,7 @@ class NoteDetailView: UIControl {
         addSubview(label)
         label.numberOfLines = 0
         label.font = UIFont.systemFont(ofSize: 29)
-        label.textColor = UIColor.black.withAlphaComponent(0.9)
+        label.textColor = UIColor(named: "titleColor")
         label.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalToSuperview().offset(14)

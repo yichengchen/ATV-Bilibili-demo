@@ -77,7 +77,7 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
         titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
         upLabel.setContentHuggingPriority(.required, for: .vertical)
         upLabel.setContentCompressionResistancePriority(.required, for: .vertical)
-        upLabel.textColor = UIColor.black.withAlphaComponent(0.8)
+        upLabel.textColor = UIColor(named: "titleColor")
         upLabel.adjustsFontSizeToFitWidth = true
         upLabel.minimumScaleFactor = 0.1
     }
