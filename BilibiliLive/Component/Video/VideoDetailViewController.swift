@@ -373,7 +373,7 @@ class VideoDetailViewController: UIViewController {
                 alert.addAction(UIAlertAction(title: fav.title, style: .default) { [weak self] _ in
                     self?.favButton.title? += 1
                     self?.favButton.isOn = true
-                    WebRequest.requestFavorite(aid: aid, mlid: fav.id)
+                    WebRequest.requestFavorite(aid: aid, mid: fav.id)
                 })
             }
             alert.addAction(UIAlertAction(title: "取消", style: .cancel))

@@ -120,6 +120,7 @@ enum WebRequest {
                     complete?(.success(object))
                 } catch let err {
                     print("decode fail:", err)
+                    assertionFailure()
                     complete?(.failure(.decodeFail(message: err.localizedDescription + String(describing: err))))
                 }
             case let .failure(err):
@@ -209,11 +210,11 @@ extension WebRequest {
         return res.list
     }
 
-    static func requestFavVideos(mid: String) async throws -> [FavData] {
+    static func requestFavVideos(mid: String, page: Int) async throws -> [FavData] {
         struct Resp: Codable {
             let medias: [FavData]?
         }
-        let res: Resp = try await request(method: .get, url: EndPoint.fav, parameters: ["media_id": mid, "ps": "20"])
+        let res: Resp = try await request(method: .get, url: EndPoint.fav, parameters: ["media_id": mid, "ps": "20", "pn": page])
         return res.medias ?? []
     }
 
@@ -279,8 +280,8 @@ extension WebRequest {
         }
     }
 
-    static func requestFavorite(aid: Int, mlid: Int) {
-        requestJSON(method: .post, url: "http://api.bilibili.com/x/v3/fav/resource/deal", parameters: ["rid": aid, "type": 2, "add_media_ids": mlid])
+    static func requestFavorite(aid: Int, mid: Int) {
+        requestJSON(method: .post, url: "http://api.bilibili.com/x/v3/fav/resource/deal", parameters: ["rid": aid, "type": 2, "add_media_ids": mid])
     }
 
     static func requestFavoriteStatus(aid: Int, complete: ((Bool) -> Void)?) {
@@ -375,7 +376,7 @@ struct HistoryData: DisplayData, Codable {
 
     let title: String
     var ownerName: String { owner.name }
-    var avatar: URL? { owner.face }
+    var avatar: URL? { URL(string: owner.face) }
     let pic: URL?
 
     let owner: VideoOwner
@@ -395,9 +396,29 @@ struct FavData: DisplayData, Codable {
     var pic: URL? { URL(string: cover) }
 }
 
-struct FavListData: Codable, Hashable {
+class FavListData: Codable, Hashable {
     let title: String
     let id: Int
+    var currentPage = 1
+    var end = false
+    var loading = false
+    enum CodingKeys: String, CodingKey {
+        case title, id
+    }
+
+    static func == (lhs: FavListData, rhs: FavListData) -> Bool {
+        return lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    init(title: String, id: Int, currentPage: Int = 1) {
+        self.title = title
+        self.id = id
+        self.currentPage = currentPage
+    }
 }
 
 struct VideoDetail: Codable, Hashable {
@@ -478,13 +499,13 @@ extension VideoDetail: DisplayData {
     var title: String { View.title }
     var ownerName: String { View.owner.name }
     var pic: URL? { View.pic }
-    var avatar: URL? { View.owner.face }
+    var avatar: URL? { URL(string: View.owner.face) }
     var date: String? { DateFormatter.stringFor(timestamp: View.pubdate) }
 }
 
 extension VideoDetail.Info: DisplayData, PlayableData {
     var ownerName: String { owner.name }
-    var avatar: URL? { owner.face }
+    var avatar: URL? { URL(string: owner.face) }
     var date: String? { DateFormatter.stringFor(timestamp: pubdate) }
 }
 
@@ -540,7 +561,7 @@ struct BangumiInfo: Codable, Hashable {
 struct VideoOwner: Codable, Hashable {
     let mid: Int
     let name: String
-    let face: URL
+    let face: String
 }
 
 struct VideoPage: Codable, Hashable {

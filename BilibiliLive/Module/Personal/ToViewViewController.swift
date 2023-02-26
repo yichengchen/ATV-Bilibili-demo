@@ -66,7 +66,7 @@ struct ToViewData: PlayableData, Codable {
     }
 
     var avatar: URL? {
-        return owner.face
+        return URL(string: owner.face)
     }
 
     var date: String? {
