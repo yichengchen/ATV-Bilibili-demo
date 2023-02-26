@@ -5,24 +5,12 @@
 //  Created by Etan Chen on 2021/3/28.
 //
 
-import Foundation
-import UIKit
-
 import Alamofire
 import SwiftyJSON
+import UIKit
 
-class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
-    struct CategoryDisplayModel {
-        let title: String
-        let contentVC: UIViewController
-    }
-
-    var typeCollectionView: UICollectionView!
-    var categories = [CategoryDisplayModel]()
-    let contentView = UIView()
-    weak var currentViewController: UIViewController?
+class LiveViewController: CategoryViewController {
     override func viewDidLoad() {
-        super.viewDidLoad()
         categories = [
             CategoryDisplayModel(title: "关注", contentVC: MyLiveViewController()),
             CategoryDisplayModel(title: "推荐", contentVC: AreaLiveViewController(areaID: -1)),
@@ -37,58 +25,7 @@ class LiveViewController: UIViewController, BLTabBarContentVCProtocol {
             CategoryDisplayModel(title: "知识", contentVC: AreaLiveViewController(areaID: 11)),
             CategoryDisplayModel(title: "赛事", contentVC: AreaLiveViewController(areaID: 13)),
         ]
-        typeCollectionView = UICollectionView(frame: .zero, collectionViewLayout: BLSettingLineCollectionViewCell.makeLayout())
-        typeCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        view.addSubview(typeCollectionView)
-        typeCollectionView.snp.makeConstraints { make in
-            make.leading.bottom.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.width.equalTo(500)
-        }
-        typeCollectionView.dataSource = self
-        typeCollectionView.delegate = self
-
-        view.addSubview(contentView)
-        contentView.snp.makeConstraints { make in
-            make.bottom.right.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.left.equalTo(typeCollectionView.snp.right)
-        }
-        typeCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .top)
-        collectionView(typeCollectionView, didSelectItemAt: IndexPath(item: 0, section: 0))
-    }
-
-    func reloadData() {
-        (currentViewController as? BLTabBarContentVCProtocol)?.reloadData()
-    }
-
-    func setViewController(vc: UIViewController) {
-        currentViewController?.willMove(toParent: nil)
-        currentViewController?.view.removeFromSuperview()
-        currentViewController?.removeFromParent()
-        currentViewController = vc
-        addChild(vc)
-        contentView.addSubview(vc.view)
-        vc.view.makeConstraintsToBindToSuperview()
-        vc.didMove(toParent: self)
-    }
-}
-
-extension LiveViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return categories.count
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! BLSettingLineCollectionViewCell
-        cell.titleLabel.text = categories[indexPath.item].title
-        return cell
-    }
-}
-
-extension LiveViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        setViewController(vc: categories[indexPath.item].contentVC)
+        super.viewDidLoad()
     }
 }
 
@@ -97,6 +34,7 @@ class MyLiveViewController: StandardVideoCollectionViewController<LiveRoom> {
         super.setupCollectionView()
         collectionVC.styleOverride = .sideBar
         collectionVC.pageSize = 10
+        reloadInterval = 15 * 60
     }
 
     override func request(page: Int) async throws -> [LiveRoom] {
@@ -126,6 +64,7 @@ class AreaLiveViewController: StandardVideoCollectionViewController<AreaLiveRoom
         super.setupCollectionView()
         collectionVC.styleOverride = .sideBar
         collectionVC.pageSize = 10
+        reloadInterval = 15 * 60
     }
 
     override func request(page: Int) async throws -> [AreaLiveRoom] {

@@ -15,6 +15,7 @@ protocol PlayableData: DisplayData {
 class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
     var lastReloadDate = Date()
+    var reloadInterval: TimeInterval = 60 * 60
     private var page = 0
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
         return [collectionVC.collectionView]
@@ -92,7 +93,7 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
 
     func autoReloadIfNeed() {
         guard isViewLoaded, view.window != nil else { return }
-        guard Date().timeIntervalSince(lastReloadDate) > 3600 else { return }
+        guard Date().timeIntervalSince(lastReloadDate) > reloadInterval else { return }
         Task {
             await reallyReloadData()
         }

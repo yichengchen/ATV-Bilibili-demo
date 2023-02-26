@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */; };
+		490425F729AB54B200CDBC60 /* CategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490425F629AB54B200CDBC60 /* CategoryViewController.swift */; };
 		49078E47291BEA2400F556BD /* PocketSVG in Frameworks */ = {isa = PBXBuildFile; productRef = 49078E46291BEA2400F556BD /* PocketSVG */; };
 		490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */; };
 		490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */; };
@@ -105,6 +106,7 @@
 
 /* Begin PBXFileReference section */
 		2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
+		490425F629AB54B200CDBC60 /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
 		490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewController.swift; sourceTree = "<group>"; };
 		490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLSettingLineCollectionViewCell.swift; sourceTree = "<group>"; };
 		490EC3EA290CFEBD001E00B6 /* Anime1ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Anime1ViewController.swift; sourceTree = "<group>"; };
@@ -307,6 +309,7 @@
 				F99D28EC2619F4D500F8E66A /* Player */,
 				49389D5D28AFE6DC00B9DAFD /* Video */,
 				AEA6AB1828FFF3DD007CE72E /* Settings.swift */,
+				490425F629AB54B200CDBC60 /* CategoryViewController.swift */,
 			);
 			path = Component;
 			sourceTree = "<group>";
@@ -567,6 +570,7 @@
 				4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */,
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
 				F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */,
+				490425F729AB54B200CDBC60 /* CategoryViewController.swift in Sources */,
 				4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */,

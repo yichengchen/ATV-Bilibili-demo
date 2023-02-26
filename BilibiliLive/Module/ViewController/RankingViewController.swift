@@ -8,110 +8,49 @@
 import Foundation
 import UIKit
 
-struct CategoryInfo {
+struct RankCategoryInfo {
     let title: String
     let rid: Int
     var isSeason = false
 
-    static let all = [CategoryInfo(title: "全站", rid: 0),
-                      CategoryInfo(title: "动画", rid: 1),
-                      CategoryInfo(title: "番剧", rid: 1, isSeason: true),
-                      CategoryInfo(title: "国创", rid: 4, isSeason: true),
-                      CategoryInfo(title: "音乐", rid: 3),
-                      CategoryInfo(title: "舞蹈", rid: 129),
-                      CategoryInfo(title: "游戏", rid: 4),
-                      CategoryInfo(title: "知识", rid: 36),
-                      CategoryInfo(title: "科技", rid: 188),
-                      CategoryInfo(title: "运动", rid: 234),
-                      CategoryInfo(title: "汽车", rid: 223),
-                      CategoryInfo(title: "生活", rid: 160),
-                      CategoryInfo(title: "美食", rid: 211),
-                      CategoryInfo(title: "动物圈", rid: 217),
-                      CategoryInfo(title: "鬼畜", rid: 119),
-                      CategoryInfo(title: "时尚", rid: 155),
-                      CategoryInfo(title: "娱乐", rid: 5),
-                      CategoryInfo(title: "影视", rid: 181),
-                      CategoryInfo(title: "纪录片", rid: 177),
-                      CategoryInfo(title: "电影", rid: 23),
-                      CategoryInfo(title: "电视剧", rid: 11)]
+    static let all = [RankCategoryInfo(title: "全站", rid: 0),
+                      RankCategoryInfo(title: "动画", rid: 1),
+                      RankCategoryInfo(title: "番剧", rid: 1, isSeason: true),
+                      RankCategoryInfo(title: "国创", rid: 4, isSeason: true),
+                      RankCategoryInfo(title: "音乐", rid: 3),
+                      RankCategoryInfo(title: "舞蹈", rid: 129),
+                      RankCategoryInfo(title: "游戏", rid: 4),
+                      RankCategoryInfo(title: "知识", rid: 36),
+                      RankCategoryInfo(title: "科技", rid: 188),
+                      RankCategoryInfo(title: "运动", rid: 234),
+                      RankCategoryInfo(title: "汽车", rid: 223),
+                      RankCategoryInfo(title: "生活", rid: 160),
+                      RankCategoryInfo(title: "美食", rid: 211),
+                      RankCategoryInfo(title: "动物圈", rid: 217),
+                      RankCategoryInfo(title: "鬼畜", rid: 119),
+                      RankCategoryInfo(title: "时尚", rid: 155),
+                      RankCategoryInfo(title: "娱乐", rid: 5),
+                      RankCategoryInfo(title: "影视", rid: 181),
+                      RankCategoryInfo(title: "纪录片", rid: 177),
+                      RankCategoryInfo(title: "电影", rid: 23),
+                      RankCategoryInfo(title: "电视剧", rid: 11)]
 }
 
-class RankingViewController: UIViewController, BLTabBarContentVCProtocol {
-    struct CategoryDisplayModel {
-        let title: String
-        let contentVC: UIViewController
-    }
-
-    var typeCollectionView: UICollectionView!
-    var categories = [CategoryDisplayModel]()
-    let contentView = UIView()
-    weak var currentViewController: UIViewController?
+class RankingViewController: CategoryViewController {
     override func viewDidLoad() {
-        super.viewDidLoad()
-        categories = CategoryInfo.all
+        categories = RankCategoryInfo.all
             .map {
                 CategoryDisplayModel(title: $0.title, contentVC: RankingContentViewController(info: $0))
             }
-        typeCollectionView = UICollectionView(frame: .zero, collectionViewLayout: BLSettingLineCollectionViewCell.makeLayout())
-        typeCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
-        view.addSubview(typeCollectionView)
-        typeCollectionView.snp.makeConstraints { make in
-            make.leading.bottom.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.width.equalTo(500)
-        }
-        typeCollectionView.dataSource = self
-        typeCollectionView.delegate = self
-
-        view.addSubview(contentView)
-        contentView.snp.makeConstraints { make in
-            make.bottom.right.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.left.equalTo(typeCollectionView.snp.right)
-        }
-        typeCollectionView.selectItem(at: IndexPath(item: 0, section: 0), animated: false, scrollPosition: .top)
-        collectionView(typeCollectionView, didSelectItemAt: IndexPath(item: 0, section: 0))
-    }
-
-    func reloadData() {
-        (currentViewController as? BLTabBarContentVCProtocol)?.reloadData()
-    }
-
-    func setViewController(vc: UIViewController) {
-        currentViewController?.willMove(toParent: nil)
-        currentViewController?.view.removeFromSuperview()
-        currentViewController?.removeFromParent()
-        currentViewController = vc
-        addChild(vc)
-        contentView.addSubview(vc.view)
-        vc.view.makeConstraintsToBindToSuperview()
-        vc.didMove(toParent: self)
-    }
-}
-
-extension RankingViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return categories.count
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! BLSettingLineCollectionViewCell
-        cell.titleLabel.text = categories[indexPath.item].title
-        return cell
-    }
-}
-
-extension RankingViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        setViewController(vc: categories[indexPath.item].contentVC)
+        super.viewDidLoad()
     }
 }
 
 class RankingContentViewController: UIViewController, BLTabBarContentVCProtocol {
     let collectionVC = FeedCollectionViewController()
-    let info: CategoryInfo
+    let info: RankCategoryInfo
 
-    init(info: CategoryInfo) {
+    init(info: RankCategoryInfo) {
         self.info = info
         super.init(nibName: nil, bundle: nil)
     }

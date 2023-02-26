@@ -29,6 +29,10 @@ class LivePlayerViewController: CommonPlayerViewController {
     private var failCount = 0
     private var playInfo = [PlayInfo]()
 
+    deinit {
+        Logger.debug("deinit live player")
+    }
+
     override func viewDidLoad() {
         allowChangeSpeed = false
         requiresLinearPlayback = true
@@ -59,6 +63,7 @@ class LivePlayerViewController: CommonPlayerViewController {
     }
 
     override func retryPlay() -> Bool {
+        Logger.warn("play fail, retry")
         failCount += 1
         if playInfo.count > 0 {
             playInfo = Array(playInfo.dropFirst())
@@ -80,7 +85,7 @@ class LivePlayerViewController: CommonPlayerViewController {
             playerItem = AVPlayerItem(asset: asset)
             player = AVPlayer(playerItem: playerItem)
         } else {
-            showErrorAlertAndExit(title: "url is nil")
+            showErrorAlertAndExit(title: "url is nil", message: "url: \(playInfo.first?.url.count ?? 0)")
         }
         if Settings.danmuMask, Settings.vnMask {
             maskProvider = VMaskProvider()
