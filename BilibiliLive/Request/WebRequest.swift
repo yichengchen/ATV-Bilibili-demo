@@ -537,7 +537,7 @@ struct Replys: Codable, Hashable {
         let content: Content
     }
 
-    let replies: [Reply]
+    let replies: [Reply]?
 }
 
 struct BangumiSeasonInfo: Codable {

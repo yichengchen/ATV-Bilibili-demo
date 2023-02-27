@@ -154,7 +154,7 @@ class VideoDetailViewController: UIViewController {
 
     private func exit(with error: Error) {
         Logger.warn(error)
-        let alertVC = UIAlertController(title: "获取失败", message: nil, preferredStyle: .alert)
+        let alertVC = UIAlertController(title: "获取失败", message: error.localizedDescription, preferredStyle: .alert)
         alertVC.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: { [weak self] action in
             self?.dismiss(animated: true)
         }))
@@ -402,7 +402,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             }
             present(player, animated: true, completion: nil)
         case replysCollectionView:
-            guard let reply = replys?.replies[indexPath.item] else { return }
+            guard let reply = replys?.replies?[indexPath.item] else { return }
             let detail = ContentDetailViewController.createReply(content: reply.content.message)
             present(detail, animated: true)
         case ugcCollectionView:
@@ -438,7 +438,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         case pageCollectionView:
             return pages.count
         case replysCollectionView:
-            return replys?.replies.count ?? 0
+            return replys?.replies?.count ?? 0
         case ugcCollectionView:
             return allUgcEpisodes.count
         case recommandCollectionView:
@@ -457,7 +457,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             return cell
         case replysCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ReplyCell.self), for: indexPath) as! ReplyCell
-            if let reply = replys?.replies[indexPath.item] {
+            if let reply = replys?.replies?[indexPath.item] {
                 cell.config(replay: reply)
             }
             return cell
