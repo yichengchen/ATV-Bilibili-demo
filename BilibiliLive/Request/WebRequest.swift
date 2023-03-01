@@ -120,7 +120,6 @@ enum WebRequest {
                     complete?(.success(object))
                 } catch let err {
                     print("decode fail:", err)
-                    assertionFailure()
                     complete?(.failure(.decodeFail(message: err.localizedDescription + String(describing: err))))
                 }
             case let .failure(err):
