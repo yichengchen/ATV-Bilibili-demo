@@ -121,8 +121,12 @@ extension FavoriteViewController {
 extension FavoriteViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let d = dataSource.itemIdentifier(for: indexPath) else { return }
-        let vc = VideoDetailViewController.create(aid: d.id, cid: 0)
-        vc.present(from: UIViewController.topMostViewController())
+        if let seasonId = d.ogv?.season_id {
+            VideoDetailViewController.create(seasonId: seasonId).present(from: self)
+        } else {
+            let vc = VideoDetailViewController.create(aid: d.id, cid: 0)
+            vc.present(from: UIViewController.topMostViewController())
+        }
     }
 
     func indexPathForPreferredFocusedView(in collectionView: UICollectionView) -> IndexPath? {

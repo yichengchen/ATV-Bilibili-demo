@@ -213,7 +213,7 @@ extension WebRequest {
         struct Resp: Codable {
             let medias: [FavData]?
         }
-        let res: Resp = try await request(method: .get, url: EndPoint.fav, parameters: ["media_id": mid, "ps": "20", "pn": page])
+        let res: Resp = try await request(method: .get, url: EndPoint.fav, parameters: ["media_id": mid, "ps": "20", "pn": page, "platform": "web"])
         return res.medias ?? []
     }
 
@@ -390,9 +390,15 @@ struct FavData: DisplayData, Codable {
     var cover: String
     var upper: VideoOwner
     var id: Int
+    var type: Int?
     var title: String
+    var ogv: Ogv?
     var ownerName: String { upper.name }
     var pic: URL? { URL(string: cover) }
+
+    struct Ogv: Codable, Hashable {
+        let season_id: Int?
+    }
 }
 
 class FavListData: Codable, Hashable {
