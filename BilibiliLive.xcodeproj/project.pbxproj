@@ -32,6 +32,8 @@
 		4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502A29161B770045C26B /* WeeklyWatchViewController.swift */; };
 		4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */; };
 		498DB1DF291BC24700F95607 /* BMaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498DB1DE291BC24700F95607 /* BMaskProvider.swift */; };
+		498DDF4729B6BCA5003768E1 /* Data+..swift in Sources */ = {isa = PBXBuildFile; fileRef = 498DDF4629B6BCA5003768E1 /* Data+..swift */; };
+		498DDF4929B6BCE4003768E1 /* MoovParseUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498DDF4829B6BCE4003768E1 /* MoovParseUtil.swift */; };
 		499C75EC293058C9003160FB /* CocoaAsyncSocket in Frameworks */ = {isa = PBXBuildFile; productRef = 499C75EB293058C9003160FB /* CocoaAsyncSocket */; };
 		499C75EE29305A1E003160FB /* BiliBiliUpnpDMR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499C75ED29305A1E003160FB /* BiliBiliUpnpDMR.swift */; };
 		499C760F2930E068003160FB /* NVASocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 499C760E2930E068003160FB /* NVASocket.swift */; };
@@ -127,6 +129,8 @@
 		4973502A29161B770045C26B /* WeeklyWatchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWatchViewController.swift; sourceTree = "<group>"; };
 		4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardVideoCollectionViewController.swift; sourceTree = "<group>"; };
 		498DB1DE291BC24700F95607 /* BMaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMaskProvider.swift; sourceTree = "<group>"; };
+		498DDF4629B6BCA5003768E1 /* Data+..swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+..swift"; sourceTree = "<group>"; };
+		498DDF4829B6BCE4003768E1 /* MoovParseUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoovParseUtil.swift; sourceTree = "<group>"; };
 		499C75ED29305A1E003160FB /* BiliBiliUpnpDMR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiliBiliUpnpDMR.swift; sourceTree = "<group>"; };
 		499C760E2930E068003160FB /* NVASocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NVASocket.swift; sourceTree = "<group>"; };
 		49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpsViewController.swift; sourceTree = "<group>"; };
@@ -279,6 +283,16 @@
 			path = View;
 			sourceTree = "<group>";
 		};
+		498DDF4529B6BC8F003768E1 /* mp4Parser */ = {
+			isa = PBXGroup;
+			children = (
+				49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */,
+				498DDF4829B6BCE4003768E1 /* MoovParseUtil.swift */,
+				498DDF4629B6BCA5003768E1 /* Data+..swift */,
+			);
+			path = mp4Parser;
+			sourceTree = "<group>";
+		};
 		499C76172931A833003160FB /* DLNA */ = {
 			isa = PBXGroup;
 			children = (
@@ -304,6 +318,7 @@
 		AEA6AB1228FFE45A007CE72E /* Component */ = {
 			isa = PBXGroup;
 			children = (
+				498DDF4529B6BC8F003768E1 /* mp4Parser */,
 				4947420D2903B8C9005D6885 /* View */,
 				F9171D6229010DE5002868C7 /* Feed */,
 				F99D28EC2619F4D500F8E66A /* Player */,
@@ -379,7 +394,6 @@
 			children = (
 				49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */,
 				F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */,
-				49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -564,6 +578,7 @@
 				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
 				49FB8EE929208EBE0045D5DE /* SidxParseUtil.swift in Sources */,
+				498DDF4729B6BCA5003768E1 /* Data+..swift in Sources */,
 				F9171D6129010429002868C7 /* UICollectionView+..swift in Sources */,
 				AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */,
 				499C75EE29305A1E003160FB /* BiliBiliUpnpDMR.swift in Sources */,
@@ -587,6 +602,7 @@
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
 				49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
+				498DDF4929B6BCE4003768E1 /* MoovParseUtil.swift in Sources */,
 				49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */,
 				AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */,
 				494741C6290177BB005D6885 /* UpSpaceViewController.swift in Sources */,
