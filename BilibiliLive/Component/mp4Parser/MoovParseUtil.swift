@@ -376,3 +376,32 @@ extension MoovParseUtil {
         return iframes
     }
 }
+
+extension MoovParseUtil {
+    static func generateIframePlayList(iframes: [FrameInfo]) -> String {
+        let maxLength = Int(ceil(iframes.map({ $0.duration }).max() ?? 10))
+        print(maxLength)
+        var playlist = """
+        #EXTM3U
+        #EXT-X-TARGETDURATION:\(maxLength)
+        #EXT-X-VERSION:4
+        #EXT-X-MEDIA-SEQUENCE:0
+        #EXT-X-PLAYLIST-TYPE:VOD
+        #EXT-X-I-FRAMES-ONLY
+
+        """
+        for iframe in iframes {
+            let inf = String(format: "%.5f", iframe.duration)
+            let str = """
+            #EXTINF:\(inf),
+            #EXT-X-BYTERANGE:\(iframe.size)@\(iframe.offset)
+            http://127.0.0.1:8080/2.mp4
+
+            """
+            playlist.append(str)
+        }
+        playlist.append("#EXT-X-ENDLIST\n")
+        print(playlist)
+        return playlist
+    }
+}

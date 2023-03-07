@@ -308,7 +308,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
         masterPlaylist.append("""
 
-        #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=1000,CODECS="avc1.42e00a",URI="\(URLs.iframe)"
+        #EXT-X-I-FRAME-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=30000,CODECS="avc1.64001e",RESOLUTION=640x320,URI="http://127.0.0.1:8080/2.m3u8"
 
         """)
         masterPlaylist.append("\n#EXT-X-ENDLIST\n")
