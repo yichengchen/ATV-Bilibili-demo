@@ -30,6 +30,9 @@ enum Settings {
     @UserDefaultCodable("Settings.danmuArea", defaultValue: .style_75)
     static var danmuArea: DanmuArea
 
+    @UserDefaultCodable("Settings.danmuSize", defaultValue: .size_36)
+    static var danmuSize: DanmuSize
+
     @UserDefault("Settings.losslessAudio", defaultValue: false)
     static var losslessAudio: Bool
 
@@ -80,6 +83,36 @@ enum DanmuArea: Codable, CaseIterable {
     case style_50
     case style_25
     case style_0
+}
+
+enum DanmuSize: String, Codable, CaseIterable {
+    case size_25
+    case size_31
+    case size_36
+    case size_42
+    case size_48
+    case size_57
+
+    var title: String {
+        return "\(Int(size)) pt"
+    }
+
+    var size: CGFloat {
+        switch self {
+        case .size_25:
+            return 25
+        case .size_31:
+            return 31
+        case .size_36:
+            return 36
+        case .size_42:
+            return 42
+        case .size_48:
+            return 48
+        case .size_57:
+            return 57
+        }
+    }
 }
 
 extension DanmuArea {

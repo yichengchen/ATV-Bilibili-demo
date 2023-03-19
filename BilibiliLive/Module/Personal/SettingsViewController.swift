@@ -133,6 +133,11 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(continouslyPlay)
 
+        let fontSize = cellModelWithActions(title: "弹幕大小", message: "默认为36", current: Settings.danmuSize.title, options: DanmuSize.allCases, optionString: DanmuSize.allCases.map({ $0.title })) {
+            Settings.danmuSize = $0
+        }
+        cellModels.append(fontSize)
+
         let mask = CellModel(title: "智能防档弹幕", desp: Settings.danmuMask ? "开" : "关") {
             [weak self] in
             Settings.danmuMask.toggle()
@@ -155,6 +160,29 @@ class SettingsViewController: UIViewController {
         cellModels.append(match)
 
         collectionView.reloadData()
+    }
+
+    func cellModelWithActions<T>(title: String,
+                                 message: String?,
+                                 current: String,
+                                 options: [T],
+                                 optionString: [String],
+                                 onSelect: ((T) -> Void)? = nil) -> CellModel
+    {
+        return CellModel(title: title, desp: current) { [weak self] in
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
+
+            for (idx, string) in optionString.enumerated() {
+                let action = UIAlertAction(title: string, style: .default) { _ in
+                    onSelect?(options[idx])
+                    self?.setupData()
+                }
+                alert.addAction(action)
+            }
+            let cancelAction = UIAlertAction(title: nil, style: .cancel)
+            alert.addAction(cancelAction)
+            self?.present(alert, animated: true)
+        }
     }
 }
 
