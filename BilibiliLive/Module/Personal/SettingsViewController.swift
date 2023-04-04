@@ -5,6 +5,7 @@
 //  Created by whw on 2022/10/19.
 //
 
+import Alamofire
 import UIKit
 
 extension FeedDisplayStyle {
@@ -42,6 +43,46 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(directlyVideo)
         let cancelAction = UIAlertAction(title: nil, style: .cancel)
+        let iinaPlusHost = CellModel(title: "IINA+接口地址", desp: Settings.iinaPlusHost) {
+            [weak self] in
+            let inputAlert = UIAlertController(title: "请输入IINA+接口地址", message: nil, preferredStyle: .alert)
+            inputAlert.addTextField { textField in
+                textField.placeholder = Settings.iinaPlusHost != "" ? Settings.iinaPlusHost : "http://10.0.0.2:19080"
+            }
+            let confirmAction = UIAlertAction(title: "确定", style: .default) { [weak inputAlert] _ in
+                guard let textFields = inputAlert?.textFields else { return }
+                if let iinaPlusHostText = textFields[0].text {
+                    if iinaPlusHostText == "" {
+                        Settings.iinaPlusHost = iinaPlusHostText
+                        self?.setupData()
+                        self?.keyWindow?.rootViewController = BLTabBarViewController()
+                    }
+                    let parameters = ["page_size": 10, "page": 1]
+                    AF.request("\(iinaPlusHostText)/list",
+                               method: .post,
+                               parameters: parameters,
+                               encoding: URLEncoding.default,
+                               interceptor: nil)
+                        .responseData { response in
+                            switch response.result {
+                            case .success:
+                                Settings.iinaPlusHost = iinaPlusHostText
+                                self?.setupData()
+                                self?.keyWindow?.rootViewController = BLTabBarViewController()
+                            case .failure:
+                                let resultAlbert = UIAlertController(title: "接口地址请求失败，请重新确认！", message: nil, preferredStyle: .alert)
+                                resultAlbert.addAction(cancelAction)
+                                self?.present(resultAlbert, animated: true)
+                            }
+                        }
+                }
+            }
+            inputAlert.addAction(confirmAction)
+            inputAlert.addAction(cancelAction)
+            self?.present(inputAlert, animated: true)
+        }
+        cellModels.append(iinaPlusHost)
+
         let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.danmuArea.title) { [weak self] in
             let alert = UIAlertController(title: "弹幕显示区域", message: "设置弹幕显示区域", preferredStyle: .actionSheet)
             for style in DanmuArea.allCases {

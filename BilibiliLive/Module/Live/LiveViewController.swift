@@ -25,7 +25,29 @@ class LiveViewController: CategoryViewController {
             CategoryDisplayModel(title: "知识", contentVC: AreaLiveViewController(areaID: 11)),
             CategoryDisplayModel(title: "赛事", contentVC: AreaLiveViewController(areaID: 13)),
         ]
+        if Settings.iinaPlusHost != "" {
+            categories.insert(CategoryDisplayModel(title: "IINA+", contentVC: IinaPlusLiveViewController()), at: 0)
+        }
         super.viewDidLoad()
+    }
+}
+
+class IinaPlusLiveViewController: StandardVideoCollectionViewController<IinaPlusLive> {
+    override func setupCollectionView() {
+        super.setupCollectionView()
+        collectionVC.styleOverride = .sideBar
+        collectionVC.pageSize = 10
+        reloadInterval = 15 * 60
+    }
+
+    override func request(page: Int) async throws -> [IinaPlusLive] {
+        try await WebRequest.requestIinaPlusLive(page: page)
+    }
+
+    override func goDetail(with record: IinaPlusLive) {
+        let playerVC = IinaPlusLivePlayerViewController()
+        playerVC.room = record
+        present(playerVC, animated: true, completion: nil)
     }
 }
 
@@ -83,6 +105,24 @@ class AreaLiveViewController: StandardVideoCollectionViewController<AreaLiveRoom
     }
 }
 
+struct IinaPlusLive: DisplayData, Codable {
+    var cover: URL?
+    var liveName: String
+    var liveTitle: String
+    var state: Int16?
+    var url: String
+
+    var ownerName: String { liveName }
+    var pic: URL? { cover }
+    var title: String { liveTitle }
+    var avatar: URL? { cover }
+}
+
+extension IinaPlusLive: PlayableData {
+    var cid: Int { 0 }
+    var aid: Int { 0 }
+}
+
 struct LiveRoom: DisplayData, Codable {
     let title: String
     let room_id: Int
@@ -109,6 +149,16 @@ extension WebRequest.EndPoint {
 }
 
 extension WebRequest {
+    static func requestIinaPlusLive(page: Int) async throws -> [IinaPlusLive] {
+        var resp: [IinaPlusLive] = try await request(method: .post, url: "\(Settings.iinaPlusHost)/list", parameters: ["page_size": 10, "page": page], dataObj: "raw")
+        for (i, r): (Int, IinaPlusLive) in resp.enumerated() {
+            if r.state == 1 {
+                resp[i].liveTitle = "🟢" + r.liveTitle
+            }
+        }
+        return resp
+    }
+
     static func requestLiveRoom(page: Int) async throws -> [LiveRoom] {
         struct Resp: Codable {
             let rooms: [LiveRoom]

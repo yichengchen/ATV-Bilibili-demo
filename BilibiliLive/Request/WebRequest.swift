@@ -94,7 +94,7 @@ enum WebRequest {
                     complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }
-                let dataj = json[dataObj]
+                let dataj = dataObj == "raw" ? json : json[dataObj]
                 print("\(url) response: \(json)")
                 complete?(.success(dataj))
             case let .failure(err):
