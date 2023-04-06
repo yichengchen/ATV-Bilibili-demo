@@ -56,7 +56,6 @@ class IinaPlusLivePlayerViewController: UIViewController, VLCMediaPlayerDelegate
     }
 
     override func viewWillDisappear(_ animated: Bool) {
-        Logger.debug("live player")
         super.viewWillAppear(animated)
         vlcPlayer?.stop()
         danMuProvider?.stop()
@@ -64,7 +63,6 @@ class IinaPlusLivePlayerViewController: UIViewController, VLCMediaPlayerDelegate
 
     func play() {
         if let url = playInfo.first?.url {
-            Logger.info("\n\(playInfo.count)\n\(url)")
 //            danMuProvider?.start()
 //            danMuView.play()
 
@@ -131,10 +129,13 @@ class IinaPlusLivePlayerViewController: UIViewController, VLCMediaPlayerDelegate
             if currentQuality > maxQuality {
                 maxQuality = currentQuality
                 maxQualityUrl = sjson["url"].stringValue
-//                let src = sjson["src"].arrayValue
-//                if src.count > 1 {
-//                    maxQualityUrl = src[1].stringValue
-//                }
+                let src = sjson["src"].arrayValue
+                if maxQualityUrl.isEmpty && src.count > 0 {
+                    maxQualityUrl = src[0].stringValue
+                    if src.count > 1 {
+                        maxQualityUrl = src[1].stringValue
+                    }
+                }
             }
         }
         let pInfo = PlayInfo(formate: "flv", url: maxQualityUrl, current_qn: maxQuality, sourceUrl: roomUrl)
