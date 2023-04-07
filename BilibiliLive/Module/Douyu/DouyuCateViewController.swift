@@ -55,8 +55,7 @@ class DouyuAreaViewController: StandardVideoCollectionViewController<DLiveRoom> 
     }
 
     override func goDetail(with record: DLiveRoom) {
-        let playerVC = DouyuLivePlayerViewController(id: Int(record.room_id)!)
-//        playerVC.room = record.toLiveRoom()
+        let playerVC = DouyuLivePlayerViewController(id: Int(record.room_id) ?? 0)
         present(playerVC, animated: true, completion: nil)
     }
 }

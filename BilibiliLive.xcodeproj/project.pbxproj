@@ -48,6 +48,7 @@
 		49F4BD4C29DE537200079326 /* DouLiveUrlParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F4BD4B29DE537200079326 /* DouLiveUrlParser.swift */; };
 		49F4BD5429DFC40400079326 /* crypto-js.js in Resources */ = {isa = PBXBuildFile; fileRef = 49F4BD5329DFC40400079326 /* crypto-js.js */; };
 		49F4BD5629DFC7A500079326 /* DouyuLivePlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F4BD5529DFC7A500079326 /* DouyuLivePlayerViewController.swift */; };
+		49F4BD5829DFE3B400079326 /* DouLiveDanMuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49F4BD5729DFE3B400079326 /* DouLiveDanMuProvider.swift */; };
 		49F9186E2931E3C9001D3EC3 /* DLNAInfo.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */; };
 		49F918702931E473001D3EC3 /* NirvanaControl.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F9186F2931E473001D3EC3 /* NirvanaControl.xml */; };
 		49F918722931E927001D3EC3 /* AvTransportScpd.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F918712931E927001D3EC3 /* AvTransportScpd.xml */; };
@@ -146,6 +147,7 @@
 		49F4BD4B29DE537200079326 /* DouLiveUrlParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DouLiveUrlParser.swift; sourceTree = "<group>"; };
 		49F4BD5329DFC40400079326 /* crypto-js.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = "crypto-js.js"; sourceTree = "<group>"; };
 		49F4BD5529DFC7A500079326 /* DouyuLivePlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DouyuLivePlayerViewController.swift; sourceTree = "<group>"; };
+		49F4BD5729DFE3B400079326 /* DouLiveDanMuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DouLiveDanMuProvider.swift; sourceTree = "<group>"; };
 		49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DLNAInfo.xml; sourceTree = "<group>"; };
 		49F9186F2931E473001D3EC3 /* NirvanaControl.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = NirvanaControl.xml; sourceTree = "<group>"; };
 		49F918712931E927001D3EC3 /* AvTransportScpd.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = AvTransportScpd.xml; sourceTree = "<group>"; };
@@ -301,6 +303,7 @@
 				496EC9EC29DD3EC4008257A0 /* DouyuCateViewController.swift */,
 				49F4BD4B29DE537200079326 /* DouLiveUrlParser.swift */,
 				49F4BD5529DFC7A500079326 /* DouyuLivePlayerViewController.swift */,
+				49F4BD5729DFE3B400079326 /* DouLiveDanMuProvider.swift */,
 			);
 			path = Douyu;
 			sourceTree = "<group>";
@@ -620,6 +623,7 @@
 				490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */,
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
 				49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */,
+				49F4BD5829DFE3B400079326 /* DouLiveDanMuProvider.swift in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
 				49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */,
 				AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */,
