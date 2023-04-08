@@ -156,10 +156,10 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         #EXT-X-MEDIA-SEQUENCE:1
         #EXT-X-INDEPENDENT-SEGMENTS
         #EXT-X-PLAYLIST-TYPE:VOD
-        #EXT-X-MAP:URI="\(info.url)",BYTERANGE="\(moovIdx)@\(moovOffset)"
+        #EXT-X-MAP:URI="\(info.url)",BYTERANGE="\(moovIdx + 1)@\(moovOffset)"
 
         """
-
+        offset += 1
         for segInfo in segment.segments {
             let segStr = """
             #EXTINF:\(Double(segInfo.duration) / Double(segment.timescale)),
@@ -289,6 +289,16 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         }
         for subtitle in subtitles {
             addSubtitleData(lang: subtitle.lan, name: subtitle.lan_doc, duration: info.dash.duration, url: subtitle.url.absoluteString)
+        }
+
+        // i-frame
+        if let video = videos.last, let url = video.playableURLs.first {
+            let media = """
+            #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=\(video.bandwidth),RESOLUTION=\(video.width!)x\(video.height!),URI="\(URLs.customDashPrefix)\(videoInfo.count)"
+
+            """
+            masterPlaylist.append(media)
+            videoInfo.append(PlaybackInfo(info: video, url: url, duration: info.dash.duration))
         }
 
         masterPlaylist.append("\n#EXT-X-ENDLIST\n")
