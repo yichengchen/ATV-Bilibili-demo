@@ -37,7 +37,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private var playlists = [String]()
     private var subtitles = [String: String]()
     private var videoInfo = [PlaybackInfo]()
-    private var segmentInfoCache = [VideoPlayURLInfo.DashInfo.DashMediaInfo: SidxParseUtil.Sidx]()
+    private var segmentInfoCache = SidxDownloader()
     private var hasAudioInMasterListAdded = false
     private(set) var playInfo: VideoPlayURLInfo?
     private var hasSubtitle = false
@@ -115,19 +115,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     }
 
     private func getVideoPlayList(info: PlaybackInfo) async -> String {
-        var segment = segmentInfoCache[info.info]
-        if segment == nil {
-            let range = info.info.segment_base.index_range
-            if let res = try? await AF.request(info.url,
-                                               headers: ["Range": "bytes=\(range)",
-                                                         "Referer": "https://www.bilibili.com/video/av\(aid)"])
-                .serializingData().result.get()
-            {
-                segment = SidxParseUtil.processIndexData(data: res)
-            }
-        } else {
-            Logger.debug("cache hit")
-        }
+        let segment = await segmentInfoCache.sidx(from: info.info)
         let inits = info.info.segment_base.initialization.components(separatedBy: "-")
         guard let moovIdxStr = inits.last,
               let moovIdx = Int(moovIdxStr),
@@ -444,5 +432,52 @@ extension VideoPlayURLInfo.DashInfo.DashMediaInfo {
 
     var isHevc: Bool {
         return codecs.starts(with: "hev") || codecs.starts(with: "hvc") || codecs.starts(with: "dvh1")
+    }
+}
+
+actor SidxDownloader {
+    private enum CacheEntry {
+        case inProgress(Task<SidxParseUtil.Sidx?, Never>)
+        case ready(SidxParseUtil.Sidx?)
+    }
+
+    private var cache: [VideoPlayURLInfo.DashInfo.DashMediaInfo: CacheEntry] = [:]
+
+    func sidx(from info: VideoPlayURLInfo.DashInfo.DashMediaInfo) async -> SidxParseUtil.Sidx? {
+        if let cached = cache[info] {
+            switch cached {
+            case let .ready(sidx):
+                Logger.debug("sidx cache hit \(info.id)")
+                return sidx
+            case let .inProgress(sidx):
+                Logger.debug("sidx cache wait \(info.id)")
+                return await sidx.value
+            }
+        }
+
+        let task = Task {
+            await downloadSidx(info: info)
+        }
+
+        cache[info] = .inProgress(task)
+
+        let sidx = await task.value
+        cache[info] = .ready(sidx)
+        Logger.debug("get sidx \(info.id)")
+        return sidx
+    }
+
+    private func downloadSidx(info: VideoPlayURLInfo.DashInfo.DashMediaInfo) async -> SidxParseUtil.Sidx? {
+        let range = info.segment_base.index_range
+        let url = info.playableURLs.first ?? info.base_url
+        if let res = try? await AF.request(url,
+                                           headers: ["Range": "bytes=\(range)",
+                                                     "Referer": "https://www.bilibili.com/"])
+            .serializingData().result.get()
+        {
+            let segment = SidxParseUtil.processIndexData(data: res)
+            return segment
+        }
+        return nil
     }
 }
