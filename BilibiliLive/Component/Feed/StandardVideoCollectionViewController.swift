@@ -84,9 +84,10 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
         guard supportPullToLoad() else { return }
         Task {
             do {
-                let res = (try! await request(page: page + 1))
-                collectionVC.appendData(displayData: res)
-                page = page + 1
+                if let res = (try? await request(page: page + 1)) {
+                    collectionVC.appendData(displayData: res)
+                    page = page + 1
+                }
             }
         }
     }
