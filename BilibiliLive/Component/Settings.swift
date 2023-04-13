@@ -71,6 +71,9 @@ enum Settings {
 
     @UserDefault("Settings.showRelatedVideoInCurrentVC", defaultValue: true)
     static var showRelatedVideoInCurrentVC: Bool
+
+    @UserDefault("Settings.requestHotWithoutCookie", defaultValue: false)
+    static var requestHotWithoutCookie: Bool
 }
 
 struct MediaQuality {

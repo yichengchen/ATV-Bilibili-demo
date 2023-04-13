@@ -85,6 +85,13 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(relatedVideoLoadMode)
 
+        let hotWithoutCookie = CellModel(title: "热门匿名模式", desp: Settings.requestHotWithoutCookie ? "开" : "关") {
+            [weak self] in
+            Settings.requestHotWithoutCookie.toggle()
+            self?.setupData()
+        }
+        cellModels.append(hotWithoutCookie)
+
         let continuePlay = CellModel(title: "继续播放", desp: Settings.continuePlay ? "开" : "关") {
             [weak self] in
             Settings.continuePlay.toggle()
