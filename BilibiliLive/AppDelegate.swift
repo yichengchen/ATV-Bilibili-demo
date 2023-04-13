@@ -34,8 +34,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             window?.rootViewController = LoginViewController.create()
         }
         window?.makeKeyAndVisible()
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
         return true
+    }
+
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
     }
 
     func showLogin() {
