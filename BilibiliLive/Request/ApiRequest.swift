@@ -57,6 +57,7 @@ enum ApiRequest {
         newParam["appkey"] = appkey
         newParam["ts"] = "\(Date().timeIntervalSince1970)"
         newParam["local_id"] = "0"
+        newParam["mobi_app"] = "android"
         var rawParam = newParam
             .sorted(by: { $0.0 < $1.0 })
             .map({ "\($0.key)=\($0.value)" })
