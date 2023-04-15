@@ -15,6 +15,10 @@ enum RequestError: Error {
     case decodeFail(message: String)
 }
 
+enum NoCookieSession {
+    static let session = Session(configuration: URLSessionConfiguration.ephemeral)
+}
+
 enum WebRequest {
     enum EndPoint {
         static let related = "https://api.bilibili.com/x/web-interface/archive/related"
@@ -36,6 +40,7 @@ enum WebRequest {
                             url: URLConvertible,
                             parameters: Parameters = [:],
                             headers: [String: String]? = nil,
+                            noCookie: Bool = false,
                             complete: ((Result<Data, RequestError>) -> Void)? = nil)
     {
         var parameters = parameters
@@ -59,12 +64,17 @@ enum WebRequest {
             afheaders.add(HTTPHeader(name: "Referer", value: "https://www.bilibili.com"))
         }
 
-        AF.request(url,
-                   method: method,
-                   parameters: parameters,
-                   encoding: URLEncoding.default,
-                   headers: afheaders,
-                   interceptor: nil)
+        var session = Session.default
+        if noCookie {
+            session = NoCookieSession.session
+            session.sessionConfiguration.httpShouldSetCookies = false
+        }
+        session.request(url,
+                        method: method,
+                        parameters: parameters,
+                        encoding: URLEncoding.default,
+                        headers: afheaders,
+                        interceptor: nil)
             .responseData { response in
                 switch response.result {
                 case let .success(data):
@@ -81,9 +91,10 @@ enum WebRequest {
                             parameters: Parameters = [:],
                             headers: [String: String]? = nil,
                             dataObj: String = "data",
+                            noCookie: Bool = false,
                             complete: ((Result<JSON, RequestError>) -> Void)? = nil)
     {
-        requestData(method: method, url: url, parameters: parameters, headers: headers) { response in
+        requestData(method: method, url: url, parameters: parameters, headers: headers, noCookie: noCookie) { response in
             switch response {
             case let .success(data):
                 let json = JSON(data)
@@ -109,9 +120,10 @@ enum WebRequest {
                                       headers: [String: String]? = nil,
                                       decoder: JSONDecoder? = nil,
                                       dataObj: String = "data",
+                                      noCookie: Bool = false,
                                       complete: ((Result<T, RequestError>) -> Void)?)
     {
-        requestJSON(method: method, url: url, parameters: parameters, headers: headers, dataObj: dataObj) { response in
+        requestJSON(method: method, url: url, parameters: parameters, headers: headers, dataObj: dataObj, noCookie: noCookie) { response in
             switch response {
             case let .success(data):
                 do {
@@ -145,10 +157,11 @@ enum WebRequest {
                                       parameters: Parameters = [:],
                                       headers: [String: String]? = nil,
                                       decoder: JSONDecoder? = nil,
+                                      noCookie: Bool = false,
                                       dataObj: String = "data") async throws -> T
     {
         return try await withCheckedThrowingContinuation { configure in
-            request(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder, dataObj: dataObj) {
+            request(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder, dataObj: dataObj, noCookie: noCookie) {
                 (res: Result<T, RequestError>) in
                 switch res {
                 case let .success(content):

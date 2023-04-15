@@ -72,6 +72,9 @@ enum Settings {
     @UserDefault("Settings.showRelatedVideoInCurrentVC", defaultValue: true)
     static var showRelatedVideoInCurrentVC: Bool
 
+    @UserDefault("Settings.requestHotWithoutCookie", defaultValue: false)
+    static var requestHotWithoutCookie: Bool
+
     @UserDefault("Settings.iinaPlusHost", defaultValue: "http://10.0.0.17:19080")
     static var iinaPlusHost: String
 }

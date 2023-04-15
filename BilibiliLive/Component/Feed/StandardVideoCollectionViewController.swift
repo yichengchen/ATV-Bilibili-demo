@@ -29,8 +29,8 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
 
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         autoReloadIfNeed()
     }
 
@@ -84,9 +84,10 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
         guard supportPullToLoad() else { return }
         Task {
             do {
-                let res = (try! await request(page: page + 1))
-                collectionVC.appendData(displayData: res)
-                page = page + 1
+                if let res = (try? await request(page: page + 1)) {
+                    collectionVC.appendData(displayData: res)
+                    page = page + 1
+                }
             }
         }
     }
