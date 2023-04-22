@@ -220,4 +220,14 @@ extension SettingsViewController: UICollectionViewDataSource {
 class SettingsSwitchCell: UICollectionViewCell {
     @IBOutlet var titleLabel: UILabel!
     @IBOutlet var descLabel: UILabel!
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        if isFocused {
+            titleLabel.textColor = UIColor.black
+            descLabel.textColor = UIColor.black
+        } else {
+            titleLabel.textColor = UIColor.white
+            descLabel.textColor = UIColor.white
+        }
+    }
 }
