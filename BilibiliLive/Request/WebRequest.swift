@@ -330,16 +330,6 @@ extension WebRequest {
         }
     }
 
-    static func requestSearchResult(key: String, page: Int, complete: ((SearchResult) -> Void)?) {
-        request(url: "http://api.bilibili.com/x/web-interface/search/type", parameters: ["search_type": "video", "keyword": key, "page": page]) {
-            (result: Result<SearchResult, RequestError>) in
-            if var details = try? result.get() {
-                details.result.indices.forEach({ details.result[$0].title = details.result[$0].title.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil) })
-                complete?(details)
-            }
-        }
-    }
-
     static func requestSubtitle(url: URL) async throws -> [SubtitleContent] {
         struct SubtitlContenteResp: Codable {
             let body: [SubtitleContent]
@@ -718,22 +708,6 @@ struct VideoPlayURLInfo: Codable {
             let audio: DashMediaInfo?
         }
     }
-}
-
-struct SearchResult: Codable, Hashable {
-    struct Result: Codable, Hashable, DisplayData {
-        let author: String
-        let upic: URL
-        let aid: Int
-
-        // DisplayData
-        var title: String
-        var ownerName: String { author }
-        let pic: URL?
-        var avatar: URL? { upic }
-    }
-
-    var result: [Result]
 }
 
 struct SubtitleContent: Codable, Hashable {
