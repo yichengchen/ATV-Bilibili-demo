@@ -19,6 +19,7 @@ struct CellModel {
 
 class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     static func create() -> PersonalViewController {
+        return PersonalViewController()
         return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! PersonalViewController
     }
 

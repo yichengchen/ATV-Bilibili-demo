@@ -7,22 +7,19 @@
 
 import Alamofire
 import Foundation
+import SnapKit
 import SwiftyJSON
 import UIKit
 
 class LoginViewController: UIViewController {
-    @IBOutlet var qrcodeImageView: UIImageView!
+    var qrcodeImageView: UIImageView!
     var currentLevel: Int = 0, finalLevel: Int = 200
     var timer: Timer?
     var oauthKey: String = ""
 
-    static func create() -> LoginViewController {
-        let loginVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "Login") as! LoginViewController
-        return loginVC
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
+        setup()
         BLTabBarViewController.clearSelected()
     }
 
@@ -35,6 +32,48 @@ class LoginViewController: UIViewController {
         super.viewWillDisappear(animated)
         qrcodeImageView.image = nil
         stopValidationTimer()
+    }
+
+    func setup() {
+        let leftContainerView = UIView()
+        view.addSubview(leftContainerView)
+        leftContainerView.snp.makeConstraints { make in
+            make.leading.top.bottom.equalToSuperview()
+            make.width.equalToSuperview().multipliedBy(0.5)
+        }
+
+        let separator = UIView()
+        separator.backgroundColor = .darkGray
+        view.addSubview(separator)
+        separator.snp.makeConstraints { make in
+            make.width.equalTo(2)
+            make.top.bottom.centerX.equalToSuperview()
+        }
+
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.distribution = .fill
+        stack.spacing = 50
+        leftContainerView.addSubview(stack)
+        stack.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+
+        qrcodeImageView = UIImageView()
+        stack.addArrangedSubview(qrcodeImageView)
+        qrcodeImageView.snp.makeConstraints { make in
+            #if PLATFORM_TVOS
+                make.width.height.equalTo(540)
+            #else
+                make.width.height.equalTo(300)
+            #endif
+        }
+
+        let refreshButton = UIButton(type: .system)
+        refreshButton.setTitle("重新生成二维码", for: .normal)
+        refreshButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
+        stack.addArrangedSubview(refreshButton)
     }
 
     func generateQRCode(from string: String) -> UIImage? {

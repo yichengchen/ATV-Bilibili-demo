@@ -33,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
             window?.rootViewController = BLTabBarViewController()
         } else {
-            window?.rootViewController = LoginViewController.create()
+            window?.rootViewController = LoginViewController()
         }
         window?.makeKeyAndVisible()
         return true
@@ -44,7 +44,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func showLogin() {
-        window?.rootViewController = LoginViewController.create()
+        window?.rootViewController = LoginViewController()
     }
 
     func showTabBar() {
