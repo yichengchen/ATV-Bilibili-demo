@@ -7,7 +7,6 @@
 
 import Kingfisher
 import MarqueeLabel
-import TVUIKit
 import UIKit
 
 class FeedCollectionViewCell: BLMotionCollectionViewCell {

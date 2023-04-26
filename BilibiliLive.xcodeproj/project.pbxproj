@@ -48,6 +48,7 @@
 		49FB8EE929208EBE0045D5DE /* SidxParseUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */; };
 		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
 		AE2B41572914C02000BF2B0B /* Int.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41562914C02000BF2B0B /* Int.swift */; };
+		AE3BD3BC29F9040300A03D37 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B57357260F5F7400771ED5 /* Main.storyboard */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
 		AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7A3B1F290298BE006FEBB0 /* Colors.swift */; };
 		AEA5FDE2290F6E2600E7C0B2 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA5FDE1290F6E2600E7C0B2 /* String.swift */; };
@@ -78,9 +79,7 @@
 		F99D28F72619F5F000F8E66A /* FollowsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28F62619F5F000F8E66A /* FollowsViewController.swift */; };
 		F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57353260F5F7400771ED5 /* AppDelegate.swift */; };
 		F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */; };
-		F9B57359260F5F7400771ED5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B57357260F5F7400771ED5 /* Main.storyboard */; };
 		F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9B5735A260F5F7600771ED5 /* Assets.xcassets */; };
-		F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B5735C260F5F7600771ED5 /* LaunchScreen.storyboard */; };
 		F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = F9B5736D260F652C00771ED5 /* Alamofire */; };
 		F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = F9B57372260F6B8E00771ED5 /* Starscream */; };
 		F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = F9B57377260F6BB400771ED5 /* SwiftyJSON */; };
@@ -511,11 +510,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				49F918702931E473001D3EC3 /* NirvanaControl.xml in Resources */,
+				AE3BD3BC29F9040300A03D37 /* Main.storyboard in Resources */,
 				49F918722931E927001D3EC3 /* AvTransportScpd.xml in Resources */,
-				F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */,
 				F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */,
 				49F9186E2931E3C9001D3EC3 /* DLNAInfo.xml in Resources */,
-				F9B57359260F5F7400771ED5 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -640,6 +638,7 @@
 		F9B57360260F5F7600771ED5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -692,7 +691,9 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = appletvos;
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = "macosx appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TVOS_DEPLOYMENT_TARGET = 14.3;
@@ -702,6 +703,7 @@
 		F9B57361260F5F7600771ED5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -747,7 +749,9 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				SDKROOT = appletvos;
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = "macosx appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TVOS_DEPLOYMENT_TARGET = 14.3;

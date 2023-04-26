@@ -23,7 +23,9 @@ class SearchResultViewController: UIViewController {
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
         collectionView.delegate = self
-        tabBarObservedScrollView = collectionView
+        #if PLATFORM_TVOS
+            tabBarObservedScrollView = collectionView
+        #endif
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()

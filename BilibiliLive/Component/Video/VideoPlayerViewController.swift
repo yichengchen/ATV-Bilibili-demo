@@ -126,11 +126,13 @@ class VideoPlayerViewController: CommonPlayerViewController {
                 group.leave()
             }
         }
-        group.notify(queue: .main) {
-            if metas.count > 0 {
-                self.playerItem?.navigationMarkerGroups = [AVNavigationMarkersGroup(title: nil, timedNavigationMarkers: metas)]
+        #if PLATFORM_TVOS
+            group.notify(queue: .main) {
+                if metas.count > 0 {
+                    self.playerItem?.navigationMarkerGroups = [AVNavigationMarkersGroup(title: nil, timedNavigationMarkers: metas)]
+                }
             }
-        }
+        #endif
     }
 
     override func extraInfoForPlayerError() -> String {
@@ -310,14 +312,17 @@ extension VideoPlayerViewController {
                             }
                             self.skipAction?.accessibilityLabel = clip.a11Tag
                         }
-
-                        self.contextualActions = [self.skipAction].compactMap { $0 }
+                        #if PLATFORM_TVOS
+                            self.contextualActions = [self.skipAction].compactMap { $0 }
+                        #endif
                         matched = true
                         break
                     }
                 }
                 if !matched {
-                    self.contextualActions = []
+                    #if PLATFORM_TVOS
+                        self.contextualActions = []
+                    #endif
                 }
             }
         }

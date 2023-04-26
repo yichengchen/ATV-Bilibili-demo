@@ -68,7 +68,9 @@ class CommonPlayerViewController: AVPlayerViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
+        #if PLATFORM_TVOS
+            appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
+        #endif
         allowsPictureInPicturePlayback = true
         delegate = self
         initDanmuView()
@@ -216,7 +218,9 @@ class CommonPlayerViewController: AVPlayerViewController {
             menus.append(debugAction)
         }
 
-        transportBarCustomMenuItems = menus
+        #if PLATFORM_TVOS
+            transportBarCustomMenuItems = menus
+        #endif
     }
 
     private func removeObservarPlayerItem() {

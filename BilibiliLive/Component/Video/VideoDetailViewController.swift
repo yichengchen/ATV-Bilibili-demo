@@ -13,7 +13,6 @@ import Alamofire
 import Kingfisher
 import MarqueeLabel
 import SnapKit
-import TVUIKit
 
 class VideoDetailViewController: UIViewController {
     private var loadingView = UIActivityIndicatorView()
@@ -475,18 +474,6 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         default:
             return UICollectionViewCell()
         }
-    }
-}
-
-class BLCardView: TVCardView {
-    override func didMoveToSuperview() {
-        super.didMoveToSuperview()
-        subviews.first?.subviews.first?.subviews.last?.subviews.first?.subviews.first?.layer.cornerRadius = 12
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        cardBackgroundColor = UIColor(named: "bgColor")
     }
 }
 

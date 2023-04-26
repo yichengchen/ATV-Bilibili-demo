@@ -6,7 +6,7 @@
 //
 
 import SnapKit
-import TVUIKit
+import UIKit
 
 @IBDesignable
 @MainActor
