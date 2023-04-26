@@ -68,7 +68,7 @@ class CommonPlayerViewController: AVPlayerViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        #if PLATFORM_TVOS
+        #if os(tvOS)
             appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
         #endif
         allowsPictureInPicturePlayback = true
@@ -218,7 +218,7 @@ class CommonPlayerViewController: AVPlayerViewController {
             menus.append(debugAction)
         }
 
-        #if PLATFORM_TVOS
+        #if os(tvOS)
             transportBarCustomMenuItems = menus
         #endif
     }

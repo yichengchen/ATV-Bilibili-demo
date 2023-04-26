@@ -23,7 +23,7 @@ class SearchResultViewController: UIViewController {
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
         collectionView.delegate = self
-        #if PLATFORM_TVOS
+        #if os(tvOS)
             tabBarObservedScrollView = collectionView
         #endif
         view.addSubview(collectionView)

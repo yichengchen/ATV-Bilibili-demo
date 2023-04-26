@@ -9,14 +9,26 @@ import AVFoundation
 import CocoaLumberjackSwift
 import UIKit
 
+func isTvOS() -> Bool {
+    #if os(tvOS)
+        return true
+    #else
+        return false
+    #endif
+}
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         Logger.setup()
-        #if PLATFORM_TVOS
+        #if os(tvOS)
             AVInfoPanelCollectionViewThumbnailCellHook.start()
+        #else
+            UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.forEach { windowScene in
+                windowScene.sizeRestrictions?.minimumSize = CGSize(width: 1280, height: 720)
+            }
         #endif
         CookieHandler.shared.restoreCookies()
         BiliBiliUpnpDMR.shared.start()

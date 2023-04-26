@@ -126,7 +126,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
                 group.leave()
             }
         }
-        #if PLATFORM_TVOS
+        #if os(tvOS)
             group.notify(queue: .main) {
                 if metas.count > 0 {
                     self.playerItem?.navigationMarkerGroups = [AVNavigationMarkersGroup(title: nil, timedNavigationMarkers: metas)]
@@ -312,7 +312,7 @@ extension VideoPlayerViewController {
                             }
                             self.skipAction?.accessibilityLabel = clip.a11Tag
                         }
-                        #if PLATFORM_TVOS
+                        #if os(tvOS)
                             self.contextualActions = [self.skipAction].compactMap { $0 }
                         #endif
                         matched = true
@@ -320,7 +320,7 @@ extension VideoPlayerViewController {
                     }
                 }
                 if !matched {
-                    #if PLATFORM_TVOS
+                    #if os(tvOS)
                         self.contextualActions = []
                     #endif
                 }

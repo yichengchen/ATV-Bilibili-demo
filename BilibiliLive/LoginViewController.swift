@@ -58,22 +58,53 @@ class LoginViewController: UIViewController {
         leftContainerView.addSubview(stack)
         stack.snp.makeConstraints { make in
             make.center.equalToSuperview()
+            make.top.left.greaterThanOrEqualToSuperview().offset(20)
         }
 
         qrcodeImageView = UIImageView()
         stack.addArrangedSubview(qrcodeImageView)
         qrcodeImageView.snp.makeConstraints { make in
-            #if PLATFORM_TVOS
-                make.width.height.equalTo(540)
+            #if os(tvOS)
+                make.width.equalTo(540)
             #else
-                make.width.height.equalTo(300)
+                make.width.equalTo(300)
             #endif
+            make.width.equalTo(qrcodeImageView.snp.height)
         }
 
         let refreshButton = UIButton(type: .system)
         refreshButton.setTitle("重新生成二维码", for: .normal)
         refreshButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .headline)
         stack.addArrangedSubview(refreshButton)
+
+        let title = UILabel()
+        title.text = "账号登录"
+        title.textColor = UIColor.white
+        title.font = UIFont.preferredFont(forTextStyle: .title1)
+        view.addSubview(title)
+        title.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(120)
+            make.left.equalTo(separator).offset(100)
+        }
+
+        let desp = UILabel()
+        desp.numberOfLines = 0
+        desp.textColor = UIColor.white
+        desp.font = UIFont.preferredFont(forTextStyle: .headline)
+        desp.text = """
+        1 请打开BiliBili官方手机客户端扫码登录  2. 如果登录失败尝试点击重新生成二维码
+        """
+        view.addSubview(desp)
+        desp.snp.makeConstraints { make in
+            make.top.equalTo(title.snp.bottom).offset(50)
+            make.left.equalTo(title)
+            make.right.equalToSuperview().offset(-50)
+        }
+
+        if !isTvOS() {
+            title.textColor = UIColor.black
+            desp.textColor = UIColor.black
+        }
     }
 
     func generateQRCode(from string: String) -> UIImage? {
