@@ -21,16 +21,31 @@ extension FeedDisplayStyle {
 }
 
 class SettingsViewController: UIViewController {
-    @IBOutlet var collectionView: UICollectionView!
+    var collectionView: UICollectionView!
     var cellModels = [CellModel]()
-
-    static func create() -> SettingsViewController {
-        return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! SettingsViewController
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupView()
         setupData()
+    }
+
+    func setupView() {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                              heightDimension: .fractionalHeight(1.0))
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        let section = NSCollectionLayoutSection(group: group)
+        let layout = UICollectionViewCompositionalLayout(section: section)
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.register(SettingsSwitchCell.self, forCellWithReuseIdentifier: String(describing: SettingsSwitchCell.self))
+        view.addSubview(collectionView)
+        collectionView.snp.makeConstraints { make in
+            make.left.top.bottom.right.equalToSuperview()
+        }
     }
 
     func setupData() {
@@ -41,7 +56,7 @@ class SettingsViewController: UIViewController {
             self?.setupData()
         }
         cellModels.append(directlyVideo)
-        let cancelAction = UIAlertAction(title: nil, style: .cancel)
+        let cancelAction = UIAlertAction(title: "取消", style: .cancel)
         let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.danmuArea.title) { [weak self] in
             let alert = UIAlertController(title: "弹幕显示区域", message: "设置弹幕显示区域", preferredStyle: .actionSheet)
             for style in DanmuArea.allCases {
@@ -218,8 +233,35 @@ extension SettingsViewController: UICollectionViewDataSource {
 }
 
 class SettingsSwitchCell: UICollectionViewCell {
-    @IBOutlet var titleLabel: UILabel!
-    @IBOutlet var descLabel: UILabel!
+    let titleLabel = UILabel()
+    let descLabel = UILabel()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setup()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setup()
+    }
+
+    func setup() {
+        titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+        contentView.addSubview(titleLabel)
+        titleLabel.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.left.equalToSuperview().offset(20)
+        }
+
+        descLabel.textColor = UIColor.secondaryLabel
+        descLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+        contentView.addSubview(descLabel)
+        descLabel.snp.makeConstraints { make in
+            make.centerY.equalToSuperview()
+            make.right.equalToSuperview().offset(-20)
+        }
+    }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         if isFocused {

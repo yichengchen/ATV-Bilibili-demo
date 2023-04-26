@@ -51,7 +51,7 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         fav.tabBarItem.title = "收藏"
         vcs.append(fav)
 
-        let persionVC = PersonalViewController.create()
+        let persionVC = PersonalViewController()
         persionVC.extendedLayoutIncludesOpaqueBars = true
         persionVC.tabBarItem.title = "我的"
         vcs.append(persionVC)
