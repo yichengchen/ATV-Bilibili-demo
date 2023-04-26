@@ -40,7 +40,7 @@ class BLSettingLineCollectionViewCell: BLMotionCollectionViewCell {
             make.top.bottom.equalToSuperview().inset(8)
         }
         titleLabel.textAlignment = .left
-        titleLabel.font = UIFont.systemFont(ofSize: 40, weight: .regular)
+        titleLabel.font = UIFont.systemFont(ofSize: isTvOS() ? 40 : 20, weight: .regular)
         titleLabel.textColor = .black
     }
 

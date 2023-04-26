@@ -27,7 +27,7 @@ class CategoryViewController: UIViewController, BLTabBarContentVCProtocol {
         typeCollectionView.snp.makeConstraints { make in
             make.leading.bottom.equalToSuperview()
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.width.equalTo(500)
+            make.width.equalTo(isTvOS() ? 500 : 200)
         }
         typeCollectionView.dataSource = self
         typeCollectionView.delegate = self

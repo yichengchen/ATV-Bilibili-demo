@@ -168,6 +168,9 @@ extension FeedDisplayStyle {
     }
 
     var titleFont: UIFont {
+        if !isTvOS() {
+            return UIFont.systemFont(ofSize: 16, weight: .medium)
+        }
         switch self {
         case .large:
             return UIFont.preferredFont(forTextStyle: .headline)
@@ -179,6 +182,9 @@ extension FeedDisplayStyle {
     }
 
     var upFont: UIFont {
+        if !isTvOS() {
+            return UIFont.systemFont(ofSize: 14, weight: .medium)
+        }
         switch self {
         case .large:
             return UIFont.preferredFont(forTextStyle: .footnote)
