@@ -11,9 +11,9 @@ extension FeedDisplayStyle {
     var desp: String {
         switch self {
         case .large:
-            return "3行"
+            return "3个"
         case .normal:
-            return "4行"
+            return "4个"
         case .sideBar:
             return "-"
         }
@@ -35,7 +35,7 @@ class SettingsViewController: UIViewController {
 
     func setupData() {
         cellModels.removeAll()
-        let directlyVideo = CellModel(title: "直接进入视频", desp: Settings.direatlyEnterVideo ? "开" : "关") {
+        let directlyVideo = CellModel(title: "不显示详情页直接进入视频", desp: Settings.direatlyEnterVideo ? "开" : "关") {
             [weak self] in
             Settings.direatlyEnterVideo.toggle()
             self?.setupData()
@@ -56,7 +56,7 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(dmStyle)
 
-        let style = CellModel(title: "时间线显示模式", desp: Settings.displayStyle.desp) { [weak self] in
+        let style = CellModel(title: "视频每行显示个数", desp: Settings.displayStyle.desp) { [weak self] in
             let alert = UIAlertController(title: "显示模式", message: "重启app生效", preferredStyle: .actionSheet)
             for style in FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }) {
                 let action = UIAlertAction(title: style.desp, style: .default) { _ in
@@ -85,14 +85,14 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(relatedVideoLoadMode)
 
-        let hotWithoutCookie = CellModel(title: "热门匿名模式", desp: Settings.requestHotWithoutCookie ? "开" : "关") {
+        let hotWithoutCookie = CellModel(title: "热门个性化推荐", desp: Settings.requestHotWithoutCookie ? "关" : "开") {
             [weak self] in
             Settings.requestHotWithoutCookie.toggle()
             self?.setupData()
         }
         cellModels.append(hotWithoutCookie)
 
-        let continuePlay = CellModel(title: "继续播放", desp: Settings.continuePlay ? "开" : "关") {
+        let continuePlay = CellModel(title: "从上次退出的位置继续播放", desp: Settings.continuePlay ? "开" : "关") {
             [weak self] in
             Settings.continuePlay.toggle()
             self?.setupData()
