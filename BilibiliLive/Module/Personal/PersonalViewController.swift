@@ -110,6 +110,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
             let resultVC = SearchResultViewController()
             let searchVC = UISearchController(searchResultsController: resultVC)
             searchVC.searchResultsUpdater = resultVC
+            searchVC.delegate = resultVC
             self?.present(UISearchContainerViewController(searchController: searchVC), animated: true)
         }))
         cellModels.append(CellModel(title: "关注UP", contentVC: FollowUpsViewController()))

@@ -163,7 +163,7 @@ extension FeedDisplayStyle {
         case .large:
             return 516
         case .normal, .sideBar:
-            return 380
+            return isTvOS() ? 380 : 100
         }
     }
 

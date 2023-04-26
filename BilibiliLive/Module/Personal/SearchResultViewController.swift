@@ -43,11 +43,11 @@ class SearchResultViewController: UIViewController {
                     guard let self = self else { return }
                     currentSnapshot.deleteAllItems()
 
-                    let defaultHeight = NSCollectionLayoutDimension.fractionalWidth(Settings.displayStyle == .large ? 0.26 : 0.2)
+                    let defaultHeight = NSCollectionLayoutDimension.estimated(Settings.displayStyle.heightEstimated)
                     for section in searchResult.result {
                         switch section {
                         case let .video(data):
-                            let list = SearchList(title: "视频", height: defaultHeight, scrollingBehavior: .continuous)
+                            let list = SearchList(title: "视频", height: defaultHeight, scrollingBehavior: .none)
                             currentSnapshot.appendSections([list])
                             currentSnapshot.appendItems(data, toSection: list)
                         case let .bangumi(data):
@@ -55,7 +55,7 @@ class SearchResultViewController: UIViewController {
                             currentSnapshot.appendSections([list])
                             currentSnapshot.appendItems(data, toSection: list)
                         case let .movie(data):
-                            let list = SearchList(title: "影视", height: defaultHeight, scrollingBehavior: .none)
+                            let list = SearchList(title: "影视", height: defaultHeight, scrollingBehavior: .continuous)
                             currentSnapshot.appendSections([list])
                             currentSnapshot.appendItems(data, toSection: list)
                         case let .user(data):
@@ -89,7 +89,7 @@ extension SearchResultViewController {
                     let hSpacing: CGFloat = Settings.displayStyle == .large ? 35 : 30
                     item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: hSpacing, bottom: 0, trailing: hSpacing)
                     let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-                    group.edgeSpacing = .init(leading: .fixed(0), top: .fixed(40), trailing: .fixed(0), bottom: .fixed(-60))
+                    group.edgeSpacing = .init(leading: .fixed(0), top: .fixed(40), trailing: .fixed(0), bottom: isTvOS() ? .fixed(-60) : .fixed(-30))
                     section = NSCollectionLayoutSection(group: group)
                 } else {
                     let groupSize = NSCollectionLayoutSize(widthDimension: sectionIdentifier.width,
@@ -195,6 +195,12 @@ extension SearchResultViewController: UISearchResultsUpdating {
         if let text = searchController.searchBar.text {
             searchText = text
         }
+    }
+}
+
+extension SearchResultViewController: UISearchControllerDelegate {
+    func willDismissSearchController(_ searchController: UISearchController) {
+        presentingViewController?.dismiss(animated: true)
     }
 }
 

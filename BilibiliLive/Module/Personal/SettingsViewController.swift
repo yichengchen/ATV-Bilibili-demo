@@ -37,12 +37,14 @@ class SettingsViewController: UIViewController {
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(68))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = 20
         let layout = UICollectionViewCompositionalLayout(section: section)
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.dataSource = self
         collectionView.delegate = self
-        collectionView.register(SettingsSwitchCell.self, forCellWithReuseIdentifier: String(describing: SettingsSwitchCell.self))
+        collectionView.register(BLCardView.self, forCellWithReuseIdentifier: String(describing: BLCardView.self))
         collectionView.backgroundColor = .clear
+        collectionView.layer.masksToBounds = false
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { make in
             make.left.top.bottom.right.equalToSuperview()
@@ -225,52 +227,11 @@ extension SettingsViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SettingsSwitchCell.self), for: indexPath) as! SettingsSwitchCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: BLCardView.self), for: indexPath) as! BLCardView
+        cell.scaleFactor = 1
         let data = cellModels[indexPath.row]
         cell.titleLabel.text = data.title
         cell.descLabel.text = data.desp
         return cell
-    }
-}
-
-class SettingsSwitchCell: UICollectionViewCell {
-    let titleLabel = UILabel()
-    let descLabel = UILabel()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        setup()
-    }
-
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        setup()
-    }
-
-    func setup() {
-        titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-        contentView.addSubview(titleLabel)
-        titleLabel.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.left.equalToSuperview().offset(20)
-        }
-
-        descLabel.textColor = UIColor.secondaryLabel
-        descLabel.font = UIFont.preferredFont(forTextStyle: .headline)
-        contentView.addSubview(descLabel)
-        descLabel.snp.makeConstraints { make in
-            make.centerY.equalToSuperview()
-            make.right.equalToSuperview().offset(-20)
-        }
-    }
-
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        if isFocused {
-            titleLabel.textColor = UIColor.black
-            descLabel.textColor = UIColor.black
-        } else {
-            titleLabel.textColor = UIColor.white
-            descLabel.textColor = UIColor.white
-        }
     }
 }
