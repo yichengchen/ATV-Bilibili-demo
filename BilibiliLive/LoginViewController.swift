@@ -149,8 +149,8 @@ class LoginViewController: UIViewController {
 
     func didValidationSuccess() {
         qrcodeImageView.image = nil
-        let alert = UIAlertController()
-        alert.addAction(UIAlertAction(title: "Success", style: .default, handler: { [weak self] _ in
+        let alert = UIAlertController(title: "Success", message: nil, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { [weak self] _ in
             self?.dismiss(animated: true, completion: nil)
             AppDelegate.shared.showTabBar()
         }))
