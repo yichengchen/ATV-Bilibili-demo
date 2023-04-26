@@ -11,54 +11,60 @@ import UIKit
 
 class FollowsViewController: StandardVideoCollectionViewController<FeedData> {
     override func request(page: Int) async throws -> [FeedData] {
-        let json = try await WebRequest.requestJSON(url: "https://api.bilibili.com/x/web-feed/feed?ps=40&pn=\(page)")
-
-        let datas = json.arrayValue.map { data -> FeedData in
-            let timestamp = data["pubdate"].int
-            let date = DateFormatter.stringFor(timestamp: timestamp)
-            let bangumi = data["bangumi"]
-            if !bangumi.isEmpty {
-                let season = bangumi["season_id"].intValue
-                let owner = bangumi["title"].stringValue
-                let pic = bangumi["cover"].url!
-                let ep = bangumi["new_ep"]
-                let title = "第" + ep["index"].stringValue + "集 - " + ep["index_title"].stringValue
-                let episode = ep["episode_id"].intValue
-                return FeedData(title: title, cid: 0, aid: 0, isbangumi: true, season: season, episode: episode, ownerName: owner, pic: pic, avatar: nil, date: date)
-            }
-            let avid = data["id"].intValue
-            let archive = data["archive"]
-            let title = archive["title"].stringValue
-            let cid = archive["cid"].intValue
-            let owner = archive["owner"]["name"].stringValue
-            let avatar = archive["owner"]["face"].url
-            let pic = archive["pic"].url!
-            return FeedData(title: title, cid: cid, aid: avid, isbangumi: false, season: nil, episode: nil, ownerName: owner, pic: pic, avatar: avatar, date: date)
-        }
-        return datas
+        return try await WebRequest.requestFollowsFeed(page: page)
     }
 
     override func goDetail(with feed: FeedData) {
-        if !feed.isbangumi {
-            let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid)
+        if let bangumi = feed.bangumi {
+            let detailVC = VideoDetailViewController.create(epid: bangumi.new_ep.episode_id)
             detailVC.present(from: self)
-            return
         } else {
-            let detailVC = VideoDetailViewController.create(epid: feed.episode!)
+            let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid)
             detailVC.present(from: self)
         }
     }
 }
 
-struct FeedData: PlayableData {
-    let title: String
-    let cid: Int
-    let aid: Int
-    let isbangumi: Bool
-    let season: Int?
-    let episode: Int?
-    let ownerName: String
-    let pic: URL?
-    let avatar: URL?
-    let date: String?
+extension WebRequest {
+    static func requestFollowsFeed(page: Int) async throws -> [FeedData] {
+        return try await request(url: "https://api.bilibili.com/x/web-feed/feed", parameters: ["ps": 40, "pn": page])
+    }
+}
+
+struct FeedData: Decodable, PlayableData {
+    struct Bangumi: Decodable, Hashable {
+        let season_id: Int
+        let title: String
+        let cover: URL
+        struct EP: Decodable, Hashable {
+            let index: String
+            let index_title: String
+            let episode_id: Int
+        }
+
+        let new_ep: EP
+    }
+
+    struct Archive: Decodable, Hashable {
+        let title: String
+        let cid: Int
+        let owner: VideoOwner
+        let pic: URL
+    }
+
+    let id: Int
+    let pubdate: Int
+    let bangumi: Bangumi?
+    let archive: Archive?
+
+    // PlayableData
+    var cid: Int { 0 }
+    var aid: Int { id }
+
+    // DisplayData
+    var title: String { (archive != nil) ? archive!.title : bangumi!.title }
+    var ownerName: String { (archive != nil) ? archive!.owner.name : bangumi!.title }
+    var pic: URL? { (archive != nil) ? archive!.pic : bangumi!.cover }
+    var avatar: URL? { URL(string: archive?.owner.face ?? "") }
+    var date: String? { DateFormatter.stringFor(timestamp: pubdate) }
 }
