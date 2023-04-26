@@ -42,6 +42,7 @@ class SettingsViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(SettingsSwitchCell.self, forCellWithReuseIdentifier: String(describing: SettingsSwitchCell.self))
+        collectionView.backgroundColor = .clear
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { make in
             make.left.top.bottom.right.equalToSuperview()

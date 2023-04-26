@@ -50,8 +50,9 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         let leftPanel = UIView()
         view.addSubview(leftPanel)
         leftPanel.snp.makeConstraints { make in
-            make.left.top.bottom.equalToSuperview()
-            make.width.equalTo(500)
+            make.top.bottom.equalToSuperview()
+            make.left.equalTo(view.safeAreaLayoutGuide.snp.left)
+            make.width.equalTo(isTvOS() ? 500 : 300)
         }
 
         contentView = UIView()
@@ -64,12 +65,13 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         avatarImageView = UIImageView()
         leftPanel.addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { make in
-            make.left.equalTo(20)
+            make.left.equalToSuperview()
             make.top.equalTo(leftPanel.safeAreaLayoutGuide.snp.top)
             make.width.height.equalTo(100)
         }
 
         usernameLabel = UILabel()
+        usernameLabel.font = UIFont.preferredFont(forTextStyle: .headline)
         leftPanel.addSubview(usernameLabel)
         usernameLabel.snp.makeConstraints { make in
             make.centerY.equalTo(avatarImageView)
@@ -83,7 +85,6 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(60))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         let section = NSCollectionLayoutSection(group: group)
-        section.contentInsets = .init(top: 0, leading: 20, bottom: 0, trailing: 20)
         section.contentInsetsReference = .none
         section.interGroupSpacing = 16
         let layout = UICollectionViewCompositionalLayout(section: section)
@@ -91,10 +92,13 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         leftCollectionView.contentInset = .zero
         leftCollectionView.delegate = self
         leftCollectionView.dataSource = self
+        leftCollectionView.layer.masksToBounds = false
+        leftCollectionView.backgroundColor = .clear
         leftPanel.addSubview(leftCollectionView)
         leftCollectionView.snp.makeConstraints { make in
-            make.left.right.bottom.equalToSuperview()
+            make.left.bottom.equalToSuperview()
             make.top.equalTo(avatarImageView.snp.bottom).offset(40)
+            make.right.equalTo(-20)
         }
     }
 
