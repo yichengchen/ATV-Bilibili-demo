@@ -281,6 +281,7 @@ class CommonPlayerViewController: AVPlayerViewController {
             player?.seek(to: CMTime(seconds: Double(playerStartPos), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
         }
         player?.play()
+        ensureDanmuViewFront()
     }
 
     private func fetchDebugInfo() -> String {
