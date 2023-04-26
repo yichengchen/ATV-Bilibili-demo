@@ -45,19 +45,19 @@ class SearchResultViewController: UIViewController {
                     for section in searchResult.result {
                         switch section {
                         case let .video(data):
-                            let list = SearchList(title: "视频", height: defaultHeight)
+                            let list = SearchList(title: "视频", height: defaultHeight, scrollingBehavior: .continuous)
                             currentSnapshot.appendSections([list])
                             currentSnapshot.appendItems(data, toSection: list)
                         case let .bangumi(data):
-                            let list = SearchList(title: "番剧", height: defaultHeight)
+                            let list = SearchList(title: "番剧", height: defaultHeight, scrollingBehavior: .continuous)
                             currentSnapshot.appendSections([list])
                             currentSnapshot.appendItems(data, toSection: list)
                         case let .movie(data):
-                            let list = SearchList(title: "影视", height: defaultHeight)
+                            let list = SearchList(title: "影视", height: defaultHeight, scrollingBehavior: .none)
                             currentSnapshot.appendSections([list])
                             currentSnapshot.appendItems(data, toSection: list)
                         case let .user(data):
-                            let list = SearchList(title: "用户", height: .estimated(140))
+                            let list = SearchList(title: "用户", height: .estimated(140), scrollingBehavior: .continuous)
                             currentSnapshot.appendSections([list])
                             currentSnapshot.appendItems(data, toSection: list)
                         case .none:
@@ -75,20 +75,33 @@ extension SearchResultViewController {
     private func createLayout() -> UICollectionViewLayout {
         let sectionProvider = { [self]
             (sectionIndex: Int, layoutEnvironment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection? in
-                let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                      heightDimension: .fractionalHeight(1))
-
-                let item = NSCollectionLayoutItem(layoutSize: itemSize)
-                let hSpacing: CGFloat = Settings.displayStyle == .large ? 35 : 30
-                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: hSpacing, bottom: 0, trailing: hSpacing)
-
                 let sectionIdentifier = dataSource.snapshot().sectionIdentifiers[sectionIndex]
-                let groupSize = NSCollectionLayoutSize(widthDimension: sectionIdentifier.width,
-                                                       heightDimension: sectionIdentifier.height)
-                let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-                group.edgeSpacing = .init(leading: .fixed(0), top: .fixed(40), trailing: .fixed(0), bottom: .fixed(10))
-                let section = NSCollectionLayoutSection(group: group)
-                section.orthogonalScrollingBehavior = .continuous
+
+                let section: NSCollectionLayoutSection
+                if sectionIdentifier.scrollingBehavior == .none {
+                    let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                                           heightDimension: sectionIdentifier.height)
+                    let itemSize = NSCollectionLayoutSize(widthDimension: sectionIdentifier.width,
+                                                          heightDimension: .fractionalHeight(1))
+                    let item = NSCollectionLayoutItem(layoutSize: itemSize)
+                    let hSpacing: CGFloat = Settings.displayStyle == .large ? 35 : 30
+                    item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: hSpacing, bottom: 0, trailing: hSpacing)
+                    let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                    group.edgeSpacing = .init(leading: .fixed(0), top: .fixed(40), trailing: .fixed(0), bottom: .fixed(-60))
+                    section = NSCollectionLayoutSection(group: group)
+                } else {
+                    let groupSize = NSCollectionLayoutSize(widthDimension: sectionIdentifier.width,
+                                                           heightDimension: sectionIdentifier.height)
+                    let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                                          heightDimension: .fractionalHeight(1))
+                    let item = NSCollectionLayoutItem(layoutSize: itemSize)
+                    let hSpacing: CGFloat = Settings.displayStyle == .large ? 35 : 30
+                    item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: hSpacing, bottom: 0, trailing: hSpacing)
+                    let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                    group.edgeSpacing = .init(leading: .fixed(0), top: .fixed(40), trailing: .fixed(0), bottom: .fixed(0))
+                    section = NSCollectionLayoutSection(group: group)
+                    section.orthogonalScrollingBehavior = sectionIdentifier.scrollingBehavior
+                }
 
                 let titleSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                        heightDimension: .estimated(44))
@@ -290,4 +303,5 @@ struct SearchList: Hashable {
     let title: String
     let width = NSCollectionLayoutDimension.fractionalWidth(Settings.displayStyle.fractionalWidth)
     let height: NSCollectionLayoutDimension
+    let scrollingBehavior: UICollectionLayoutSectionOrthogonalScrollingBehavior
 }
