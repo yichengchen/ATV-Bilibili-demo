@@ -327,9 +327,10 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
-    @IBAction func actionCoin(_ sender: Any) {
+    @IBAction func actionCoin(_ sender: BLCustomButton) {
         guard didSentCoins < 2 else { return }
         let alert = UIAlertController(title: "投币个数", message: nil, preferredStyle: .actionSheet)
+        alert.popoverPresentationController?.sourceView = sender
         WebRequest.requestTodayCoins { todayCoins in
             alert.message = "今日已投(\(todayCoins / 10)/5)个币"
         }
@@ -361,12 +362,13 @@ class VideoDetailViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    @IBAction func actionFavorite(_ sender: Any) {
+    @IBAction func actionFavorite(_ sender: BLCustomButton) {
         Task {
             guard let favList = try? await WebRequest.requestFavVideosList() else {
                 return
             }
             let alert = UIAlertController(title: "收藏", message: nil, preferredStyle: .actionSheet)
+            alert.popoverPresentationController?.sourceView = sender
             let aid = aid
             for fav in favList {
                 alert.addAction(UIAlertAction(title: fav.title, style: .default) { [weak self] _ in

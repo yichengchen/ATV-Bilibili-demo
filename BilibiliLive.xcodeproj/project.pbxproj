@@ -48,7 +48,7 @@
 		49FB8EE929208EBE0045D5DE /* SidxParseUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */; };
 		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
 		AE2B41572914C02000BF2B0B /* Int.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41562914C02000BF2B0B /* Int.swift */; };
-		AE3BD3BC29F9040300A03D37 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B57357260F5F7400771ED5 /* Main.storyboard */; };
+		AE3BD3DC29F92D1400A03D37 /* BLCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3BD3DB29F92D1400A03D37 /* BLCardView.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
 		AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE7A3B1F290298BE006FEBB0 /* Colors.swift */; };
 		AEA5FDE2290F6E2600E7C0B2 /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEA5FDE1290F6E2600E7C0B2 /* String.swift */; };
@@ -139,6 +139,7 @@
 		49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidxParseUtil.swift; sourceTree = "<group>"; };
 		AE2B41542912706700BF2B0B /* SearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultViewController.swift; sourceTree = "<group>"; };
 		AE2B41562914C02000BF2B0B /* Int.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Int.swift; sourceTree = "<group>"; };
+		AE3BD3DB29F92D1400A03D37 /* BLCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLCardView.swift; sourceTree = "<group>"; };
 		AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteViewController.swift; sourceTree = "<group>"; };
 		AE7A3B1F290298BE006FEBB0 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		AEA5FDE1290F6E2600E7C0B2 /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
@@ -274,6 +275,7 @@
 				494742102905053E005D6885 /* BLMotionCollectionViewCell.swift */,
 				4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */,
 				490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */,
+				AE3BD3DB29F92D1400A03D37 /* BLCardView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -510,7 +512,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				49F918702931E473001D3EC3 /* NirvanaControl.xml in Resources */,
-				AE3BD3BC29F9040300A03D37 /* Main.storyboard in Resources */,
 				49F918722931E927001D3EC3 /* AvTransportScpd.xml in Resources */,
 				F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */,
 				49F9186E2931E3C9001D3EC3 /* DLNAInfo.xml in Resources */,
@@ -567,6 +568,7 @@
 				499C75EE29305A1E003160FB /* BiliBiliUpnpDMR.swift in Sources */,
 				4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */,
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
+				AE3BD3DC29F92D1400A03D37 /* BLCardView.swift in Sources */,
 				F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */,
 				490425F729AB54B200CDBC60 /* CategoryViewController.swift in Sources */,
 				4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */,

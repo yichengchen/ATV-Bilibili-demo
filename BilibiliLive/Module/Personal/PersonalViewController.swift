@@ -14,7 +14,7 @@ struct CellModel {
     let title: String
     var desp: String? = nil
     var contentVC: UIViewController? = nil
-    var action: (() -> Void)? = nil
+    var action: ((UICollectionViewCell?) -> Void)? = nil
 }
 
 class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
@@ -106,7 +106,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         let setting = CellModel(title: "设置", contentVC: SettingsViewController())
         cellModels.append(setting)
         cellModels.append(CellModel(title: "搜索", action: {
-            [weak self] in
+            [weak self] cell in
             let resultVC = SearchResultViewController()
             let searchVC = UISearchController(searchResultsController: resultVC)
             searchVC.searchResultsUpdater = resultVC
@@ -120,7 +120,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         cellModels.append(CellModel(title: "Anime1", contentVC: Anime1ViewController()))
 
         let logout = CellModel(title: "登出") {
-            [weak self] in
+            [weak self] cell in
             self?.actionLogout()
         }
         cellModels.append(logout)
@@ -175,7 +175,8 @@ extension PersonalViewController: UICollectionViewDelegate {
         if let vc = model.contentVC {
             setViewController(vc: vc)
         }
-        model.action?()
+        let cell = collectionView.cellForItem(at: indexPath)
+        model.action?(cell)
     }
 }
 
