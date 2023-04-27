@@ -39,15 +39,26 @@ class BLCardView: BLMotionCollectionViewCell {
         }
     }
 
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        super.didUpdateFocus(in: context, with: coordinator)
-        selectedWhiteView.isHidden = !isFocused
-        if isFocused {
+    func updateView() {
+        selectedWhiteView.isHidden = !(isFocused || isSelected)
+        if !selectedWhiteView.isHidden {
             titleLabel.textColor = UIColor.black
             descLabel.textColor = UIColor.black
         } else {
             titleLabel.textColor = UIColor.white
             descLabel.textColor = UIColor.secondaryLabel
+        }
+    }
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        updateView()
+    }
+
+    override var isSelected: Bool {
+        didSet {
+            print(description + isSelected.description)
+            updateView()
         }
     }
 }
