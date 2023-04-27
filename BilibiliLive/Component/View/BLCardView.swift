@@ -37,10 +37,15 @@ class BLCardView: BLMotionCollectionViewCell {
             make.centerY.equalToSuperview()
             make.right.equalToSuperview().offset(-20)
         }
+
+        #if os(iOS)
+            let pointerInteraction = UIPointerInteraction(delegate: self)
+            addInteraction(pointerInteraction)
+        #endif
     }
 
-    func updateView() {
-        selectedWhiteView.isHidden = !(isFocused || isSelected)
+    func updateView(focused: Bool) {
+        selectedWhiteView.isHidden = !focused
         if !selectedWhiteView.isHidden {
             titleLabel.textColor = UIColor.black
             descLabel.textColor = UIColor.black
@@ -52,13 +57,22 @@ class BLCardView: BLMotionCollectionViewCell {
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
-        updateView()
-    }
-
-    override var isSelected: Bool {
-        didSet {
-            print(description + isSelected.description)
-            updateView()
-        }
+        updateView(focused: isFocused)
     }
 }
+
+#if os(iOS)
+    extension BLCardView: UIPointerInteractionDelegate {
+        func pointerInteraction(_ interaction: UIPointerInteraction, styleFor region: UIPointerRegion) -> UIPointerStyle? {
+            return .system()
+        }
+
+        func pointerInteraction(_ interaction: UIPointerInteraction, willEnter region: UIPointerRegion, animator: UIPointerInteractionAnimating) {
+            updateView(focused: true)
+        }
+
+        func pointerInteraction(_ interaction: UIPointerInteraction, willExit region: UIPointerRegion, animator: UIPointerInteractionAnimating) {
+            updateView(focused: false)
+        }
+    }
+#endif
