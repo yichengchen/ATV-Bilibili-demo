@@ -16,44 +16,11 @@ import SnapKit
 
 class VideoDetailViewController: UIViewController {
     private var loadingView = UIActivityIndicatorView()
-    @IBOutlet var backgroundImageView: UIImageView!
-    @IBOutlet var effectContainerView: UIVisualEffectView!
-
-    @IBOutlet var titleLabel: UILabel!
-
-    @IBOutlet var upButton: BLCustomTextButton!
-    @IBOutlet var followButton: BLCustomButton!
-    @IBOutlet var coverImageView: UIImageView!
-    @IBOutlet var playButton: BLCustomButton!
-    @IBOutlet var likeButton: BLCustomButton!
-    @IBOutlet var coinButton: BLCustomButton!
-    @IBOutlet var noteView: NoteDetailView!
-    @IBOutlet var dislikeButton: BLCustomButton!
-
-    @IBOutlet var actionButtonSpaceView: UIView!
-    @IBOutlet var durationLabel: UILabel!
-    @IBOutlet var playCountLabel: UILabel!
-    @IBOutlet var danmakuLabel: UILabel!
-    @IBOutlet var uploadTimeLabel: UILabel!
-    @IBOutlet var bvidLabel: UILabel!
-    @IBOutlet var followersLabel: UILabel!
-    @IBOutlet var avatarImageView: UIImageView!
-    @IBOutlet var favButton: BLCustomButton!
-    @IBOutlet var pageCollectionView: UICollectionView!
-    @IBOutlet var recommandCollectionView: UICollectionView!
-    @IBOutlet var replysCollectionView: UICollectionView!
-    @IBOutlet var ugcCollectionView: UICollectionView!
-
-    @IBOutlet var pageView: UIView!
-
-    @IBOutlet var ugcLabel: UILabel!
-    @IBOutlet var ugcView: UIView!
     var epid = 0
     var seasonId = 0
     var aid = 0
     var cid = 0
     private var data: VideoDetail?
-    @IBOutlet var scrollView: UIScrollView!
     private var didSentCoins = 0 {
         didSet {
             if didSentCoins > 0 {
@@ -72,7 +39,7 @@ class VideoDetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupViews()
+        setupUI()
         Task { await fetchData() }
 
         pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: BLTextOnlyCollectionViewCell.self))
@@ -112,7 +79,387 @@ class VideoDetailViewController: UIViewController {
         return playButton
     }
 
-    func setupViews() {}
+    private lazy var backgroundImageView = UIImageView()
+    private lazy var titleLabel = UILabel()
+    private lazy var coverImageView = UIImageView()
+    private lazy var avatarImageView = UIImageView()
+    private lazy var upButton = BLCustomTextButton()
+    private lazy var followButton = BLCustomButton()
+    private lazy var followersLabel = UILabel()
+    private lazy var imageView1 = UIImageView()
+    private lazy var durationLabel = UILabel()
+    private lazy var viewTime = UIView()
+    private lazy var stackView2 = UIStackView()
+    private lazy var noteView = NoteDetailView()
+    private lazy var imageView2 = UIImageView()
+    private lazy var playCountLabel = UILabel()
+    private lazy var viewPlayCount = UIView()
+    private lazy var imageView3 = UIImageView()
+    private lazy var danmakuLabel = UILabel()
+    private lazy var viewReplys = UIView()
+    private lazy var uploadTimeLabel = UILabel()
+    private lazy var bvidLabel = UILabel()
+    private lazy var stackView3 = UIStackView()
+    private lazy var 介绍页 = UIView()
+    private lazy var 交互选项 = UIStackView()
+    private lazy var pageCollectionViewLayout = UICollectionViewFlowLayout()
+    private lazy var pageCollectionView = UICollectionView(frame: CGRect(), collectionViewLayout: pageCollectionViewLayout)
+    private lazy var label1 = UILabel()
+    private lazy var pageView = UIView()
+    private lazy var ugcCollectionViewLayout = UICollectionViewFlowLayout()
+    private lazy var ugcCollectionView = UICollectionView(frame: CGRect(), collectionViewLayout: ugcCollectionViewLayout)
+    private lazy var ugcLabel = UILabel()
+    private lazy var ugcView = UIView()
+    private lazy var recommandCollectionViewLayout = UICollectionViewFlowLayout()
+    private lazy var recommandCollectionView = UICollectionView(frame: CGRect(), collectionViewLayout: recommandCollectionViewLayout)
+    private lazy var label2 = UILabel()
+    private lazy var viewRelatedVideo = UIView()
+    private lazy var replysCollectionViewLayout = UICollectionViewFlowLayout()
+    private lazy var replysCollectionView = UICollectionView(frame: CGRect(), collectionViewLayout: replysCollectionViewLayout)
+    private lazy var label3 = UILabel()
+    private lazy var viewComments = UIView()
+    private lazy var mainStack = UIStackView()
+    private lazy var scrollView = UIScrollView()
+    private lazy var effectContainerView = UIVisualEffectView()
+    let playButton = BLCustomButton()
+    let likeButton = BLCustomButton()
+    let coinButton = BLCustomButton()
+    let favButton = BLCustomButton()
+    let dislikeButton = BLCustomButton()
+    let actionButtonSpaceView = UIView()
+
+    func setupUI() {
+        backgroundImageView.contentMode = .scaleAspectFit
+        view.addSubview(backgroundImageView)
+        backgroundImageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        effectContainerView.translatesAutoresizingMaskIntoConstraints = false
+        effectContainerView.effect = UIBlurEffect(style: .regular)
+        effectContainerView.contentView.clipsToBounds = true
+        effectContainerView.contentView.contentMode = .center
+        view.addSubview(effectContainerView)
+        effectContainerView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        effectContainerView.contentView.addSubview(scrollView)
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        mainStack.axis = .vertical
+        mainStack.alignment = .fill
+        mainStack.distribution = .fill
+        scrollView.addSubview(mainStack)
+        mainStack.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        mainStack.addArrangedSubview(介绍页)
+
+        titleLabel.contentMode = .left
+        titleLabel.font = UIFont.preferredFont(forTextStyle: .title2)
+        titleLabel.numberOfLines = 2
+        介绍页.addSubview(titleLabel)
+        titleLabel.snp.makeConstraints { make in
+            make.left.right.top.equalToSuperview()
+        }
+
+        介绍页.addSubview(coverImageView)
+        coverImageView.snp.makeConstraints { make in
+            make.right.bottom.equalToSuperview()
+            make.top.equalTo(titleLabel.snp.bottom).offset(20)
+            make.height.equalTo(350)
+            make.width.equalTo(622)
+        }
+
+        stackView2.alignment = .center
+        stackView2.distribution = .equalSpacing
+        stackView2.spacing = 30
+        介绍页.addSubview(stackView2)
+        stackView2.snp.makeConstraints { make in
+            make.left.equalToSuperview()
+            make.height.equalTo(60)
+            make.top.equalTo(titleLabel.snp.bottom).offset(20)
+        }
+
+        stackView3.spacing = 30
+        介绍页.addSubview(stackView3)
+        stackView3.snp.makeConstraints { make in
+            make.top.equalTo(stackView2.snp.bottom).offset(24)
+            make.left.equalToSuperview()
+        }
+
+        noteView.backgroundColor = UIColor(white: 0, alpha: 0)
+        介绍页.addSubview(noteView)
+        noteView.snp.makeConstraints { make in
+            make.top.equalTo(stackView3.snp.bottom).offset(10)
+            make.bottom.equalTo(-40)
+            make.left.right.equalToSuperview()
+        }
+
+        viewPlayCount.addSubview(imageView2)
+        viewPlayCount.addSubview(playCountLabel)
+        viewPlayCount.backgroundColor = UIColor(white: 0, alpha: 0)
+        viewPlayCount.translatesAutoresizingMaskIntoConstraints = false
+        stackView3.addArrangedSubview(viewPlayCount)
+
+        bvidLabel.contentMode = .left
+        bvidLabel.font = UIFont(name: "HelveticaNeue", size: 28)
+        bvidLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        viewReplys.addSubview(imageView3)
+        danmakuLabel.contentMode = .left
+        danmakuLabel.font = UIFont.systemFont(ofSize: 28)
+        danmakuLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        viewReplys.addSubview(danmakuLabel)
+        viewReplys.backgroundColor = UIColor(white: 0, alpha: 0)
+        viewReplys.translatesAutoresizingMaskIntoConstraints = false
+        stackView3.addArrangedSubview(viewReplys)
+
+        uploadTimeLabel.contentMode = .left
+        uploadTimeLabel.font = UIFont(name: "HelveticaNeue", size: 28)
+        uploadTimeLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        stackView3.addArrangedSubview(uploadTimeLabel)
+
+        imageView3.clipsToBounds = true
+        imageView3.contentMode = .scaleAspectFit
+        imageView3.image = UIImage(systemName: "list.bullet.rectangle")
+
+        playCountLabel.contentMode = .left
+        playCountLabel.font = UIFont.systemFont(ofSize: 28)
+        playCountLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+
+        imageView2.clipsToBounds = true
+        imageView2.contentMode = .scaleAspectFit
+        imageView2.image = UIImage(systemName: "play.square")
+
+        stackView2.addArrangedSubview(avatarImageView)
+        stackView2.addArrangedSubview(upButton)
+        stackView2.addArrangedSubview(followButton)
+
+        viewTime.addSubview(imageView1)
+        viewTime.addSubview(durationLabel)
+
+        viewTime.backgroundColor = UIColor(white: 0, alpha: 0)
+        viewTime.translatesAutoresizingMaskIntoConstraints = false
+
+        durationLabel.contentMode = .left
+        durationLabel.font = UIFont.systemFont(ofSize: 28)
+        durationLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+
+        imageView1.clipsToBounds = true
+        imageView1.contentMode = .scaleAspectFit
+        imageView1.image = UIImage(systemName: "clock.fill")
+
+        followersLabel.contentMode = .left
+        followersLabel.font = UIFont(name: "HelveticaNeue", size: 28)
+        followersLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+
+        followButton.backgroundColor = UIColor(white: 0, alpha: 0)
+        followButton.tintColor = UIColor(named: "bgColor")
+        followButton.translatesAutoresizingMaskIntoConstraints = false
+
+        followButton.setValue(UIImage(named: "heart"), forKeyPath: "image")
+        followButton.setValue(UIImage(named: "heart.fill"), forKeyPath: "onImage")
+
+        upButton.backgroundColor = UIColor(white: 0, alpha: 0)
+        upButton.setContentCompressionResistancePriority(.required, for: .vertical)
+        upButton.tintColor = UIColor(named: "bgColor")
+
+        upButton.setValue("up", forKeyPath: "title")
+
+        avatarImageView.clipsToBounds = true
+        avatarImageView.contentMode = .scaleAspectFit
+        avatarImageView.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+
+        交互选项.spacing = 20
+        交互选项.translatesAutoresizingMaskIntoConstraints = false
+        mainStack.addArrangedSubview(交互选项)
+
+        var space = UIView()
+        space.backgroundColor = .clear
+        交互选项.addArrangedSubview(space)
+        space.snp.makeConstraints { make in
+            make.width.equalTo(60)
+        }
+
+        playButton.image = UIImage(systemName: "play")
+        playButton.highLightImage = UIImage(systemName: "play.fill")
+        playButton.backgroundColor = UIColor(white: 0, alpha: 0)
+        playButton.tintColor = UIColor(named: "bgColor")
+        playButton.title = "播放"
+        playButton.titleColor = UIColor.label
+        playButton.addTarget(self, action: #selector(actionPlay(_:)), for: .primaryActionTriggered)
+        交互选项.addArrangedSubview(playButton)
+        playButton.snp.makeConstraints { make in
+            make.width.equalTo(160)
+        }
+
+        likeButton.backgroundColor = UIColor(white: 0, alpha: 0)
+        likeButton.tintColor = UIColor(named: "bgColor")
+        likeButton.translatesAutoresizingMaskIntoConstraints = false
+        likeButton.setValue("点赞", forKeyPath: "title")
+        likeButton.setValue(UIColor(named: "titleColor"), forKeyPath: "titleColor")
+        likeButton.setValue(UIImage(named: "hand.thumbsup"), forKeyPath: "image")
+        交互选项.addArrangedSubview(likeButton)
+        likeButton.snp.makeConstraints { make in
+            make.width.equalTo(playButton)
+        }
+
+        coinButton.backgroundColor = UIColor(white: 0, alpha: 0)
+        coinButton.tintColor = UIColor(named: "bgColor")
+        coinButton.translatesAutoresizingMaskIntoConstraints = false
+        coinButton.setValue("投币", forKeyPath: "title")
+        coinButton.setValue(UIColor(named: "titleColor"), forKeyPath: "titleColor")
+        coinButton.setValue(UIImage(named: "bitcoinsign.circle"), forKeyPath: "image")
+        交互选项.addArrangedSubview(coinButton)
+        coinButton.snp.makeConstraints { make in
+            make.width.equalTo(playButton)
+        }
+
+        favButton.backgroundColor = UIColor(white: 0, alpha: 0)
+        favButton.tintColor = UIColor(named: "bgColor")
+        favButton.translatesAutoresizingMaskIntoConstraints = false
+
+        favButton.setValue("收藏", forKeyPath: "title")
+        favButton.setValue(UIColor(named: "titleColor"), forKeyPath: "titleColor")
+        favButton.setValue(UIImage(named: "star"), forKeyPath: "image")
+        交互选项.addArrangedSubview(favButton)
+        favButton.snp.makeConstraints { make in
+            make.width.equalTo(playButton)
+        }
+
+        dislikeButton.backgroundColor = UIColor(white: 0, alpha: 0)
+        dislikeButton.tintColor = UIColor(named: "bgColor")
+        dislikeButton.translatesAutoresizingMaskIntoConstraints = false
+        dislikeButton.setValue("不喜欢", forKeyPath: "title")
+        dislikeButton.setValue(UIColor(named: "titleColor"), forKeyPath: "titleColor")
+        dislikeButton.setValue(UIImage(named: "hand.thumbsdown"), forKeyPath: "image")
+        交互选项.addArrangedSubview(dislikeButton)
+        dislikeButton.snp.makeConstraints { make in
+            make.width.equalTo(playButton)
+        }
+
+        actionButtonSpaceView.backgroundColor = .clear
+        交互选项.addArrangedSubview(actionButtonSpaceView)
+
+        space = UIView()
+        mainStack.addArrangedSubview(space)
+        space.snp.makeConstraints { make in
+            make.height.equalTo(20)
+        }
+
+        pageView.backgroundColor = UIColor(white: 0, alpha: 0)
+        pageView.translatesAutoresizingMaskIntoConstraints = false
+        mainStack.addArrangedSubview(pageView)
+
+        label1.contentMode = .left
+        label1.font = UIFont.preferredFont(forTextStyle: .title3)
+        label1.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        pageView.addSubview(label1)
+        label1.snp.makeConstraints { make in
+            make.top.equalTo(40)
+        }
+
+        pageCollectionView.delegate = self
+        pageCollectionView.dataSource = self
+        pageCollectionViewLayout.footerReferenceSize = CGSize(width: 0, height: 0)
+        pageCollectionViewLayout.headerReferenceSize = CGSize(width: 0, height: 0)
+        pageCollectionViewLayout.itemSize = CGSize(width: 350, height: 170)
+        pageView.addSubview(pageCollectionView)
+        pageCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(label1.snp.bottom).offset(30)
+            make.height.equalTo(90)
+            make.bottom.equalTo(-20)
+            make.left.right.equalToSuperview()
+        }
+
+        ugcView.backgroundColor = UIColor(white: 0, alpha: 0)
+        ugcView.translatesAutoresizingMaskIntoConstraints = false
+        mainStack.addArrangedSubview(ugcView)
+
+        ugcLabel.contentMode = .left
+        ugcLabel.font = UIFont.preferredFont(forTextStyle: .title3)
+        ugcLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        ugcView.addSubview(ugcLabel)
+        ugcView.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+        }
+
+        ugcCollectionView.delegate = self
+        ugcCollectionView.dataSource = self
+        ugcCollectionView.backgroundColor = UIColor(white: 0, alpha: 0)
+        ugcCollectionView.clipsToBounds = true
+        ugcCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        ugcCollectionViewLayout.footerReferenceSize = CGSize(width: 0, height: 0)
+        ugcCollectionViewLayout.headerReferenceSize = CGSize(width: 0, height: 0)
+        ugcCollectionViewLayout.itemSize = CGSize(width: 361, height: 274)
+        ugcView.addSubview(ugcCollectionView)
+        ugcCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(ugcLabel.snp.bottom)
+            make.left.right.bottom.equalToSuperview()
+            make.height.equalTo(320)
+        }
+
+        viewRelatedVideo.backgroundColor = UIColor(white: 0, alpha: 0)
+        viewRelatedVideo.translatesAutoresizingMaskIntoConstraints = false
+        mainStack.addArrangedSubview(viewRelatedVideo)
+
+        label2.contentMode = .left
+        label2.font = UIFont.preferredFont(forTextStyle: .title3)
+        label2.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        viewRelatedVideo.addSubview(label2)
+        label2.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+        }
+
+        recommandCollectionView.delegate = self
+        recommandCollectionView.dataSource = self
+        recommandCollectionView.backgroundColor = UIColor(white: 0, alpha: 0)
+        recommandCollectionView.clipsToBounds = true
+        recommandCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        recommandCollectionViewLayout.footerReferenceSize = CGSize(width: 0, height: 0)
+        recommandCollectionViewLayout.headerReferenceSize = CGSize(width: 0, height: 0)
+        recommandCollectionViewLayout.itemSize = CGSize(width: 361, height: 274)
+        viewRelatedVideo.addSubview(recommandCollectionView)
+        recommandCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(label2.snp.bottom)
+            make.height.equalTo(300)
+            make.left.right.bottom.equalToSuperview()
+        }
+
+        viewComments.backgroundColor = UIColor(white: 0, alpha: 0)
+        viewComments.translatesAutoresizingMaskIntoConstraints = false
+        mainStack.addArrangedSubview(viewComments)
+
+        label3.contentMode = .left
+        label3.font = UIFont.preferredFont(forTextStyle: .title3)
+        label3.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        viewComments.addSubview(label3)
+        label3.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+        }
+
+        replysCollectionView.delegate = self
+        replysCollectionView.dataSource = self
+        replysCollectionView.backgroundColor = UIColor(white: 0, alpha: 0)
+        replysCollectionView.clipsToBounds = true
+        replysCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        replysCollectionView.register(ReplyCell.self, forCellWithReuseIdentifier: String(describing: ReplyCell.self))
+        replysCollectionViewLayout.footerReferenceSize = CGSize(width: 0, height: 0)
+        replysCollectionViewLayout.headerReferenceSize = CGSize(width: 0, height: 0)
+        replysCollectionViewLayout.itemSize = CGSize(width: 582, height: 360)
+        viewComments.addSubview(replysCollectionView)
+        replysCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(label3.snp.bottom).offset(20)
+            make.height.equalTo(300)
+            make.left.right.bottom.equalToSuperview()
+        }
+    }
 
     private func setupLoading() {
         effectContainerView.isHidden = true
@@ -270,20 +617,20 @@ class VideoDetailViewController: UIViewController {
         recommandCollectionView.reloadData()
     }
 
-    @IBAction func actionShowUpSpace(_ sender: Any) {
+    @objc func actionShowUpSpace(_ sender: Any) {
         let upSpaceVC = UpSpaceViewController()
         upSpaceVC.mid = data?.View.owner.mid
         present(upSpaceVC, animated: true)
     }
 
-    @IBAction func actionFollow(_ sender: Any) {
+    @objc func actionFollow(_ sender: Any) {
         followButton.isOn.toggle()
         if let mid = data?.View.owner.mid {
             WebRequest.follow(mid: mid, follow: followButton.isOn)
         }
     }
 
-    @IBAction func actionPlay(_ sender: Any) {
+    @objc func actionPlay(_ sender: Any) {
         let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, isBangumi: isBangumi))
         player.data = data
         if pages.count > 0, let index = pages.firstIndex(where: { $0.cid == cid }) {
@@ -296,7 +643,7 @@ class VideoDetailViewController: UIViewController {
         present(player, animated: true, completion: nil)
     }
 
-    @IBAction func actionLike(_ sender: Any) {
+    @objc func actionLike(_ sender: Any) {
         Task {
             if likeButton.isOn {
                 likeButton.title? -= 1
@@ -346,7 +693,7 @@ class VideoDetailViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    @IBAction func actionFavorite(_ sender: BLCustomButton) {
+    @objc func actionFavorite(_ sender: BLCustomButton) {
         Task {
             guard let favList = try? await WebRequest.requestFavVideosList() else {
                 return
@@ -366,7 +713,7 @@ class VideoDetailViewController: UIViewController {
         }
     }
 
-    @IBAction func actionDislike(_ sender: Any) {
+    @objc func actionDislike(_ sender: Any) {
         dislikeButton.isOn.toggle()
         ApiRequest.requestDislike(aid: aid, dislike: dislikeButton.isOn)
     }
@@ -500,10 +847,32 @@ extension VideoDetailViewController {
     }
 }
 
-class ReplyCell: UICollectionViewCell {
-    @IBOutlet var avatarImageView: UIImageView!
-    @IBOutlet var userNameLabel: UILabel!
-    @IBOutlet var contenLabel: UILabel!
+class ReplyCell: BLMotionCollectionViewCell {
+    let avatarImageView = UIImageView()
+    let userNameLabel = UILabel()
+    let contenLabel = UILabel()
+
+    override func setup() {
+        super.setup()
+        contentView.addSubview(avatarImageView)
+        avatarImageView.snp.makeConstraints { make in
+            make.width.height.equalTo(50)
+            make.left.top.equalTo(20)
+        }
+
+        contentView.addSubview(userNameLabel)
+        userNameLabel.snp.makeConstraints { make in
+            make.centerY.equalTo(avatarImageView)
+        }
+
+        contentView.addSubview(contenLabel)
+        contenLabel.snp.makeConstraints { make in
+            make.top.equalTo(avatarImageView.snp.bottom)
+            make.left.equalTo(20)
+            make.right.equalTo(-20)
+            make.bottom.equalToSuperview()
+        }
+    }
 
     func config(replay: Replys.Reply) {
         avatarImageView.kf.setImage(with: URL(string: replay.member.avatar), options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
