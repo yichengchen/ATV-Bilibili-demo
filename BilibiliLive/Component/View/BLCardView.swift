@@ -16,7 +16,6 @@ class BLCardView: BLMotionCollectionViewCell {
         super.setup()
 
         selectedWhiteView.backgroundColor = UIColor.white
-        selectedWhiteView.isHidden = !isFocused
         selectedWhiteView.layer.cornerRadius = 10
         contentView.addSubview(selectedWhiteView)
         selectedWhiteView.snp.makeConstraints { make in
@@ -30,13 +29,14 @@ class BLCardView: BLMotionCollectionViewCell {
             make.left.equalToSuperview().offset(20)
         }
 
-        descLabel.textColor = UIColor.secondaryLabel
         descLabel.font = UIFont.preferredFont(forTextStyle: .headline)
         contentView.addSubview(descLabel)
         descLabel.snp.makeConstraints { make in
             make.centerY.equalToSuperview()
             make.right.equalToSuperview().offset(-20)
         }
+
+        updateView(focused: false)
 
         #if os(iOS)
             let pointerInteraction = UIPointerInteraction(delegate: self)
@@ -46,11 +46,11 @@ class BLCardView: BLMotionCollectionViewCell {
 
     func updateView(focused: Bool) {
         selectedWhiteView.isHidden = !focused
-        if !selectedWhiteView.isHidden {
+        if focused {
             titleLabel.textColor = UIColor.black
             descLabel.textColor = UIColor.black
         } else {
-            titleLabel.textColor = UIColor.white
+            titleLabel.textColor = UIColor.label
             descLabel.textColor = UIColor.secondaryLabel
         }
     }
