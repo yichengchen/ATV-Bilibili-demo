@@ -27,7 +27,7 @@ enum WebRequest {
         static let fav = "https://api.bilibili.com/x/v3/fav/resource/list"
         static let favList = "https://api.bilibili.com/x/v3/fav/folder/created/list-all"
         static let reportHistory = "https://api.bilibili.com/x/v2/history/report"
-        static let upSpace = "https://api.bilibili.com/x/space/arc/search"
+        static let upSpace = "https://api.bilibili.com/x/space/wbi/arc/search"
         static let like = "https://api.bilibili.com/x/web-interface/archive/like"
         static let likeStatus = "https://api.bilibili.com/x/web-interface/archive/has/like"
         static let coin = "https://api.bilibili.com/x/web-interface/coin/add"
@@ -69,6 +69,8 @@ enum WebRequest {
             session = NoCookieSession.session
             session.sessionConfiguration.httpShouldSetCookies = false
         }
+        session.sessionConfiguration.timeoutIntervalForResource = 10
+        session.sessionConfiguration.timeoutIntervalForRequest = 10
         session.request(url,
                         method: method,
                         parameters: parameters,

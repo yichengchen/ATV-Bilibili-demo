@@ -16,6 +16,7 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
     let collectionVC = FeedCollectionViewController()
     var lastReloadDate = Date()
     var reloadInterval: TimeInterval = 60 * 60
+    var reloading = false
     private var page = 0
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
         return [collectionVC.collectionView]
@@ -66,6 +67,11 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
     }
 
     func reallyReloadData() async {
+        if reloading { return }
+        reloading = true
+        defer {
+            reloading = false
+        }
         lastReloadDate = Date()
         page = 1
         do {

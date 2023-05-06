@@ -18,7 +18,7 @@ class BiliBiliUpnpDMR: NSObject {
     private var httpServer = HttpServer()
     private var connectedSockets = [GCDAsyncSocket]()
     @MainActor private var sessions = Set<NVASession>()
-    private var udpStarted = false
+    private var started = false
     private var ip: String?
 
     private lazy var serverInfo: String = {
@@ -53,7 +53,7 @@ class BiliBiliUpnpDMR: NSObject {
 
     override private init() { super.init() }
     func start() {
-        startUdpIfNeed()
+        startIfNeed()
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
 
@@ -128,7 +128,7 @@ class BiliBiliUpnpDMR: NSObject {
     func stop() {
         udp?.close()
         httpServer.stop()
-        udpStarted = false
+        started = false
         Logger.info("dmr stopped")
     }
 
@@ -138,13 +138,15 @@ class BiliBiliUpnpDMR: NSObject {
 
     @objc func willEnterForeground() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.startUdpIfNeed()
+            self.startIfNeed()
         }
     }
 
-    private func startUdpIfNeed() {
+    private func startIfNeed() {
+        stop()
+        guard Settings.enableDLNA else { return }
         ip = getIPAddress()
-        if !udpStarted {
+        if !started {
             do {
                 udp = GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
                 try udp.enableBroadcast(true)
@@ -152,9 +154,10 @@ class BiliBiliUpnpDMR: NSObject {
                 try udp.joinMulticastGroup("239.255.255.250")
                 try udp.beginReceiving()
                 try httpServer.start(9958)
-                udpStarted = true
+                started = true
                 Logger.info("dmr started")
             } catch let err {
+                started = false
                 Logger.warn("dmr start fail", err.localizedDescription)
             }
         }

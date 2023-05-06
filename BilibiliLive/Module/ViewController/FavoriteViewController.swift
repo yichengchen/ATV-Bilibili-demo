@@ -14,6 +14,7 @@ class FavoriteViewController: UIViewController {
     var dataSource: UICollectionViewDiffableDataSource<FavListData, FavData>!
     var currentSnapshot: NSDiffableDataSourceSnapshot<FavListData, FavData>!
     static let titleElementKind = "titleElementKind"
+    var reloading = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,6 +39,11 @@ class FavoriteViewController: UIViewController {
 
 extension FavoriteViewController: BLTabBarContentVCProtocol {
     func reloadData() {
+        if reloading { return }
+        reloading = true
+        defer {
+            reloading = false
+        }
         Task {
             guard let favList = try? await WebRequest.requestFavVideosList() else {
                 return
