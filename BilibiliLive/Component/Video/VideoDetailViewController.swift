@@ -86,20 +86,15 @@ class VideoDetailViewController: UIViewController {
     private lazy var upButton = BLCustomTextButton()
     private lazy var followButton = BLCustomButton()
     private lazy var followersLabel = UILabel()
-    private lazy var imageView1 = UIImageView()
-    private lazy var durationLabel = UILabel()
-    private lazy var viewTime = UIView()
-    private lazy var stackView2 = UIStackView()
+    private lazy var durationLabel = IconAndTextView()
+    private lazy var baseInfoStackView = UIStackView()
     private lazy var noteView = NoteDetailView()
-    private lazy var imageView2 = UIImageView()
-    private lazy var playCountLabel = UILabel()
-    private lazy var viewPlayCount = UIView()
-    private lazy var imageView3 = UIImageView()
-    private lazy var danmakuLabel = UILabel()
+    private lazy var playCountLabel = IconAndTextView()
+    private lazy var danmakuLabel = IconAndTextView()
     private lazy var viewReplys = UIView()
     private lazy var uploadTimeLabel = UILabel()
     private lazy var bvidLabel = UILabel()
-    private lazy var stackView3 = UIStackView()
+    private lazy var videoDetailInfoStackView = UIStackView()
     private lazy var 介绍页 = UIView()
     private lazy var 交互选项 = UIStackView()
     private lazy var pageCollectionViewLayout = UICollectionViewFlowLayout()
@@ -137,18 +132,15 @@ class VideoDetailViewController: UIViewController {
 
         effectContainerView.translatesAutoresizingMaskIntoConstraints = false
         effectContainerView.effect = UIBlurEffect(style: .regular)
-        effectContainerView.contentView.clipsToBounds = true
-        effectContainerView.contentView.contentMode = .center
         view.addSubview(effectContainerView)
         effectContainerView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
 
-        scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         effectContainerView.contentView.addSubview(scrollView)
         scrollView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.left.right.top.bottom.equalToSuperview()
         }
 
         mainStack.axis = .vertical
@@ -157,6 +149,7 @@ class VideoDetailViewController: UIViewController {
         scrollView.addSubview(mainStack)
         mainStack.snp.makeConstraints { make in
             make.edges.equalToSuperview()
+            make.width.equalTo(self.view.snp.width)
         }
 
         mainStack.addArrangedSubview(介绍页)
@@ -166,115 +159,95 @@ class VideoDetailViewController: UIViewController {
         titleLabel.numberOfLines = 2
         介绍页.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
-            make.left.right.top.equalToSuperview()
+            make.top.right.equalToSuperview()
+            make.left.equalTo(介绍页.safeAreaLayoutGuide.snp.left)
         }
 
         介绍页.addSubview(coverImageView)
         coverImageView.snp.makeConstraints { make in
-            make.right.bottom.equalToSuperview()
+            make.bottom.equalToSuperview()
+            make.right.equalTo(介绍页.safeAreaLayoutGuide.snp.right)
             make.top.equalTo(titleLabel.snp.bottom).offset(20)
             make.height.equalTo(350)
             make.width.equalTo(622)
         }
 
-        stackView2.alignment = .center
-        stackView2.distribution = .equalSpacing
-        stackView2.spacing = 30
-        介绍页.addSubview(stackView2)
-        stackView2.snp.makeConstraints { make in
-            make.left.equalToSuperview()
+        baseInfoStackView.alignment = .center
+        baseInfoStackView.distribution = .equalSpacing
+        baseInfoStackView.spacing = 30
+        baseInfoStackView.axis = .horizontal
+        介绍页.addSubview(baseInfoStackView)
+        baseInfoStackView.snp.makeConstraints { make in
+            make.left.equalTo(介绍页.safeAreaLayoutGuide.snp.left)
             make.height.equalTo(60)
             make.top.equalTo(titleLabel.snp.bottom).offset(20)
         }
 
-        stackView3.spacing = 30
-        介绍页.addSubview(stackView3)
-        stackView3.snp.makeConstraints { make in
-            make.top.equalTo(stackView2.snp.bottom).offset(24)
-            make.left.equalToSuperview()
+        upButton.setContentCompressionResistancePriority(.required, for: .vertical)
+        upButton.tintColor = UIColor(named: "bgColor")
+
+        avatarImageView.clipsToBounds = true
+        avatarImageView.contentMode = .scaleAspectFit
+        avatarImageView.snp.makeConstraints { make in
+            make.width.equalTo(avatarImageView.snp.height)
         }
 
-        noteView.backgroundColor = UIColor(white: 0, alpha: 0)
-        介绍页.addSubview(noteView)
-        noteView.snp.makeConstraints { make in
-            make.top.equalTo(stackView3.snp.bottom).offset(10)
-            make.bottom.equalTo(-40)
-            make.left.right.equalToSuperview()
-        }
-
-        viewPlayCount.addSubview(imageView2)
-        viewPlayCount.addSubview(playCountLabel)
-        viewPlayCount.backgroundColor = UIColor(white: 0, alpha: 0)
-        viewPlayCount.translatesAutoresizingMaskIntoConstraints = false
-        stackView3.addArrangedSubview(viewPlayCount)
-
-        bvidLabel.contentMode = .left
-        bvidLabel.font = UIFont(name: "HelveticaNeue", size: 28)
-        bvidLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
-        viewReplys.addSubview(imageView3)
-        danmakuLabel.contentMode = .left
-        danmakuLabel.font = UIFont.systemFont(ofSize: 28)
-        danmakuLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
-        viewReplys.addSubview(danmakuLabel)
-        viewReplys.backgroundColor = UIColor(white: 0, alpha: 0)
-        viewReplys.translatesAutoresizingMaskIntoConstraints = false
-        stackView3.addArrangedSubview(viewReplys)
-
-        uploadTimeLabel.contentMode = .left
-        uploadTimeLabel.font = UIFont(name: "HelveticaNeue", size: 28)
-        uploadTimeLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
-        stackView3.addArrangedSubview(uploadTimeLabel)
-
-        imageView3.clipsToBounds = true
-        imageView3.contentMode = .scaleAspectFit
-        imageView3.image = UIImage(systemName: "list.bullet.rectangle")
-
-        playCountLabel.contentMode = .left
-        playCountLabel.font = UIFont.systemFont(ofSize: 28)
-        playCountLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
-
-        imageView2.clipsToBounds = true
-        imageView2.contentMode = .scaleAspectFit
-        imageView2.image = UIImage(systemName: "play.square")
-
-        stackView2.addArrangedSubview(avatarImageView)
-        stackView2.addArrangedSubview(upButton)
-        stackView2.addArrangedSubview(followButton)
-
-        viewTime.addSubview(imageView1)
-        viewTime.addSubview(durationLabel)
-
-        viewTime.backgroundColor = UIColor(white: 0, alpha: 0)
-        viewTime.translatesAutoresizingMaskIntoConstraints = false
-
-        durationLabel.contentMode = .left
-        durationLabel.font = UIFont.systemFont(ofSize: 28)
-        durationLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
-
-        imageView1.clipsToBounds = true
-        imageView1.contentMode = .scaleAspectFit
-        imageView1.image = UIImage(systemName: "clock.fill")
-
-        followersLabel.contentMode = .left
-        followersLabel.font = UIFont(name: "HelveticaNeue", size: 28)
-        followersLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        baseInfoStackView.addArrangedSubview(avatarImageView)
+        baseInfoStackView.addArrangedSubview(upButton)
 
         followButton.backgroundColor = UIColor(white: 0, alpha: 0)
         followButton.tintColor = UIColor(named: "bgColor")
         followButton.translatesAutoresizingMaskIntoConstraints = false
+        followButton.image = UIImage(named: "heart")
+        followButton.onImage = UIImage(named: "heart.fill")
 
-        followButton.setValue(UIImage(named: "heart"), forKeyPath: "image")
-        followButton.setValue(UIImage(named: "heart.fill"), forKeyPath: "onImage")
+        baseInfoStackView.addArrangedSubview(followButton)
+        followButton.snp.makeConstraints {
+            $0.width.equalTo(followButton.snp.height)
+            $0.height.equalToSuperview()
+        }
 
-        upButton.backgroundColor = UIColor(white: 0, alpha: 0)
-        upButton.setContentCompressionResistancePriority(.required, for: .vertical)
-        upButton.tintColor = UIColor(named: "bgColor")
+        followersLabel.contentMode = .left
+        followersLabel.font = UIFont.systemFont(ofSize: 28)
+        baseInfoStackView.addArrangedSubview(followersLabel)
 
-        upButton.setValue("up", forKeyPath: "title")
+        durationLabel.titleLabel.font = UIFont.systemFont(ofSize: 28)
+        durationLabel.imageView.image = UIImage(systemName: "clock.fill")
+        baseInfoStackView.addArrangedSubview(durationLabel)
 
-        avatarImageView.clipsToBounds = true
-        avatarImageView.contentMode = .scaleAspectFit
-        avatarImageView.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        // detail info
+        videoDetailInfoStackView.spacing = 30
+        介绍页.addSubview(videoDetailInfoStackView)
+        videoDetailInfoStackView.snp.makeConstraints { make in
+            make.top.equalTo(baseInfoStackView.snp.bottom).offset(24)
+            make.left.equalTo(介绍页.safeAreaLayoutGuide.snp.left)
+        }
+
+        playCountLabel.titleLabel.font = UIFont.systemFont(ofSize: 28)
+        playCountLabel.imageView.image = UIImage(systemName: "play.square")
+        videoDetailInfoStackView.addArrangedSubview(playCountLabel)
+
+        danmakuLabel.imageView.image = UIImage(systemName: "list.bullet.rectangle")
+        danmakuLabel.titleLabel.font = UIFont.systemFont(ofSize: 28)
+        videoDetailInfoStackView.addArrangedSubview(danmakuLabel)
+
+        bvidLabel.contentMode = .left
+        bvidLabel.font = UIFont.systemFont(ofSize: 28)
+        bvidLabel.setContentHuggingPriority(UILayoutPriority(rawValue: 251), for: .horizontal)
+        videoDetailInfoStackView.addArrangedSubview(bvidLabel)
+
+        uploadTimeLabel.contentMode = .left
+        uploadTimeLabel.font = UIFont.systemFont(ofSize: 28)
+        videoDetailInfoStackView.addArrangedSubview(uploadTimeLabel)
+
+        // note
+        noteView.backgroundColor = UIColor(white: 0, alpha: 0)
+        介绍页.addSubview(noteView)
+        noteView.snp.makeConstraints { make in
+            make.top.equalTo(videoDetailInfoStackView.snp.bottom).offset(10)
+            make.bottom.equalTo(-40)
+            make.left.equalTo(介绍页.safeAreaLayoutGuide.snp.left)
+        }
 
         交互选项.spacing = 20
         交互选项.translatesAutoresizingMaskIntoConstraints = false
@@ -567,7 +540,7 @@ class VideoDetailViewController: UIViewController {
         favButton.title = data.View.stat.favorite.numberString()
         likeButton.title = data.View.stat.like.numberString()
 
-        durationLabel.text = data.View.durationString
+        durationLabel.titleLabel.text = data.View.durationString
         titleLabel.text = data.title
         upButton.title = data.ownerName
         followButton.isOn = data.Card.following
@@ -958,6 +931,34 @@ class DetailLabel: UILabel {
     override func drawText(in rect: CGRect) {
         let insets = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5)
         super.drawText(in: rect.inset(by: insets))
+    }
+}
+
+class IconAndTextView: UIView {
+    let imageView = UIImageView()
+    let titleLabel = UILabel()
+    var text: String? {
+        set {
+            titleLabel.text = newValue
+        }
+        get {
+            return titleLabel.text
+        }
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        let stackView = UIStackView(arrangedSubviews: [imageView, titleLabel])
+        addSubview(stackView)
+        stackView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        stackView.spacing = 10
+        titleLabel.textColor = .white
+        imageView.snp.makeConstraints { $0.width.equalTo(imageView.snp.height) }
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
 
