@@ -83,10 +83,13 @@ class RankingContentViewController: UIViewController, BLTabBarContentVCProtocol 
 
     func goDetail(with record: any DisplayData) {
         if let record = record as? VideoDetail.Info {
-            let detailVC = VideoDetailViewController.create(aid: record.aid, cid: record.cid)
+            let detailVC = VideoDetailViewController()
+            detailVC.aid = record.aid
+            detailVC.cid = record.cid
             detailVC.present(from: self)
         } else if let record = record as? Season {
-            let detailVC = VideoDetailViewController.create(seasonId: record.season_id)
+            let detailVC = VideoDetailViewController()
+            detailVC.seasonId = record.season_id
             detailVC.present(from: self)
         }
     }

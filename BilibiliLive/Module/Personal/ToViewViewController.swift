@@ -34,7 +34,9 @@ class ToViewViewController: StandardVideoCollectionViewController<ToViewData> {
     }
 
     override func goDetail(with feed: ToViewData) {
-        let vc = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid)
+        let vc = VideoDetailViewController()
+        vc.aid = feed.aid
+        vc.cid = feed.cid
         vc.present(from: self)
     }
 

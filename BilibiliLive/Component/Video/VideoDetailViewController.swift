@@ -48,10 +48,10 @@ class VideoDetailViewController: UIViewController {
 
     @IBOutlet var ugcLabel: UILabel!
     @IBOutlet var ugcView: UIView!
-    private var epid = 0
-    private var seasonId = 0
-    private var aid = 0
-    private var cid = 0
+    var epid = 0
+    var seasonId = 0
+    var aid = 0
+    var cid = 0
     private var data: VideoDetail?
     @IBOutlet var scrollView: UIScrollView!
     private var didSentCoins = 0 {
@@ -70,27 +70,9 @@ class VideoDetailViewController: UIViewController {
 
     private var allUgcEpisodes = [VideoDetail.Info.UgcSeason.UgcVideoInfo]()
 
-    static func create(aid: Int, cid: Int?) -> VideoDetailViewController {
-        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
-        vc.aid = aid
-        vc.cid = cid ?? 0
-        return vc
-    }
-
-    static func create(epid: Int) -> VideoDetailViewController {
-        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
-        vc.epid = epid
-        return vc
-    }
-
-    static func create(seasonId: Int) -> VideoDetailViewController {
-        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
-        vc.seasonId = seasonId
-        return vc
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupViews()
         Task { await fetchData() }
 
         pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: BLTextOnlyCollectionViewCell.self))
@@ -130,6 +112,8 @@ class VideoDetailViewController: UIViewController {
         return playButton
     }
 
+    func setupViews() {}
+
     private func setupLoading() {
         effectContainerView.isHidden = true
         view.addSubview(loadingView)
@@ -139,7 +123,7 @@ class VideoDetailViewController: UIViewController {
         loadingView.makeConstraintsBindToCenterOfSuperview()
     }
 
-    func present(from vc: UIViewController, direatlyEnterVideo: Bool = Settings.direatlyEnterVideo) {
+    func present(from vc: UIViewController = UIViewController.topMostViewController(), direatlyEnterVideo: Bool = Settings.direatlyEnterVideo) {
         if !direatlyEnterVideo {
             vc.present(self, animated: true)
         } else {
@@ -413,7 +397,9 @@ extension VideoDetailViewController: UICollectionViewDelegate {
                 cid = video.cid
                 Task { await fetchData() }
             } else {
-                let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
+                let detailVC = VideoDetailViewController()
+                detailVC.aid = video.aid
+                detailVC.cid = video.cid
                 detailVC.present(from: self)
             }
         case recommandCollectionView:
@@ -423,7 +409,9 @@ extension VideoDetailViewController: UICollectionViewDelegate {
                     cid = video.cid
                     Task { await fetchData() }
                 } else {
-                    let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
+                    let detailVC = VideoDetailViewController()
+                    detailVC.aid = video.aid
+                    detailVC.cid = video.cid
                     detailVC.present(from: self)
                 }
             }

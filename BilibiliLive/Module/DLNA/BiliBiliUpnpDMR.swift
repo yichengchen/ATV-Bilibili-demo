@@ -259,9 +259,12 @@ class BiliBiliUpnpDMR: NSObject {
         let epid = json["epid"].intValue
         let player: VideoDetailViewController
         if epid > 0 {
-            player = VideoDetailViewController.create(epid: epid)
+            player = VideoDetailViewController()
+            player.epid = epid
         } else {
-            player = VideoDetailViewController.create(aid: aid, cid: cid)
+            player = VideoDetailViewController()
+            player.aid = aid
+            player.cid = cid
         }
         if let _ = AppDelegate.shared.window!.rootViewController?.presentedViewController {
             AppDelegate.shared.window!.rootViewController?.dismiss(animated: false) {

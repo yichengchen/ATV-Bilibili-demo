@@ -16,10 +16,13 @@ class FollowsViewController: StandardVideoCollectionViewController<FeedData> {
 
     override func goDetail(with feed: FeedData) {
         if let bangumi = feed.bangumi {
-            let detailVC = VideoDetailViewController.create(epid: bangumi.new_ep.episode_id)
+            let detailVC = VideoDetailViewController()
+            detailVC.epid = bangumi.new_ep.episode_id
             detailVC.present(from: self)
         } else {
-            let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid)
+            let detailVC = VideoDetailViewController()
+            detailVC.aid = feed.aid
+            detailVC.cid = feed.cid
             detailVC.present(from: self)
         }
     }
