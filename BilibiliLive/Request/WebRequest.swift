@@ -69,6 +69,8 @@ enum WebRequest {
             session = NoCookieSession.session
             session.sessionConfiguration.httpShouldSetCookies = false
         }
+        session.sessionConfiguration.timeoutIntervalForResource = 10
+        session.sessionConfiguration.timeoutIntervalForRequest = 10
         session.request(url,
                         method: method,
                         parameters: parameters,
