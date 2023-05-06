@@ -68,7 +68,7 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(dlanEnable)
 
-        let cancelAction = UIAlertAction(title: nil, style: .cancel)
+        let cancelAction = UIAlertAction(title: "", style: .cancel)
         let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.danmuArea.title) { [weak self] cell in
             let alert = UIAlertController(title: "弹幕显示区域", message: "设置弹幕显示区域", preferredStyle: .actionSheet)
             alert.popoverPresentationController?.sourceView = cell
