@@ -60,6 +60,9 @@ enum Settings {
     @UserDefault("DLNA.uuid", defaultValue: "")
     static var uuid: String
 
+    @UserDefault("DLNA.enable", defaultValue: true)
+    static var enableDLNA: Bool
+
     @UserDefault("Settings.continouslyPlay", defaultValue: true)
     static var continouslyPlay: Bool
 

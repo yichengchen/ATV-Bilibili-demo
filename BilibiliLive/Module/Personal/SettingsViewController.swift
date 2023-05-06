@@ -59,9 +59,17 @@ class SettingsViewController: UIViewController {
             self?.setupData()
         }
         cellModels.append(directlyVideo)
-        let cancelAction = UIAlertAction(title: "取消", style: .cancel)
-        let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.danmuArea.title) {
+
+        let dlanEnable = CellModel(title: "启用投屏", desp: Settings.enableDLNA ? "开" : "关") {
             [weak self] cell in
+            Settings.enableDLNA.toggle()
+            self?.setupData()
+            BiliBiliUpnpDMR.shared.start()
+        }
+        cellModels.append(dlanEnable)
+
+        let cancelAction = UIAlertAction(title: "", style: .cancel)
+        let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.danmuArea.title) { [weak self] cell in
             let alert = UIAlertController(title: "弹幕显示区域", message: "设置弹幕显示区域", preferredStyle: .actionSheet)
             alert.popoverPresentationController?.sourceView = cell
             for style in DanmuArea.allCases {
