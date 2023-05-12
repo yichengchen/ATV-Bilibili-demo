@@ -175,6 +175,18 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(match)
 
+        let areaLimitUnlock = CellModel(title: "解锁港澳台番剧限制", desp: Settings.areaLimitUnlock ? "开" : "关") {
+            [weak self] in
+            Settings.areaLimitUnlock.toggle()
+            self?.setupData()
+        }
+        cellModels.append(areaLimitUnlock)
+
+        let areaLimitCustomServer = cellModelWithTextField(title: "设置港澳台解析服务器", message: "为了安全考虑建议自建服务器，公共服务器可用性难保证，请多尝试几个。\n公共服务器请参考：http://985.so/mjq9u", current: Settings.areaLimitCustomServer, placeholder: "api.example.com") {
+            Settings.areaLimitCustomServer = $0 ?? ""
+        }
+        cellModels.append(areaLimitCustomServer)
+
         collectionView.reloadData()
     }
 
@@ -195,6 +207,34 @@ class SettingsViewController: UIViewController {
                 }
                 alert.addAction(action)
             }
+            let cancelAction = UIAlertAction(title: nil, style: .cancel)
+            alert.addAction(cancelAction)
+            self?.present(alert, animated: true)
+        }
+    }
+
+    func cellModelWithTextField(title: String,
+                                message: String?,
+                                current: String,
+                                placeholder: String?,
+                                isSecureTextEntry: Bool = false,
+                                onSubmit: ((String?) -> Void)? = nil) -> CellModel
+    {
+        return CellModel(title: title, desp: current) { [weak self] in
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addTextField { textField in
+                textField.text = current
+                textField.keyboardType = .URL
+                textField.placeholder = placeholder
+                textField.isSecureTextEntry = isSecureTextEntry
+            }
+
+            let action = UIAlertAction(title: "确定", style: .default) { _ in
+                onSubmit?(alert.textFields![0].text)
+                self?.setupData()
+            }
+            alert.addAction(action)
+
             let cancelAction = UIAlertAction(title: nil, style: .cancel)
             alert.addAction(cancelAction)
             self?.present(alert, animated: true)

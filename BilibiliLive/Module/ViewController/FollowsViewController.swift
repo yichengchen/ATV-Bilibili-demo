@@ -19,7 +19,12 @@ class FollowsViewController: StandardVideoCollectionViewController<FeedData> {
             let detailVC = VideoDetailViewController.create(epid: bangumi.new_ep.episode_id)
             detailVC.present(from: self)
         } else {
-            let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid)
+            // 发现这个旧feed接口的bangumi字段一直为nil，只有archive中有正确的ep_id值，港澳台解锁需要获取该值
+            var epid: Int?
+            if let redirect = feed.archive?.redirect_url?.lastPathComponent, redirect.starts(with: "ep") {
+                epid = Int(redirect.dropFirst(2))
+            }
+            let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid, epid: epid)
             detailVC.present(from: self)
         }
     }
@@ -50,6 +55,7 @@ struct FeedData: Decodable, PlayableData {
         let cid: Int
         let owner: VideoOwner
         let pic: URL
+        let redirect_url: URL?
     }
 
     let id: Int

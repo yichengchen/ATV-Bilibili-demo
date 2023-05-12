@@ -16,6 +16,7 @@ import UIKit
 struct PlayInfo {
     let aid: Int
     var cid: Int? = 0
+    var epid: Int? = 0 // 港澳台解锁需要
     var isBangumi: Bool = false
 
     var isCidVaild: Bool {
@@ -252,10 +253,103 @@ extension VideoPlayerViewController {
             setPlayerInfo(title: data?.title, subTitle: data?.ownerName, desp: data?.View.desc, pic: data?.pic)
         } catch let err {
             if case let .statusFail(code, message) = err as? RequestError {
+                if code == -404 || code == -10403 {
+                    // 解锁港澳台番剧处理
+                    do {
+                        if let ok = try await fetchAreaLimitVideoData(), ok {
+                            return
+                        }
+                    } catch let err {
+                        showErrorAlertAndExit(message: "请求失败,\(err)")
+                    }
+                }
                 showErrorAlertAndExit(message: "请求失败\(code) \(message)，可能需要大会员")
             } else {
                 showErrorAlertAndExit(message: "请求失败,\(err)")
             }
+        }
+    }
+
+    func fetchAreaLimitVideoData() async throws -> Bool? {
+        guard Settings.areaLimitUnlock else { return false }
+        guard let epid = playInfo.epid, epid > 0 else { return false }
+
+        let aid = playInfo.aid
+        let cid = playInfo.cid!
+
+        let season = try await WebRequest.requestBangumiSeasonView(epid: epid)
+        let checkTitle = season.title.contains("僅") ? season.title : season.series_title
+        let checkAreaList = parseAreaByTitle(title: checkTitle)
+        guard !checkAreaList.isEmpty else { return false }
+
+        let playData = try await requestAreaLimitPcgPlayUrl(epid: epid, cid: cid, areaList: checkAreaList)
+        guard let playData = playData else { return false }
+
+        let info = try? await WebRequest.requestPlayerInfo(aid: aid, cid: cid)
+        if info?.last_play_cid == cid, let startTime = info?.playTimeInSecond, playData.dash.duration - startTime > 5, Settings.continuePlay {
+            playerStartPos = startTime
+        }
+
+        await playmedia(urlInfo: playData, playerInfo: info)
+
+        if Settings.danmuMask {
+            if let mask = info?.dm_mask,
+               let video = playData.dash.video.first,
+               let fps = info?.dm_mask?.fps, fps > 0
+            {
+                maskProvider = BMaskProvider(info: mask, videoSize: CGSize(width: video.width ?? 0, height: video.height ?? 0))
+            } else if Settings.vnMask {
+                maskProvider = VMaskProvider()
+            }
+            setupMask()
+        }
+
+        if data == nil {
+            if let epi = season.episodes.first(where: { $0.ep_id == epid }) {
+                setPlayerInfo(title: epi.index + " " + epi.index_title, subTitle: season.up_info.uname, desp: season.evaluate, pic: epi.cover)
+            }
+        } else {
+            setPlayerInfo(title: data?.title, subTitle: data?.ownerName, desp: data?.View.desc, pic: data?.pic)
+        }
+
+        return true
+    }
+
+    private func requestAreaLimitPcgPlayUrl(epid: Int, cid: Int, areaList: [String]) async throws -> VideoPlayURLInfo? {
+        for area in areaList {
+            do {
+                return try await WebRequest.requestAreaLimitPcgPlayUrl(epid: epid, cid: cid, area: area)
+            } catch let err {
+                if area == areaList.last {
+                    throw err
+                } else {
+                    print(err)
+                }
+            }
+        }
+
+        return nil
+    }
+
+    private func parseAreaByTitle(title: String) -> [String] {
+        if title.isMatch(pattern: "[仅|僅].*[东南亚|其他]") {
+            // TODO: 未支持
+            return []
+        }
+
+        var areas: [String] = []
+        if title.isMatch(pattern: "僅.*台") {
+            areas.append("tw")
+        }
+        if title.isMatch(pattern: "僅.*港") {
+            areas.append("hk")
+        }
+
+        if areas.isEmpty {
+            // 标题没有地区限制信息，返回尝试检测的区域
+            return ["tw", "hk"]
+        } else {
+            return areas
         }
     }
 }

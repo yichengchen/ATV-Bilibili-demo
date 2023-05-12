@@ -28,6 +28,7 @@ enum ApiRequest {
         static let refresh = "https://passport.bilibili.com/api/v2/oauth2/refresh_token"
         static let ssoCookie = "https://passport.bilibili.com/api/login/sso"
         static let feed = "https://app.bilibili.com/x/v2/feed/index"
+        static let season = "https://api.bilibili.com/pgc/view/v2/app/season"
     }
 
     enum LoginState {
@@ -55,7 +56,7 @@ enum ApiRequest {
     static func sign(for param: [String: Any]) -> [String: Any] {
         var newParam = param
         newParam["appkey"] = appkey
-        newParam["ts"] = "\(Date().timeIntervalSince1970)"
+        newParam["ts"] = "\(Int(Date().timeIntervalSince1970))"
         newParam["local_id"] = "0"
         newParam["mobi_app"] = "android"
         var rawParam = newParam
@@ -285,5 +286,41 @@ enum ApiRequest {
 
     static func requestDislike(aid: Int, dislike: Bool) {
         requestJSON("http://app.biliapi.net/x/v2/view/dislike", method: .post, parameters: ["aid": aid, "dislike": dislike ? 0 : 1])
+    }
+
+    struct BangumiInfo: Codable, Hashable {
+        struct Stat: Codable, Hashable {
+            let coins, danmakus, favorite, favorites: Int
+            let likes, reply, share, views: Int
+        }
+
+        struct Rights: Codable, Hashable {
+            let area_limit: Int
+            let ban_area_show: Int
+        }
+
+        struct UserStatus: Codable, Hashable {
+            let follow: Int
+            let follow_status: Int
+        }
+
+        let title: String
+        let cover: String
+        let evaluate: String?
+        let season_id: Int
+        let season_title: String
+        let user_status: UserStatus
+        let stat: Stat
+        let rights: Rights
+    }
+
+    static func requestBangumiInfo(epid: Int) async throws -> BangumiInfo {
+        let info: BangumiInfo = try await request(EndPoint.season, parameters: ["ep_id": "\(epid)"])
+        return info
+    }
+
+    static func requestBangumiInfo(seasonID: Int) async throws -> BangumiInfo {
+        let info: BangumiInfo = try await request(EndPoint.season, parameters: ["season_id": "\(seasonID)"])
+        return info
     }
 }
