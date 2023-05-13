@@ -231,12 +231,17 @@ class SettingsSwitchCell: UICollectionViewCell {
     @IBOutlet var descLabel: UILabel!
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        if isFocused {
-            titleLabel.textColor = UIColor.black
-            descLabel.textColor = UIColor.black
+        if traitCollection.userInterfaceStyle == .dark {
+            if isFocused {
+                titleLabel.textColor = UIColor.black
+                descLabel.textColor = UIColor.black
+            } else {
+                titleLabel.textColor = UIColor.white
+                descLabel.textColor = UIColor.white
+            }
         } else {
-            titleLabel.textColor = UIColor.white
-            descLabel.textColor = UIColor.white
+            titleLabel.textColor = .black
+            descLabel.textColor = UIColor.black
         }
     }
 }
