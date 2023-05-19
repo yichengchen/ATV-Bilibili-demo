@@ -19,4 +19,9 @@ extension String {
             lhs = String(number - rhs)
         }
     }
+
+    func isMatch(pattern: String) -> Bool {
+        let regex = try! NSRegularExpression(pattern: pattern, options: [])
+        return regex.firstMatch(in: self, options: [], range: NSMakeRange(0, utf16.count)) != nil
+    }
 }
