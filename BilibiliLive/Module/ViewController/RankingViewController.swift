@@ -40,14 +40,17 @@ class RankingViewController: CategoryViewController {
     override func viewDidLoad() {
         categories = RankCategoryInfo.all
             .map {
-                CategoryDisplayModel(title: $0.title, contentVC: RankingContentViewController(info: $0))
+                if $0.isSeason {
+                    return CategoryDisplayModel(title: $0.title, contentVC: RankingSeasonContentViewController(info: $0))
+                } else {
+                    return CategoryDisplayModel(title: $0.title, contentVC: RankingVideoContentViewController(info: $0))
+                }
             }
         super.viewDidLoad()
     }
 }
 
-class RankingContentViewController: UIViewController, BLTabBarContentVCProtocol {
-    let collectionVC = FeedCollectionViewController()
+class RankingVideoContentViewController: StandardVideoCollectionViewController<VideoDetail.Info> {
     let info: RankCategoryInfo
 
     init(info: RankCategoryInfo) {
@@ -60,36 +63,54 @@ class RankingContentViewController: UIViewController, BLTabBarContentVCProtocol 
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func setupCollectionView() {
         collectionVC.styleOverride = .sideBar
-        collectionVC.show(in: self)
-        collectionVC.didSelect = {
-            [weak self] in
-            self?.goDetail(with: $0)
-        }
-        reloadData()
+        super.setupCollectionView()
     }
 
-    func reloadData() {
-        Task {
-            if info.isSeason {
-                collectionVC.displayDatas = try await WebRequest.requestSeasonRank(for: info.rid)
-            } else {
-                collectionVC.displayDatas = try await WebRequest.requestRank(for: info.rid)
-            }
-        }
+    override func supportPullToLoad() -> Bool {
+        return false
     }
 
-    func goDetail(with record: any DisplayData) {
-        if let record = record as? VideoDetail.Info {
-            let detailVC = VideoDetailViewController.create(aid: record.aid, cid: record.cid)
-            detailVC.present(from: self)
-        } else if let record = record as? Season {
-            let detailVC = VideoDetailViewController.create(seasonId: record.season_id)
-            detailVC.present(from: self)
-        }
+    override func request(page: Int) async throws -> [VideoDetail.Info] {
+        return try await WebRequest.requestRank(for: info.rid)
     }
+}
+
+class RankingSeasonContentViewController: StandardVideoCollectionViewController<Season> {
+    let info: RankCategoryInfo
+    init(info: RankCategoryInfo) {
+        self.info = info
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func setupCollectionView() {
+        collectionVC.styleOverride = .sideBar
+        super.setupCollectionView()
+    }
+
+    override func supportPullToLoad() -> Bool {
+        return false
+    }
+
+    override func request(page: Int) async throws -> [Season] {
+        return try await WebRequest.requestSeasonRank(for: info.rid)
+    }
+
+    override func goDetail(with record: Season) {
+        let detailVC = VideoDetailViewController.create(seasonId: record.season_id)
+        detailVC.present(from: self)
+    }
+}
+
+extension Season: PlayableData {
+    var aid: Int { 0 }
+    var cid: Int { 0 }
 }
 
 extension WebRequest.EndPoint {
