@@ -116,7 +116,7 @@ enum ApiRequest {
 
     static func request<T: Decodable>(_ url: URLConvertible,
                                       method: HTTPMethod = .get,
-                                      parameters: [String: String] = [:],
+                                      parameters: Parameters = [:],
                                       auth: Bool = true,
                                       encoding: ParameterEncoding = URLEncoding.default,
                                       decoder: JSONDecoder = JSONDecoder(),
@@ -141,7 +141,7 @@ enum ApiRequest {
 
     static func request<T: Decodable>(_ url: URLConvertible,
                                       method: HTTPMethod = .get,
-                                      parameters: [String: String] = [:],
+                                      parameters: Parameters = [:],
                                       auth: Bool = true,
                                       encoding: ParameterEncoding = URLEncoding.default,
                                       decoder: JSONDecoder = JSONDecoder()) async throws -> T
@@ -322,5 +322,34 @@ enum ApiRequest {
     static func requestBangumiInfo(seasonID: Int) async throws -> BangumiInfo {
         let info: BangumiInfo = try await request(EndPoint.season, parameters: ["season_id": "\(seasonID)"])
         return info
+    }
+
+    struct UpSpaceListData: Codable, Hashable, DisplayData, PlayableData {
+        var pic: URL? { return cover }
+
+        var aid: Int { return Int(param) ?? 0 }
+
+        let title: String
+        let author: String
+        let param: String
+        let cover: URL?
+        var ownerName: String {
+            return author
+        }
+
+        var cid: Int { return 0 }
+    }
+
+    static func requestUpSpaceVideo(mid: Int, lastAid: Int?, pageSize: Int = 20) async throws -> [UpSpaceListData] {
+        struct Resp: Codable {
+            let item: [UpSpaceListData]
+        }
+
+        var param: Parameters = ["vmid": mid, "ps": pageSize, "actionKey": "appkey", "disable_rcmd": 0, "fnval": 976, "fnver": 0, "force_host": 0, "fourk": 1, "order": "pubdate", "player_net": 1, "qn": 120]
+        if let lastAid {
+            param["aid"] = lastAid
+        }
+        let resp: Resp = try await request("https://app.bilibili.com/x/v2/space/archive/cursor", parameters: param)
+        return resp.item
     }
 }
