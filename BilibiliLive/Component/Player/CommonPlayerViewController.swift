@@ -131,7 +131,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         playerItem?.externalMetadata = meta
 
         if let pic = pic {
-            let resource = ImageResource(downloadURL: pic)
+            let resource = Kingfisher.ImageResource(downloadURL: pic)
             KingfisherManager.shared.retrieveImage(with: resource) {
                 [weak self] result in
                 guard let self = self,

@@ -195,7 +195,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         let cmEndTime = CMTimeMakeWithSeconds(viewPoint.to, preferredTimescale: timescale)
         let timeRange = CMTimeRangeFromTimeToTime(start: cmStartTime, end: cmEndTime)
         if let pic = viewPoint.imgUrl?.addSchemeIfNeed() {
-            let resource = ImageResource(downloadURL: pic)
+            let resource = Kingfisher.ImageResource(downloadURL: pic)
             KingfisherManager.shared.retrieveImage(with: resource) {
                 [weak self] result in
                 guard let self = self,
