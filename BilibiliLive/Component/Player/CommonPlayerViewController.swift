@@ -205,7 +205,7 @@ class CommonPlayerViewController: AVPlayerViewController {
             let speedActions = playSpeedArray.map { playSpeed in
                 UIAction(title: playSpeed.name, state: player?.rate ?? 1 == playSpeed.value ? .on : .off) { [weak self] action in
                     self?.player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
-                    self?.player?.rate = playSpeed.value
+                    self?.selectSpeed(AVPlaybackSpeed(rate: playSpeed.value, localizedName: playSpeed.name))
                     self?.danMuView.playingSpeed = playSpeed.value
                 }
             }
