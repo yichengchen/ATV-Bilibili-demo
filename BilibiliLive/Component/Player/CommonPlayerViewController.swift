@@ -205,7 +205,7 @@ class CommonPlayerViewController: AVPlayerViewController {
             let speedActions = playSpeedArray.map { playSpeed in
                 UIAction(title: playSpeed.name, state: player?.rate ?? 1 == playSpeed.value ? .on : .off) { [weak self] action in
                     self?.player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
-                    #available(tvOS 16.0, *) {
+                    if #available(tvOS 16.0, *) {
                         self?.selectSpeed(AVPlaybackSpeed(rate: playSpeed.value, localizedName: playSpeed.name))
                     } else {
                         self?.player?.rate = playSpeed.value
