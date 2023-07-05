@@ -288,6 +288,8 @@ extension VideoPlayerViewController {
         let info = try? await WebRequest.requestPlayerInfo(aid: aid, cid: cid)
         if info?.last_play_cid == cid, let startTime = info?.playTimeInSecond, playData.dash.duration - startTime > 5, Settings.continuePlay {
             playerStartPos = startTime
+        } else {
+            playerStartPos = 0
         }
 
         await playmedia(urlInfo: playData, playerInfo: info)
