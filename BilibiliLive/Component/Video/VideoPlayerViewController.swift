@@ -29,7 +29,7 @@ class VideoNextProvider {
         playSeq = seq
     }
 
-    private var index = 1
+    private var index = 0
     private let playSeq: [PlayInfo]
     func reset() {
         index = 0
