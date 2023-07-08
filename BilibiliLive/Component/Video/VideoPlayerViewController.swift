@@ -306,7 +306,7 @@ extension VideoPlayerViewController {
 
         if data == nil {
             if let epi = season.episodes.first(where: { $0.ep_id == epid }) {
-                setPlayerInfo(title: epi.index + " " + epi.index_title, subTitle: season.up_info.uname, desp: season.evaluate, pic: epi.cover)
+                setPlayerInfo(title: epi.index + " " + (epi.index_title ?? ""), subTitle: season.up_info.uname, desp: season.evaluate, pic: epi.cover)
             }
         } else {
             setPlayerInfo(title: data?.title, subTitle: data?.ownerName, desp: data?.View.desc, pic: data?.pic)
@@ -380,6 +380,7 @@ extension VideoPlayerViewController {
         player = AVPlayer(playerItem: playerItem)
         player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
             guard let self else { return }
+            if self.danMuView.isHidden { return }
             let seconds = time.seconds
             self.danmuProvider.playerTimeChange(time: seconds)
 

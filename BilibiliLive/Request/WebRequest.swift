@@ -622,7 +622,7 @@ struct BangumiSeasonView: Codable, Hashable {
         let bvid: String?
         let duration: Int
         let cover: URL
-        let index_title: String
+        let index_title: String?
         let index: String
         let pub_real_time: String
         let section_type: Int

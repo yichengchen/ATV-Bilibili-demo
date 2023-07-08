@@ -43,7 +43,7 @@ struct FeedData: Decodable, PlayableData {
         let cover: URL
         struct EP: Decodable, Hashable {
             let index: String
-            let index_title: String
+            let index_title: String?
             let episode_id: Int
         }
 

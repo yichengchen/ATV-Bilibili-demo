@@ -254,7 +254,7 @@ class VideoDetailViewController: UIViewController {
             if let epi = season.episodes.first(where: { $0.ep_id == epid }) ?? season.episodes.first {
                 aid = epi.aid
                 cid = epi.cid
-                pages = season.episodes.filter { $0.section_type == 0 }.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.ep_id, from: "", part: $0.index + " " + $0.index_title) })
+                pages = season.episodes.filter { $0.section_type == 0 }.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.ep_id, from: "", part: $0.index + " " + ($0.index_title ?? "")) })
 
                 let userEpisodeInfo = try await WebRequest.requestUserEpisodeInfo(epid: epi.ep_id)
 

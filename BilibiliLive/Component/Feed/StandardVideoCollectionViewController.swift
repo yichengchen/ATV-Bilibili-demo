@@ -78,7 +78,7 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
             let res = try await request(page: 1)
             collectionVC.displayDatas = res
         } catch let err {
-            let alert = UIAlertController(title: "Error", message: err.localizedDescription, preferredStyle: .alert)
+            let alert = UIAlertController(title: "Error", message: "\(err)", preferredStyle: .alert)
             alert.addAction(.init(title: "Ok", style: .cancel))
             present(alert, animated: true)
         }
