@@ -92,7 +92,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             supplementCodesc = codecs
             videoRange = "HLG"
             codecs = "hvc1.2.4.L153.b0"
-        } else if codecs == "dvh1.08.06" {
+        } else if codecs == "dvh1.08.06" || codecs == "dvh1.05.06" {
             supplementCodesc = codecs
             codecs = "hvc1.2.4.L150"
             videoRange = "PQ"
@@ -239,8 +239,11 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         hasSubtitle = subtitles.count > 0
         var videos = info.dash.video
         if Settings.preferAvc {
-            if videos.contains(where: { !$0.isHevc }) {
-                videos.removeAll(where: { $0.isHevc })
+            let videosMap = Dictionary(grouping: videos, by: { $0.id })
+            for (key, values) in videosMap {
+                if values.contains(where: { !$0.isHevc }) {
+                    videos.removeAll(where: { $0.id == key && $0.isHevc })
+                }
             }
         }
 
