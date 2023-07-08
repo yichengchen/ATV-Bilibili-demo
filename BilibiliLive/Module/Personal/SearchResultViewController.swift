@@ -266,6 +266,7 @@ struct SearchResult: Decodable, Hashable {
             case .video:
                 var video = try container.decode([Video].self, forKey: .data)
                 video.indices.forEach({ video[$0].title = video[$0].title.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil) })
+                video = Array(Set(video))
                 self = .video(video)
             case .media_bangumi:
                 var bangumi = try container.decode([Bangumi].self, forKey: .data)
@@ -274,6 +275,7 @@ struct SearchResult: Decodable, Hashable {
                     break
                 }
                 bangumi.indices.forEach({ bangumi[$0].title = bangumi[$0].title.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil) })
+                bangumi = Array(Set(bangumi))
                 self = .bangumi(bangumi)
             case .media_ft:
                 var bangumi = try container.decode([Bangumi].self, forKey: .data)
@@ -282,13 +284,15 @@ struct SearchResult: Decodable, Hashable {
                     break
                 }
                 bangumi.indices.forEach({ bangumi[$0].title = bangumi[$0].title.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression, range: nil) })
+                bangumi = Array(Set(bangumi))
                 self = .movie(bangumi)
             case .bili_user:
-                let user = try container.decode([User].self, forKey: .data)
+                var user = try container.decode([User].self, forKey: .data)
                 if user.count == 0 {
                     self = .none
                     break
                 }
+                user = Array(Set(user))
                 self = .user(user)
             case .none:
                 self = .none
