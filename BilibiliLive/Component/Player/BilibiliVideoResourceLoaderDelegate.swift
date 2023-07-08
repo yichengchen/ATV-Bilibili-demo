@@ -238,9 +238,9 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         reset()
         hasSubtitle = subtitles.count > 0
         var videos = info.dash.video
-        if Settings.preferHevc {
-            if videos.contains(where: { $0.isHevc }) {
-                videos.removeAll(where: { !$0.isHevc })
+        if Settings.preferAvc {
+            if videos.contains(where: { !$0.isHevc }) {
+                videos.removeAll(where: { $0.isHevc })
             }
         }
 
