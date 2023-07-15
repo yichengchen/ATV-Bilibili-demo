@@ -11,19 +11,25 @@ import SwiftyXMLParser
 import UIKit
 
 struct Danmu: Codable {
-    var time: TimeInterval
-    var mode: Int
-    var fontSize: Int
-    var color: Int
     var text: String
+    var time: TimeInterval
+    var mode: Int32 = 1
+    var fontSize: Int32 = 25
+    var color: UInt32 = 16_777_215
+    var isUp: Bool = false
 
-    init(_ attr: String, str: String) {
-        text = str
-        let attrs: [String] = attr.components(separatedBy: ",")
-        time = TimeInterval(attrs[0])!
-        mode = Int(attrs[1])!
-        fontSize = Int(attrs[2])!
-        color = Int(attrs[3])!
+    init(dm: DanmakuElem) {
+        text = dm.content
+        time = TimeInterval(dm.progress / 1000)
+        mode = dm.mode
+        fontSize = dm.fontsize
+        color = dm.color
+    }
+
+    init(upDm dm: CommandDm) {
+        text = dm.content
+        time = TimeInterval(dm.progress / 1000)
+        isUp = true
     }
 }
 
@@ -31,65 +37,135 @@ class VideoDanmuProvider {
     var cid: Int!
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
-    private var lastTime: TimeInterval = 0
 
     var onShowDanmu: ((DanmakuTextCellModel) -> Void)?
 
-    func reset() {
-        allDanmus.removeAll()
-        playingDanmus.removeAll()
+    private var upDanmus = [Danmu]()
+    private static let segmentMinCap = 5
+    private var segmentDanmus = [Int: [Danmu]](minimumCapacity: segmentMinCap)
+    private var segmentStatuses = [Int: Any](minimumCapacity: segmentMinCap)
+
+    private var lastTime: TimeInterval = 0
+    private var lastSegmentIdx: Int = 0
+    private var upDanmuIdx: Int = 0
+    private var danmuIdx: Int = 0
+
+    private let segmentDuration = 60 * 6
+    private func getSegmentIdx(time: TimeInterval) -> Int { Int(time) / segmentDuration + 1 }
+
+    func initVideo(cid id: Int?, startPos: Int) async {
+        cid = id
+        upDanmus.removeAll()
+        segmentDanmus.removeAll(keepingCapacity: true)
+        segmentStatuses.removeAll(keepingCapacity: true)
         lastTime = 0
+        lastSegmentIdx = 0
+        upDanmuIdx = 0
+        danmuIdx = 0
+
+        async let view: () = fetchDanmuView()
+        let segmentIdx = getSegmentIdx(time: TimeInterval(startPos))
+        segmentStatuses[segmentIdx] = true
+        async let list: () = fetchDanmuList(getSegmentIdx(time: TimeInterval(startPos)))
+        await view
+        await list
     }
 
-    func fetchDanmuData() {
-        AF.request("https://api.bilibili.com/x/v1/dm/list.so?oid=\(cid!)").responseString(encoding: .utf8) {
-            [weak self] resp in
-            guard let self = self else { return }
-            switch resp.result {
-            case let .success(data):
-                self.parseDanmuData(data: data)
-            case let .failure(err):
-                Logger.warn(err)
+    func fetchDanmuView() async {
+        var reply: DmWebViewReply
+        do {
+            reply = try await WebRequest.requestDanmuWebView(cid: cid)
+        } catch let err {
+            Logger.warn("[dm] cid:\(cid!) requestDanmuWebView error: \(err)")
+            return
+        }
+
+        var dms = reply.commandDms
+            .filter { $0.command == "#UP#" }
+            .map { Danmu(upDm: $0) }
+        dms.sort { $0.time < $1.time }
+        upDanmus = dms
+
+        Logger.debug("[dm] cid:\(cid!) up danmu cnt: \(dms.count)")
+    }
+
+    func fetchDanmuList(_ idx: Int) async {
+        var reply: DmSegMobileReply
+        do {
+            reply = try await WebRequest.requestDanmuList(cid: cid, segmentIdx: idx)
+        } catch let err {
+            segmentStatuses[idx] = nil // 等待下次重试
+            Logger.warn("[dm] cid:\(cid!) sidx:\(idx) requestDanmuList error: \(err)")
+            return
+        }
+
+        var dms = reply.elems
+            .filter { $0.mode <= 5 }
+            .map { Danmu(dm: $0) }
+        dms.sort { $0.time < $1.time }
+        segmentDanmus[idx] = dms
+
+        Logger.debug("[dm] cid:\(cid!) sidx:\(idx) danmu cnt: \(dms.count)")
+    }
+
+    private let advancedDuration = 30 // 提前x秒加载下段弹幕
+    private func fetchMoreDanmuInBackground(time: TimeInterval) {
+        func fetchDanmuInBackground(_ idx: Int) {
+            segmentStatuses[idx] = true
+            Task.detached {
+                await self.fetchDanmuList(idx)
             }
+            Logger.debug("[dm] cid:\(cid!) time:\(Int(time)) fetching sidx:\(idx)")
         }
-    }
 
-    func parseDanmuData(data: String) {
-        guard let xml = try? XML.parse(data) else { return }
-        allDanmus = xml["i"]["d"].all?.map { xml in
-            Danmu(xml.attributes["p"]!, str: xml.text!)
-        } ?? []
-        allDanmus.sort {
-            $0.time < $1.time
+        let sidx = getSegmentIdx(time: time)
+
+        if segmentStatuses[sidx].isNil() {
+            fetchDanmuInBackground(sidx)
         }
-        Logger.debug("danmu count: \(allDanmus.count)")
-        playingDanmus = allDanmus
+
+        if sidx > 1, segmentStatuses[sidx - 1].isNil(),
+           Int(time) % segmentDuration < advancedDuration
+        {
+            fetchDanmuInBackground(sidx - 1)
+        }
+
+        if segmentStatuses[sidx + 1].isNil(),
+           segmentDuration - Int(time) % segmentDuration < advancedDuration
+        {
+            fetchDanmuInBackground(sidx + 1)
+        }
     }
 
     func playerTimeChange(time: TimeInterval) {
+        guard cid != nil else { return }
+
+        fetchMoreDanmuInBackground(time: time)
+        let sidx = getSegmentIdx(time: time)
+        guard let dms = segmentDanmus[sidx] else { return }
+
         let diff = time - lastTime
-        if diff > 5 {
-            playingDanmus = Array(playingDanmus.drop { $0.time < time })
-        } else if diff < 0 {
-            playingDanmus = Array(allDanmus.drop { $0.time < time })
+        if diff > 5 || diff < 0 {
+            danmuIdx = dms.firstIndex(where: { $0.time > time }) ?? dms.count
+            upDanmuIdx = upDanmus.firstIndex(where: { $0.time > time }) ?? upDanmus.count
+        } else if sidx == lastSegmentIdx + 1 {
+            danmuIdx = 0
         }
         lastTime = time
+        lastSegmentIdx = sidx
 
-        while let first = playingDanmus.first, first.time <= time {
-            let danmu = playingDanmus.removeFirst()
-            let model = DanmakuTextCellModel(str: danmu.text)
-            model.color = UIColor(hex: UInt32(danmu.color))
-            switch danmu.mode {
-            case 1, 2, 3:
-                model.type = .floating
-            case 4:
-                model.type = .bottom
-            case 5:
-                model.type = .top
-            default:
-                continue
-            }
-            onShowDanmu?(model)
+        while upDanmuIdx < upDanmus.count {
+            let dm = upDanmus[upDanmuIdx]
+            guard dm.time < time else { break }
+            upDanmuIdx += 1
+            onShowDanmu?(DanmakuTextCellModel(dm: dm))
+        }
+
+        while danmuIdx < dms.count {
+            let dm = dms[danmuIdx]
+            guard dm.time < time else { break }
+            danmuIdx += 1
+            onShowDanmu?(DanmakuTextCellModel(dm: dm))
         }
     }
 }

@@ -94,9 +94,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
             }
         }
         await fetchVideoData()
-        danmuProvider.reset()
-        danmuProvider.cid = playInfo.cid
-        danmuProvider.fetchDanmuData()
+        await danmuProvider.initVideo(cid: playInfo.cid, startPos: playerStartPos ?? 0)
     }
 
     private func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?) async {

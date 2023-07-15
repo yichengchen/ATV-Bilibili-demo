@@ -49,4 +49,20 @@ class DanmakuTextCellModel: DanmakuCellModel, Equatable {
         type = .floating
         calculateSize()
     }
+
+    init(dm: Danmu) {
+        text = dm.isUp ? "up: " + dm.text : dm.text // TODO: UP主弹幕样式
+        color = UIColor(hex: dm.color)
+
+        switch dm.mode {
+        case 4:
+            type = .bottom
+        case 5:
+            type = .top
+        default:
+            type = .floating
+        }
+
+        calculateSize()
+    }
 }
