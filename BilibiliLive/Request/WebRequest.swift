@@ -7,6 +7,7 @@
 
 import Alamofire
 import Foundation
+import SwiftProtobuf
 import SwiftyJSON
 
 enum RequestError: Error {
@@ -40,6 +41,8 @@ enum WebRequest {
         static let pcgPlayUrl = "https://api.bilibili.com/pgc/player/web/playurl"
         static let bangumiSeason = "https://bangumi.bilibili.com/view/web_api/season"
         static let userEpisodeInfo = "https://api.bilibili.com/pgc/season/episode/web/info"
+        static let danmuWebView = "https://api.bilibili.com/x/v2/dm/web/view"
+        static let danmuList = "https://api.bilibili.com/x/v2/dm/list/seg.so"
     }
 
     static func requestData(method: HTTPMethod = .get,
@@ -148,6 +151,29 @@ enum WebRequest {
         }
     }
 
+    static func requestPB<T: SwiftProtobuf.Message>(method: HTTPMethod = .get,
+                                                    url: URLConvertible,
+                                                    parameters: Parameters = [:],
+                                                    headers: [String: String]? = nil,
+                                                    noCookie: Bool = false,
+                                                    complete: ((Result<T, RequestError>) -> Void)? = nil)
+    {
+        requestData(method: method, url: url, parameters: parameters, headers: headers, noCookie: noCookie) { response in
+            switch response {
+            case let .success(data):
+                do {
+                    let protobufObject = try T(serializedData: data)
+                    complete?(.success(protobufObject))
+                } catch let err {
+                    Logger.warn("Protobuf parsing error: \(err.localizedDescription)")
+                    complete?(.failure(.decodeFail(message: "probobuf decode error: \(err)")))
+                }
+            case let .failure(err):
+                complete?(.failure(err))
+            }
+        }
+    }
+
     static func requestJSON(method: HTTPMethod = .get,
                             url: URLConvertible,
                             parameters: Parameters = [:],
@@ -170,6 +196,26 @@ enum WebRequest {
     {
         return try await withCheckedThrowingContinuation { configure in
             request(method: method, url: url, parameters: parameters, headers: headers, decoder: decoder, dataObj: dataObj, noCookie: noCookie) {
+                (res: Result<T, RequestError>) in
+                switch res {
+                case let .success(content):
+                    configure.resume(returning: content)
+                case let .failure(err):
+                    configure.resume(throwing: err)
+                }
+            }
+        }
+    }
+
+    static func requestPB<T: SwiftProtobuf.Message>(method: HTTPMethod = .get,
+                                                    url: URLConvertible,
+                                                    parameters: Parameters = [:],
+                                                    headers: [String: String]? = nil,
+                                                    noCookie: Bool = false,
+                                                    dataObj _: String = "data") async throws -> T
+    {
+        return try await withCheckedThrowingContinuation { configure in
+            requestPB(method: method, url: url, parameters: parameters, headers: headers, noCookie: noCookie) {
                 (res: Result<T, RequestError>) in
                 switch res {
                 case let .success(content):
@@ -390,6 +436,14 @@ extension WebRequest {
         let res = try await requestJSON(url: "https://api.bilibili.com/x/player/pagelist?aid=\(aid)&jsonp=jsonp")
         let cid = res[0]["cid"].intValue
         return cid
+    }
+
+    static func requestDanmuWebView(cid: Int) async throws -> DmWebViewReply {
+        try await requestPB(url: EndPoint.danmuWebView, parameters: ["type": 1, "oid": cid])
+    }
+
+    static func requestDanmuList(cid: Int, segmentIdx: Int) async throws -> DmSegMobileReply {
+        try await requestPB(url: EndPoint.danmuList, parameters: ["type": 1, "oid": cid, "segment_index": segmentIdx])
     }
 }
 
