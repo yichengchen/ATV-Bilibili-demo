@@ -33,6 +33,12 @@ enum Settings {
     @UserDefaultCodable("Settings.danmuSize", defaultValue: .size_36)
     static var danmuSize: DanmuSize
 
+    @UserDefaultCodable("Settings.danmuAILevel", defaultValue: 1)
+    static var danmuAILevel: Int32
+
+    @UserDefaultCodable("Settings.danmuDuration", defaultValue: 8)
+    static var danmuDuration: Double
+
     @UserDefault("Settings.losslessAudio", defaultValue: false)
     static var losslessAudio: Bool
 
