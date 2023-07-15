@@ -17,6 +17,7 @@ struct Danmu: Codable {
     var fontSize: Int32 = 25
     var color: UInt32 = 16_777_215
     var isUp: Bool = false
+    var aiLevel: Int32 = 0
 
     init(dm: DanmakuElem) {
         text = dm.content
@@ -24,6 +25,7 @@ struct Danmu: Codable {
         mode = dm.mode
         fontSize = dm.fontsize
         color = dm.color
+        aiLevel = dm.weight
     }
 
     init(upDm dm: CommandDm) {
@@ -165,6 +167,7 @@ class VideoDanmuProvider {
             let dm = dms[danmuIdx]
             guard dm.time < time else { break }
             danmuIdx += 1
+            if dm.aiLevel < Settings.danmuAILevel { continue }
             onShowDanmu?(DanmakuTextCellModel(dm: dm))
         }
     }
