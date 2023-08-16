@@ -285,7 +285,7 @@ enum ApiRequest {
     }
 
     static func requestDislike(aid: Int, dislike: Bool) {
-        requestJSON("http://app.biliapi.net/x/v2/view/dislike", method: .post, parameters: ["aid": aid, "dislike": dislike ? 0 : 1])
+        requestJSON("https://app.biliapi.net/x/v2/view/dislike", method: .post, parameters: ["aid": aid, "dislike": dislike ? 0 : 1])
     }
 
     struct BangumiInfo: Codable, Hashable {

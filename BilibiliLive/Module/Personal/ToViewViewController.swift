@@ -41,7 +41,7 @@ class ToViewViewController: StandardVideoCollectionViewController<ToViewData> {
     func del(with toViewItem: ToViewData) {
         let aid = toViewItem.aid
         guard let csrf = CookieHandler.shared.csrf() else { return }
-        AF.request("http://api.bilibili.com/x/v2/history/toview/del", method: .post, parameters: ["aid": aid, "csrf": csrf]).responseData {
+        AF.request("https://api.bilibili.com/x/v2/history/toview/del", method: .post, parameters: ["aid": aid, "csrf": csrf]).responseData {
             [weak self] resp in
             print(resp.result)
             self?.reloadData()

@@ -232,7 +232,7 @@ enum WebRequest {
 
 extension WebRequest {
     static func requestBangumiInfo(epid: Int) async throws -> BangumiInfo {
-        let info: BangumiInfo = try await request(url: "http://api.bilibili.com/pgc/view/web/season", parameters: ["ep_id": epid], dataObj: "result")
+        let info: BangumiInfo = try await request(url: "https://api.bilibili.com/pgc/view/web/season", parameters: ["ep_id": epid], dataObj: "result")
         return info
     }
 
@@ -256,7 +256,7 @@ extension WebRequest {
     }
 
     static func requestHistory(complete: (([HistoryData]) -> Void)?) {
-        request(url: "http://api.bilibili.com/x/v2/history") {
+        request(url: "https://api.bilibili.com/x/v2/history") {
             (result: Result<[HistoryData], RequestError>) in
             if let data = try? result.get() {
                 complete?(data)
@@ -278,7 +278,7 @@ extension WebRequest {
     }
 
     static func requestDetailVideo(aid: Int) async throws -> VideoDetail {
-        try await request(url: "http://api.bilibili.com/x/web-interface/view/detail", parameters: ["aid": aid])
+        try await request(url: "https://api.bilibili.com/x/web-interface/view/detail", parameters: ["aid": aid])
     }
 
     static func requestFavVideosList() async throws -> [FavListData] {
@@ -336,7 +336,7 @@ extension WebRequest {
     }
 
     static func requestCoinStatus(aid: Int, complete: ((Int) -> Void)?) {
-        requestJSON(url: "http://api.bilibili.com/x/web-interface/archive/coins", parameters: ["aid": aid]) {
+        requestJSON(url: "https://api.bilibili.com/x/web-interface/archive/coins", parameters: ["aid": aid]) {
             response in
             switch response {
             case let .success(data):
@@ -348,7 +348,7 @@ extension WebRequest {
     }
 
     static func requestTodayCoins(complete: ((Int) -> Void)?) {
-        requestData(url: "http://www.bilibili.com/plus/account/exp.php") {
+        requestData(url: "https://www.bilibili.com/plus/account/exp.php") {
             response in
             switch response {
             case let .success(data):
@@ -361,11 +361,11 @@ extension WebRequest {
     }
 
     static func requestFavorite(aid: Int, mid: Int) {
-        requestJSON(method: .post, url: "http://api.bilibili.com/x/v3/fav/resource/deal", parameters: ["rid": aid, "type": 2, "add_media_ids": mid])
+        requestJSON(method: .post, url: "https://api.bilibili.com/x/v3/fav/resource/deal", parameters: ["rid": aid, "type": 2, "add_media_ids": mid])
     }
 
     static func requestFavoriteStatus(aid: Int, complete: ((Bool) -> Void)?) {
-        requestJSON(url: "http://api.bilibili.com/x/v2/fav/video/favoured", parameters: ["aid": aid]) {
+        requestJSON(url: "https://api.bilibili.com/x/v2/fav/video/favoured", parameters: ["aid": aid]) {
             response in
             switch response {
             case let .success(data):
@@ -416,7 +416,7 @@ extension WebRequest {
     }
 
     static func requestReplys(aid: Int, complete: ((Replys) -> Void)?) {
-        request(url: "http://api.bilibili.com/x/v2/reply", parameters: ["type": 1, "oid": aid, "sort": 1, "nohot": 0]) {
+        request(url: "https://api.bilibili.com/x/v2/reply", parameters: ["type": 1, "oid": aid, "sort": 1, "nohot": 0]) {
             (result: Result<Replys, RequestError>) in
             if let details = try? result.get() {
                 complete?(details)
@@ -469,7 +469,7 @@ extension WebRequest {
     }
 
     static func requestLoginInfo(complete: ((Result<JSON, RequestError>) -> Void)?) {
-        requestJSON(url: "http://api.bilibili.com/x/web-interface/nav", complete: complete)
+        requestJSON(url: "https://api.bilibili.com/x/web-interface/nav", complete: complete)
     }
 }
 
