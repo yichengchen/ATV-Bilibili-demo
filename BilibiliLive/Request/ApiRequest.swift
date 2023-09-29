@@ -19,8 +19,8 @@ struct LoginToken: Codable {
 }
 
 enum ApiRequest {
-    static let appkey = "4409e2ce8ffd12b8"
-    static let appsec = "59b43e04ad6965f34319062b478f83dd"
+    static let appkey = "5ae412b53418aac5"
+    static let appsec = "5b9cf6c9786efd204dcf0c1ce2d08436"
 
     enum EndPoint {
         static let loginQR = "https://passport.bilibili.com/x/passport-tv-login/qrcode/auth_code"
@@ -58,7 +58,9 @@ enum ApiRequest {
         newParam["appkey"] = appkey
         newParam["ts"] = "\(Int(Date().timeIntervalSince1970))"
         newParam["local_id"] = "0"
-        newParam["mobi_app"] = "android"
+        newParam["mobi_app"] = "iphone"
+        newParam["device"] = "pad"
+        newParam["device_name"] = "iPad"
         var rawParam = newParam
             .sorted(by: { $0.0 < $1.0 })
             .map({ "\($0.key)=\($0.value)" })
