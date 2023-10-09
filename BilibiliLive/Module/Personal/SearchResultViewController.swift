@@ -40,7 +40,8 @@ class SearchResultViewController: UIViewController {
                 WebRequest.requestSearchResult(key: key) { [weak self] searchResult in
                     guard let self = self else { return }
                     currentSnapshot.deleteAllItems()
-
+                    dataSource.apply(currentSnapshot)
+                    
                     let defaultHeight = NSCollectionLayoutDimension.fractionalWidth(Settings.displayStyle == .large ? 0.26 : 0.2)
                     for section in searchResult.result {
                         switch section {
