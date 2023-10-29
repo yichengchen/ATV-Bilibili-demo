@@ -106,6 +106,11 @@ class VideoPlayerViewController: CommonPlayerViewController {
         let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         playerDelegate = BilibiliVideoResourceLoaderDelegate()
         playerDelegate?.setBilibili(info: urlInfo, subtitles: playerInfo?.subtitle?.subtitles ?? [], aid: playInfo.aid)
+        if Settings.contentMatchOnlyInHDR {
+            if playerDelegate?.isHDR != true {
+                appliesPreferredDisplayCriteriaAutomatically = false
+            }
+        }
         asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
         let requestedKeys = ["playable"]
         await asset.loadValues(forKeys: requestedKeys)

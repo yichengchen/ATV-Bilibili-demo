@@ -60,6 +60,9 @@ enum Settings {
     @UserDefault("Settings.contentMatch", defaultValue: true)
     static var contentMatch: Bool
 
+    @UserDefault("Settings.contentMatchOnlyInHDR", defaultValue: true)
+    static var contentMatchOnlyInHDR: Bool
+
     @UserDefault("Settings.continuePlay", defaultValue: true)
     static var continuePlay: Bool
 

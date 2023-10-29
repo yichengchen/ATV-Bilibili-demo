@@ -175,6 +175,13 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(match)
 
+        let matchHdrOnly = CellModel(title: "仅在HDR视频匹配视频内容", desp: Settings.contentMatchOnlyInHDR ? "开" : "关") {
+            [weak self] in
+            Settings.contentMatchOnlyInHDR.toggle()
+            self?.setupData()
+        }
+        cellModels.append(matchHdrOnly)
+
         let areaLimitUnlock = CellModel(title: "解锁港澳台番剧限制", desp: Settings.areaLimitUnlock ? "开" : "关") {
             [weak self] in
             Settings.areaLimitUnlock.toggle()
