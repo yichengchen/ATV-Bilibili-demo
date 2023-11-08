@@ -382,8 +382,8 @@ extension VideoPlayerViewController {
         }
 
         playerItem = AVPlayerItem(asset: asset)
-        player = AVPlayer(playerItem: playerItem)
-        player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
+        let player = AVPlayer(playerItem: playerItem)
+        player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
             guard let self else { return }
             if self.danMuView.isHidden { return }
             let seconds = time.seconds
@@ -420,6 +420,15 @@ extension VideoPlayerViewController {
                     self.contextualActions = []
                 }
             }
+        }
+        if #available(tvOS 16.0, *),
+           let defaultRate = self.player?.defaultRate,
+           let speed = PlaySpeed.blDefaults.first(where: { $0.value == defaultRate })
+        {
+            self.player = player
+            selectSpeed(AVPlaybackSpeed(rate: speed.value, localizedName: speed.name))
+        } else {
+            self.player = player
         }
     }
 }
