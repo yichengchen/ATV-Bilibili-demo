@@ -421,14 +421,10 @@ extension VideoPlayerViewController {
                 }
             }
         }
-        if #available(tvOS 16.0, *),
-           let defaultRate = self.player?.defaultRate,
-           let speed = PlaySpeed.blDefaults.first(where: { $0.value == defaultRate })
-        {
+        if let defaultRate = self.player?.defaultRate,
+           let speed = PlaySpeed.blDefaults.first(where: { $0.value == defaultRate }) {
             self.player = player
             selectSpeed(AVPlaybackSpeed(rate: speed.value, localizedName: speed.name))
-        } else {
-            self.player = player
         }
     }
 }
