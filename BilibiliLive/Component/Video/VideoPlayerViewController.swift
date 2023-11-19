@@ -108,7 +108,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         playerDelegate?.setBilibili(info: urlInfo, subtitles: playerInfo?.subtitle?.subtitles ?? [], aid: playInfo.aid)
         if Settings.contentMatchOnlyInHDR {
             if playerDelegate?.isHDR != true {
-                appliesPreferredDisplayCriteriaAutomatically = false
+                playerVC.appliesPreferredDisplayCriteriaAutomatically = false
             }
         }
         asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
@@ -385,40 +385,46 @@ extension VideoPlayerViewController {
         player = AVPlayer(playerItem: playerItem)
         player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
             guard let self else { return }
-            if self.danMuView.isHidden { return }
-            let seconds = time.seconds
-            self.danmuProvider.playerTimeChange(time: seconds)
-
-            if let duration = self.data?.View.duration {
-                BiliBiliUpnpDMR.shared.sendProgress(duration: duration, current: Int(seconds))
+            DispatchQueue.main.async {
+                self.updatePlayerInfo(at: time.seconds)
             }
+        }
+    }
 
-            if let clipInfos = self.clipInfos {
-                var matched = false
-                for clip in clipInfos {
-                    if seconds > clip.start, seconds < clip.end {
-                        let action = {
-                            clip.skipped = true
-                            self.player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
-                        }
-                        if !(clip.skipped ?? false), Settings.autoSkip {
-                            action()
-                            self.skipAction = nil
-                        } else if self.skipAction?.accessibilityLabel != clip.a11Tag {
-                            self.skipAction = UIAction(title: clip.customText) { _ in
-                                action()
-                            }
-                            self.skipAction?.accessibilityLabel = clip.a11Tag
-                        }
+    @MainActor
+    func updatePlayerInfo(at seconds: TimeInterval) {
+        if danMuView.isHidden { return }
+        danmuProvider.playerTimeChange(time: seconds)
 
-                        self.contextualActions = [self.skipAction].compactMap { $0 }
-                        matched = true
-                        break
+        if let duration = data?.View.duration {
+            BiliBiliUpnpDMR.shared.sendProgress(duration: duration, current: Int(seconds))
+        }
+
+        if let clipInfos = clipInfos {
+            var matched = false
+            for clip in clipInfos {
+                if seconds > clip.start, seconds < clip.end {
+                    let action = {
+                        clip.skipped = true
+                        self.player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
                     }
+                    if !(clip.skipped ?? false), Settings.autoSkip {
+                        action()
+                        skipAction = nil
+                    } else if skipAction?.accessibilityLabel != clip.a11Tag {
+                        skipAction = UIAction(title: clip.customText) { _ in
+                            action()
+                        }
+                        skipAction?.accessibilityLabel = clip.a11Tag
+                    }
+
+                    playerVC.contextualActions = [skipAction].compactMap { $0 }
+                    matched = true
+                    break
                 }
-                if !matched {
-                    self.contextualActions = []
-                }
+            }
+            if !matched {
+                playerVC.contextualActions = []
             }
         }
     }

@@ -35,8 +35,8 @@ class LivePlayerViewController: CommonPlayerViewController {
 
     override func viewDidLoad() {
         allowChangeSpeed = false
-        requiresLinearPlayback = true
         super.viewDidLoad()
+        playerVC.requiresLinearPlayback = true
 
         Task {
             do {

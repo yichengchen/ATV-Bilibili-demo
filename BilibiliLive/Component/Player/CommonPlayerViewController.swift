@@ -17,7 +17,8 @@ protocol MaskProvider: AnyObject {
     func preferFPS() -> Int
 }
 
-class CommonPlayerViewController: AVPlayerViewController {
+class CommonPlayerViewController: UIViewController {
+    let playerVC = AVPlayerViewController()
     let danMuView = DanmakuView()
     var allowChangeSpeed = true
     var playerStartPos: Int?
@@ -40,9 +41,13 @@ class CommonPlayerViewController: AVPlayerViewController {
         }
     }
 
-    override var player: AVPlayer? {
-        didSet {
-            if let player = player {
+    var player: AVPlayer? {
+        get {
+            playerVC.player
+        }
+        set {
+            playerVC.player = newValue
+            if let player = newValue {
                 rateObserver = player.observe(\.rate, options: [.old, .new]) {
                     [weak self] player, _ in
                     guard let self = self else { return }
@@ -68,9 +73,12 @@ class CommonPlayerViewController: AVPlayerViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
-        allowsPictureInPicturePlayback = true
-        delegate = self
+        addChild(playerVC)
+        view.addSubview(playerVC.view)
+        playerVC.view.makeConstraintsToBindToSuperview()
+        playerVC.appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
+        playerVC.allowsPictureInPicturePlayback = true
+        playerVC.delegate = self
         initDanmuView()
         setupPlayerMenu()
     }
@@ -92,6 +100,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         return ""
     }
 
+    
     func playerStatusDidChange() {
         Logger.debug("player status: \(player?.currentItem?.status.rawValue ?? -1)")
         switch player?.currentItem?.status {
@@ -213,13 +222,14 @@ class CommonPlayerViewController: AVPlayerViewController {
 
             let speedActions = playSpeedArray.map { playSpeed in
                 UIAction(title: playSpeed.name, state: player?.rate ?? 1 == playSpeed.value ? .on : .off) { [weak self] _ in
-                    self?.player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
+                    guard let self else { return }
+                    player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
                     if #available(tvOS 16.0, *) {
-                        self?.selectSpeed(AVPlaybackSpeed(rate: playSpeed.value, localizedName: playSpeed.name))
+                        playerVC.selectSpeed(AVPlaybackSpeed(rate: playSpeed.value, localizedName: playSpeed.name))
                     } else {
-                        self?.player?.rate = playSpeed.value
+                        player?.rate = playSpeed.value
                     }
-                    self?.danMuView.playingSpeed = playSpeed.value
+                    danMuView.playingSpeed = playSpeed.value
                 }
             }
             let playSpeedMenu = UIMenu(title: "播放速度", options: [.displayInline, .singleSelection], children: speedActions)
@@ -229,7 +239,7 @@ class CommonPlayerViewController: AVPlayerViewController {
             menus.append(debugAction)
         }
 
-        transportBarCustomMenuItems = menus
+        playerVC.transportBarCustomMenuItems = menus
     }
 
     private func removeObservarPlayerItem() {
@@ -375,15 +385,6 @@ class CommonPlayerViewController: AVPlayerViewController {
 }
 
 extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
-    @objc func playerViewControllerShouldDismiss(_ playerViewController: AVPlayerViewController) -> Bool {
-        if let presentedViewController = UIViewController.topMostViewController() as? AVPlayerViewController,
-           presentedViewController == playerViewController
-        {
-            return true
-        }
-        return false
-    }
-
     @objc func playerViewControllerShouldAutomaticallyDismissAtPictureInPictureStart(_: AVPlayerViewController) -> Bool {
         return true
     }
@@ -397,12 +398,12 @@ extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
             presentedViewController.dismiss(animated: false) {
                 parent?.present(playerViewController, animated: false)
                 completionHandler(true)
-                (playerViewController as? CommonPlayerViewController)?.ensureDanmuViewFront()
+                (playerViewController.parent as? CommonPlayerViewController)?.ensureDanmuViewFront()
             }
         } else {
             presentedViewController.present(playerViewController, animated: false) {
                 completionHandler(true)
-                (playerViewController as? CommonPlayerViewController)?.ensureDanmuViewFront()
+                (playerViewController.parent as? CommonPlayerViewController)?.ensureDanmuViewFront()
             }
         }
     }
