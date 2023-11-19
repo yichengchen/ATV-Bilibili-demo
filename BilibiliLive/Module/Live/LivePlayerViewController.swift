@@ -31,11 +31,12 @@ class LivePlayerViewController: CommonPlayerViewController {
 
     deinit {
         Logger.debug("deinit live player")
+        danMuProvider?.stop()
     }
 
-    override func viewDidLoad() {
+    override func present() {
         allowChangeSpeed = false
-        super.viewDidLoad()
+        super.present()
         playerVC.requiresLinearPlayback = true
 
         Task {
@@ -55,11 +56,6 @@ class LivePlayerViewController: CommonPlayerViewController {
             }
         }
         danMuView.play()
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        danMuProvider?.stop()
     }
 
     override func retryPlay() -> Bool {
@@ -97,9 +93,9 @@ class LivePlayerViewController: CommonPlayerViewController {
         let alert = UIAlertController(title: "播放失败", message: "\(err)", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: {
             [weak self] _ in
-            self?.dismiss(animated: true, completion: nil)
+            self?.playerVC.dismiss(animated: true, completion: nil)
         }))
-        present(alert, animated: true, completion: nil)
+        UIViewController.topMostViewController().present(alert, animated: true, completion: nil)
     }
 
     func refreshRoomsID() async throws {

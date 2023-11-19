@@ -200,6 +200,12 @@ public class DanmakuView: UIView {
         recaculateTracks()
     }
 
+    override public func didMoveToSuperview() {
+        if superview != nil {
+            recaculateTracks()
+        }
+    }
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }

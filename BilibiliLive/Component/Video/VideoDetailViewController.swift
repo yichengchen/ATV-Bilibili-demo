@@ -148,7 +148,7 @@ class VideoDetailViewController: UIViewController {
             vc.present(self, animated: false) { [weak self] in
                 guard let self else { return }
                 let player = VideoPlayerViewController(playInfo: PlayInfo(aid: self.aid, cid: self.cid, epid: self.epid, isBangumi: self.isBangumi))
-                self.present(player, animated: true)
+                player.present()
             }
         }
     }
@@ -355,7 +355,7 @@ class VideoDetailViewController: UIViewController {
                 player.nextProvider = nextProvider
             }
         }
-        present(player, animated: true, completion: nil)
+        player.present()
     }
 
     @IBAction func actionLike(_ sender: Any) {
@@ -445,7 +445,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
                 let nextProvider = VideoNextProvider(seq: seq)
                 player.nextProvider = nextProvider
             }
-            present(player, animated: true, completion: nil)
+            player.present()
         case replysCollectionView:
             guard let reply = replys?.replies?[indexPath.item] else { return }
             let detail = ContentDetailViewController.createReply(content: reply.content.message)

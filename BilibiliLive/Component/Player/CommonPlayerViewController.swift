@@ -17,9 +17,38 @@ protocol MaskProvider: AnyObject {
     func preferFPS() -> Int
 }
 
-class CommonPlayerViewController: UIViewController {
+class PlayerContainerView: UIView {
+    var controller: CommonPlayerViewController?
+    let danMuView = DanmakuView(frame: UIScreen.main.bounds)
+
+    func ensureDanmuViewFront() {
+        bringSubviewToFront(danMuView)
+        danMuView.play()
+    }
+
+    init() {
+        super.init(frame: .zero)
+        addSubview(danMuView)
+        danMuView.makeConstraintsToBindToSuperview()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+class CommonPlayerViewController: NSObject {
     let playerVC = AVPlayerViewController()
-    let danMuView = DanmakuView()
+    weak var containerView: PlayerContainerView?
+    var danMuView: DanmakuView {
+        containerView!.danMuView
+    }
+
+    var view: UIView {
+        return containerView!
+    }
+
     var allowChangeSpeed = true
     var playerStartPos: Int?
     private var retryCount = 0
@@ -28,6 +57,14 @@ class CommonPlayerViewController: UIViewController {
     private var rateObserver: NSKeyValueObservation?
     private var debugView: UILabel?
     var maskProvider: MaskProvider?
+
+    override init() {
+        super.init()
+        let containerView = PlayerContainerView()
+        playerVC.contentOverlayView?.addSubview(containerView)
+        containerView.makeConstraintsToBindToSuperview()
+        self.containerView = containerView
+    }
 
     var playerItem: AVPlayerItem? {
         didSet {
@@ -68,14 +105,14 @@ class CommonPlayerViewController: UIViewController {
     private var playerInfo: [AVMetadataItem]?
 
     deinit {
+        Logger.info("deinit => \(self)")
         stopDebug()
+        danMuView.stop()
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        addChild(playerVC)
-        view.addSubview(playerVC.view)
-        playerVC.view.makeConstraintsToBindToSuperview()
+    func present() {
+        containerView?.controller = self
+        UIViewController.topMostViewController().present(playerVC, animated: true)
         playerVC.appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
         playerVC.allowsPictureInPicturePlayback = true
         playerVC.delegate = self
@@ -83,24 +120,11 @@ class CommonPlayerViewController: UIViewController {
         setupPlayerMenu()
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        danMuView.recaculateTracks()
-        danMuView.paddingTop = 5
-        danMuView.trackHeight = 50
-        danMuView.displayArea = Settings.danmuArea.percent
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        danMuView.stop()
-    }
-
     func extraInfoForPlayerError() -> String {
         return ""
     }
 
-    
+    @MainActor
     func playerStatusDidChange() {
         Logger.debug("player status: \(player?.currentItem?.status.rawValue ?? -1)")
         switch player?.currentItem?.status {
@@ -278,20 +302,22 @@ class CommonPlayerViewController: UIViewController {
         return false
     }
 
+    @MainActor
     @objc private func playerDidFinishPlaying() {
         playDidEnd()
     }
 
+    @MainActor
     func playDidEnd() {}
 
     func showErrorAlertAndExit(title: String = "播放失败", message: String = "未知错误") {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let actionOk = UIAlertAction(title: "OK", style: .default) {
             [weak self] _ in
-            self?.dismiss(animated: true, completion: nil)
+            self?.playerVC.dismiss(animated: true, completion: nil)
         }
         alertController.addAction(actionOk)
-        present(alertController, animated: true, completion: nil)
+        UIViewController.topMostViewController().present(alertController, animated: true, completion: nil)
     }
 
     private func startPlay() {
@@ -365,6 +391,9 @@ class CommonPlayerViewController: UIViewController {
         danMuView.accessibilityLabel = "danmuView"
         danMuView.makeConstraintsToBindToSuperview()
         danMuView.isHidden = !Settings.defaultDanmuStatus
+        danMuView.paddingTop = 5
+        danMuView.trackHeight = 50
+        danMuView.displayArea = Settings.danmuArea.percent
     }
 
     func setUpOutput() {
@@ -377,16 +406,15 @@ class CommonPlayerViewController: UIViewController {
         self.videoOutput = videoOutput
         maskProvider?.setVideoOutout(ouput: videoOutput)
     }
-
-    func ensureDanmuViewFront() {
-        view.bringSubviewToFront(danMuView)
-        danMuView.play()
-    }
 }
 
 extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
     @objc func playerViewControllerShouldAutomaticallyDismissAtPictureInPictureStart(_: AVPlayerViewController) -> Bool {
         return true
+    }
+
+    @objc func playerViewControllerDidEndDismissalTransition(_ playerViewController: AVPlayerViewController) {
+        containerView?.controller = nil
     }
 
     @objc func playerViewController(_ playerViewController: AVPlayerViewController,
@@ -398,12 +426,12 @@ extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
             presentedViewController.dismiss(animated: false) {
                 parent?.present(playerViewController, animated: false)
                 completionHandler(true)
-                (playerViewController.parent as? CommonPlayerViewController)?.ensureDanmuViewFront()
+                (playerViewController.contentOverlayView?.subviews.first as? PlayerContainerView)?.ensureDanmuViewFront()
             }
         } else {
             presentedViewController.present(playerViewController, animated: false) {
                 completionHandler(true)
-                (playerViewController.parent as? CommonPlayerViewController)?.ensureDanmuViewFront()
+                (playerViewController.contentOverlayView?.subviews.first as? PlayerContainerView)?.ensureDanmuViewFront()
             }
         }
     }

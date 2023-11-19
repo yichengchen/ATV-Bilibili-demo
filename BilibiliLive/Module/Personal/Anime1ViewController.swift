@@ -73,7 +73,8 @@ class Animate1DetailContentViewController: UIViewController {
             let record = data as! Info
             let vc = Animate1PlayerViewController()
             vc.dataString = record.data
-            self?.present(vc, animated: true)
+            vc.present()
+//            self?.present(vc, animated: true)
         }
         Task {
             do {
@@ -119,16 +120,16 @@ class Animate1PlayerViewController: CommonPlayerViewController {
 
     var dataString = ""
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        Task {
-            do {
-                try await self.request()
-            } catch let err {
-                showErrorAlertAndExit(message: err.localizedDescription)
-            }
-        }
-    }
+//    override func viewDidLoad() {
+//        super.viewDidLoad()
+//        Task {
+//            do {
+//                try await self.request()
+//            } catch let err {
+//                showErrorAlertAndExit(message: err.localizedDescription)
+//            }
+//        }
+//    }
 
     func request() async throws {
         let data = try await AF.request("https://v.anime1.me/api", method: .post,

@@ -5,6 +5,7 @@
 //  Created by yicheng on 2022/11/25.
 //
 
+import AVKit
 import CocoaAsyncSocket
 import CoreMedia
 import Foundation
@@ -224,18 +225,18 @@ class BiliBiliUpnpDMR: NSObject {
             (topMost as? VideoPlayerViewController)?.player?.pause()
             session.sendEmpty()
         case "Resume":
-            (topMost as? VideoPlayerViewController)?.player?.play()
+            (topMost as? AVPlayerViewController)?.player?.play()
             session.sendEmpty()
         case "SwitchDanmaku":
             let json = JSON(parseJSON: frame.body)
-            (topMost as? VideoPlayerViewController)?.danMuView.isHidden = !json["open"].boolValue
+//            (topMost as? AVPlayerViewController)?.danMuView.isHidden = !json["open"].boolValue
             session.sendEmpty()
         case "Seek":
             let json = JSON(parseJSON: frame.body)
-            (topMost as? VideoPlayerViewController)?.player?.seek(to: CMTime(seconds: json["seekTs"].doubleValue, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+            (topMost as? AVPlayerViewController)?.player?.seek(to: CMTime(seconds: json["seekTs"].doubleValue, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
             session.sendEmpty()
         case "Stop":
-            (topMost as? VideoPlayerViewController)?.dismiss(animated: true)
+            (topMost as? AVPlayerViewController)?.dismiss(animated: true)
             session.sendEmpty()
         case "PlayUrl":
             let json = JSON(parseJSON: frame.body)

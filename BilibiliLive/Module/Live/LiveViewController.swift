@@ -44,7 +44,8 @@ class MyLiveViewController: StandardVideoCollectionViewController<LiveRoom> {
     override func goDetail(with record: LiveRoom) {
         let playerVC = LivePlayerViewController()
         playerVC.room = record
-        present(playerVC, animated: true, completion: nil)
+        playerVC.present()
+//        present(playerVC, animated: true, completion: nil)
     }
 }
 
@@ -79,7 +80,8 @@ class AreaLiveViewController: StandardVideoCollectionViewController<AreaLiveRoom
     override func goDetail(with record: AreaLiveRoom) {
         let playerVC = LivePlayerViewController()
         playerVC.room = record.toLiveRoom()
-        present(playerVC, animated: true, completion: nil)
+        playerVC.present()
+//        present(playerVC, animated: true, completion: nil)
     }
 }
 

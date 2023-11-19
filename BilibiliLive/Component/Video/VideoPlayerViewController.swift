@@ -48,7 +48,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
     var playInfo: PlayInfo
     init(playInfo: PlayInfo) {
         self.playInfo = playInfo
-        super.init(nibName: nil, bundle: nil)
+        super.init()
     }
 
     @available(*, unavailable)
@@ -64,18 +64,18 @@ class VideoPlayerViewController: CommonPlayerViewController {
     private let danmuProvider = VideoDanmuProvider()
     private var clipInfos: [VideoPlayURLInfo.ClipInfo]?
     private var skipAction: UIAction?
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        guard let currentTime = player?.currentTime().seconds, currentTime > 0 else { return }
+//    override func viewDidDisappear(_ animated: Bool) {
+//        super.viewDidDisappear(animated)
+//        guard let currentTime = player?.currentTime().seconds, currentTime > 0 else { return }
+//
+//        if let cid = playInfo.cid, cid > 0 {
+//            WebRequest.reportWatchHistory(aid: playInfo.aid, cid: cid, currentTime: Int(currentTime))
+//        }
+//        BiliBiliUpnpDMR.shared.sendStatus(status: .stop)
+//    }
 
-        if let cid = playInfo.cid, cid > 0 {
-            WebRequest.reportWatchHistory(aid: playInfo.aid, cid: cid, currentTime: Int(currentTime))
-        }
-        BiliBiliUpnpDMR.shared.sendStatus(status: .stop)
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func present() {
+        super.present()
         Task {
             await initPlayer()
         }
@@ -97,6 +97,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
         await danmuProvider.initVideo(cid: playInfo.cid, startPos: playerStartPos ?? 0)
     }
 
+    @MainActor
     private func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?) async {
         let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
         let headers: [String: String] = [
@@ -182,7 +183,8 @@ class VideoPlayerViewController: CommonPlayerViewController {
                 }
                 return
             }
-            dismiss(animated: true)
+
+            playerVC.dismiss(animated: true)
         }
     }
 
