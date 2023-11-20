@@ -89,7 +89,6 @@ class LivePlayerViewController: CommonPlayerViewController {
         }
         if Settings.danmuMask, Settings.vnMask {
             maskProvider = VMaskProvider()
-            setupMask()
         }
     }
 

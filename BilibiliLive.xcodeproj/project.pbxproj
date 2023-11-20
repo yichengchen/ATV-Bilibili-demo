@@ -30,6 +30,8 @@
 		4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */; };
 		49508E0F2943420100D26812 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E0E2943420100D26812 /* CocoaLumberjack */; };
 		49508E112943420100D26812 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E102943420100D26812 /* CocoaLumberjackSwift */; };
+		495D97F52B0AF4830001B004 /* MaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495D97F42B0AF4830001B004 /* MaskProvider.swift */; };
+		495D97F72B0AF4BC0001B004 /* CommonPlayerOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495D97F62B0AF4BC0001B004 /* CommonPlayerOverlayView.swift */; };
 		496400D32943431E0098ACA6 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496400D22943431E0098ACA6 /* Logger.swift */; };
 		49735024290D0E8A0045C26B /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 49735023290D0E8A0045C26B /* Fuzi */; };
 		4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502A29161B770045C26B /* WeeklyWatchViewController.swift */; };
@@ -128,6 +130,8 @@
 		494742102905053E005D6885 /* BLMotionCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLMotionCollectionViewCell.swift; sourceTree = "<group>"; };
 		49474212290509F6005D6885 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
 		4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTextOnlyCollectionViewCell.swift; sourceTree = "<group>"; };
+		495D97F42B0AF4830001B004 /* MaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskProvider.swift; sourceTree = "<group>"; };
+		495D97F62B0AF4BC0001B004 /* CommonPlayerOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPlayerOverlayView.swift; sourceTree = "<group>"; };
 		496400D22943431E0098ACA6 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		4973502A29161B770045C26B /* WeeklyWatchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWatchViewController.swift; sourceTree = "<group>"; };
 		4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardVideoCollectionViewController.swift; sourceTree = "<group>"; };
@@ -386,7 +390,9 @@
 			isa = PBXGroup;
 			children = (
 				49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */,
+				495D97F62B0AF4BC0001B004 /* CommonPlayerOverlayView.swift */,
 				F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */,
+				495D97F42B0AF4830001B004 /* MaskProvider.swift */,
 				49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */,
 			);
 			path = Player;
@@ -583,11 +589,13 @@
 				0A41EE1D2A63102B0066444C /* dmView.pb.swift in Sources */,
 				490425F729AB54B200CDBC60 /* CategoryViewController.swift in Sources */,
 				4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */,
+				495D97F72B0AF4BC0001B004 /* CommonPlayerOverlayView.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */,
 				AEA5FDE2290F6E2600E7C0B2 /* String.swift in Sources */,
 				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
 				49474213290509F6005D6885 /* DateFormatter.swift in Sources */,
+				495D97F52B0AF4830001B004 /* MaskProvider.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,
 				F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */,
 				499C760F2930E068003160FB /* NVASocket.swift in Sources */,

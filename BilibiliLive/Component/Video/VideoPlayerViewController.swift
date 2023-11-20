@@ -247,7 +247,6 @@ extension VideoPlayerViewController {
                 } else if Settings.vnMask {
                     maskProvider = VMaskProvider()
                 }
-                setupMask()
             }
 
             if data == nil {
@@ -306,7 +305,6 @@ extension VideoPlayerViewController {
             } else if Settings.vnMask {
                 maskProvider = VMaskProvider()
             }
-            setupMask()
         }
 
         if data == nil {

@@ -8,26 +8,17 @@
 import AVKit
 import Kingfisher
 import UIKit
-import Vision
-
-protocol MaskProvider: AnyObject {
-    func getMask(for time: CMTime, frame: CGRect, onGet: @escaping (CALayer) -> Void)
-    func needVideoOutput() -> Bool
-    func setVideoOutout(ouput: AVPlayerItemVideoOutput)
-    func preferFPS() -> Int
-}
 
 class CommonPlayerViewController: UIViewController {
     let playerVC = AVPlayerViewController()
-    let danMuView = DanmakuView()
+    let overlayView = CommonPlayerOverlayView()
     var allowChangeSpeed = true
     var playerStartPos: Int?
-    private var retryCount = 0
-    private let maxRetryCount = 3
-    private var observer: NSKeyValueObservation?
-    private var rateObserver: NSKeyValueObservation?
-    private var debugView: UILabel?
-    var maskProvider: MaskProvider?
+    var maskProvider: MaskProvider? {
+        didSet { if maskProvider != nil { setupMask() }}
+    }
+
+    var danMuView: DanmakuView { overlayView.danMuView }
 
     var playerItem: AVPlayerItem? {
         didSet {
@@ -63,9 +54,16 @@ class CommonPlayerViewController: UIViewController {
         }
     }
 
-    var videoOutput: AVPlayerItemVideoOutput?
-
+    private var retryCount = 0
+    private let maxRetryCount = 3
+    private var observer: NSKeyValueObservation?
+    private var rateObserver: NSKeyValueObservation?
+    private var videoOutput: AVPlayerItemVideoOutput?
     private var playerInfo: [AVMetadataItem]?
+    private var debugTimer: Timer?
+    private var debugEnable: Bool { debugTimer?.isValid ?? false }
+
+    // MARK: Lifecycle
 
     deinit {
         stopDebug()
@@ -80,9 +78,10 @@ class CommonPlayerViewController: UIViewController {
         playerVC.appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
         playerVC.allowsPictureInPicturePlayback = true
         playerVC.delegate = self
+        playerVC.contentOverlayView?.addSubview(overlayView)
+        overlayView.makeConstraintsToBindToSuperview()
         setNeedsFocusUpdate()
         updateFocusIfNeeded()
-        initDanmuView()
         setupPlayerMenu()
     }
 
@@ -90,47 +89,12 @@ class CommonPlayerViewController: UIViewController {
         return [self.playerVC.view]
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        danMuView.recaculateTracks()
-        danMuView.paddingTop = 5
-        danMuView.trackHeight = 50
-        danMuView.displayArea = Settings.danmuArea.percent
-    }
-
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
         danMuView.stop()
     }
 
-    func extraInfoForPlayerError() -> String {
-        return ""
-    }
-
-    func playerStatusDidChange() {
-        Logger.debug("player status: \(player?.currentItem?.status.rawValue ?? -1)")
-        switch player?.currentItem?.status {
-        case .readyToPlay:
-            if maskProvider?.needVideoOutput() == true {
-                setUpOutput()
-            }
-            startPlay()
-        case .failed:
-            removeObservarPlayerItem()
-            Logger.debug(player?.currentItem?.error ?? "no error")
-            Logger.debug(player?.currentItem?.errorLog() ?? "no error log")
-            if retryCount < maxRetryCount, !retryPlay() {
-                let log = playerItem?.errorLog()
-                let errorLogData = log?.extendedLogData() ?? Data()
-                var str = String(data: errorLogData, encoding: .utf8) ?? ""
-                str = str.split(separator: "\n").dropFirst(4).joined()
-                showErrorAlertAndExit(title: "播放器失败", message: str + extraInfoForPlayerError())
-            }
-            retryCount += 1
-        default:
-            break
-        }
-    }
+    // MARK: Public
 
     func setPlayerInfo(title: String?, subTitle: String?, desp: String?, pic: URL?) {
         let desp = desp?.components(separatedBy: "\n").joined(separator: " ")
@@ -171,6 +135,36 @@ class CommonPlayerViewController: UIViewController {
         return item.copy() as? AVMetadataItem
     }
 
+    func showErrorAlertAndExit(title: String = "播放失败", message: String = "未知错误") {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let actionOk = UIAlertAction(title: "OK", style: .default) {
+            [weak self] _ in
+            self?.dismiss(animated: true, completion: nil)
+        }
+        alertController.addAction(actionOk)
+        present(alertController, animated: true, completion: nil)
+    }
+
+    // MARK: For Override
+
+    func extraInfoForPlayerError() -> String {
+        return ""
+    }
+
+    func retryPlay() -> Bool {
+        return false
+    }
+
+    func playerStatusDidChange() {}
+
+    func playDidEnd() {}
+
+    func additionDebugInfo() -> String { return "" }
+}
+
+// MARK: Private
+
+extension CommonPlayerViewController {
     private func setupPlayerMenu() {
         var menus = [UIMenuElement]()
         let danmuImage = UIImage(systemName: "list.bullet.rectangle.fill")
@@ -247,7 +241,11 @@ class CommonPlayerViewController: UIViewController {
 
         playerVC.transportBarCustomMenuItems = menus
     }
+}
 
+// MARK: Player Notify
+
+extension CommonPlayerViewController {
     private func removeObservarPlayerItem() {
         NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
     }
@@ -255,7 +253,7 @@ class CommonPlayerViewController: UIViewController {
     private func observePlayerItem(_ playerItem: AVPlayerItem) {
         observer = playerItem.observe(\.status, options: [.new, .old]) {
             [weak self] _, _ in
-            self?.playerStatusDidChange()
+            self?.playerStatusDidChangeInternal()
         }
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(playerDidFinishPlaying),
@@ -263,9 +261,50 @@ class CommonPlayerViewController: UIViewController {
                                                object: playerItem)
     }
 
-    func setupMask() {
+    private func playerStatusDidChangeInternal() {
+        Logger.debug("player status: \(player?.currentItem?.status.rawValue ?? -1)")
+        switch player?.currentItem?.status {
+        case .readyToPlay:
+            if maskProvider?.needVideoOutput() == true {
+                setUpOutput()
+            }
+            startPlay()
+        case .failed:
+            removeObservarPlayerItem()
+            Logger.debug(player?.currentItem?.error ?? "no error")
+            Logger.debug(player?.currentItem?.errorLog() ?? "no error log")
+            if retryCount < maxRetryCount, !retryPlay() {
+                let log = playerItem?.errorLog()
+                let errorLogData = log?.extendedLogData() ?? Data()
+                var str = String(data: errorLogData, encoding: .utf8) ?? ""
+                str = str.split(separator: "\n").dropFirst(4).joined()
+                showErrorAlertAndExit(title: "播放器失败", message: str + extraInfoForPlayerError())
+            }
+            retryCount += 1
+        default:
+            break
+        }
+        playerStatusDidChange()
+    }
+
+    private func startPlay() {
+        guard player?.rate == 0 && player?.error == nil else { return }
+        if let playerStartPos = playerStartPos {
+            player?.seek(to: CMTime(seconds: Double(playerStartPos), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+        }
+        player?.play()
+    }
+
+    @objc private func playerDidFinishPlaying() {
+        playDidEnd()
+    }
+}
+
+// MARK: Masks
+
+extension CommonPlayerViewController {
+    private func setupMask() {
         guard let maskProvider else { return }
-//        danMuView.backgroundColor = UIColor.red.withAlphaComponent(0.5)
         Logger.info("mask provider is \(maskProvider)")
         let interval = CMTime(seconds: 1.0 / CGFloat(maskProvider.preferFPS()),
                               preferredTimescale: CMTimeScale(NSEC_PER_SEC))
@@ -280,34 +319,21 @@ class CommonPlayerViewController: UIViewController {
         })
     }
 
-    func retryPlay() -> Bool {
-        return false
+    private func setUpOutput() {
+        guard videoOutput == nil, let videoItem = player?.currentItem else { return }
+        let pixelBuffAttributes = [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
+        ]
+        let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBuffAttributes)
+        videoItem.add(videoOutput)
+        self.videoOutput = videoOutput
+        maskProvider?.setVideoOutout(ouput: videoOutput)
     }
+}
 
-    @objc private func playerDidFinishPlaying() {
-        playDidEnd()
-    }
+// MARK: Debugs
 
-    func playDidEnd() {}
-
-    func showErrorAlertAndExit(title: String = "播放失败", message: String = "未知错误") {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let actionOk = UIAlertAction(title: "OK", style: .default) {
-            [weak self] _ in
-            self?.dismiss(animated: true, completion: nil)
-        }
-        alertController.addAction(actionOk)
-        present(alertController, animated: true, completion: nil)
-    }
-
-    private func startPlay() {
-        guard player?.rate == 0 && player?.error == nil else { return }
-        if let playerStartPos = playerStartPos {
-            player?.seek(to: CMTime(seconds: Double(playerStartPos), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
-        }
-        player?.play()
-    }
-
+extension CommonPlayerViewController {
     private func fetchDebugInfo() -> String {
         let bitrateStr: (Double) -> String = {
             bit in
@@ -335,60 +361,22 @@ class CommonPlayerViewController: UIViewController {
         """
     }
 
-    func additionDebugInfo() -> String { return "" }
-
-    var debugTimer: Timer?
-    var debugEnable: Bool { debugTimer?.isValid ?? false }
     private func startDebug() {
-        if debugView == nil {
-            debugView = UILabel()
-            debugView?.backgroundColor = UIColor.black.withAlphaComponent(0.8)
-            debugView?.textColor = UIColor.white
-            view.addSubview(debugView!)
-            debugView?.numberOfLines = 0
-            debugView?.font = UIFont.systemFont(ofSize: 26)
-            debugView?.snp.makeConstraints { make in
-                make.top.equalToSuperview().offset(12)
-                make.right.equalToSuperview().offset(-12)
-                make.width.equalTo(800)
-            }
-        }
-        debugView?.isHidden = false
+        overlayView.showDebugView()
         debugTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            let info = self?.fetchDebugInfo()
-            self?.debugView?.text = info
+            guard let self else { return }
+            overlayView.setDebug(text: fetchDebugInfo())
         }
     }
 
     private func stopDebug() {
         debugTimer?.invalidate()
         debugTimer = nil
-        debugView?.isHidden = true
-    }
-
-    private func initDanmuView() {
-        view.addSubview(danMuView)
-        danMuView.accessibilityLabel = "danmuView"
-        danMuView.makeConstraintsToBindToSuperview()
-        danMuView.isHidden = !Settings.defaultDanmuStatus
-    }
-
-    func setUpOutput() {
-        guard videoOutput == nil, let videoItem = player?.currentItem else { return }
-        let pixelBuffAttributes = [
-            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange,
-        ]
-        let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBuffAttributes)
-        videoItem.add(videoOutput)
-        self.videoOutput = videoOutput
-        maskProvider?.setVideoOutout(ouput: videoOutput)
-    }
-
-    func ensureDanmuViewFront() {
-        view.bringSubviewToFront(danMuView)
-        danMuView.play()
+        overlayView.hideDebugView()
     }
 }
+
+// MARK: - AVPlayerViewControllerDelegate
 
 extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
     @objc func playerViewControllerShouldAutomaticallyDismissAtPictureInPictureStart(_: AVPlayerViewController) -> Bool {
@@ -404,12 +392,12 @@ extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
             presentedViewController.dismiss(animated: false) {
                 parent?.present(playerViewController, animated: false)
                 completionHandler(true)
-                (playerViewController.parent as? CommonPlayerViewController)?.ensureDanmuViewFront()
+                (playerViewController.parent as? CommonPlayerViewController)?.overlayView.ensureDanmuViewFront()
             }
         } else {
             presentedViewController.present(playerViewController, animated: false) {
                 completionHandler(true)
-                (playerViewController.parent as? CommonPlayerViewController)?.ensureDanmuViewFront()
+                (playerViewController.parent as? CommonPlayerViewController)?.overlayView.ensureDanmuViewFront()
             }
         }
     }
