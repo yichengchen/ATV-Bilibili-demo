@@ -92,6 +92,8 @@ class CommonPlayerViewController: AVPlayerViewController {
         return ""
     }
 
+    func loopDidChange() {}
+
     func playerStatusDidChange() {
         Logger.debug("player status: \(player?.currentItem?.status.rawValue ?? -1)")
         switch player?.currentItem?.status {
@@ -156,6 +158,7 @@ class CommonPlayerViewController: AVPlayerViewController {
         return item.copy() as? AVMetadataItem
     }
 
+    // TODO: this should move out of common
     private func setupPlayerMenu() {
         var menus = [UIMenuElement]()
         let danmuImage = UIImage(systemName: "list.bullet.rectangle.fill")
@@ -199,9 +202,10 @@ class CommonPlayerViewController: AVPlayerViewController {
 
             // Create an action to enable looping playback.
             let loopAction = UIAction(title: "循环播放", image: loopImage, state: Settings.loopPlay ? .on : .off) {
-                action in
+                [weak self] action in
                 action.state = (action.state == .off) ? .on : .off
                 Settings.loopPlay = action.state == .on
+                self?.loopDidChange()
             }
 
             let speedActions = PlaySpeed.blDefaults.map { playSpeed in

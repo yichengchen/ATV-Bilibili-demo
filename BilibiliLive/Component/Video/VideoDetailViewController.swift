@@ -348,13 +348,8 @@ class VideoDetailViewController: UIViewController {
     @IBAction func actionPlay(_ sender: Any) {
         let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, isBangumi: isBangumi))
         player.data = data
-        if pages.count > 0, let index = pages.firstIndex(where: { $0.cid == cid }) {
-            let seq = pages.dropFirst(index).map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, isBangumi: isBangumi) })
-            if seq.count > 0 {
-                let nextProvider = VideoNextProvider(seq: seq)
-                player.nextProvider = nextProvider
-            }
-        }
+        player.nextProvider = getContinouslyPlayProvider()
+
         present(player, animated: true, completion: nil)
     }
 
@@ -432,6 +427,32 @@ class VideoDetailViewController: UIViewController {
     }
 }
 
+extension VideoDetailViewController {
+    func getContinouslyPlayProvider() -> VideoNextProvider? {
+        // 有分P，分P联播
+        if pages.count > 1, let index = pages.firstIndex(where: { $0.cid == cid }) {
+            let seq = pages.map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, isBangumi: isBangumi, title: $0.part) })
+            let nextProvider = VideoNextProvider(seq: seq, startIndex: index)
+            return nextProvider
+        }
+
+        // 合集
+        if allUgcEpisodes.count > 0 {
+            let index = allUgcEpisodes.firstIndex { $0.cid == cid } ?? 0
+            let seq = allUgcEpisodes.map({ PlayInfo(aid: $0.aid, cid: $0.cid, epid: 0, isBangumi: isBangumi, title: $0.title) })
+            return VideoNextProvider(seq: seq, startIndex: index)
+        }
+
+        // 推荐
+        if let recommand = data?.Related, recommand.count > 0 {
+            let seq = recommand.map({ PlayInfo(aid: $0.aid, cid: $0.cid, epid: 0, isBangumi: false, title: $0.title) })
+            return VideoNextProvider(seq: seq, startIndex: -1)
+        }
+
+        return nil
+    }
+}
+
 extension VideoDetailViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch collectionView {
@@ -440,9 +461,10 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, isBangumi: isBangumi))
             player.data = isBangumi ? nil : data
 
-            let seq = pages.dropFirst(indexPath.item).map({ PlayInfo(aid: aid, cid: $0.cid, isBangumi: isBangumi) })
+            let seq = pages.map({ PlayInfo(aid: aid, cid: $0.cid, isBangumi: isBangumi, title: $0.part) })
+            // 分p选择，分p联播
             if seq.count > 0 {
-                let nextProvider = VideoNextProvider(seq: seq)
+                let nextProvider = VideoNextProvider(seq: seq, startIndex: indexPath.item)
                 player.nextProvider = nextProvider
             }
             present(player, animated: true, completion: nil)

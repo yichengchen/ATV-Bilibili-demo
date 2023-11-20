@@ -18,15 +18,16 @@ struct PlayInfo {
     var cid: Int? = 0
     var epid: Int? = 0 // 港澳台解锁需要
     var isBangumi: Bool = false
-
+    var title: String?
     var isCidVaild: Bool {
         return cid ?? 0 > 0
     }
 }
 
 class VideoNextProvider {
-    init(seq: [PlayInfo]) {
+    init(seq: [PlayInfo], startIndex: Int = 0) {
         playSeq = seq
+        index = startIndex
     }
 
     private var index = 0
@@ -36,11 +37,29 @@ class VideoNextProvider {
     }
 
     func getNext() -> PlayInfo? {
+        if index + 1 < playSeq.count {
+            return playSeq[index + 1]
+        }
+        return nil
+    }
+
+    func popNext() -> PlayInfo? {
         index += 1
         if index < playSeq.count {
             return playSeq[index]
         }
         return nil
+    }
+
+    func isPlayToEnd() -> Bool {
+        if playSeq.count > 0, index == playSeq.count {
+            return true
+        }
+        return false
+    }
+
+    func vaild() -> Bool {
+        return playSeq.count > 1
     }
 }
 
@@ -64,13 +83,11 @@ class VideoPlayerViewController: CommonPlayerViewController {
     private let danmuProvider = VideoDanmuProvider()
     private var clipInfos: [VideoPlayURLInfo.ClipInfo]?
     private var skipAction: UIAction?
+    private var looper: AVPlayerLooper?
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        guard let currentTime = player?.currentTime().seconds, currentTime > 0 else { return }
-
-        if let cid = playInfo.cid, cid > 0 {
-            WebRequest.reportWatchHistory(aid: playInfo.aid, cid: cid, currentTime: Int(currentTime))
-        }
+        reportHistory()
         BiliBiliUpnpDMR.shared.sendStatus(status: .stop)
     }
 
@@ -78,6 +95,9 @@ class VideoPlayerViewController: CommonPlayerViewController {
         super.viewDidLoad()
         Task {
             await initPlayer()
+
+            await fetchVideoData()
+            await danmuProvider.initVideo(cid: playInfo.cid, startPos: playerStartPos ?? 0)
         }
         danmuProvider.onShowDanmu = {
             [weak self] in
@@ -86,18 +106,51 @@ class VideoPlayerViewController: CommonPlayerViewController {
     }
 
     private func initPlayer() async {
-        if !playInfo.isCidVaild {
-            do {
-                playInfo.cid = try await WebRequest.requestCid(aid: playInfo.aid)
-            } catch let err {
-                self.showErrorAlertAndExit(message: "请求cid失败,\(err.localizedDescription)")
+        Logger.info("init player")
+        let player = AVQueuePlayer()
+        player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
+            guard let self else { return }
+            if self.danMuView.isHidden { return }
+            let seconds = time.seconds
+            self.danmuProvider.playerTimeChange(time: seconds)
+
+            if let duration = self.data?.View.duration {
+                BiliBiliUpnpDMR.shared.sendProgress(duration: duration, current: Int(seconds))
+            }
+
+            if let clipInfos = self.clipInfos {
+                var matched = false
+                for clip in clipInfos {
+                    if seconds > clip.start, seconds < clip.end {
+                        let action = {
+                            clip.skipped = true
+                            self.player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                        }
+                        if !(clip.skipped ?? false), Settings.autoSkip {
+                            action()
+                            self.skipAction = nil
+                        } else if self.skipAction?.accessibilityLabel != clip.a11Tag {
+                            self.skipAction = UIAction(title: clip.customText) { _ in
+                                action()
+                            }
+                            self.skipAction?.accessibilityLabel = clip.a11Tag
+                        }
+
+                        self.contextualActions = [self.skipAction].compactMap { $0 }
+                        matched = true
+                        break
+                    }
+                }
+                if !matched {
+                    self.contextualActions = []
+                }
             }
         }
-        await fetchVideoData()
-        await danmuProvider.initVideo(cid: playInfo.cid, startPos: playerStartPos ?? 0)
+        self.player = player
     }
 
     private func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?) async {
+        Logger.info("play media")
         let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
         let headers: [String: String] = [
             "User-Agent": "Bilibili/APPLE TV",
@@ -118,6 +171,12 @@ class VideoPlayerViewController: CommonPlayerViewController {
         danMuView.play()
         updatePlayerCharpter(playerInfo: playerInfo)
         BiliBiliUpnpDMR.shared.sendVideoSwitch(aid: playInfo.aid, cid: playInfo.cid ?? 0)
+
+        if Settings.loopPlay {
+            loopDidChange()
+        } else if Settings.continouslyPlay {
+            playerItem?.nextContentProposal = await makeProposal()
+        }
     }
 
     private func updatePlayerCharpter(playerInfo: PlayerInfo?) {
@@ -160,29 +219,24 @@ class VideoPlayerViewController: CommonPlayerViewController {
         }
     }
 
-    func playNext() -> Bool {
-        if let next = nextProvider?.getNext() {
-            playInfo = next
-            Task {
-                await initPlayer()
-            }
-            return true
+    override func playDidEnd() {
+        if playerItem?.nextContentProposal == nil, !Settings.loopPlay {
+            BiliBiliUpnpDMR.shared.sendStatus(status: .end)
+            dismiss(animated: true)
         }
-        return false
     }
 
-    override func playDidEnd() {
-        BiliBiliUpnpDMR.shared.sendStatus(status: .end)
-        if !playNext() {
-            if Settings.loopPlay {
-                nextProvider?.reset()
-                if !playNext() {
-                    playerItem?.seek(to: .zero, completionHandler: nil)
-                    player?.play()
+    override func loopDidChange() {
+        if Settings.loopPlay {
+            if looper == nil {
+                if let player = player as? AVQueuePlayer, let playerItem {
+                    looper = AVPlayerLooper(player: player, templateItem: playerItem)
                 }
-                return
             }
-            dismiss(animated: true)
+        } else {
+            playerItem?.nextContentProposal = nil
+            looper?.disableLooping()
+            looper = nil
         }
     }
 
@@ -214,12 +268,29 @@ class VideoPlayerViewController: CommonPlayerViewController {
             onResult?(AVTimedMetadataGroup(items: metadatas, timeRange: timeRange))
         }
     }
+
+    private func reportHistory() {
+        if let currentTime = player?.currentTime().seconds,
+           currentTime > 0,
+           let cid = playInfo.cid, cid > 0
+        {
+            WebRequest.reportWatchHistory(aid: playInfo.aid, cid: cid, currentTime: Int(currentTime))
+        }
+    }
 }
 
 // MARK: - Requests
 
 extension VideoPlayerViewController {
     func fetchVideoData() async {
+        if !playInfo.isCidVaild {
+            do {
+                playInfo.cid = try await WebRequest.requestCid(aid: playInfo.aid)
+            } catch let err {
+                self.showErrorAlertAndExit(message: "请求cid失败,\(err.localizedDescription)")
+            }
+        }
+
         assert(playInfo.isCidVaild)
         let aid = playInfo.aid
         let cid = playInfo.cid!
@@ -362,7 +433,6 @@ extension VideoPlayerViewController {
 // MARK: - Player
 
 extension VideoPlayerViewController {
-    @MainActor
     func prepare(toPlay asset: AVURLAsset, withKeys requestedKeys: [AnyHashable]) {
         for thisKey in requestedKeys {
             guard let thisKey = thisKey as? String else {
@@ -382,52 +452,42 @@ extension VideoPlayerViewController {
         }
 
         playerItem = AVPlayerItem(asset: asset)
-        let player = AVPlayer(playerItem: playerItem)
-        player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
-            guard let self else { return }
-            if self.danMuView.isHidden { return }
-            let seconds = time.seconds
-            self.danmuProvider.playerTimeChange(time: seconds)
+        player?.replaceCurrentItem(with: playerItem)
+    }
+}
 
-            if let duration = self.data?.View.duration {
-                BiliBiliUpnpDMR.shared.sendProgress(duration: duration, current: Int(seconds))
-            }
+extension VideoPlayerViewController {
+    func playerViewController(_ playerViewController: AVPlayerViewController, shouldPresent proposal: AVContentProposal) -> Bool {
+        playerViewController.contentProposalViewController = BLContentProposalViewController()
+        return true
+    }
 
-            if let clipInfos = self.clipInfos {
-                var matched = false
-                for clip in clipInfos {
-                    if seconds > clip.start, seconds < clip.end {
-                        let action = {
-                            clip.skipped = true
-                            self.player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
-                        }
-                        if !(clip.skipped ?? false), Settings.autoSkip {
-                            action()
-                            self.skipAction = nil
-                        } else if self.skipAction?.accessibilityLabel != clip.a11Tag {
-                            self.skipAction = UIAction(title: clip.customText) { _ in
-                                action()
-                            }
-                            self.skipAction?.accessibilityLabel = clip.a11Tag
-                        }
-
-                        self.contextualActions = [self.skipAction].compactMap { $0 }
-                        matched = true
-                        break
-                    }
-                }
-                if !matched {
-                    self.contextualActions = []
-                }
+    func playerViewController(_ playerViewController: AVPlayerViewController, didAccept proposal: AVContentProposal) {
+        if let next = nextProvider?.popNext() {
+            reportHistory()
+            playInfo = next
+            Task {
+                await fetchVideoData()
+                await danmuProvider.initVideo(cid: playInfo.cid, startPos: playerStartPos ?? 0)
             }
         }
-        if let defaultRate = self.player?.defaultRate,
-           let speed = PlaySpeed.blDefaults.first(where: { $0.value == defaultRate })
-        {
-            self.player = player
-            selectSpeed(AVPlaybackSpeed(rate: speed.value, localizedName: speed.name))
+    }
+
+    private func makeProposal() async -> AVContentProposal? {
+        guard let next = nextProvider?.getNext(), let title = next.title else { return nil }
+        // Present 10 seconds prior to the end of current presentation
+        guard let duration = try? await playerItem?.asset.load(.duration) else {
+            return nil
+        }
+        let time: CMTime
+        if duration.seconds < 5 {
+            time = CMTime(value: Int64(duration.seconds) / 2, timescale: 1)
         } else {
-            self.player = player
+            time = duration - CMTime(value: 5, timescale: 1)
         }
+
+        let proposal = AVContentProposal(contentTimeForTransition: time, title: title, previewImage: nil)
+        proposal.automaticAcceptanceInterval = -1
+        return proposal
     }
 }
