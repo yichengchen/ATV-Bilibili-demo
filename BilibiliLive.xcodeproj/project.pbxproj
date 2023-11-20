@@ -30,7 +30,6 @@
 		49508E0F2943420100D26812 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E0E2943420100D26812 /* CocoaLumberjack */; };
 		49508E112943420100D26812 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E102943420100D26812 /* CocoaLumberjackSwift */; };
 		496400D32943431E0098ACA6 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496400D22943431E0098ACA6 /* Logger.swift */; };
-		49735024290D0E8A0045C26B /* Fuzi in Frameworks */ = {isa = PBXBuildFile; productRef = 49735023290D0E8A0045C26B /* Fuzi */; };
 		4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502A29161B770045C26B /* WeeklyWatchViewController.swift */; };
 		4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */; };
 		498DB1DF291BC24700F95607 /* BMaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 498DB1DE291BC24700F95607 /* BMaskProvider.swift */; };
@@ -194,7 +193,6 @@
 				499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */,
 				49508E112943420100D26812 /* CocoaLumberjackSwift in Frameworks */,
 				F927ED65260F917D00EAB8E3 /* Gzip in Frameworks */,
-				49735024290D0E8A0045C26B /* Fuzi in Frameworks */,
 				F9171D5F2900FCFB002868C7 /* SnapKit in Frameworks */,
 				0A41EE192A630FEA0066444C /* SwiftProtobuf in Frameworks */,
 				494741C329016CCE005D6885 /* MarqueeLabel in Frameworks */,
@@ -449,7 +447,6 @@
 				F927ED9E2610B5C300EAB8E3 /* Kingfisher */,
 				F9171D5E2900FCFB002868C7 /* SnapKit */,
 				494741C229016CCE005D6885 /* MarqueeLabel */,
-				49735023290D0E8A0045C26B /* Fuzi */,
 				49078E46291BEA2400F556BD /* PocketSVG */,
 				499C75EB293058C9003160FB /* CocoaAsyncSocket */,
 				499C76122931A781003160FB /* Swifter */,
@@ -495,7 +492,6 @@
 				F927ED9D2610B5C300EAB8E3 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				F9171D5D2900FCFB002868C7 /* XCRemoteSwiftPackageReference "SnapKit" */,
 				494741C129016CCE005D6885 /* XCRemoteSwiftPackageReference "MarqueeLabel" */,
-				49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */,
 				49078E45291BEA2400F556BD /* XCRemoteSwiftPackageReference "PocketSVG" */,
 				499C75EA293058C9003160FB /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */,
 				499C76112931A780003160FB /* XCRemoteSwiftPackageReference "swifter" */,
@@ -882,14 +878,6 @@
 				minimumVersion = 3.0.0;
 			};
 		};
-		49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cezheng/Fuzi";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 3.0.0;
-			};
-		};
 		499C75EA293058C9003160FB /* XCRemoteSwiftPackageReference "CocoaAsyncSocket" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/robbiehanson/CocoaAsyncSocket.git";
@@ -989,11 +977,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 49508E0D2943420100D26812 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */;
 			productName = CocoaLumberjackSwift;
-		};
-		49735023290D0E8A0045C26B /* Fuzi */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 49735022290D0E8A0045C26B /* XCRemoteSwiftPackageReference "Fuzi" */;
-			productName = Fuzi;
 		};
 		499C75EB293058C9003160FB /* CocoaAsyncSocket */ = {
 			isa = XCSwiftPackageProductDependency;

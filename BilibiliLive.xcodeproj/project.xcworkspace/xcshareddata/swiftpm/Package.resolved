@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Alamofire/Alamofire.git",
       "state" : {
-        "revision" : "8dd85aee02e39dd280c75eef88ffdb86eed4b07b",
-        "version" : "5.6.2"
+        "revision" : "3dc6a42c7727c49bf26508e29b0a0b35f9c7e1ad",
+        "version" : "5.8.1"
       }
     },
     {
@@ -23,17 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/CocoaLumberjack/CocoaLumberjack.git",
       "state" : {
-        "revision" : "0188d31089b5881a269e01777be74c7316924346",
-        "version" : "3.8.0"
-      }
-    },
-    {
-      "identity" : "fuzi",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/cezheng/Fuzi",
-      "state" : {
-        "revision" : "f08c8323da21e985f3772610753bcfc652c2103f",
-        "version" : "3.1.3"
+        "revision" : "363ed23d19a931809ea834a7d722da830353806a",
+        "version" : "3.8.2"
       }
     },
     {
@@ -60,7 +51,7 @@
       "location" : "https://github.com/cbpowell/MarqueeLabel",
       "state" : {
         "branch" : "master",
-        "revision" : "980925156200e94062e31db9e203f535c05b27ee"
+        "revision" : "ae3cf7c647dd7f67f1946658285f5f0ce2476caf"
       }
     },
     {
@@ -69,7 +60,7 @@
       "location" : "https://github.com/pocketsvg/PocketSVG.git",
       "state" : {
         "branch" : "master",
-        "revision" : "42078d1040cb35b45d9af167ad3aa88d8e69e4f2"
+        "revision" : "10c6885e427e88d35fbb64010fbd6385cb58fef7"
       }
     },
     {
@@ -86,8 +77,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/daltoniam/Starscream.git",
       "state" : {
-        "revision" : "df8d82047f6654d8e4b655d1b1525c64e1059d21",
-        "version" : "4.0.4"
+        "revision" : "ac6c0fc9da221873e01bd1a0d4818498a71eef33",
+        "version" : "4.0.6"
       }
     },
     {
@@ -95,8 +86,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log.git",
       "state" : {
-        "revision" : "6fe203dc33195667ce1759bf0182975e4653ba1c",
-        "version" : "1.4.4"
+        "revision" : "532d8b529501fb73a2455b179e0bbb6d49b652ed",
+        "version" : "1.5.3"
       }
     },
     {
@@ -104,8 +95,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "f25867a208f459d3c5a06935dceb9083b11cd539",
-        "version" : "1.22.0"
+        "revision" : "07f7f26ded8df9645c072f220378879c4642e063",
+        "version" : "1.25.1"
       }
     },
     {
