@@ -239,21 +239,21 @@ extension DanmakuElem: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeSingularInt64Field(value: &id)
-            case 2: try try decoder.decodeSingularInt32Field(value: &progress)
-            case 3: try try decoder.decodeSingularInt32Field(value: &mode)
-            case 4: try try decoder.decodeSingularInt32Field(value: &fontsize)
-            case 5: try try decoder.decodeSingularUInt32Field(value: &color)
-            case 6: try try decoder.decodeSingularStringField(value: &midHash)
-            case 7: try try decoder.decodeSingularStringField(value: &content)
-            case 8: try try decoder.decodeSingularInt64Field(value: &ctime)
-            case 9: try try decoder.decodeSingularInt32Field(value: &weight)
-            case 10: try try decoder.decodeSingularStringField(value: &action)
-            case 11: try try decoder.decodeSingularInt32Field(value: &pool)
-            case 12: try try decoder.decodeSingularStringField(value: &idStr)
-            case 13: try try decoder.decodeSingularInt32Field(value: &attr)
-            case 22: try try decoder.decodeSingularStringField(value: &animation)
-            case 24: try try decoder.decodeSingularEnumField(value: &colorful)
+            case 1: try decoder.decodeSingularInt64Field(value: &id)
+            case 2: try decoder.decodeSingularInt32Field(value: &progress)
+            case 3: try decoder.decodeSingularInt32Field(value: &mode)
+            case 4: try decoder.decodeSingularInt32Field(value: &fontsize)
+            case 5: try decoder.decodeSingularUInt32Field(value: &color)
+            case 6: try decoder.decodeSingularStringField(value: &midHash)
+            case 7: try decoder.decodeSingularStringField(value: &content)
+            case 8: try decoder.decodeSingularInt64Field(value: &ctime)
+            case 9: try decoder.decodeSingularInt32Field(value: &weight)
+            case 10: try decoder.decodeSingularStringField(value: &action)
+            case 11: try decoder.decodeSingularInt32Field(value: &pool)
+            case 12: try decoder.decodeSingularStringField(value: &idStr)
+            case 13: try decoder.decodeSingularInt32Field(value: &attr)
+            case 22: try decoder.decodeSingularStringField(value: &animation)
+            case 24: try decoder.decodeSingularEnumField(value: &colorful)
             default: break
             }
         }
@@ -341,7 +341,7 @@ extension DanmakuAIFlag: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeRepeatedMessageField(value: &dmFlags)
+            case 1: try decoder.decodeRepeatedMessageField(value: &dmFlags)
             default: break
             }
         }
@@ -374,8 +374,8 @@ extension DanmakuAIFlag.DanmakuFlag: SwiftProtobuf.Message, SwiftProtobuf._Messa
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeSingularInt64Field(value: &dmid)
-            case 2: try try decoder.decodeSingularUInt32Field(value: &flag)
+            case 1: try decoder.decodeSingularInt64Field(value: &dmid)
+            case 2: try decoder.decodeSingularUInt32Field(value: &flag)
             default: break
             }
         }
@@ -412,8 +412,8 @@ extension DmColorful: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeSingularEnumField(value: &type)
-            case 2: try try decoder.decodeSingularStringField(value: &src)
+            case 1: try decoder.decodeSingularEnumField(value: &type)
+            case 2: try decoder.decodeSingularStringField(value: &src)
             default: break
             }
         }
@@ -452,10 +452,10 @@ extension DmSegMobileReply: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeRepeatedMessageField(value: &elems)
-            case 2: try try decoder.decodeSingularInt32Field(value: &state)
-            case 3: try try decoder.decodeSingularMessageField(value: &_aiFlag)
-            case 5: try try decoder.decodeRepeatedMessageField(value: &colorfulSrc)
+            case 1: try decoder.decodeRepeatedMessageField(value: &elems)
+            case 2: try decoder.decodeSingularInt32Field(value: &state)
+            case 3: try decoder.decodeSingularMessageField(value: &_aiFlag)
+            case 5: try decoder.decodeRepeatedMessageField(value: &colorfulSrc)
             default: break
             }
         }

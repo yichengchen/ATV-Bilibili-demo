@@ -386,8 +386,8 @@ extension DmSegConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeSingularInt64Field(value: &pageSize)
-            case 2: try try decoder.decodeSingularInt64Field(value: &total)
+            case 1: try decoder.decodeSingularInt64Field(value: &pageSize)
+            case 2: try decoder.decodeSingularInt64Field(value: &total)
             default: break
             }
         }
@@ -425,9 +425,9 @@ extension DanmakuFlagConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeSingularInt32Field(value: &recFlag)
-            case 2: try try decoder.decodeSingularStringField(value: &recText)
-            case 3: try try decoder.decodeSingularInt32Field(value: &recSwitch)
+            case 1: try decoder.decodeSingularInt32Field(value: &recFlag)
+            case 2: try decoder.decodeSingularStringField(value: &recText)
+            case 3: try decoder.decodeSingularInt32Field(value: &recSwitch)
             default: break
             }
         }
@@ -476,16 +476,16 @@ extension CommandDm: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeSingularInt64Field(value: &id)
-            case 2: try try decoder.decodeSingularInt64Field(value: &oid)
-            case 3: try try decoder.decodeSingularInt64Field(value: &mid)
-            case 4: try try decoder.decodeSingularStringField(value: &command)
-            case 5: try try decoder.decodeSingularStringField(value: &content)
-            case 6: try try decoder.decodeSingularInt32Field(value: &progress)
-            case 7: try try decoder.decodeSingularStringField(value: &ctime)
-            case 8: try try decoder.decodeSingularStringField(value: &mtime)
-            case 9: try try decoder.decodeSingularStringField(value: &extra)
-            case 10: try try decoder.decodeSingularStringField(value: &idStr)
+            case 1: try decoder.decodeSingularInt64Field(value: &id)
+            case 2: try decoder.decodeSingularInt64Field(value: &oid)
+            case 3: try decoder.decodeSingularInt64Field(value: &mid)
+            case 4: try decoder.decodeSingularStringField(value: &command)
+            case 5: try decoder.decodeSingularStringField(value: &content)
+            case 6: try decoder.decodeSingularInt32Field(value: &progress)
+            case 7: try decoder.decodeSingularStringField(value: &ctime)
+            case 8: try decoder.decodeSingularStringField(value: &mtime)
+            case 9: try decoder.decodeSingularStringField(value: &extra)
+            case 10: try decoder.decodeSingularStringField(value: &idStr)
             default: break
             }
         }
@@ -640,28 +640,28 @@ extension DanmuWebPlayerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
                 // allocates stack space for every case branch when no optimizations are
                 // enabled. https://github.com/apple/swift-protobuf/issues/1034
                 switch fieldNumber {
-                case 1: try try decoder.decodeSingularBoolField(value: &_storage._dmSwitch)
-                case 2: try try decoder.decodeSingularBoolField(value: &_storage._aiSwitch)
-                case 3: try try decoder.decodeSingularInt32Field(value: &_storage._aiLevel)
-                case 4: try try decoder.decodeSingularBoolField(value: &_storage._blocktop)
-                case 5: try try decoder.decodeSingularBoolField(value: &_storage._blockscroll)
-                case 6: try try decoder.decodeSingularBoolField(value: &_storage._blockbottom)
-                case 7: try try decoder.decodeSingularBoolField(value: &_storage._blockcolor)
-                case 8: try try decoder.decodeSingularBoolField(value: &_storage._blockspecial)
-                case 9: try try decoder.decodeSingularBoolField(value: &_storage._preventshade)
-                case 10: try try decoder.decodeSingularBoolField(value: &_storage._dmask)
-                case 11: try try decoder.decodeSingularFloatField(value: &_storage._opacity)
-                case 12: try try decoder.decodeSingularInt32Field(value: &_storage._dmarea)
-                case 13: try try decoder.decodeSingularFloatField(value: &_storage._speedplus)
-                case 14: try try decoder.decodeSingularFloatField(value: &_storage._fontsize)
-                case 15: try try decoder.decodeSingularBoolField(value: &_storage._screensync)
-                case 16: try try decoder.decodeSingularBoolField(value: &_storage._speedsync)
-                case 17: try try decoder.decodeSingularStringField(value: &_storage._fontfamily)
-                case 18: try try decoder.decodeSingularBoolField(value: &_storage._bold)
-                case 19: try try decoder.decodeSingularInt32Field(value: &_storage._fontborder)
-                case 20: try try decoder.decodeSingularStringField(value: &_storage._drawType)
-                case 21: try try decoder.decodeSingularInt32Field(value: &_storage._seniorModeSwitch)
-                case 22: try try decoder.decodeSingularInt32Field(value: &_storage._aiLevelV2)
+                case 1: try decoder.decodeSingularBoolField(value: &_storage._dmSwitch)
+                case 2: try decoder.decodeSingularBoolField(value: &_storage._aiSwitch)
+                case 3: try decoder.decodeSingularInt32Field(value: &_storage._aiLevel)
+                case 4: try decoder.decodeSingularBoolField(value: &_storage._blocktop)
+                case 5: try decoder.decodeSingularBoolField(value: &_storage._blockscroll)
+                case 6: try decoder.decodeSingularBoolField(value: &_storage._blockbottom)
+                case 7: try decoder.decodeSingularBoolField(value: &_storage._blockcolor)
+                case 8: try decoder.decodeSingularBoolField(value: &_storage._blockspecial)
+                case 9: try decoder.decodeSingularBoolField(value: &_storage._preventshade)
+                case 10: try decoder.decodeSingularBoolField(value: &_storage._dmask)
+                case 11: try decoder.decodeSingularFloatField(value: &_storage._opacity)
+                case 12: try decoder.decodeSingularInt32Field(value: &_storage._dmarea)
+                case 13: try decoder.decodeSingularFloatField(value: &_storage._speedplus)
+                case 14: try decoder.decodeSingularFloatField(value: &_storage._fontsize)
+                case 15: try decoder.decodeSingularBoolField(value: &_storage._screensync)
+                case 16: try decoder.decodeSingularBoolField(value: &_storage._speedsync)
+                case 17: try decoder.decodeSingularStringField(value: &_storage._fontfamily)
+                case 18: try decoder.decodeSingularBoolField(value: &_storage._bold)
+                case 19: try decoder.decodeSingularInt32Field(value: &_storage._fontborder)
+                case 20: try decoder.decodeSingularStringField(value: &_storage._drawType)
+                case 21: try decoder.decodeSingularInt32Field(value: &_storage._seniorModeSwitch)
+                case 22: try decoder.decodeSingularInt32Field(value: &_storage._aiLevelV2)
                 case 23: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufInt32, SwiftProtobuf.ProtobufInt32>.self, value: &_storage._aiLevelV2Map) }()
                 default: break
                 }
@@ -793,7 +793,7 @@ extension Expressions: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeRepeatedMessageField(value: &data)
+            case 1: try decoder.decodeRepeatedMessageField(value: &data)
             default: break
             }
         }
@@ -827,9 +827,9 @@ extension Expressions.Expression: SwiftProtobuf.Message, SwiftProtobuf._MessageI
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeRepeatedStringField(value: &keyword)
-            case 2: try try decoder.decodeSingularStringField(value: &url)
-            case 3: try try decoder.decodeRepeatedMessageField(value: &period)
+            case 1: try decoder.decodeRepeatedStringField(value: &keyword)
+            case 2: try decoder.decodeSingularStringField(value: &url)
+            case 3: try decoder.decodeRepeatedMessageField(value: &period)
             default: break
             }
         }
@@ -870,8 +870,8 @@ extension Expressions.Expression.Period: SwiftProtobuf.Message, SwiftProtobuf._M
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeSingularInt64Field(value: &start)
-            case 2: try try decoder.decodeSingularInt64Field(value: &end)
+            case 1: try decoder.decodeSingularInt64Field(value: &start)
+            case 2: try decoder.decodeSingularInt64Field(value: &end)
             default: break
             }
         }
@@ -918,18 +918,18 @@ extension DmWebViewReply: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
             // allocates stack space for every case branch when no optimizations are
             // enabled. https://github.com/apple/swift-protobuf/issues/1034
             switch fieldNumber {
-            case 1: try try decoder.decodeSingularInt32Field(value: &state)
-            case 2: try try decoder.decodeSingularStringField(value: &text)
-            case 3: try try decoder.decodeSingularStringField(value: &textSide)
-            case 4: try try decoder.decodeSingularMessageField(value: &_dmSge)
-            case 5: try try decoder.decodeSingularMessageField(value: &_flag)
-            case 6: try try decoder.decodeRepeatedStringField(value: &specialDms)
-            case 7: try try decoder.decodeSingularBoolField(value: &checkBox)
-            case 8: try try decoder.decodeSingularInt64Field(value: &count)
-            case 9: try try decoder.decodeRepeatedMessageField(value: &commandDms)
-            case 10: try try decoder.decodeSingularMessageField(value: &_playerConfig)
-            case 11: try try decoder.decodeRepeatedStringField(value: &reportFilterContent)
-            case 12: try try decoder.decodeRepeatedMessageField(value: &expressions)
+            case 1: try decoder.decodeSingularInt32Field(value: &state)
+            case 2: try decoder.decodeSingularStringField(value: &text)
+            case 3: try decoder.decodeSingularStringField(value: &textSide)
+            case 4: try decoder.decodeSingularMessageField(value: &_dmSge)
+            case 5: try decoder.decodeSingularMessageField(value: &_flag)
+            case 6: try decoder.decodeRepeatedStringField(value: &specialDms)
+            case 7: try decoder.decodeSingularBoolField(value: &checkBox)
+            case 8: try decoder.decodeSingularInt64Field(value: &count)
+            case 9: try decoder.decodeRepeatedMessageField(value: &commandDms)
+            case 10: try decoder.decodeSingularMessageField(value: &_playerConfig)
+            case 11: try decoder.decodeRepeatedStringField(value: &reportFilterContent)
+            case 12: try decoder.decodeRepeatedMessageField(value: &expressions)
             default: break
             }
         }
