@@ -75,12 +75,19 @@ class CommonPlayerViewController: UIViewController {
         super.viewDidLoad()
         addChild(playerVC)
         view.addSubview(playerVC.view)
+        playerVC.didMove(toParent: self)
         playerVC.view.makeConstraintsToBindToSuperview()
         playerVC.appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
         playerVC.allowsPictureInPicturePlayback = true
         playerVC.delegate = self
+        setNeedsFocusUpdate()
+        updateFocusIfNeeded()
         initDanmuView()
         setupPlayerMenu()
+    }
+
+    override var preferredFocusEnvironments: [UIFocusEnvironment] {
+        return [self.playerVC.view]
     }
 
     override func viewDidLayoutSubviews() {
@@ -100,7 +107,6 @@ class CommonPlayerViewController: UIViewController {
         return ""
     }
 
-    
     func playerStatusDidChange() {
         Logger.debug("player status: \(player?.currentItem?.status.rawValue ?? -1)")
         switch player?.currentItem?.status {
