@@ -88,9 +88,9 @@ struct ToViewData: PlayableData, Codable {
 extension WebRequest {
     static func requestToView() async throws -> [ToViewData] {
         struct Resp: Codable {
-            var list: [ToViewData]
+            var list: [ToViewData]?
         }
         let res: Resp = try await request(url: "https://api.bilibili.com/x/v2/history/toview")
-        return res.list
+        return res.list ?? []
     }
 }
