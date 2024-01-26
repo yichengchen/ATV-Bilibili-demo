@@ -43,6 +43,7 @@ enum WebRequest {
         static let userEpisodeInfo = "https://api.bilibili.com/pgc/season/episode/web/info"
         static let danmuWebView = "https://api.bilibili.com/x/v2/dm/web/view"
         static let danmuList = "https://api.bilibili.com/x/v2/dm/list/seg.so"
+//        static let spi = "https://api.bilibili.com/x/frontend/finger/spi"
     }
 
     static func requestData(method: HTTPMethod = .get,
@@ -149,6 +150,13 @@ enum WebRequest {
                 complete?(.failure(err))
             }
         }
+    }
+
+    static func requestIndex() {
+        requestData(url: "https://www.bilibili.com", complete: {
+            _ in
+            CookieHandler.shared.backupCookies()
+        })
     }
 
     static func requestPB<T: SwiftProtobuf.Message>(method: HTTPMethod = .get,

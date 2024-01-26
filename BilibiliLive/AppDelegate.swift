@@ -33,6 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } else {
             window?.rootViewController = LoginViewController.create()
         }
+        WebRequest.requestIndex()
         window?.makeKeyAndVisible()
         return true
     }

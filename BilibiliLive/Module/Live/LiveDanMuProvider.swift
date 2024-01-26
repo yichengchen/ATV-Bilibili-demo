@@ -14,7 +14,7 @@ class LiveDanMuProvider {
     private var websocket: WebSocket?
     private var heartBeatTimer: Timer?
     private let roomID: Int
-
+    private var token = ""
     var onDanmu: ((String) -> Void)?
     var onSC: ((String) -> Void)?
 
@@ -26,9 +26,17 @@ class LiveDanMuProvider {
         stop()
     }
 
-    func start() {
-        var request = URLRequest(url: URL(string: "ws://broadcastlv.chat.bilibili.com:2244/sub")!)
-        request.allHTTPHeaderFields = ["User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36", "Referer": "https://live.bilibili.com"]
+    func start() async throws {
+        let info = try await WebRequest.requestDanmuServerInfo(roomID: roomID)
+        guard let server = info.host_list.first else {
+            Logger.info("Get room server info Fail")
+            return
+        }
+        Logger.info("Get room server info \(server.host):\(server.wss_port)")
+        token = info.token
+        var request = URLRequest(url: URL(string: "wss://\(server.host):\(server.wss_port)/sub")!)
+        request.allHTTPHeaderFields = ["User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
+                                       "Referer": "https://live.bilibili.com"]
         websocket = WebSocket(request: request)
         websocket?.delegate = self
         websocket?.connect()
@@ -56,7 +64,9 @@ class LiveDanMuProvider {
     }
 
     private func sendJoinLiveRoom() {
-        let data = LiveWSHeader.encode(operatorType: .auth, data: AuthPackage(roomid: roomID).encode())
+        let mid = ApiRequest.getToken()?.mid ?? 0
+        let package = AuthPackage(uid: mid, roomid: roomID, buvid: CookieHandler.shared.buvid3(), key: token)
+        let data = LiveWSHeader.encode(operatorType: .auth, data: package.encode())
         websocket?.write(data: data)
     }
 }
@@ -76,13 +86,11 @@ extension LiveDanMuProvider {
         case .heaerBeatReply:
             print("get heaerBeatReply")
         case .normal:
-            do {
-                if header.protocolType == 0 {
-                    parseNormalData(data: contentData)
-                } else {
-                    parseData(data: try contentData.gunzipped())
-                }
-            } catch {
+            if header.protocolType == 0 {
+                parseNormalData(data: contentData)
+            } else if let data = (contentData as NSData).decompressBrotli() {
+                parseData(data: data)
+            } else {
                 parseNormalData(data: contentData)
             }
         default:
@@ -107,6 +115,14 @@ extension LiveDanMuProvider {
                 switch cmd {
                 case "DANMU_MSG":
                     if let str = json["info"][1].string { onDanmu?(str) }
+                case "DM_INTERACTION":
+                    guard let data = json["data"]["data"].string else { return }
+                    let comboArr = JSON(parseJSON: data)["combo"]
+                    for combo in comboArr.arrayValue {
+                        if let str = combo["content"].string, let cnt = combo["cnt"].int {
+                            onDanmu?("\(str) x\(cnt)")
+                        }
+                    }
                 case "SUPER_CHAT_MESSAGE":
                     if let str = json["data"]["message"].string { onSC?(str) }
                 default:
@@ -128,15 +144,17 @@ extension LiveDanMuProvider {
 
 extension LiveDanMuProvider: WebSocketDelegate {
     func didReceive(event: Starscream.WebSocketEvent, client: Starscream.WebSocketClient) {
-        print(event)
         switch event {
         case .connected:
+            Logger.info("websocket connected")
             sendJoinLiveRoom()
             setupHeartBeat()
         case .disconnected:
             Logger.info("websocket disconnected")
         case let .binary(data):
             parseData(data: data)
+        case let .error(error):
+            Logger.info("websocket error: \(String(describing: error))")
         default:
             break
         }
@@ -182,15 +200,38 @@ private enum OperatorType: UInt32 {
 }
 
 private struct AuthPackage: Encodable {
-    let uid = 0
+    let uid: Int
     let roomid: Int
-    let protover = 2
+    let protover = 3
+    let buvid: String
     let platform = "web"
-    let clientver = "2.6.38"
     let type = 2
-    let key = "XxbA7FDv1Zu0tztQcnbagJbO4NqhkD4I8qZLZVkbZwUfXgUF7-CyqxFd91_2EWdCxDWP9gQ6AqY_0J7U3ftThP-qrFiVr3a4VL-MrHrNEATy9MJzbm2BYaAt-TxzJcMcHJU8h7AO-8-zapyR"
+    let key: String
 
     func encode() -> Data {
         try! JSONEncoder().encode(self)
+    }
+}
+
+extension WebRequest.EndPoint {
+    static let getDanmuInfo = "https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo"
+}
+
+extension WebRequest {
+    struct DanmuServerInfo: Codable {
+        struct Host: Codable {
+            let host: String
+            let port: Int
+            let wss_port: Int
+            let ws_port: Int
+        }
+
+        let token: String
+        let host_list: [Host]
+    }
+
+    static func requestDanmuServerInfo(roomID: Int) async throws -> DanmuServerInfo {
+        let resp: DanmuServerInfo = try await request(url: EndPoint.getDanmuInfo, parameters: ["id": roomID])
+        return resp
     }
 }

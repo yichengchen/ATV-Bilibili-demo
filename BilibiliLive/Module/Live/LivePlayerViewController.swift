@@ -41,7 +41,7 @@ class LivePlayerViewController: CommonPlayerViewController {
         Task {
             do {
                 try await refreshRoomsID()
-                initDataSource()
+                await initDataSource()
                 try await initPlayer()
             } catch let err {
                 endWithError(err: err)
@@ -74,7 +74,6 @@ class LivePlayerViewController: CommonPlayerViewController {
 
     func play() {
         if let url = playInfo.first?.url {
-            danMuProvider?.start()
             danMuView.play()
 
             let headers: [String: String] = [
@@ -120,7 +119,7 @@ class LivePlayerViewController: CommonPlayerViewController {
         }
     }
 
-    func initDataSource() {
+    func initDataSource() async {
         danMuProvider = LiveDanMuProvider(roomID: roomID)
         danMuProvider?.onDanmu = {
             [weak self] string in
@@ -134,7 +133,7 @@ class LivePlayerViewController: CommonPlayerViewController {
             model.displayTime = 60
             self?.danMuView.shoot(danmaku: model)
         }
-        danMuProvider?.start()
+        try? await danMuProvider?.start()
     }
 
     override func additionDebugInfo() -> String {
