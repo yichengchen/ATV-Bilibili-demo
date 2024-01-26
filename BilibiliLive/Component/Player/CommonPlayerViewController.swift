@@ -213,23 +213,11 @@ extension CommonPlayerViewController {
                 Settings.loopPlay = action.state == .on
             }
 
-            let playSpeedArray = [PlaySpeed(name: "0.5X", value: 0.5),
-                                  PlaySpeed(name: "0.75X", value: 0.75),
-                                  PlaySpeed(name: "1X", value: 1),
-                                  PlaySpeed(name: "1.25X", value: 1.25),
-                                  PlaySpeed(name: "1.5X", value: 1.5),
-                                  PlaySpeed(name: "2X", value: 2)]
-
-            let speedActions = playSpeedArray.map { playSpeed in
+            let speedActions = PlaySpeed.blDefaults.map { playSpeed in
                 UIAction(title: playSpeed.name, state: player?.rate ?? 1 == playSpeed.value ? .on : .off) { [weak self] _ in
-                    guard let self else { return }
-                    player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
-                    if #available(tvOS 16.0, *) {
-                        playerVC.selectSpeed(AVPlaybackSpeed(rate: playSpeed.value, localizedName: playSpeed.name))
-                    } else {
-                        player?.rate = playSpeed.value
-                    }
-                    danMuView.playingSpeed = playSpeed.value
+                    self?.player?.currentItem?.audioTimePitchAlgorithm = .timeDomain
+                    self?.selectSpeed(AVPlaybackSpeed(rate: playSpeed.value, localizedName: playSpeed.name))
+                    self?.danMuView.playingSpeed = playSpeed.value
                 }
             }
             let playSpeedMenu = UIMenu(title: "播放速度", options: [.displayInline, .singleSelection], children: speedActions)
@@ -406,4 +394,15 @@ extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
 struct PlaySpeed {
     var name: String
     var value: Float
+}
+
+extension PlaySpeed {
+    static let blDefaults = [
+        PlaySpeed(name: "0.5X", value: 0.5),
+        PlaySpeed(name: "0.75X", value: 0.75),
+        PlaySpeed(name: "1X", value: 1),
+        PlaySpeed(name: "1.25X", value: 1.25),
+        PlaySpeed(name: "1.5X", value: 1.5),
+        PlaySpeed(name: "2X", value: 2),
+    ]
 }

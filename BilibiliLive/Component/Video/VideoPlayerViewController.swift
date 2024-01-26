@@ -380,8 +380,8 @@ extension VideoPlayerViewController {
         }
 
         playerItem = AVPlayerItem(asset: asset)
-        player = AVPlayer(playerItem: playerItem)
-        player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
+        let player = AVPlayer(playerItem: playerItem)
+        player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
             guard let self else { return }
             DispatchQueue.main.async {
                 self.updatePlayerInfo(at: time.seconds)
@@ -424,6 +424,14 @@ extension VideoPlayerViewController {
             if !matched {
                 playerVC.contextualActions = []
             }
+        }
+        if let defaultRate = self.player?.defaultRate,
+           let speed = PlaySpeed.blDefaults.first(where: { $0.value == defaultRate })
+        {
+            self.player = player
+            selectSpeed(AVPlaybackSpeed(rate: speed.value, localizedName: speed.name))
+        } else {
+            self.player = player
         }
     }
 }

@@ -127,14 +127,14 @@ extension LiveDanMuProvider {
 // MARK: WebSocketDelegate
 
 extension LiveDanMuProvider: WebSocketDelegate {
-    func didReceive(event: WebSocketEvent, client: WebSocket) {
+    func didReceive(event: Starscream.WebSocketEvent, client: Starscream.WebSocketClient) {
         print(event)
         switch event {
         case .connected:
             sendJoinLiveRoom()
             setupHeartBeat()
         case .disconnected:
-            print("disconnect")
+            Logger.info("websocket disconnected")
         case let .binary(data):
             parseData(data: data)
         default:

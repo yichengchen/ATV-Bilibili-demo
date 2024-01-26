@@ -116,10 +116,7 @@ class FeedCollectionViewController: UIViewController {
     }
 
     private var selfSizeingEnable: Bool {
-        if #available(tvOS 16.0, *) {
-            return true
-        }
-        return false
+        true
     }
 
     private func makeGridLayoutSection() -> NSCollectionLayoutSection {
