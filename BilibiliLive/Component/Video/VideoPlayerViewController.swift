@@ -267,6 +267,8 @@ extension VideoPlayerViewController {
                     }
                 }
                 showErrorAlertAndExit(message: "请求失败\(code) \(message)，可能需要大会员")
+            } else if info?.is_upower_exclusive == true {
+                showErrorAlertAndExit(message: "请求失败,该视频为充电专属视频 \(err)")
             } else {
                 showErrorAlertAndExit(message: "请求失败,\(err)")
             }

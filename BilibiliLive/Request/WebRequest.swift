@@ -783,6 +783,7 @@ struct PlayerInfo: Codable {
     let view_points: [ViewPoint]?
     let dm_mask: MaskInfo?
     let last_play_cid: Int
+    let is_upower_exclusive: Bool?
     var playTimeInSecond: Int {
         last_play_time / 1000
     }
@@ -847,7 +848,7 @@ struct VideoPlayURLInfo: Codable {
         let format: String
         let new_description: String
         let display_desc: String
-        let codecs: [String]
+        let codecs: [String]?
     }
 
     struct DashInfo: Codable {
