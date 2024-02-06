@@ -13,6 +13,7 @@ import UIKit
 struct CellModel {
     let title: String
     var desp: String? = nil
+    var autoSelect: Bool? = true
     var contentVC: UIViewController? = nil
     var action: (() -> Void)? = nil
 }
@@ -51,7 +52,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     func setupData() {
         let setting = CellModel(title: "设置", contentVC: SettingsViewController.create())
         cellModels.append(setting)
-        cellModels.append(CellModel(title: "搜索", action: {
+        cellModels.append(CellModel(title: "搜索", autoSelect: false, action: {
             [weak self] in
             let resultVC = SearchResultViewController()
             let searchVC = UISearchController(searchResultsController: resultVC)
@@ -63,7 +64,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         cellModels.append(CellModel(title: "历史记录", contentVC: HistoryViewController()))
         cellModels.append(CellModel(title: "每周必看", contentVC: WeeklyWatchViewController()))
 
-        let logout = CellModel(title: "登出") {
+        let logout = CellModel(title: "登出", autoSelect: false) {
             [weak self] in
             self?.actionLogout()
         }
@@ -116,6 +117,26 @@ extension PersonalViewController: UICollectionViewDataSource {
 extension PersonalViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let model = cellModels[indexPath.item]
+        if let vc = model.contentVC {
+            setViewController(vc: vc)
+        }
+        model.action?()
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didUpdateFocusIn context: UICollectionViewFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        if Settings.sideMenuAutoSelectChange == false {
+            return
+        }
+        // 检查新的焦点是否是UICollectionViewCell
+        guard let nextFocusedIndexPath = context.nextFocusedIndexPath else {
+            return
+        }
+        let model = cellModels[nextFocusedIndexPath.item]
+        if model.autoSelect == false {
+            // 不自动选中
+            return
+        }
+        collectionView.selectItem(at: nextFocusedIndexPath, animated: true, scrollPosition: .centeredHorizontally)
         if let vc = model.contentVC {
             setViewController(vc: vc)
         }

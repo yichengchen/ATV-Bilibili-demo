@@ -12,6 +12,7 @@ class CategoryViewController: UIViewController, BLTabBarContentVCProtocol {
     struct CategoryDisplayModel {
         let title: String
         let contentVC: UIViewController
+        var autoSelect: Bool? = true
     }
 
     var typeCollectionView: UICollectionView!
@@ -73,5 +74,21 @@ extension CategoryViewController: UICollectionViewDataSource {
 extension CategoryViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         setViewController(vc: categories[indexPath.item].contentVC)
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didUpdateFocusIn context: UICollectionViewFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        if Settings.sideMenuAutoSelectChange == false {
+            return
+        }
+        guard let nextFocusedIndexPath = context.nextFocusedIndexPath else {
+            return
+        }
+        let categoryModel = categories[nextFocusedIndexPath.item]
+        if categoryModel.autoSelect == false {
+            // 不自动选中
+            return
+        }
+        collectionView.selectItem(at: nextFocusedIndexPath, animated: true, scrollPosition: .centeredHorizontally)
+        setViewController(vc: categoryModel.contentVC)
     }
 }

@@ -92,6 +92,9 @@ enum Settings {
 
     @UserDefault("Settings.arealimit.customServer", defaultValue: "")
     static var areaLimitCustomServer: String
+
+    @UserDefault("Settings.ui.sideMenuAutoSelectChange", defaultValue: false)
+    static var sideMenuAutoSelectChange: Bool
 }
 
 struct MediaQuality {
