@@ -499,7 +499,7 @@ struct HistoryData: DisplayData, Codable {
 //    let bangumi: BangumiData?
 }
 
-struct FavData: DisplayData, Codable {
+struct FavData: PlayableData, Codable {
     var cover: String
     var upper: VideoOwner
     var id: Int
@@ -511,6 +511,14 @@ struct FavData: DisplayData, Codable {
 
     struct Ogv: Codable, Hashable {
         let season_id: Int?
+    }
+
+    var aid: Int {
+        return id
+    }
+
+    var cid: Int {
+        return 0
     }
 }
 
