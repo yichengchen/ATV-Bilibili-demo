@@ -31,6 +31,8 @@ enum WebRequest {
         static let info = "https://api.bilibili.com/x/web-interface/view"
         static let fav = "https://api.bilibili.com/x/v3/fav/resource/list"
         static let favList = "https://api.bilibili.com/x/v3/fav/folder/created/list-all"
+        static let favFolderCollectedList = "https://api.bilibili.com/x/v3/fav/folder/collected/list"
+        static let favSeason = "https://api.bilibili.com/x/space/fav/season/list"
         static let reportHistory = "https://api.bilibili.com/x/v2/history/report"
         static let upSpace = "https://api.bilibili.com/x/space/wbi/arc/search"
         static let like = "https://api.bilibili.com/x/web-interface/archive/like"
@@ -295,7 +297,10 @@ extension WebRequest {
             let list: [FavListData]
         }
         let res: Resp = try await request(method: .get, url: EndPoint.favList, parameters: ["up_mid": mid])
-        return res.list
+        return res.list.map {
+            $0.createBySelf = true
+            return $0
+        }
     }
 
     static func requestFavVideos(mid: String, page: Int) async throws -> [FavData] {
@@ -303,6 +308,23 @@ extension WebRequest {
             let medias: [FavData]?
         }
         let res: Resp = try await request(method: .get, url: EndPoint.fav, parameters: ["media_id": mid, "ps": "20", "pn": page, "platform": "web"])
+        return res.medias ?? []
+    }
+
+    static func requestFavFolderCollectedList() async throws -> [FavListData] {
+        guard let mid = ApiRequest.getToken()?.mid else { return [] }
+        struct Resp: Codable {
+            let list: [FavListData]
+        }
+        let res: Resp = try await request(method: .get, url: EndPoint.favFolderCollectedList, parameters: ["up_mid": mid, "pn": 1, "ps": 100, "platform": "web"])
+        return res.list
+    }
+
+    static func requestFavSeason(seasonId: String, page: Int) async throws -> [FavData] {
+        struct Resp: Codable {
+            let medias: [FavData]?
+        }
+        let res: Resp = try await request(method: .get, url: EndPoint.favSeason, parameters: ["season_id": seasonId, "ps": "20", "pn": page, "platform": "web"])
         return res.medias ?? []
     }
 
@@ -488,7 +510,13 @@ struct HistoryData: DisplayData, Codable {
 
     let title: String
     var ownerName: String { owner.name }
-    var avatar: URL? { URL(string: owner.face) }
+    var avatar: URL? {
+        if owner.face != nil {
+            return URL(string: owner.face!)
+        }
+        return nil
+    }
+
     let pic: URL?
 
     let owner: VideoOwner
@@ -528,6 +556,8 @@ class FavListData: Codable, Hashable {
     var currentPage = 1
     var end = false
     var loading = false
+    // 收藏夹是否为用户自己创建
+    var createBySelf = false
     enum CodingKeys: String, CodingKey {
         case title, id
     }
@@ -625,13 +655,25 @@ extension VideoDetail: DisplayData {
     var title: String { View.title }
     var ownerName: String { View.owner.name }
     var pic: URL? { View.pic }
-    var avatar: URL? { URL(string: View.owner.face) }
+    var avatar: URL? {
+        if View.owner.face != nil {
+            return URL(string: View.owner.face!)
+        }
+        return nil
+    }
+
     var date: String? { DateFormatter.stringFor(timestamp: View.pubdate) }
 }
 
 extension VideoDetail.Info: DisplayData, PlayableData {
     var ownerName: String { owner.name }
-    var avatar: URL? { URL(string: owner.face) }
+    var avatar: URL? {
+        if owner.face != nil {
+            return URL(string: owner.face!)
+        }
+        return nil
+    }
+
     var date: String? { DateFormatter.stringFor(timestamp: pubdate) }
 }
 
@@ -756,7 +798,7 @@ struct UserEpisodeInfo: Codable, Hashable {
 struct VideoOwner: Codable, Hashable {
     let mid: Int
     let name: String
-    let face: String
+    var face: String?
 }
 
 struct VideoPage: Codable, Hashable {
