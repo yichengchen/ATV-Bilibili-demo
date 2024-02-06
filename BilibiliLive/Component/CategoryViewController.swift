@@ -22,6 +22,16 @@ class CategoryViewController: UIViewController, BLTabBarContentVCProtocol {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if categories.isEmpty {
+        } else {
+            initTypeCollectionView()
+        }
+    }
+
+    func initTypeCollectionView() {
+        if typeCollectionView != nil {
+            return
+        }
         typeCollectionView = UICollectionView(frame: .zero, collectionViewLayout: BLSettingLineCollectionViewCell.makeLayout())
         typeCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         view.addSubview(typeCollectionView)
