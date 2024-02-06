@@ -182,6 +182,13 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(matchHdrOnly)
 
+        let sideMenuAutoSelectChange = CellModel(title: "侧边栏菜单自动切换", desp: Settings.sideMenuAutoSelectChange ? "开" : "关") {
+            [weak self] in
+            Settings.sideMenuAutoSelectChange.toggle()
+            self?.setupData()
+        }
+        cellModels.append(sideMenuAutoSelectChange)
+
         let areaLimitUnlock = CellModel(title: "解锁港澳台番剧限制", desp: Settings.areaLimitUnlock ? "开" : "关") {
             [weak self] in
             Settings.areaLimitUnlock.toggle()
