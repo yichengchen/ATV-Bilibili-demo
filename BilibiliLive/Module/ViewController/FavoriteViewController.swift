@@ -15,11 +15,20 @@ class FavoriteViewController: CategoryViewController {
         super.viewDidLoad()
 
         Task {
-            guard let favList = try? await WebRequest.requestFavVideosList() else {
-                return
+            // 用户创建的收藏夹
+            let favList = try? await WebRequest.requestFavVideosList()
+            if favList != nil {
+                categories = favList!.map {
+                    return CategoryDisplayModel(title: $0.title, contentVC: FavoriteVideoContentViewController(info: $0))
+                }
             }
-            categories = favList.map {
-                return CategoryDisplayModel(title: $0.title, contentVC: FavoriteVideoContentViewController(info: $0))
+
+            // 用户收藏的订阅
+            let favFolderCollectedList = try? await WebRequest.requestFavFolderCollectedList()
+            if favFolderCollectedList != nil {
+                favFolderCollectedList!.forEach {
+                    categories.append(CategoryDisplayModel(title: $0.title, contentVC: FavoriteVideoContentViewController(info: $0)))
+                }
             }
 
             initTypeCollectionView()
@@ -45,7 +54,11 @@ class FavoriteVideoContentViewController: StandardVideoCollectionViewController<
     }
 
     override func request(page: Int) async throws -> [FavData] {
-        return try await WebRequest.requestFavVideos(mid: String(info.id), page: page)
+        if info.createBySelf {
+            return try await WebRequest.requestFavVideos(mid: String(info.id), page: page)
+        } else {
+            return try await WebRequest.requestFavSeason(seasonId: String(info.id), page: page)
+        }
     }
 
     override func goDetail(with record: FavData) {
