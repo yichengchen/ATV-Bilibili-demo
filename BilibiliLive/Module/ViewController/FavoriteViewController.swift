@@ -23,7 +23,6 @@ class FavoriteViewController: CategoryViewController {
             }
 
             initTypeCollectionView()
-            print("收藏加载完成，数据量")
         }
     }
 }
