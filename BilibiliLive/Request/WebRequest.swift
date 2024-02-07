@@ -553,13 +553,14 @@ struct FavData: PlayableData, Codable {
 class FavListData: Codable, Hashable {
     let title: String
     let id: Int
+    var mid: Int?
     var currentPage = 1
     var end = false
     var loading = false
     // 收藏夹是否为用户自己创建
     var createBySelf = false
     enum CodingKeys: String, CodingKey {
-        case title, id
+        case title, id, mid
     }
 
     static func == (lhs: FavListData, rhs: FavListData) -> Bool {

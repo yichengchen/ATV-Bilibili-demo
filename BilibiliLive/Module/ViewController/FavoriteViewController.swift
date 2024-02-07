@@ -17,18 +17,20 @@ class FavoriteViewController: CategoryViewController {
         Task {
             // 用户创建的收藏夹
             let favList = try? await WebRequest.requestFavVideosList()
-            if favList != nil {
-                categories = favList!.map {
+            if let favList {
+                categories = favList.map {
                     return CategoryDisplayModel(title: $0.title, contentVC: FavoriteVideoContentViewController(info: $0))
                 }
             }
 
             // 用户收藏的订阅
             let favFolderCollectedList = try? await WebRequest.requestFavFolderCollectedList()
-            if favFolderCollectedList != nil {
-                favFolderCollectedList!.forEach {
-                    categories.append(CategoryDisplayModel(title: $0.title, contentVC: FavoriteVideoContentViewController(info: $0)))
-                }
+            if let favFolderCollectedList {
+                favFolderCollectedList
+                    .filter { $0.mid != 0 }
+                    .forEach {
+                        categories.append(CategoryDisplayModel(title: $0.title, contentVC: FavoriteVideoContentViewController(info: $0)))
+                    }
             }
 
             initTypeCollectionView()
