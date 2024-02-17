@@ -99,7 +99,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             supplementCodesc = codecs + "/db1p"
             codecs = "hvc1.2.4.L150"
             videoRange = "PQ"
-        } else if codecs == "dvh1.05.06" {
+        } else if codecs.hasPrefix("dvh1.05") {
             videoRange = "PQ"
         } else if isHDR {
             Logger.warn("unknown hdr codecs: \(codecs)")
