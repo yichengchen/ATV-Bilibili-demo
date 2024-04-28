@@ -163,6 +163,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
     func playNext() -> Bool {
         if let next = nextProvider?.getNext() {
             playInfo = next
+            playerStartPos = 0
             Task {
                 await initPlayer()
             }
