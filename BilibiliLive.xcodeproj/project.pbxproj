@@ -112,7 +112,6 @@
 		F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F9B5735A260F5F7600771ED5 /* Assets.xcassets */; };
 		F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F9B5735C260F5F7600771ED5 /* LaunchScreen.storyboard */; };
 		F9B5736E260F652C00771ED5 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = F9B5736D260F652C00771ED5 /* Alamofire */; };
-		F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */ = {isa = PBXBuildFile; productRef = F9B57372260F6B8E00771ED5 /* Starscream */; };
 		F9B57378260F6BB400771ED5 /* SwiftyJSON in Frameworks */ = {isa = PBXBuildFile; productRef = F9B57377260F6BB400771ED5 /* SwiftyJSON */; };
 		F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */; };
 		F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9B9EAE9261B15020045C2C6 /* FeedCollectionViewController.swift */; };
@@ -315,7 +314,6 @@
 				499C76132931A781003160FB /* Swifter in Frameworks */,
 				49508E0F2943420100D26812 /* CocoaLumberjack in Frameworks */,
 				499C75EC293058C9003160FB /* CocoaAsyncSocket in Frameworks */,
-				F9B57373260F6B8E00771ED5 /* Starscream in Frameworks */,
 				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -684,7 +682,6 @@
 			name = BilibiliLive;
 			packageProductDependencies = (
 				F9B5736D260F652C00771ED5 /* Alamofire */,
-				F9B57372260F6B8E00771ED5 /* Starscream */,
 				F9B57377260F6BB400771ED5 /* SwiftyJSON */,
 				F927ED64260F917D00EAB8E3 /* Gzip */,
 				F927ED9E2610B5C300EAB8E3 /* Kingfisher */,
@@ -729,7 +726,6 @@
 			mainGroup = F9B57347260F5F7400771ED5;
 			packageReferences = (
 				F9B5736C260F652C00771ED5 /* XCRemoteSwiftPackageReference "Alamofire" */,
-				F9B57371260F6B8E00771ED5 /* XCRemoteSwiftPackageReference "Starscream" */,
 				F9B57376260F6BB400771ED5 /* XCRemoteSwiftPackageReference "SwiftyJSON" */,
 				F927ED63260F917D00EAB8E3 /* XCRemoteSwiftPackageReference "GzipSwift" */,
 				F927ED9D2610B5C300EAB8E3 /* XCRemoteSwiftPackageReference "Kingfisher" */,
@@ -1206,14 +1202,6 @@
 				minimumVersion = 5.4.1;
 			};
 		};
-		F9B57371260F6B8E00771ED5 /* XCRemoteSwiftPackageReference "Starscream" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/daltoniam/Starscream.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 4.0.4;
-			};
-		};
 		F9B57376260F6BB400771ED5 /* XCRemoteSwiftPackageReference "SwiftyJSON" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SwiftyJSON/SwiftyJSON.git";
@@ -1284,11 +1272,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F9B5736C260F652C00771ED5 /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
-		};
-		F9B57372260F6B8E00771ED5 /* Starscream */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F9B57371260F6B8E00771ED5 /* XCRemoteSwiftPackageReference "Starscream" */;
-			productName = Starscream;
 		};
 		F9B57377260F6BB400771ED5 /* SwiftyJSON */ = {
 			isa = XCSwiftPackageProductDependency;

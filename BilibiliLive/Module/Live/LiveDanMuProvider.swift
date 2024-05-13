@@ -6,12 +6,12 @@
 //
 
 import Foundation
+@_spi(WebSocket) import Alamofire
 import Gzip
-import Starscream
 import SwiftyJSON
 
 class LiveDanMuProvider {
-    private var websocket: WebSocket?
+    private var websocket: WebSocketRequest?
     private var heartBeatTimer: Timer?
     private let roomID: Int
     private var token = ""
@@ -34,16 +34,17 @@ class LiveDanMuProvider {
         }
         Logger.info("Get room server info \(server.host):\(server.wss_port)")
         token = info.token
-        var request = URLRequest(url: URL(string: "wss://\(server.host):\(server.wss_port)/sub")!)
-        request.allHTTPHeaderFields = ["User-Agent": Keys.userAgent,
-                                       "Referer": Keys.userAgent]
-        websocket = WebSocket(request: request)
-        websocket?.delegate = self
-        websocket?.connect()
+        var afheaders = HTTPHeaders()
+        afheaders.add(.userAgent(Keys.userAgent))
+        afheaders.add(HTTPHeader(name: "Referer", value: Keys.referer))
+
+        websocket = AF.webSocketRequest(to: "wss://\(server.host):\(server.wss_port)/sub", headers: afheaders).streamMessageEvents { [weak self] event in
+            self?.handleWebsocketEvent(event: event)
+        }
     }
 
     func stop() {
-        websocket?.disconnect()
+        websocket?.close(sending: .normalClosure)
         heartBeatTimer?.invalidate()
     }
 
@@ -59,15 +60,14 @@ class LiveDanMuProvider {
     }
 
     @objc private func sendHeartBeat() {
-        let data = getHeartbeatPackage()
-        websocket?.write(data: data)
+        websocket?.send(.data(getHeartbeatPackage()), completionHandler: { _ in })
     }
 
     private func sendJoinLiveRoom() {
         let mid = ApiRequest.getToken()?.mid ?? 0
         let package = AuthPackage(uid: mid, roomid: roomID, buvid: CookieHandler.shared.buvid3(), key: token)
         let data = LiveWSHeader.encode(operatorType: .auth, data: package.encode())
-        websocket?.write(data: data)
+        websocket?.send(.data(data), completionHandler: { _ in })
     }
 }
 
@@ -112,15 +112,20 @@ extension LiveDanMuProvider {
             .map { JSON(parseJSON: $0) }
             .forEach { json in
                 let cmd = json["cmd"].stringValue
+                Logger.debug("get cmd:\(cmd)")
                 switch cmd {
                 case "DANMU_MSG":
-                    if let str = json["info"][1].string { onDanmu?(str) }
+                    if let str = json["info"][1].string {
+                        Logger.debug("danmu:\(str)")
+                        onDanmu?(str)
+                    }
                 case "DM_INTERACTION":
                     guard let data = json["data"]["data"].string else { return }
                     let comboArr = JSON(parseJSON: data)["combo"]
                     for combo in comboArr.arrayValue {
-                        if let str = combo["content"].string, let cnt = combo["cnt"].int {
-                            onDanmu?("\(str) x\(cnt)")
+                        if let str = combo["content"].string {
+                            // let cnt = combo["cnt"].int
+                            onDanmu?("\(str)")
                         }
                     }
                 case "SUPER_CHAT_MESSAGE":
@@ -142,21 +147,21 @@ extension LiveDanMuProvider {
 
 // MARK: WebSocketDelegate
 
-extension LiveDanMuProvider: WebSocketDelegate {
-    func didReceive(event: Starscream.WebSocketEvent, client: Starscream.WebSocketClient) {
-        switch event {
+extension LiveDanMuProvider {
+    func handleWebsocketEvent(event: WebSocketRequest.Event<URLSessionWebSocketTask.Message, Never>) {
+        switch event.kind {
         case .connected:
             Logger.info("websocket connected")
             sendJoinLiveRoom()
             setupHeartBeat()
         case .disconnected:
             Logger.info("websocket disconnected")
-        case let .binary(data):
-            parseData(data: data)
-        case let .error(error):
-            Logger.info("websocket error: \(String(describing: error))")
+        case let .receivedMessage(message):
+            if case let .data(data) = message {
+                parseData(data: data)
+            }
         default:
-            break
+            Logger.warn(event)
         }
     }
 }
