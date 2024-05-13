@@ -46,12 +46,9 @@ class CommonPlayerViewController: AVPlayerViewController {
                 rateObserver = player.observe(\.rate, options: [.old, .new]) {
                     [weak self] player, _ in
                     guard let self = self else { return }
-                    if player.rate > 0, self.danMuView.status == .pause {
-                        self.danMuView.play()
-                    } else if player.rate == 0, self.danMuView.status == .play {
-                        self.danMuView.pause()
-                    }
+                    playerRateDidChange(player: player)
                 }
+                danMuView.play()
             } else {
                 rateObserver = nil
             }
@@ -116,6 +113,8 @@ class CommonPlayerViewController: AVPlayerViewController {
             break
         }
     }
+
+    func playerRateDidChange(player: AVPlayer) {}
 
     func setPlayerInfo(title: String?, subTitle: String?, desp: String?, pic: URL?) {
         let desp = desp?.components(separatedBy: "\n").joined(separator: " ")

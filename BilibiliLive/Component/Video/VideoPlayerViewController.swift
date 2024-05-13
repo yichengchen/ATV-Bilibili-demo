@@ -115,7 +115,6 @@ class VideoPlayerViewController: CommonPlayerViewController {
         let requestedKeys = ["playable"]
         await asset.loadValues(forKeys: requestedKeys)
         prepare(toPlay: asset, withKeys: requestedKeys)
-        danMuView.play()
         updatePlayerCharpter(playerInfo: playerInfo)
         BiliBiliUpnpDMR.shared.sendVideoSwitch(aid: playInfo.aid, cid: playInfo.cid ?? 0)
     }
@@ -157,6 +156,14 @@ class VideoPlayerViewController: CommonPlayerViewController {
             BiliBiliUpnpDMR.shared.sendStatus(status: .stop)
         default:
             break
+        }
+    }
+
+    override func playerRateDidChange(player: AVPlayer) {
+        if player.rate > 0, danMuView.status == .pause {
+            danMuView.play()
+        } else if player.rate == 0, danMuView.status == .play {
+            danMuView.pause()
         }
     }
 

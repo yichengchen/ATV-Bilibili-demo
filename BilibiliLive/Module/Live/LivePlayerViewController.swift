@@ -54,7 +54,6 @@ class LivePlayerViewController: CommonPlayerViewController {
                 setPlayerInfo(title: room?.title, subTitle: "nil", desp: room?.ownerName, pic: room?.pic)
             }
         }
-        danMuView.play()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -70,6 +69,19 @@ class LivePlayerViewController: CommonPlayerViewController {
         }
         play()
         return true
+    }
+
+    override func playerRateDidChange(player: AVPlayer) {
+        Logger.info("play speed change to", player.rate)
+        if player.rate == 0 {
+            Task {
+                do {
+                    try await initPlayer()
+                } catch let err {
+                    endWithError(err: err)
+                }
+            }
+        }
     }
 
     func play() {
