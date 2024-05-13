@@ -55,6 +55,15 @@
       }
     },
     {
+      "identity" : "mpvkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/cxfksword/MPVKit.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "53687a81b3787dbbf19fa89bb4c92088b7eb6586"
+      }
+    },
+    {
       "identity" : "pocketsvg",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pocketsvg/PocketSVG.git",
