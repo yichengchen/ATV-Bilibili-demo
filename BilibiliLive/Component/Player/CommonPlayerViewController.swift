@@ -116,7 +116,7 @@ class CommonPlayerViewController: AVPlayerViewController {
 
     func playerRateDidChange(player: AVPlayer) {}
 
-    func setPlayerInfo(title: String?, subTitle: String?, desp: String?, pic: URL?) {
+    @MainActor func setPlayerInfo(title: String?, subTitle: String?, desp: String?, pic: URL?) {
         let desp = desp?.components(separatedBy: "\n").joined(separator: " ")
         let mapping: [AVMetadataIdentifier: Any?] = [
             .commonIdentifierTitle: title,

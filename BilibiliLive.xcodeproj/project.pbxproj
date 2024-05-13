@@ -37,6 +37,7 @@
 		4973610B2BF1FFEE00ED213F /* MPVKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4973610A2BF1FFEE00ED213F /* MPVKit */; };
 		497361122BF2011100ED213F /* MPVMetalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973610F2BF2011100ED213F /* MPVMetalViewController.swift */; };
 		497361132BF2011100ED213F /* MetalLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497361102BF2011100ED213F /* MetalLayer.swift */; };
+		497361152BF2020A00ED213F /* LivePlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497361142BF2020A00ED213F /* LivePlayerViewModel.swift */; };
 		498CF2902B63AABE0009793E /* dictionary_hash.c in Sources */ = {isa = PBXBuildFile; fileRef = 498CF2422B63AABE0009793E /* dictionary_hash.c */; };
 		498CF2912B63AABE0009793E /* backward_references_hq.c in Sources */ = {isa = PBXBuildFile; fileRef = 498CF2432B63AABE0009793E /* backward_references_hq.c */; };
 		498CF2922B63AABE0009793E /* histogram.c in Sources */ = {isa = PBXBuildFile; fileRef = 498CF2462B63AABE0009793E /* histogram.c */; };
@@ -163,6 +164,7 @@
 		497361072BF1A16600ED213F /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
 		4973610F2BF2011100ED213F /* MPVMetalViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPVMetalViewController.swift; sourceTree = "<group>"; };
 		497361102BF2011100ED213F /* MetalLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MetalLayer.swift; sourceTree = "<group>"; };
+		497361142BF2020A00ED213F /* LivePlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LivePlayerViewModel.swift; sourceTree = "<group>"; };
 		498CF2352B63AABE0009793E /* NSData+BrotliCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+BrotliCompression.h"; sourceTree = "<group>"; };
 		498CF2362B63AABE0009793E /* LMBrotliCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LMBrotliCompression.h; sourceTree = "<group>"; };
 		498CF2372B63AABE0009793E /* BrotliKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BrotliKit.h; sourceTree = "<group>"; };
@@ -358,6 +360,7 @@
 				F927ED982610AD8D00EAB8E3 /* LiveViewController.swift */,
 				F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */,
 				F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */,
+				497361142BF2020A00ED213F /* LivePlayerViewModel.swift */,
 			);
 			path = Live;
 			sourceTree = "<group>";
