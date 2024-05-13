@@ -87,7 +87,7 @@ struct LiveRoom: DisplayData, Codable {
     let title: String
     let room_id: Int
     let uname: String
-    let keyframe: URL
+    let keyframe: URL?
     let face: URL?
     let cover_from_user: URL?
 

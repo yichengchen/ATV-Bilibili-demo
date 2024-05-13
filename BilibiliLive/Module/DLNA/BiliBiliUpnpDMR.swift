@@ -221,21 +221,21 @@ class BiliBiliUpnpDMR: NSObject {
             handlePlay(json: JSON(parseJSON: frame.body))
             session.sendEmpty()
         case "Pause":
-            (topMost as? VideoPlayerViewController)?.player?.pause()
+            (topMost as? CommonPlayerViewController)?.player?.pause()
             session.sendEmpty()
         case "Resume":
-            (topMost as? VideoPlayerViewController)?.player?.play()
+            (topMost as? CommonPlayerViewController)?.player?.play()
             session.sendEmpty()
         case "SwitchDanmaku":
             let json = JSON(parseJSON: frame.body)
-            (topMost as? VideoPlayerViewController)?.danMuView.isHidden = !json["open"].boolValue
+            (topMost as? CommonPlayerViewController)?.danMuView.isHidden = !json["open"].boolValue
             session.sendEmpty()
         case "Seek":
             let json = JSON(parseJSON: frame.body)
             (topMost as? VideoPlayerViewController)?.player?.seek(to: CMTime(seconds: json["seekTs"].doubleValue, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
             session.sendEmpty()
         case "Stop":
-            (topMost as? VideoPlayerViewController)?.dismiss(animated: true)
+            (topMost as? CommonPlayerViewController)?.dismiss(animated: true)
             session.sendEmpty()
         case "PlayUrl":
             let json = JSON(parseJSON: frame.body)
@@ -256,22 +256,11 @@ class BiliBiliUpnpDMR: NSObject {
     }
 
     func handlePlay(json: JSON) {
-        let topMost = UIViewController.topMostViewController()
-        let aid = json["aid"].intValue
-        let cid = json["cid"].intValue
-        let epid = json["epid"].intValue
-        let player: VideoDetailViewController
-        if epid > 0 {
-            player = VideoDetailViewController.create(epid: epid)
+        let roomId = json["roomId"].stringValue
+        if roomId.count > 0, let room = Int(roomId) {
+            playLive(roomID: room)
         } else {
-            player = VideoDetailViewController.create(aid: aid, cid: cid)
-        }
-        if let _ = AppDelegate.shared.window!.rootViewController?.presentedViewController {
-            AppDelegate.shared.window!.rootViewController?.dismiss(animated: false) {
-                player.present(from: UIViewController.topMostViewController(), direatlyEnterVideo: true)
-            }
-        } else {
-            player.present(from: topMost, direatlyEnterVideo: true)
+            playVideo(json: json)
         }
     }
 
@@ -310,6 +299,35 @@ class BiliBiliUpnpDMR: NSObject {
          let data = ["playItem": playItem, "qnDesc": mockQnDesc, "title": "null"] as [String: Any]
          Array(sessions).forEach { $0.sendCommand(action: "OnEpisodeSwitch", content: data) }
           */
+    }
+}
+
+extension BiliBiliUpnpDMR {
+    func playLive(roomID: Int) {
+        let player = LivePlayerViewController()
+        player.room = LiveRoom(title: "", room_id: roomID, uname: "", keyframe: nil, face: nil, cover_from_user: nil)
+        UIViewController.topMostViewController().present(player, animated: true)
+    }
+
+    func playVideo(json: JSON) {
+        let aid = json["aid"].intValue
+        let cid = json["cid"].intValue
+        let epid = json["epid"].intValue
+
+        let player: VideoDetailViewController
+        if epid > 0 {
+            player = VideoDetailViewController.create(epid: epid)
+        } else {
+            player = VideoDetailViewController.create(aid: aid, cid: cid)
+        }
+        let topMost = UIViewController.topMostViewController()
+        if let _ = AppDelegate.shared.window!.rootViewController?.presentedViewController {
+            AppDelegate.shared.window!.rootViewController?.dismiss(animated: false) {
+                player.present(from: UIViewController.topMostViewController(), direatlyEnterVideo: true)
+            }
+        } else {
+            player.present(from: topMost, direatlyEnterVideo: true)
+        }
     }
 }
 
