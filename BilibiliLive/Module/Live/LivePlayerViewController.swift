@@ -77,12 +77,13 @@ class LivePlayerViewController: CommonPlayerViewController {
             danMuView.play()
 
             let headers: [String: String] = [
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
-                "Referer": "https://live.bilibili.com",
+                "User-Agent": Keys.userAgent,
+                "Referer": Keys.liveReferer,
             ]
             let asset = AVURLAsset(url: URL(string: url)!, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
             playerItem = AVPlayerItem(asset: asset)
             player = AVPlayer(playerItem: playerItem)
+            player?.automaticallyWaitsToMinimizeStalling = false
         } else {
             showErrorAlertAndExit(title: "url is nil", message: "url: \(playInfo.first?.url.count ?? 0)")
         }
@@ -137,7 +138,7 @@ class LivePlayerViewController: CommonPlayerViewController {
     }
 
     override func additionDebugInfo() -> String {
-        return "\n\(playInfo.first?.formate ?? "") \(playInfo.first?.current_qn ?? 0) failed: \(failCount)"
+        return "\(playInfo.first?.formate ?? "") \(playInfo.first?.current_qn ?? 0) failed: \(failCount)"
     }
 
     struct PlayInfo {

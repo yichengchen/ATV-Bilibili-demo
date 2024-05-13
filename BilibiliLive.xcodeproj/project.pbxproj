@@ -33,6 +33,7 @@
 		496400D32943431E0098ACA6 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496400D22943431E0098ACA6 /* Logger.swift */; };
 		4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502A29161B770045C26B /* WeeklyWatchViewController.swift */; };
 		4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */; };
+		497361082BF1A16600ED213F /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497361072BF1A16600ED213F /* Keys.swift */; };
 		498CF2902B63AABE0009793E /* dictionary_hash.c in Sources */ = {isa = PBXBuildFile; fileRef = 498CF2422B63AABE0009793E /* dictionary_hash.c */; };
 		498CF2912B63AABE0009793E /* backward_references_hq.c in Sources */ = {isa = PBXBuildFile; fileRef = 498CF2432B63AABE0009793E /* backward_references_hq.c */; };
 		498CF2922B63AABE0009793E /* histogram.c in Sources */ = {isa = PBXBuildFile; fileRef = 498CF2462B63AABE0009793E /* histogram.c */; };
@@ -157,6 +158,7 @@
 		496400D22943431E0098ACA6 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		4973502A29161B770045C26B /* WeeklyWatchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWatchViewController.swift; sourceTree = "<group>"; };
 		4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardVideoCollectionViewController.swift; sourceTree = "<group>"; };
+		497361072BF1A16600ED213F /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
 		498CF2352B63AABE0009793E /* NSData+BrotliCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+BrotliCompression.h"; sourceTree = "<group>"; };
 		498CF2362B63AABE0009793E /* LMBrotliCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LMBrotliCompression.h; sourceTree = "<group>"; };
 		498CF2372B63AABE0009793E /* BrotliKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BrotliKit.h; sourceTree = "<group>"; };
@@ -657,6 +659,7 @@
 				F927ED6A2610391000EAB8E3 /* Vendor */,
 				2D3CD3F72635BD7000191419 /* Supporting Files */,
 				496400D22943431E0098ACA6 /* Logger.swift */,
+				497361072BF1A16600ED213F /* Keys.swift */,
 			);
 			path = BilibiliLive;
 			sourceTree = "<group>";
@@ -796,6 +799,7 @@
 				4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */,
 				AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */,
 				49FB8EC0291F4C520045D5DE /* VMaskProvider.swift in Sources */,
+				497361082BF1A16600ED213F /* Keys.swift in Sources */,
 				49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */,
 				498CF2A22B63AABE0009793E /* dictionary.c in Sources */,
 				494741C82902C45D005D6885 /* Array+..swift in Sources */,

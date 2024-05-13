@@ -69,11 +69,11 @@ enum WebRequest {
         }
 
         if !afheaders.contains(where: { $0.name == "User-Agent" }) {
-            afheaders.add(.userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Safari/605.1.15"))
+            afheaders.add(.userAgent(Keys.userAgent))
         }
 
         if !afheaders.contains(where: { $0.name == "Referer" }) {
-            afheaders.add(HTTPHeader(name: "Referer", value: "https://www.bilibili.com"))
+            afheaders.add(HTTPHeader(name: "Referer", value: Keys.referer))
         }
 
         var session = Session.default

@@ -286,9 +286,16 @@ class CommonPlayerViewController: AVPlayerViewController {
             bit in
             String(format: "%.2fMbps", bit / 1024.0 / 1024.0)
         }
+        guard let player else { return "Player no init" }
 
-        guard let log = player?.currentItem?.accessLog() else { return "no log" }
-        guard let item = log.events.last else { return "no event log" }
+        var logs = """
+        \(additionDebugInfo())
+        time control status: \(player.timeControlStatus.rawValue) \(player.reasonForWaitingToPlay?.rawValue ?? "")
+        player status:\(player.status.rawValue)
+        """
+
+        guard let log = player.currentItem?.accessLog() else { return logs }
+        guard let item = log.events.last else { return logs }
         let uri = item.uri ?? ""
         let addr = item.serverAddress ?? ""
         let changes = item.numberOfServerAddressChanges
@@ -298,14 +305,15 @@ class CommonPlayerViewController: AVPlayerViewController {
         let averageVideoBitrate = item.averageVideoBitrate
         let indicatedBitrate = item.indicatedBitrate
         let observedBitrate = item.observedBitrate
-        return """
+        logs += """
         uri:\(uri), ip:\(addr), change:\(changes)
         drop:\(dropped) stalls:\(stalls)
         bitrate audio:\(bitrateStr(averageAudioBitrate)), video: \(bitrateStr(averageVideoBitrate))
         observedBitrate:\(bitrateStr(observedBitrate))
         indicatedAverageBitrate:\(bitrateStr(indicatedBitrate))
-        maskProvider: \(String(describing: maskProvider))  \(additionDebugInfo())
+        maskProvider: \(String(describing: maskProvider)))
         """
+        return logs
     }
 
     func additionDebugInfo() -> String { return "" }
