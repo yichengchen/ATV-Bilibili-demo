@@ -49,7 +49,9 @@ class LiveDanMuProvider {
     }
 
     private func setupHeartBeat() {
-        heartBeatTimer = Timer.scheduledTimer(timeInterval: 30, target: self, selector: #selector(sendHeartBeat), userInfo: nil, repeats: true)
+        heartBeatTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true, block: { [weak self] _ in
+            self?.sendHeartBeat()
+        })
         sendHeartBeat()
     }
 
@@ -112,11 +114,9 @@ extension LiveDanMuProvider {
             .map { JSON(parseJSON: $0) }
             .forEach { json in
                 let cmd = json["cmd"].stringValue
-                Logger.debug("get cmd:\(cmd)")
                 switch cmd {
                 case "DANMU_MSG":
                     if let str = json["info"][1].string {
-                        Logger.debug("danmu:\(str)")
                         onDanmu?(str)
                     }
                 case "DM_INTERACTION":

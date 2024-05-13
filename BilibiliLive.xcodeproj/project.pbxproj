@@ -17,6 +17,7 @@
 		490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */; };
 		490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */; };
 		492731EE29096677005F5B0A /* HotViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492731ED29096677005F5B0A /* HotViewController.swift */; };
+		493307FD2BF230DB003622ED /* LivePlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493307FC2BF230DB003622ED /* LivePlayerViewModel.swift */; };
 		49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */; };
 		49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */; };
 		49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */; };
@@ -142,6 +143,7 @@
 		490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewController.swift; sourceTree = "<group>"; };
 		490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLSettingLineCollectionViewCell.swift; sourceTree = "<group>"; };
 		492731ED29096677005F5B0A /* HotViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotViewController.swift; sourceTree = "<group>"; };
+		493307FC2BF230DB003622ED /* LivePlayerViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LivePlayerViewModel.swift; sourceTree = "<group>"; };
 		49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDanmuProvider.swift; sourceTree = "<group>"; };
 		49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Ext.swift"; sourceTree = "<group>"; };
 		49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalViewController.swift; sourceTree = "<group>"; };
@@ -349,6 +351,7 @@
 		2D3CD4002635BE7C00191419 /* Live */ = {
 			isa = PBXGroup;
 			children = (
+				493307FC2BF230DB003622ED /* LivePlayerViewModel.swift */,
 				F927ED982610AD8D00EAB8E3 /* LiveViewController.swift */,
 				F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */,
 				F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */,
@@ -876,6 +879,7 @@
 				490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */,
 				F9B57354260F5F7400771ED5 /* AppDelegate.swift in Sources */,
 				F9EDADD3262AA421007CB99F /* VideoDetailViewController.swift in Sources */,
+				493307FD2BF230DB003622ED /* LivePlayerViewModel.swift in Sources */,
 				496400D32943431E0098ACA6 /* Logger.swift in Sources */,
 				F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */,
 				0A41EE1C2A63102B0066444C /* dm.pb.swift in Sources */,
