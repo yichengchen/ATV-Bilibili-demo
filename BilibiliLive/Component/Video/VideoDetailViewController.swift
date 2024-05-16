@@ -323,12 +323,11 @@ class VideoDetailViewController: UIViewController {
             if season.sections.count > 1 {
                 season.sections.first(where: { section in section.episodes.contains(where: { episode in episode.aid == data.View.aid }) }).map { section in
                     allUgcEpisodes = section.episodes
-                    allUgcEpisodes.sort { $0.arc.ctime < $1.arc.ctime }
                 }
             } else {
                 allUgcEpisodes = season.sections.first?.episodes ?? []
-                allUgcEpisodes.sort { $0.arc.ctime < $1.arc.ctime }
             }
+            allUgcEpisodes.sort { $0.arc.ctime < $1.arc.ctime }
         }
 
         ugcCollectionView.reloadData()
