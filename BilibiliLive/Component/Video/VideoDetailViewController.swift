@@ -320,8 +320,17 @@ class VideoDetailViewController: UIViewController {
         }
 
         if let season = data.View.ugc_season {
-            allUgcEpisodes = Array((season.sections.map { $0.episodes }.joined()))
+            if season.sections.count > 1 {
+                season.sections.first(where: { section in section.episodes.contains(where: { episode in episode.aid == data.View.aid }) }).map { section in
+                    allUgcEpisodes = section.episodes
+                    allUgcEpisodes.sort { $0.arc.ctime < $1.arc.ctime }
+                }
+            } else {
+                allUgcEpisodes = season.sections.first?.episodes ?? []
+                allUgcEpisodes.sort { $0.arc.ctime < $1.arc.ctime }
+            }
         }
+
         ugcCollectionView.reloadData()
         ugcLabel.text = "合集 \(data.View.ugc_season?.title ?? "")  \(data.View.ugc_season?.sections.first?.title ?? "")"
         ugcView.isHidden = allUgcEpisodes.count == 0

@@ -595,6 +595,7 @@ struct VideoDetail: Codable, Hashable {
         let ugc_season: UgcSeason?
         let redirect_url: URL?
         let stat: Stat
+        var ctime: Int?
         struct Stat: Codable, Hashable {
             let favorite: Int
             let coin: Int
@@ -623,6 +624,7 @@ struct VideoDetail: Codable, Hashable {
             struct UgcVideoInfo: Codable, Hashable, DisplayData {
                 var ownerName: String { "" }
                 var pic: URL? { arc.pic }
+                let id: Int
                 let aid: Int
                 let cid: Int
                 let arc: Arc
@@ -630,6 +632,7 @@ struct VideoDetail: Codable, Hashable {
 
                 struct Arc: Codable, Hashable {
                     let pic: URL
+                    let ctime: Int
                 }
             }
         }
