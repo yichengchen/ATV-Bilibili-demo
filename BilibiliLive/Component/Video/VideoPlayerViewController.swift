@@ -18,6 +18,7 @@ struct PlayInfo {
     var cid: Int? = 0
     var epid: Int? = 0 // 港澳台解锁需要
     var isBangumi: Bool = false
+    var ctime: Int? = 0
 
     var isCidVaild: Bool {
         return cid ?? 0 > 0
