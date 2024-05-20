@@ -321,7 +321,7 @@ class VideoDetailViewController: UIViewController {
 
         if let season = data.View.ugc_season {
             if season.sections.count > 1 {
-                season.sections.first(where: { section in section.episodes.contains(where: { episode in episode.aid == data.View.aid }) }).map { section in
+                if let section = season.sections.first(where: { section in section.episodes.contains(where: { episode in episode.aid == data.View.aid }) }) {
                     allUgcEpisodes = section.episodes
                 }
             } else {
