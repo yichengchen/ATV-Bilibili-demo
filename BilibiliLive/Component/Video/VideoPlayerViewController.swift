@@ -65,6 +65,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
     private let danmuProvider = VideoDanmuProvider()
     private var clipInfos: [VideoPlayURLInfo.ClipInfo]?
     private var skipAction: UIAction?
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         guard let currentTime = player?.currentTime().seconds, currentTime > 0 else { return }
@@ -95,13 +96,13 @@ class VideoPlayerViewController: CommonPlayerViewController {
             }
         }
         await fetchVideoData()
-        await danmuProvider.initVideo(cid: playInfo.cid, startPos: playerStartPos ?? 0)
+        await danmuProvider.initVideo(cid: playInfo.cid!, startPos: playerStartPos ?? 0)
     }
 
     private func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?) async {
         let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
         let headers: [String: String] = [
-            "User-Agent": "Bilibili/APPLE TV",
+            "User-Agent": Keys.userAgent,
             "Referer": "https://www.bilibili.com/video/av\(playInfo.aid)",
         ]
         let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
@@ -160,13 +161,13 @@ class VideoPlayerViewController: CommonPlayerViewController {
         }
     }
 
-    override func playerRateDidChange(player: AVPlayer) {
-        if player.rate > 0, danMuView.status == .pause {
-            danMuView.play()
-        } else if player.rate == 0, danMuView.status == .play {
-            danMuView.pause()
-        }
-    }
+//    override func playerRateDidChange(player: AVPlayer) {
+//        if player.rate > 0, danMuView.status == .pause {
+//            danMuView.play()
+//        } else if player.rate == 0, danMuView.status == .play {
+//            danMuView.pause()
+//        }
+//    }
 
     func playNext() -> Bool {
         if let next = nextProvider?.getNext() {

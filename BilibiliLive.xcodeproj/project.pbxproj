@@ -17,6 +17,12 @@
 		490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */; };
 		490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */; };
 		492731EE29096677005F5B0A /* HotViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492731ED29096677005F5B0A /* HotViewController.swift */; };
+		492AD7092BFF1E6C007221C8 /* NewCommonPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD7082BFF1E6C007221C8 /* NewCommonPlayerViewController.swift */; };
+		492AD70B2BFF23B1007221C8 /* DanmuViewPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */; };
+		492AD70D2BFF33DF007221C8 /* NewVideoPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD70C2BFF33DF007221C8 /* NewVideoPlayerViewController.swift */; };
+		492AD70F2BFF6761007221C8 /* NewVideoPlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD70E2BFF6761007221C8 /* NewVideoPlayerViewModel.swift */; };
+		492AD7112C001C7B007221C8 /* BVideoPlayPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */; };
+		492AD7132C001CA7007221C8 /* String+Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD7122C001CA7007221C8 /* String+Error.swift */; };
 		493307FD2BF230DB003622ED /* LivePlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493307FC2BF230DB003622ED /* LivePlayerViewModel.swift */; };
 		49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */; };
 		49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */; };
@@ -143,6 +149,12 @@
 		490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewController.swift; sourceTree = "<group>"; };
 		490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLSettingLineCollectionViewCell.swift; sourceTree = "<group>"; };
 		492731ED29096677005F5B0A /* HotViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotViewController.swift; sourceTree = "<group>"; };
+		492AD7082BFF1E6C007221C8 /* NewCommonPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewCommonPlayerViewController.swift; sourceTree = "<group>"; };
+		492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DanmuViewPlugin.swift; sourceTree = "<group>"; };
+		492AD70C2BFF33DF007221C8 /* NewVideoPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewVideoPlayerViewController.swift; sourceTree = "<group>"; };
+		492AD70E2BFF6761007221C8 /* NewVideoPlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewVideoPlayerViewModel.swift; sourceTree = "<group>"; };
+		492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BVideoPlayPlugin.swift; sourceTree = "<group>"; };
+		492AD7122C001CA7007221C8 /* String+Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Error.swift"; sourceTree = "<group>"; };
 		493307FC2BF230DB003622ED /* LivePlayerViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LivePlayerViewModel.swift; sourceTree = "<group>"; };
 		49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDanmuProvider.swift; sourceTree = "<group>"; };
 		49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Ext.swift"; sourceTree = "<group>"; };
@@ -367,6 +379,9 @@
 				49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */,
 				498DB1DE291BC24700F95607 /* BMaskProvider.swift */,
 				49FB8EBF291F4C520045D5DE /* VMaskProvider.swift */,
+				492AD70C2BFF33DF007221C8 /* NewVideoPlayerViewController.swift */,
+				492AD70E2BFF6761007221C8 /* NewVideoPlayerViewModel.swift */,
+				492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */,
 			);
 			path = Video;
 			sourceTree = "<group>";
@@ -384,6 +399,7 @@
 				AEA5FDE1290F6E2600E7C0B2 /* String.swift */,
 				AE2B41562914C02000BF2B0B /* Int.swift */,
 				49DA019F296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift */,
+				492AD7122C001CA7007221C8 /* String+Error.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -626,6 +642,8 @@
 				49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */,
 				F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */,
 				49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */,
+				492AD7082BFF1E6C007221C8 /* NewCommonPlayerViewController.swift */,
+				492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -812,6 +830,7 @@
 				498CF2A72B63AABE0009793E /* decode.c in Sources */,
 				F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */,
 				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,
+				492AD70D2BFF33DF007221C8 /* NewVideoPlayerViewController.swift in Sources */,
 				F9171D6629026AC5002868C7 /* TitleSupplementaryView.swift in Sources */,
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
 				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
@@ -840,14 +859,17 @@
 				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
 				498CF2922B63AABE0009793E /* histogram.c in Sources */,
 				49474213290509F6005D6885 /* DateFormatter.swift in Sources */,
+				492AD7112C001C7B007221C8 /* BVideoPlayPlugin.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,
 				F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */,
+				492AD7092BFF1E6C007221C8 /* NewCommonPlayerViewController.swift in Sources */,
 				498CF29C2B63AABE0009793E /* compress_fragment.c in Sources */,
 				499C760F2930E068003160FB /* NVASocket.swift in Sources */,
 				498CF2912B63AABE0009793E /* backward_references_hq.c in Sources */,
 				494742112905053E005D6885 /* BLMotionCollectionViewCell.swift in Sources */,
 				494741E7290391A7005D6885 /* BLButton.swift in Sources */,
 				F927ED992610AD8D00EAB8E3 /* LiveViewController.swift in Sources */,
+				492AD7132C001CA7007221C8 /* String+Error.swift in Sources */,
 				490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */,
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
 				498CF2A92B63AABE0009793E /* bit_reader.c in Sources */,
@@ -866,6 +888,7 @@
 				498CF2AB2B63AABE0009793E /* LMBrotliCompression.c in Sources */,
 				498CF2AC2B63AABE0009793E /* NSData+BrotliCompression.m in Sources */,
 				498CF2A32B63AABE0009793E /* transform.c in Sources */,
+				492AD70B2BFF23B1007221C8 /* DanmuViewPlugin.swift in Sources */,
 				49D39F28263AD40000F14497 /* WebRequest.swift in Sources */,
 				498DB1DF291BC24700F95607 /* BMaskProvider.swift in Sources */,
 				494741C029002797005D6885 /* UserDefault+..swift in Sources */,
@@ -873,6 +896,7 @@
 				AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */,
 				F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */,
 				498CF29F2B63AABE0009793E /* static_dict.c in Sources */,
+				492AD70F2BFF6761007221C8 /* NewVideoPlayerViewModel.swift in Sources */,
 				498CF2A02B63AABE0009793E /* literal_cost.c in Sources */,
 				F99D28F72619F5F000F8E66A /* FollowsViewController.swift in Sources */,
 				F9D382B426359EF90070508F /* ApiRequest.swift in Sources */,
