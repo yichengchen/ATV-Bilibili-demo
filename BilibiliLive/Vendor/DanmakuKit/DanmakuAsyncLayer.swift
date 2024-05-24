@@ -81,35 +81,25 @@ class DanmakuAsyncLayer: CALayer {
             let backgroundColor = (opaque && self.backgroundColor != nil) ? self.backgroundColor : nil
             pool.queue.async {
                 guard !isCancelled() else { return }
-                UIGraphicsBeginImageContextWithOptions(size, opaque, scale)
-                guard let context = UIGraphicsGetCurrentContext() else {
-                    UIGraphicsEndImageContext()
-                    return
-                }
-                if opaque {
-                    context.saveGState()
-                    if backgroundColor == nil || (backgroundColor?.alpha ?? 0) < 1 {
-                        context.setFillColor(UIColor.white.cgColor)
-                        context.addRect(CGRect(x: 0, y: 0, width: size.width * scale, height: size.height * scale))
-                        context.fillPath()
+                let format = UIGraphicsImageRendererFormat.preferred()
+                format.opaque = opaque
+                format.scale = scale
+                let render = UIGraphicsImageRenderer(size: size)
+                let image = render.image { rendererContext in
+                    if opaque {
+                        rendererContext.cgContext.saveGState()
+                        if backgroundColor == nil || (backgroundColor?.alpha ?? 0) < 1 {
+                            UIColor.white.setFill()
+                            rendererContext.fill(CGRect(x: 0, y: 0, width: size.width * scale, height: size.height * scale))
+                        }
+                        if let backgroundColor = backgroundColor {
+                            UIColor(cgColor: backgroundColor).setFill()
+                            rendererContext.fill(CGRect(x: 0, y: 0, width: size.width * scale, height: size.height * scale))
+                        }
+                        rendererContext.cgContext.restoreGState()
                     }
-                    if let backgroundColor = backgroundColor {
-                        context.setFillColor(backgroundColor)
-                        context.addRect(CGRect(x: 0, y: 0, width: size.width * scale, height: size.height * scale))
-                        context.fillPath()
-                    }
-                    context.restoreGState()
+                    self.displaying?(rendererContext.cgContext, size, isCancelled)
                 }
-                self.displaying?(context, size, isCancelled)
-                if isCancelled() {
-                    UIGraphicsEndImageContext()
-                    DispatchQueue.main.async {
-                        self.didDisplay?(self, false)
-                    }
-                    return
-                }
-                let image = UIGraphicsGetImageFromCurrentImageContext()
-                UIGraphicsEndImageContext()
                 if isCancelled() {
                     DispatchQueue.main.async {
                         self.didDisplay?(self, false)
@@ -120,7 +110,7 @@ class DanmakuAsyncLayer: CALayer {
                     if isCancelled() {
                         self.didDisplay?(self, false)
                     } else {
-                        self.contents = image?.cgImage
+                        self.contents = image.cgImage
                         self.didDisplay?(self, true)
                     }
                 }
@@ -129,15 +119,14 @@ class DanmakuAsyncLayer: CALayer {
         } else {
             sentinel.increase()
             willDisplay?(self)
-            UIGraphicsBeginImageContextWithOptions(bounds.size, isOpaque, contentsScale)
-            guard let context = UIGraphicsGetCurrentContext() else {
-                UIGraphicsEndImageContext()
-                return
+            let format = UIGraphicsImageRendererFormat.preferred()
+            format.opaque = isOpaque
+            format.scale = contentsScale
+            let render = UIGraphicsImageRenderer(size: bounds.size)
+            let image = render.image { rendererContext in
+                displaying?(rendererContext.cgContext, bounds.size, { () -> Bool in return false })
             }
-            displaying?(context, bounds.size, { () -> Bool in return false })
-            let image = UIGraphicsGetImageFromCurrentImageContext()
-            UIGraphicsEndImageContext()
-            contents = image?.cgImage
+            contents = image.cgImage
             didDisplay?(self, true)
         }
     }
