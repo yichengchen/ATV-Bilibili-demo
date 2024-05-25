@@ -8,40 +8,6 @@
 import AVKit
 import UIKit
 
-protocol CommonPlayerPlugin {
-    func addViewToPlayerOverlay(container: UIView)
-    func addMenuItems(current: [UIMenuElement]) -> [UIMenuElement]
-
-    func playerDidLoad(playerVC: AVPlayerViewController)
-    func playerDidDismiss(playerVC: AVPlayerViewController)
-    func playerDidChange(player: AVPlayer)
-    func playerItemDidChange(playerItem: AVPlayerItem)
-
-    func playerWillStart(player: AVPlayer)
-    func playerDidStart(player: AVPlayer)
-    func playerDidPause(player: AVPlayer)
-    func playerDidEnd(player: AVPlayer)
-    func playerDidFail(player: AVPlayer)
-    func playerDidCleanUp(player: AVPlayer)
-}
-
-extension CommonPlayerPlugin {
-    func addViewToPlayerOverlay(container: UIView) {}
-    func addMenuItems(current: [UIMenuElement]) -> [UIMenuElement] { return [] }
-
-    func playerWillStart(player: AVPlayer) {}
-    func playerDidStart(player: AVPlayer) {}
-    func playerDidPause(player: AVPlayer) {}
-    func playerDidEnd(player: AVPlayer) {}
-    func playerDidFail(player: AVPlayer) {}
-    func playerDidCleanUp(player: AVPlayer) {}
-
-    func playerDidLoad(playerVC: AVPlayerViewController) {}
-    func playerDidDismiss(playerVC: AVPlayerViewController) {}
-    func playerDidChange(player: AVPlayer) {}
-    func playerItemDidChange(playerItem: AVPlayerItem) {}
-}
-
 class NewCommonPlayerViewController: UIViewController {
     private let playerVC = AVPlayerViewController()
     private var activePlugins = [CommonPlayerPlugin]()
@@ -57,7 +23,7 @@ class NewCommonPlayerViewController: UIViewController {
         playerVC.view.snp.makeConstraints { $0.edges.equalToSuperview() }
         playerVC.allowsPictureInPicturePlayback = true
         playerVC.delegate = self
-        
+
         let playerObservation = playerVC.observe(\.player) { [weak self] vc, obs in
             if let oldPlayer = obs.oldValue, let oldPlayer {
                 self?.activePlugins.forEach { $0.playerDidCleanUp(player: oldPlayer) }
@@ -152,13 +118,13 @@ extension NewCommonPlayerViewController {
     }
 }
 
-
 extension NewCommonPlayerViewController: AVPlayerViewControllerDelegate {
     @objc func playerViewControllerShouldDismiss(_ playerViewController: AVPlayerViewController) -> Bool {
-        if let presentedViewController = UIViewController.topMostViewController() as? AVPlayerViewController,
-           presentedViewController == playerViewController
+        if let presentedViewController = UIViewController.topMostViewController() as? NewCommonPlayerViewController,
+           presentedViewController.playerVC == playerViewController
         {
-            return true
+            dismiss(animated: true)
+            return false
         }
         return false
     }
@@ -167,20 +133,37 @@ extension NewCommonPlayerViewController: AVPlayerViewControllerDelegate {
         return true
     }
 
+    func playerViewControllerWillStartPictureInPicture(_ playerViewController: AVPlayerViewController) {
+        PipRecorder.shared.playingPipViewController.append(self)
+    }
+
+    func playerViewControllerDidStopPictureInPicture(_ playerViewController: AVPlayerViewController) {
+        PipRecorder.shared.playingPipViewController.removeAll { $0.playerVC == playerViewController }
+    }
+
     @objc func playerViewController(_ playerViewController: AVPlayerViewController,
                                     restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void)
     {
         let presentedViewController = UIViewController.topMostViewController()
-        if presentedViewController is AVPlayerViewController {
+        guard let containerPlayer = PipRecorder.shared.playingPipViewController.first(where: { $0.playerVC == playerViewController }) else {
+            completionHandler(false)
+            return
+        }
+        if presentedViewController is NewCommonPlayerViewController {
             let parent = presentedViewController.presentingViewController
             presentedViewController.dismiss(animated: false) {
-                parent?.present(playerViewController, animated: false)
+                parent?.present(containerPlayer, animated: false)
                 completionHandler(true)
             }
         } else {
-            presentedViewController.present(playerViewController, animated: false) {
+            presentedViewController.present(containerPlayer, animated: false) {
                 completionHandler(true)
             }
         }
+    }
+
+    class PipRecorder {
+        static let shared = PipRecorder()
+        var playingPipViewController = [NewCommonPlayerViewController]()
     }
 }
