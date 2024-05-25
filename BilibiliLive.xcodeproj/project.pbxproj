@@ -38,6 +38,12 @@
 		49508E0F2943420100D26812 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E0E2943420100D26812 /* CocoaLumberjack */; };
 		49508E112943420100D26812 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E102943420100D26812 /* CocoaLumberjackSwift */; };
 		496400D32943431E0098ACA6 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496400D22943431E0098ACA6 /* Logger.swift */; };
+		496E5A4D2C018F150062951B /* BVideoClipsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A4C2C018F150062951B /* BVideoClipsPlugin.swift */; };
+		496E5A4F2C0194720062951B /* MaskViewPugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A4E2C0194720062951B /* MaskViewPugin.swift */; };
+		496E5A512C0194CD0062951B /* BUpnpPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A502C0194CD0062951B /* BUpnpPlugin.swift */; };
+		496E5A532C01B1CA0062951B /* BVideoInfoPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A522C01B1CA0062951B /* BVideoInfoPlugin.swift */; };
+		496E5A552C01CDBB0062951B /* DebugPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A542C01CDBB0062951B /* DebugPlugin.swift */; };
+		496E5A572C01CDCA0062951B /* SpeedChangerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A562C01CDCA0062951B /* SpeedChangerPlugin.swift */; };
 		4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502A29161B770045C26B /* WeeklyWatchViewController.swift */; };
 		4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */; };
 		497361082BF1A16600ED213F /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497361072BF1A16600ED213F /* Keys.swift */; };
@@ -169,6 +175,12 @@
 		49474212290509F6005D6885 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
 		4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTextOnlyCollectionViewCell.swift; sourceTree = "<group>"; };
 		496400D22943431E0098ACA6 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		496E5A4C2C018F150062951B /* BVideoClipsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BVideoClipsPlugin.swift; sourceTree = "<group>"; };
+		496E5A4E2C0194720062951B /* MaskViewPugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskViewPugin.swift; sourceTree = "<group>"; };
+		496E5A502C0194CD0062951B /* BUpnpPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BUpnpPlugin.swift; sourceTree = "<group>"; };
+		496E5A522C01B1CA0062951B /* BVideoInfoPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BVideoInfoPlugin.swift; sourceTree = "<group>"; };
+		496E5A542C01CDBB0062951B /* DebugPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugPlugin.swift; sourceTree = "<group>"; };
+		496E5A562C01CDCA0062951B /* SpeedChangerPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedChangerPlugin.swift; sourceTree = "<group>"; };
 		4973502A29161B770045C26B /* WeeklyWatchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWatchViewController.swift; sourceTree = "<group>"; };
 		4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardVideoCollectionViewController.swift; sourceTree = "<group>"; };
 		497361072BF1A16600ED213F /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
@@ -382,6 +394,9 @@
 				492AD70C2BFF33DF007221C8 /* NewVideoPlayerViewController.swift */,
 				492AD70E2BFF6761007221C8 /* NewVideoPlayerViewModel.swift */,
 				492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */,
+				496E5A4C2C018F150062951B /* BVideoClipsPlugin.swift */,
+				496E5A502C0194CD0062951B /* BUpnpPlugin.swift */,
+				496E5A522C01B1CA0062951B /* BVideoInfoPlugin.swift */,
 			);
 			path = Video;
 			sourceTree = "<group>";
@@ -644,6 +659,9 @@
 				49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */,
 				492AD7082BFF1E6C007221C8 /* NewCommonPlayerViewController.swift */,
 				492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */,
+				496E5A4E2C0194720062951B /* MaskViewPugin.swift */,
+				496E5A542C01CDBB0062951B /* DebugPlugin.swift */,
+				496E5A562C01CDCA0062951B /* SpeedChangerPlugin.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -814,7 +832,9 @@
 			files = (
 				F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */,
 				4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */,
+				496E5A4D2C018F150062951B /* BVideoClipsPlugin.swift in Sources */,
 				AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */,
+				496E5A4F2C0194720062951B /* MaskViewPugin.swift in Sources */,
 				49FB8EC0291F4C520045D5DE /* VMaskProvider.swift in Sources */,
 				497361082BF1A16600ED213F /* Keys.swift in Sources */,
 				49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */,
@@ -867,7 +887,9 @@
 				499C760F2930E068003160FB /* NVASocket.swift in Sources */,
 				498CF2912B63AABE0009793E /* backward_references_hq.c in Sources */,
 				494742112905053E005D6885 /* BLMotionCollectionViewCell.swift in Sources */,
+				496E5A512C0194CD0062951B /* BUpnpPlugin.swift in Sources */,
 				494741E7290391A7005D6885 /* BLButton.swift in Sources */,
+				496E5A572C01CDCA0062951B /* SpeedChangerPlugin.swift in Sources */,
 				F927ED992610AD8D00EAB8E3 /* LiveViewController.swift in Sources */,
 				492AD7132C001CA7007221C8 /* String+Error.swift in Sources */,
 				490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */,
@@ -882,6 +904,8 @@
 				AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */,
 				498CF2962B63AABE0009793E /* block_splitter.c in Sources */,
 				494741C6290177BB005D6885 /* UpSpaceViewController.swift in Sources */,
+				496E5A532C01B1CA0062951B /* BVideoInfoPlugin.swift in Sources */,
+				496E5A552C01CDBB0062951B /* DebugPlugin.swift in Sources */,
 				49DA01A0296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift in Sources */,
 				492731EE29096677005F5B0A /* HotViewController.swift in Sources */,
 				F927ED8926103CFB00EAB8E3 /* DanmakuTextCellModel.swift in Sources */,

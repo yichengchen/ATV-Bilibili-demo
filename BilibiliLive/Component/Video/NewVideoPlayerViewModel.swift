@@ -26,7 +26,7 @@ class NewVideoPlayerViewModel {
 
     private var playInfo: PlayInfo
     private let danmuProvider = VideoDanmuProvider()
-
+    private var videoDetail: VideoDetail?
     init(playInfo: PlayInfo) {
         self.playInfo = playInfo
     }
@@ -51,14 +51,22 @@ class NewVideoPlayerViewModel {
         BiliBiliUpnpDMR.shared.sendVideoSwitch(aid: playInfo.aid, cid: playInfo.cid ?? 0)
     }
 
+    private func updateVideoDetailIfNeeded() async {
+        if videoDetail == nil {
+            videoDetail = try? await WebRequest.requestDetailVideo(aid: playInfo.aid)
+        }
+    }
+
     private func fetchVideoData() async throws -> PlayerDetailData {
         assert(playInfo.isCidVaild)
         let aid = playInfo.aid
         let cid = playInfo.cid!
-        let info = try? await WebRequest.requestPlayerInfo(aid: aid, cid: cid)
+        async let infoReq = try? WebRequest.requestPlayerInfo(aid: aid, cid: cid)
+        async let detailUpdate: () = updateVideoDetailIfNeeded()
         do {
             let playData: VideoPlayURLInfo
             var clipInfos: [VideoPlayURLInfo.ClipInfo]?
+
             if playInfo.isBangumi {
                 playData = try await WebRequest.requestPcgPlayUrl(aid: aid, cid: cid)
                 clipInfos = playData.clip_info_list
@@ -66,15 +74,16 @@ class NewVideoPlayerViewModel {
                 playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid)
             }
 
-            var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, isBangumi: playInfo.isBangumi, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
+            let info = await infoReq
+            _ = await detailUpdate
+
+            var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, isBangumi: playInfo.isBangumi, detail: videoDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
 
             if let info, info.last_play_cid == cid, playData.dash.duration - info.playTimeInSecond > 5, Settings.continuePlay {
                 detail.playerStartPos = info.playTimeInSecond
             }
 
             return detail
-
-            //        updatePlayerCharpter(playerInfo: playerInfo)
 
         } catch let err {
             if case let .statusFail(code, message) = err as? RequestError {
@@ -88,7 +97,7 @@ class NewVideoPlayerViewModel {
 //                }
                 }
                 throw "\(code) \(message)，可能需要大会员"
-            } else if info?.is_upower_exclusive == true {
+            } else if await infoReq?.is_upower_exclusive == true {
                 throw "该视频为充电专属视频 \(err)"
             } else {
                 throw err
@@ -99,7 +108,33 @@ class NewVideoPlayerViewModel {
     @MainActor private func generatePlayerPlugin(_ data: PlayerDetailData) async -> [CommonPlayerPlugin] {
         let player = BVideoPlayPlugin(detailData: data)
         let danmu = DanmuViewPlugin(provider: danmuProvider)
+        let upnp = BUpnpPlugin(duration: data.detail?.View.duration)
+        let debug = DebugPlugin()
+        var plugins: [CommonPlayerPlugin] = [player, danmu, upnp, debug]
 
-        return [player, danmu]
+        if let clips = data.clips {
+            let clip = BVideoClipsPlugin(clipInfos: clips)
+            plugins.append(clip)
+        }
+
+        if Settings.danmuMask {
+            if let mask = data.playerInfo?.dm_mask,
+               let video = data.videoPlayURLInfo.dash.video.first,
+               mask.fps > 0
+            {
+                let maskProvider = BMaskProvider(info: mask, videoSize: CGSize(width: video.width ?? 0, height: video.height ?? 0))
+                plugins.append(MaskViewPugin(maskView: danmu.danMuView, maskProvider: maskProvider))
+            } else if Settings.vnMask {
+                let maskProvider = VMaskProvider()
+                plugins.append(MaskViewPugin(maskView: danmu.danMuView, maskProvider: maskProvider))
+            }
+        }
+
+        if let detail = data.detail {
+            let info = BVideoInfoPlugin(title: detail.title, subTitle: detail.ownerName, desp: detail.View.desc, pic: detail.pic, viewPoints: data.playerInfo?.view_points)
+            plugins.append(info)
+        }
+
+        return plugins
     }
 }

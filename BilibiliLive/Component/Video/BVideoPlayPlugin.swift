@@ -18,30 +18,21 @@ class BVideoPlayPlugin: CommonPlayerPlugin {
 
     func playerDidLoad(playerVC: AVPlayerViewController) {
         self.playerVC = playerVC
+        playerVC.appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
         Task {
             try? await playmedia(urlInfo: playData.videoPlayURLInfo, playerInfo: playData.playerInfo)
         }
     }
 
-    private func updatePlayerInfoView(aid: Int) async {
-//        if data == nil {
-//            data = try? await WebRequest.requestDetailVideo(aid: aid)
-//        }
-//        setPlayerInfo(title: data?.title, subTitle: data?.ownerName, desp: data?.View.desc, pic: data?.pic)
+    func playerWillStart(player: AVPlayer) {
+        if let playerStartPos = playData.playerStartPos {
+            player.seek(to: CMTime(seconds: Double(playerStartPos), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+        }
     }
 
-    private func setupDanmuMask() {
-        //            if Settings.danmuMask {
-        //                if let mask = info?.dm_mask,
-        //                   let video = playData.dash.video.first,
-        //                   let fps = info?.dm_mask?.fps, fps > 0
-        //                {
-        //                    maskProvider = BMaskProvider(info: mask, videoSize: CGSize(width: video.width ?? 0, height: video.height ?? 0))
-        //                } else if Settings.vnMask {
-        //                    maskProvider = VMaskProvider()
-        //                }
-        //                setupMask()
-        //            }
+    func playerDidDismiss(playerVC: AVPlayerViewController) {
+        guard let currentTime = playerVC.player?.currentTime().seconds, currentTime > 0 else { return }
+        WebRequest.reportWatchHistory(aid: playData.cid, cid: playData.cid, currentTime: Int(currentTime))
     }
 
     @MainActor
@@ -71,44 +62,6 @@ class BVideoPlayPlugin: CommonPlayerPlugin {
     func prepare(toPlay asset: AVURLAsset) async {
         let playerItem = AVPlayerItem(asset: asset)
         let player = AVPlayer(playerItem: playerItem)
-//        player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
-//            guard let self else { return }
-        ////            if self.danMuView.isHidden { return }
-//            let seconds = time.seconds
-        ////            self.danmuProvider.playerTimeChange(time: seconds)
-//
-//            if let duration = self.data?.View.duration {
-//                BiliBiliUpnpDMR.shared.sendProgress(duration: duration, current: Int(seconds))
-//            }
-//
-//            if let clipInfos = self.clipInfos {
-//                var matched = false
-//                for clip in clipInfos {
-//                    if seconds > clip.start, seconds < clip.end {
-//                        let action = {
-//                            clip.skipped = true
-//                            self.player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
-//                        }
-//                        if !(clip.skipped ?? false), Settings.autoSkip {
-//                            action()
-//                            self.skipAction = nil
-//                        } else if self.skipAction?.accessibilityLabel != clip.a11Tag {
-//                            self.skipAction = UIAction(title: clip.customText) { _ in
-//                                action()
-//                            }
-//                            self.skipAction?.accessibilityLabel = clip.a11Tag
-//                        }
-//
-//                        self.contextualActions = [self.skipAction].compactMap { $0 }
-//                        matched = true
-//                        break
-//                    }
-//                }
-//                if !matched {
-//                    self.contextualActions = []
-//                }
-//            }
-//        }
 
         if let defaultRate = playerVC?.player?.defaultRate,
            let speed = PlaySpeed.blDefaults.first(where: { $0.value == defaultRate })

@@ -20,6 +20,8 @@ class DanmuViewPlugin {
         didSet { danMuView.isHidden = !showDanmu }
     }
 
+    let danMuView = DanmakuView()
+
     init(provider: DanmuProviderProtocol) {
         danmuProvider = provider
         provider.onSendTextModel
@@ -30,7 +32,6 @@ class DanmuViewPlugin {
     }
 
     private let danmuProvider: DanmuProviderProtocol
-    private let danMuView = DanmakuView()
     private var timeObserver: Any?
     private var cancellable = Set<AnyCancellable>()
 

@@ -13,6 +13,7 @@ protocol CommonPlayerPlugin {
     func addMenuItems(current: [UIMenuElement]) -> [UIMenuElement]
 
     func playerDidLoad(playerVC: AVPlayerViewController)
+    func playerDidDismiss(playerVC: AVPlayerViewController)
     func playerDidChange(player: AVPlayer)
     func playerItemDidChange(playerItem: AVPlayerItem)
 
@@ -36,6 +37,7 @@ extension CommonPlayerPlugin {
     func playerDidCleanUp(player: AVPlayer) {}
 
     func playerDidLoad(playerVC: AVPlayerViewController) {}
+    func playerDidDismiss(playerVC: AVPlayerViewController) {}
     func playerDidChange(player: AVPlayer) {}
     func playerItemDidChange(playerItem: AVPlayerItem) {}
 }
@@ -46,13 +48,16 @@ class NewCommonPlayerViewController: UIViewController {
     private var observations = Set<NSKeyValueObservation>()
     private var rateObserver: NSKeyValueObservation?
     private var statusObserver: NSKeyValueObservation?
-
+    private var isEnd = false
     override func viewDidLoad() {
         super.viewDidLoad()
         addChild(playerVC)
         view.addSubview(playerVC.view)
         playerVC.didMove(toParent: self)
         playerVC.view.snp.makeConstraints { $0.edges.equalToSuperview() }
+        playerVC.allowsPictureInPicturePlayback = true
+        playerVC.delegate = self
+        
         let playerObservation = playerVC.observe(\.player) { [weak self] vc, obs in
             if let oldPlayer = obs.oldValue, let oldPlayer {
                 self?.activePlugins.forEach { $0.playerDidCleanUp(player: oldPlayer) }
@@ -61,6 +66,11 @@ class NewCommonPlayerViewController: UIViewController {
         }
         observations.insert(playerObservation)
         activePlugins.forEach { $0.playerDidLoad(playerVC: playerVC) }
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        activePlugins.forEach { $0.playerDidDismiss(playerVC: playerVC) }
     }
 
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
@@ -112,7 +122,9 @@ extension NewCommonPlayerViewController {
         if player.rate > 0 {
             activePlugins.forEach { $0.playerDidStart(player: player) }
         } else if player.rate == 0 {
-            activePlugins.forEach { $0.playerDidPause(player: player) }
+            if !isEnd {
+                activePlugins.forEach { $0.playerDidPause(player: player) }
+            }
         }
     }
 
@@ -122,6 +134,7 @@ extension NewCommonPlayerViewController {
             guard let self, let player = playerVC.player else { return }
             switch item.status {
             case .readyToPlay:
+                isEnd = false
                 activePlugins.forEach { $0.playerWillStart(player: player) }
                 player.play()
             case .failed:
@@ -133,7 +146,41 @@ extension NewCommonPlayerViewController {
         NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
         NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerItem, queue: .main) { [weak self] note in
             guard let self, let player = playerVC.player else { return }
-            self.activePlugins.forEach { $0.playerDidEnd(player: player) }
+            isEnd = true
+            activePlugins.forEach { $0.playerDidEnd(player: player) }
+        }
+    }
+}
+
+
+extension NewCommonPlayerViewController: AVPlayerViewControllerDelegate {
+    @objc func playerViewControllerShouldDismiss(_ playerViewController: AVPlayerViewController) -> Bool {
+        if let presentedViewController = UIViewController.topMostViewController() as? AVPlayerViewController,
+           presentedViewController == playerViewController
+        {
+            return true
+        }
+        return false
+    }
+
+    @objc func playerViewControllerShouldAutomaticallyDismissAtPictureInPictureStart(_: AVPlayerViewController) -> Bool {
+        return true
+    }
+
+    @objc func playerViewController(_ playerViewController: AVPlayerViewController,
+                                    restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void)
+    {
+        let presentedViewController = UIViewController.topMostViewController()
+        if presentedViewController is AVPlayerViewController {
+            let parent = presentedViewController.presentingViewController
+            presentedViewController.dismiss(animated: false) {
+                parent?.present(playerViewController, animated: false)
+                completionHandler(true)
+            }
+        } else {
+            presentedViewController.present(playerViewController, animated: false) {
+                completionHandler(true)
+            }
         }
     }
 }
