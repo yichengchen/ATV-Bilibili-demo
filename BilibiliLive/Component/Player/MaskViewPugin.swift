@@ -8,7 +8,7 @@
 import AVKit
 import UIKit
 
-class MaskViewPugin: CommonPlayerPlugin {
+class MaskViewPugin: NSObject, CommonPlayerPlugin {
     weak var maskView: UIView?
     var maskProvider: MaskProvider
     private var observer: Any?

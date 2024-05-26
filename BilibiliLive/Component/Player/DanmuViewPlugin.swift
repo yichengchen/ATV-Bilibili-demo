@@ -15,7 +15,7 @@ protocol DanmuProviderProtocol {
     func playerTimeChange(time: TimeInterval)
 }
 
-class DanmuViewPlugin {
+class DanmuViewPlugin: NSObject {
     var showDanmu = Settings.defaultDanmuStatus {
         didSet { danMuView.isHidden = !showDanmu }
     }
@@ -24,6 +24,7 @@ class DanmuViewPlugin {
 
     init(provider: DanmuProviderProtocol) {
         danmuProvider = provider
+        super.init()
         provider.onSendTextModel
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
@@ -80,7 +81,7 @@ extension DanmuViewPlugin: CommonPlayerPlugin {
         danMuView.pause()
     }
 
-    func addMenuItems(current: [UIMenuElement]) -> [UIMenuElement] {
+    func addMenuItems(current: inout [UIMenuElement]) -> [UIMenuElement] {
         let danmuImage = UIImage(systemName: "list.bullet.rectangle.fill")
         let danmuImageDisable = UIImage(systemName: "list.bullet.rectangle")
         let danmuAction = UIAction(title: "Show Danmu", image: danMuView.isHidden ? danmuImageDisable : danmuImage) {

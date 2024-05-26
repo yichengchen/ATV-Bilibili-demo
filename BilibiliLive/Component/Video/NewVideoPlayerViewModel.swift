@@ -23,25 +23,35 @@ struct PlayerDetailData {
 
 class NewVideoPlayerViewModel {
     var onPluginReady = PassthroughSubject<[CommonPlayerPlugin], String>()
+    var onPluginRemove = PassthroughSubject<CommonPlayerPlugin, Never>()
+    var onExit: (() -> Void)?
+    var nextProvider: VideoNextProvider?
 
     private var playInfo: PlayInfo
     private let danmuProvider = VideoDanmuProvider()
     private var videoDetail: VideoDetail?
+    private var cancellable = Set<AnyCancellable>()
+    private var playPlugin: CommonPlayerPlugin?
+
     init(playInfo: PlayInfo) {
         self.playInfo = playInfo
     }
 
     func load() async {
         do {
-            try await initPlayInfo()
-            let data = try await fetchVideoData()
-            await danmuProvider.initVideo(cid: data.cid, startPos: data.playerStartPos ?? 0)
+            let data = try await loadVideoInfo()
             let plugin = await generatePlayerPlugin(data)
             onPluginReady.send(plugin)
-
         } catch let err {
             onPluginReady.send(completion: .failure(err.localizedDescription))
         }
+    }
+
+    private func loadVideoInfo() async throws -> PlayerDetailData {
+        try await initPlayInfo()
+        let data = try await fetchVideoData()
+        await danmuProvider.initVideo(cid: data.cid, startPos: data.playerStartPos ?? 0)
+        return data
     }
 
     private func initPlayInfo() async throws {
@@ -105,12 +115,45 @@ class NewVideoPlayerViewModel {
         }
     }
 
+    private func playNext(newPlayInfo: PlayInfo) {
+        playInfo = newPlayInfo
+        if let playPlugin {
+            onPluginRemove.send(playPlugin)
+        }
+        Task {
+            do {
+                let data = try await loadVideoInfo()
+                let player = BVideoPlayPlugin(detailData: data)
+                onPluginReady.send([player])
+            } catch let err {
+                onPluginReady.send(completion: .failure(err.localizedDescription))
+            }
+        }
+    }
+
     @MainActor private func generatePlayerPlugin(_ data: PlayerDetailData) async -> [CommonPlayerPlugin] {
         let player = BVideoPlayPlugin(detailData: data)
         let danmu = DanmuViewPlugin(provider: danmuProvider)
         let upnp = BUpnpPlugin(duration: data.detail?.View.duration)
         let debug = DebugPlugin()
-        var plugins: [CommonPlayerPlugin] = [player, danmu, upnp, debug]
+        let playSpeed = SpeedChangerPlugin()
+        playSpeed.$currentPlaySpeed.sink { [weak danmu] speed in
+            danmu?.danMuView.playingSpeed = speed.value
+        }.store(in: &cancellable)
+
+        let playlist = VideoPlayListPlugin(nextProvider: nextProvider)
+        playlist.onPlayEnd = { [weak self] in
+            self?.onExit?()
+        }
+        playlist.onPlayNextWithInfo = {
+            [weak self] info in
+            guard let self else { return }
+            playNext(newPlayInfo: info)
+        }
+
+        playPlugin = player
+
+        var plugins: [CommonPlayerPlugin] = [player, danmu, playSpeed, upnp, debug, playlist]
 
         if let clips = data.clips {
             let clip = BVideoClipsPlugin(clipInfos: clips)

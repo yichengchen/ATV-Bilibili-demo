@@ -7,7 +7,7 @@
 
 import AVKit
 
-class BVideoClipsPlugin: CommonPlayerPlugin {
+class BVideoClipsPlugin: NSObject, CommonPlayerPlugin {
     let clipInfos: [VideoPlayURLInfo.ClipInfo]
 
     private var observers = [Any]()

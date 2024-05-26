@@ -28,6 +28,7 @@ class NewVideoPlayerViewController: NewCommonPlayerViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        viewModel.nextProvider = nextProvider
         viewModel.onPluginReady.receive(on: DispatchQueue.main).sink { [weak self] completion in
             switch completion {
             case let .failure(err):
@@ -38,7 +39,12 @@ class NewVideoPlayerViewController: NewCommonPlayerViewController {
         } receiveValue: { [weak self] plugins in
             plugins.forEach { self?.addPlugin(plugin: $0) }
         }.store(in: &cancelable)
-
+        viewModel.onPluginRemove.sink { [weak self] in
+            self?.removePlugin(plugin: $0)
+        }.store(in: &cancelable)
+        viewModel.onExit = { [weak self] in
+            self?.dismiss(animated: true)
+        }
         Task {
             await viewModel.load()
         }

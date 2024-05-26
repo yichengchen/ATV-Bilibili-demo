@@ -8,7 +8,7 @@
 import AVKit
 import UIKit
 
-class DebugPlugin: CommonPlayerPlugin {
+class DebugPlugin: NSObject, CommonPlayerPlugin {
     private var debugView: UILabel?
     private weak var containerView: UIView?
     private var debugTimer: Timer?
@@ -26,7 +26,7 @@ class DebugPlugin: CommonPlayerPlugin {
         self.player = player
     }
 
-    func addMenuItems(current: [UIMenuElement]) -> [UIMenuElement] {
+    func addMenuItems(current: inout [UIMenuElement]) -> [UIMenuElement] {
         let debugEnableImage = UIImage(systemName: "terminal.fill")
         let debugDisableImage = UIImage(systemName: "terminal")
         let debugAction = UIAction(title: "Debug", image: debugEnable ? debugEnableImage : debugDisableImage) {
@@ -45,7 +45,9 @@ class DebugPlugin: CommonPlayerPlugin {
         {
             var child = setting.children
             child.append(debugAction)
-            setting.replacingChildren(child)
+            if let index = current.firstIndex(of: setting) {
+                current[index] = setting.replacingChildren(child)
+            }
             return []
         }
         return [debugAction]

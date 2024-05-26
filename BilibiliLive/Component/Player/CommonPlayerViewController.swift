@@ -409,7 +409,9 @@ struct PlaySpeed {
     var value: Float
 }
 
-extension PlaySpeed {
+extension PlaySpeed: Equatable {
+    static let `default` = PlaySpeed(name: "1X", value: 1)
+
     static let blDefaults = [
         PlaySpeed(name: "0.5X", value: 0.5),
         PlaySpeed(name: "0.75X", value: 0.75),

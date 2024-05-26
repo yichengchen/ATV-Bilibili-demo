@@ -15,6 +15,7 @@ class NewCommonPlayerViewController: UIViewController {
     private var rateObserver: NSKeyValueObservation?
     private var statusObserver: NSKeyValueObservation?
     private var isEnd = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
         addChild(playerVC)
@@ -49,6 +50,12 @@ class NewCommonPlayerViewController: UIViewController {
         plugin.playerDidLoad(playerVC: playerVC)
     }
 
+    func removePlugin(plugin: CommonPlayerPlugin) {
+        activePlugins.removeAll { $0 == plugin }
+    }
+
+    func playerDidEnd(player: AVPlayer) {}
+
     func showErrorAlertAndExit(title: String = "播放失败", message: String = "未知错误") {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let actionOk = UIAlertAction(title: "OK", style: .default) {
@@ -75,7 +82,7 @@ extension NewCommonPlayerViewController {
             }
             var menus = [UIMenuElement]()
             activePlugins.forEach {
-                let newMenus = $0.addMenuItems(current: menus)
+                let newMenus = $0.addMenuItems(current: &menus)
                 menus.append(contentsOf: newMenus)
             }
             playerVC.transportBarCustomMenuItems = menus
@@ -114,6 +121,7 @@ extension NewCommonPlayerViewController {
             guard let self, let player = playerVC.player else { return }
             isEnd = true
             activePlugins.forEach { $0.playerDidEnd(player: player) }
+            playerDidEnd(player: player)
         }
     }
 }

@@ -7,7 +7,7 @@
 
 import AVKit
 
-class BVideoPlayPlugin: CommonPlayerPlugin {
+class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     private weak var playerVC: AVPlayerViewController?
     private var playerDelegate: BilibiliVideoResourceLoaderDelegate?
     private let playData: PlayerDetailData
@@ -18,6 +18,7 @@ class BVideoPlayPlugin: CommonPlayerPlugin {
 
     func playerDidLoad(playerVC: AVPlayerViewController) {
         self.playerVC = playerVC
+        playerVC.player = nil
         playerVC.appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
         Task {
             try? await playmedia(urlInfo: playData.videoPlayURLInfo, playerInfo: playData.playerInfo)
@@ -62,14 +63,6 @@ class BVideoPlayPlugin: CommonPlayerPlugin {
     func prepare(toPlay asset: AVURLAsset) async {
         let playerItem = AVPlayerItem(asset: asset)
         let player = AVPlayer(playerItem: playerItem)
-
-        if let defaultRate = playerVC?.player?.defaultRate,
-           let speed = PlaySpeed.blDefaults.first(where: { $0.value == defaultRate })
-        {
-            playerVC?.player = player
-            playerVC?.selectSpeed(AVPlaybackSpeed(rate: speed.value, localizedName: speed.name))
-        } else {
-            playerVC?.player = player
-        }
+        playerVC?.player = player
     }
 }

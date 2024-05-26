@@ -8,9 +8,9 @@
 import AVKit
 import UIKit
 
-protocol CommonPlayerPlugin {
+protocol CommonPlayerPlugin: NSObject {
     func addViewToPlayerOverlay(container: UIView)
-    func addMenuItems(current: [UIMenuElement]) -> [UIMenuElement]
+    func addMenuItems(current: inout [UIMenuElement]) -> [UIMenuElement]
 
     func playerDidLoad(playerVC: AVPlayerViewController)
     func playerDidDismiss(playerVC: AVPlayerViewController)
@@ -27,7 +27,7 @@ protocol CommonPlayerPlugin {
 
 extension CommonPlayerPlugin {
     func addViewToPlayerOverlay(container: UIView) {}
-    func addMenuItems(current: [UIMenuElement]) -> [UIMenuElement] { return [] }
+    func addMenuItems(current: inout [UIMenuElement]) -> [UIMenuElement] { return [] }
 
     func playerWillStart(player: AVPlayer) {}
     func playerDidStart(player: AVPlayer) {}

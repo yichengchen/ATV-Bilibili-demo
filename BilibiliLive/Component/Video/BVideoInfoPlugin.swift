@@ -8,7 +8,7 @@
 import AVKit
 import Kingfisher
 
-class BVideoInfoPlugin: CommonPlayerPlugin {
+class BVideoInfoPlugin: NSObject, CommonPlayerPlugin {
     let title: String?
     let subTitle: String?
     let desp: String?

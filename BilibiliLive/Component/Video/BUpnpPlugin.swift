@@ -7,7 +7,7 @@
 
 import AVFoundation
 import Foundation
-class BUpnpPlugin: CommonPlayerPlugin {
+class BUpnpPlugin: NSObject, CommonPlayerPlugin {
     let duration: Int?
 
     init(duration: Int?) {
