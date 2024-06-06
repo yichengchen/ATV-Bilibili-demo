@@ -19,24 +19,48 @@ enum LiveError: String, LocalizedError {
 }
 
 class LivePlayerViewModel {
-    init(roomID: Int) {
-        self.roomID = roomID
+    init(room: LiveRoom) {
+        self.room = room
+        roomID = room.room_id
     }
 
     deinit {
         danMuProvider?.stop()
     }
 
-    var onShootDanmu: ((DanmakuTextCellModel) -> Void)?
-    var onPlayUrlStr: ((String) -> Void)?
+    var onPluginReady: (([CommonPlayerPlugin]) -> Void)?
     var onError: ((String) -> Void)?
 
+    private let playPlugin = URLPlayPlugin(referer: Keys.liveReferer, isLive: true)
+    private let debugPlugin = DebugPlugin()
+
     func start() {
+        playPlugin.onPlayFail = { [weak self] in
+            self?.playerDidFailToPlay()
+        }
+
+        debugPlugin.additionDebugInfo = { [weak self] in
+            self?.debugInfo() ?? ""
+        }
+
+        onPluginReady?([playPlugin, debugPlugin])
         Task {
             do {
                 try await refreshRoomsID()
                 try await initPlayer()
-                await initDanmu()
+
+                let danmu = await initDanmu()
+                self.onPluginReady?(danmu)
+
+                if let info = await fetchDespInfo() {
+                    let subtitle = "\(room.ownerName)·\(info.parent_area_name) \(info.area_name)"
+                    let desp = "\(info.description)\nTags:\(info.tags ?? "")"
+                    let infoPlugin = BVideoInfoPlugin(title: info.title, subTitle: subtitle, desp: desp, pic: room.pic, viewPoints: nil)
+                    self.onPluginReady?([infoPlugin])
+                } else {
+                    let infoPlugin = BVideoInfoPlugin(title: room.title, subTitle: nil, desp: nil, pic: room.pic, viewPoints: nil)
+                    self.onPluginReady?([infoPlugin])
+                }
             } catch let err {
                 await MainActor.run {
                     onError?(String(describing: err))
@@ -76,6 +100,7 @@ class LivePlayerViewModel {
     private var allPlayInfos = [LivePlayUrlInfo]()
     private var playInfos = [LivePlayUrlInfo]()
     private var roomID: Int
+    private let room: LiveRoom
     private var danMuProvider: LiveDanMuProvider?
     private var retryCount = 0
 
@@ -127,32 +152,25 @@ class LivePlayerViewModel {
         if let info = playInfos.first {
             Logger.debug("play =>", playInfos)
             await MainActor.run {
-                onPlayUrlStr?(info.url)
+                playPlugin.play(urlString: info.url)
             }
         } else {
             throw LiveError.noPlaybackUrl
         }
     }
 
-    private func initDanmu() async {
+    @MainActor private func initDanmu() async -> [CommonPlayerPlugin] {
         danMuProvider = LiveDanMuProvider(roomID: roomID)
-        danMuProvider?.onDanmu = {
-            [weak self] string in
-            let model = DanmakuTextCellModel(str: string)
-            DispatchQueue.main.async { [weak self] in
-                self?.onShootDanmu?(model)
-            }
-        }
-        danMuProvider?.onSC = {
-            [weak self] string in
-            let model = DanmakuTextCellModel(str: string)
-            model.type = .top
-            model.displayTime = 60
-            DispatchQueue.main.async { [weak self] in
-                self?.onShootDanmu?(model)
-            }
-        }
+        let danmuPlugin = DanmuViewPlugin(provider: danMuProvider!)
+
         try? await danMuProvider?.start()
+        var plugins: [CommonPlayerPlugin] = [danmuPlugin]
+        if Settings.danmuMask, Settings.vnMask {
+            let plugin = MaskViewPugin(maskView: danmuPlugin.danMuView, maskProvider: VMaskProvider())
+            plugins.append(plugin)
+        }
+
+        return plugins
     }
 }
 

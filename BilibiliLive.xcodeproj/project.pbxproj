@@ -81,6 +81,8 @@
 		499C76132931A781003160FB /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76122931A781003160FB /* Swifter */; };
 		499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76152931A7AE003160FB /* SwiftyXMLParser */; };
 		49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */; };
+		49D250A02C118FA700173908 /* URLPlayPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D2509F2C118FA700173908 /* URLPlayPlugin.swift */; };
+		49D250A22C11A82B00173908 /* AVPlayerMetaUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49D6A7122C0200ED0084A5A7 /* CommonPlayerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6A7112C0200ED0084A5A7 /* CommonPlayerPlugin.swift */; };
 		49D6A7142C0363F10084A5A7 /* VideoPlayListPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6A7132C0363F10084A5A7 /* VideoPlayListPlugin.swift */; };
@@ -275,6 +277,8 @@
 		499C75ED29305A1E003160FB /* BiliBiliUpnpDMR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiliBiliUpnpDMR.swift; sourceTree = "<group>"; };
 		499C760E2930E068003160FB /* NVASocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NVASocket.swift; sourceTree = "<group>"; };
 		49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpsViewController.swift; sourceTree = "<group>"; };
+		49D2509F2C118FA700173908 /* URLPlayPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLPlayPlugin.swift; sourceTree = "<group>"; };
+		49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVPlayerMetaUtils.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49D6A7112C0200ED0084A5A7 /* CommonPlayerPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPlayerPlugin.swift; sourceTree = "<group>"; };
 		49D6A7132C0363F10084A5A7 /* VideoPlayListPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayListPlugin.swift; sourceTree = "<group>"; };
@@ -383,6 +387,7 @@
 				F927ED982610AD8D00EAB8E3 /* LiveViewController.swift */,
 				F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */,
 				F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */,
+				49D2509F2C118FA700173908 /* URLPlayPlugin.swift */,
 			);
 			path = Live;
 			sourceTree = "<group>";
@@ -668,6 +673,7 @@
 				496E5A542C01CDBB0062951B /* DebugPlugin.swift */,
 				496E5A562C01CDCA0062951B /* SpeedChangerPlugin.swift */,
 				49D6A7112C0200ED0084A5A7 /* CommonPlayerPlugin.swift */,
+				49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */,
 			);
 			path = Player;
 			sourceTree = "<group>";
@@ -870,6 +876,7 @@
 				498CF2982B63AABE0009793E /* encoder_dict.c in Sources */,
 				AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */,
 				499C75EE29305A1E003160FB /* BiliBiliUpnpDMR.swift in Sources */,
+				49D250A22C11A82B00173908 /* AVPlayerMetaUtils.swift in Sources */,
 				4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */,
 				F927ED8D2610A5A800EAB8E3 /* LoginViewController.swift in Sources */,
 				F9B9EAEA261B15020045C2C6 /* FeedCollectionViewController.swift in Sources */,
@@ -886,6 +893,7 @@
 				F927ED682610113A00EAB8E3 /* LiveDanMuProvider.swift in Sources */,
 				498CF2922B63AABE0009793E /* histogram.c in Sources */,
 				49474213290509F6005D6885 /* DateFormatter.swift in Sources */,
+				49D250A02C118FA700173908 /* URLPlayPlugin.swift in Sources */,
 				492AD7112C001C7B007221C8 /* BVideoPlayPlugin.swift in Sources */,
 				F927ED742610395300EAB8E3 /* DanmakuView.swift in Sources */,
 				F927ED782610395300EAB8E3 /* DanmakuTrack.swift in Sources */,

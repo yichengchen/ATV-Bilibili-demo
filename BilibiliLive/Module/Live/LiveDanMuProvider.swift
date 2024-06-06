@@ -5,18 +5,20 @@
 //  Created by Etan on 2021/3/28.
 //
 
+import Combine
 import Foundation
 @_spi(WebSocket) import Alamofire
 import Gzip
 import SwiftyJSON
 
-class LiveDanMuProvider {
+class LiveDanMuProvider: DanmuProviderProtocol {
+    let observerPlayerTime = false
+    var onSendTextModel = PassthroughSubject<DanmakuTextCellModel, Never>()
+
     private var websocket: WebSocketRequest?
     private var heartBeatTimer: Timer?
     private let roomID: Int
     private var token = ""
-    var onDanmu: ((String) -> Void)?
-    var onSC: ((String) -> Void)?
 
     init(roomID: Int) {
         self.roomID = roomID
@@ -25,6 +27,8 @@ class LiveDanMuProvider {
     deinit {
         stop()
     }
+
+    func playerTimeChange(time: TimeInterval) {}
 
     func start() async throws {
         let info = try await WebRequest.requestDanmuServerInfo(roomID: roomID)
@@ -117,19 +121,24 @@ extension LiveDanMuProvider {
                 switch cmd {
                 case "DANMU_MSG":
                     if let str = json["info"][1].string {
-                        onDanmu?(str)
+                        let model = DanmakuTextCellModel(str: str)
+                        onSendTextModel.send(model)
                     }
                 case "DM_INTERACTION":
                     guard let data = json["data"]["data"].string else { return }
                     let comboArr = JSON(parseJSON: data)["combo"]
                     for combo in comboArr.arrayValue {
                         if let str = combo["content"].string {
-                            // let cnt = combo["cnt"].int
-                            onDanmu?("\(str)")
+                            let model = DanmakuTextCellModel(str: str)
+                            onSendTextModel.send(model)
                         }
                     }
                 case "SUPER_CHAT_MESSAGE":
-                    if let str = json["data"]["message"].string { onSC?(str) }
+                    if let str = json["data"]["message"].string {
+                        let model = DanmakuTextCellModel(str: str)
+                        model.type = .top
+                        model.displayTime = 60
+                    }
                 default:
                     break
                 }

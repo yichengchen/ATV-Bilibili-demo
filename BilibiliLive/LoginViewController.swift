@@ -79,12 +79,8 @@ class LoginViewController: UIViewController {
 
     func didValidationSuccess() {
         qrcodeImageView.image = nil
-        let alert = UIAlertController()
-        alert.addAction(UIAlertAction(title: "Success", style: .default, handler: { [weak self] _ in
-            self?.dismiss(animated: true, completion: nil)
-            AppDelegate.shared.showTabBar()
-        }))
-        present(alert, animated: true, completion: nil)
+        AppDelegate.shared.showTabBar()
+        stopValidationTimer()
     }
 
     func loopValidation() {

@@ -25,7 +25,7 @@ class BVideoInfoPlugin: NSObject, CommonPlayerPlugin {
 
     func playerWillStart(player: AVPlayer) {
         Task {
-            async let info: () = setPlayerInfo(title: title, subTitle: subTitle, desp: desp, pic: pic, player: player)
+            async let info: () = AVPlayerMetaUtils.setPlayerInfo(title: title, subTitle: subTitle, desp: desp, pic: pic, player: player)
             if let viewPoints {
                 async let vp: () = updatePlayerCharpter(viewPoints: viewPoints, player: player)
                 await vp
@@ -54,48 +54,17 @@ class BVideoInfoPlugin: NSObject, CommonPlayerPlugin {
         player.currentItem?.navigationMarkerGroups = [AVNavigationMarkersGroup(title: nil, timedNavigationMarkers: metas)]
     }
 
-    private func setPlayerInfo(title: String?, subTitle: String?, desp: String?, pic: URL?, player: AVPlayer) async {
-        let desp = desp?.components(separatedBy: "\n").joined(separator: " ")
-        let mapping: [AVMetadataIdentifier: Any?] = [
-            .commonIdentifierTitle: title,
-            .iTunesMetadataTrackSubTitle: subTitle,
-            .commonIdentifierDescription: desp,
-        ]
-        var metas = mapping.compactMap { createMetadataItem(for: $0, value: $1) }
-
-        player.currentItem?.externalMetadata = metas
-
-        if let pic = pic,
-           let resource = try? await KingfisherManager.shared.retrieveImage(with: Kingfisher.ImageResource(downloadURL: pic)),
-           let data = resource.image.pngData(),
-           let item = createMetadataItem(for: .commonIdentifierArtwork, value: data)
-        {
-            metas.append(item)
-            player.currentItem?.externalMetadata = metas
-        }
-    }
-
-    private func createMetadataItem(for identifier: AVMetadataIdentifier, value: Any?) -> AVMetadataItem? {
-        if value == nil { return nil }
-        let item = AVMutableMetadataItem()
-        item.identifier = identifier
-        item.value = value as? NSCopying & NSObjectProtocol
-        // Specify "und" to indicate an undefined language.
-        item.extendedLanguageTag = "und"
-        return item.copy() as? AVMetadataItem
-    }
-
     private func convertTimedMetadataGroup(viewPoint: PlayerInfo.ViewPoint) -> AVTimedMetadataGroup {
         let mapping: [AVMetadataIdentifier: Any?] = [
             .commonIdentifierTitle: viewPoint.content,
         ]
-        var metadatas = mapping.compactMap { createMetadataItem(for: $0, value: $1) }
+        var metadatas = mapping.compactMap { AVPlayerMetaUtils.createMetadataItem(for: $0, value: $1) }
         let timescale: Int32 = 600
         let cmStartTime = CMTimeMakeWithSeconds(viewPoint.from, preferredTimescale: timescale)
         let cmEndTime = CMTimeMakeWithSeconds(viewPoint.to, preferredTimescale: timescale)
         let timeRange = CMTimeRangeFromTimeToTime(start: cmStartTime, end: cmEndTime)
         if let imageData = viewPoint.imageData,
-           let item = createMetadataItem(for: .commonIdentifierArtwork, value: imageData)
+           let item = AVPlayerMetaUtils.createMetadataItem(for: .commonIdentifierArtwork, value: imageData)
         {
             metadatas.append(item)
         }
