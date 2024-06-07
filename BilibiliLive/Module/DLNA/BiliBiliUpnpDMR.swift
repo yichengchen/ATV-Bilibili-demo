@@ -257,7 +257,7 @@ class BiliBiliUpnpDMR: NSObject {
 
     func handlePlay(json: JSON) {
         let roomId = json["roomId"].stringValue
-        if roomId.count > 0, let room = Int(roomId) {
+        if roomId.count > 0, let room = Int(roomId), room > 0 {
             playLive(roomID: room)
         } else {
             playVideo(json: json)
