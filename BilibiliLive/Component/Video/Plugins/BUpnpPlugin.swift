@@ -28,6 +28,7 @@ class BUpnpPlugin: NSObject, CommonPlayerPlugin {
     }
 
     func playerWillStart(player: AVPlayer) {
+        BiliBiliUpnpDMR.shared.currentPlugin = self
         self.player = player
         guard let duration else { return }
         player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 5, preferredTimescale: 1), queue: .global()) { time in
