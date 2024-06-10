@@ -9,12 +9,26 @@ import AVFoundation
 import Foundation
 class BUpnpPlugin: NSObject, CommonPlayerPlugin {
     let duration: Int?
+    weak var player: AVPlayer?
 
     init(duration: Int?) {
         self.duration = duration
     }
 
+    func pause() {
+        player?.pause()
+    }
+
+    func resume() {
+        player?.play()
+    }
+
+    func seek(to time: TimeInterval) {
+        player?.seek(to: CMTime(seconds: time, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+    }
+
     func playerWillStart(player: AVPlayer) {
+        self.player = player
         guard let duration else { return }
         player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 5, preferredTimescale: 1), queue: .global()) { time in
             DispatchQueue.main.async {

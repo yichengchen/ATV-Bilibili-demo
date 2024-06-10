@@ -19,7 +19,7 @@
 		492731EE29096677005F5B0A /* HotViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492731ED29096677005F5B0A /* HotViewController.swift */; };
 		492AD7092BFF1E6C007221C8 /* NewCommonPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD7082BFF1E6C007221C8 /* NewCommonPlayerViewController.swift */; };
 		492AD70B2BFF23B1007221C8 /* DanmuViewPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */; };
-		492AD70D2BFF33DF007221C8 /* NewVideoPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD70C2BFF33DF007221C8 /* NewVideoPlayerViewController.swift */; };
+		492AD70D2BFF33DF007221C8 /* VideoPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD70C2BFF33DF007221C8 /* VideoPlayerViewController.swift */; };
 		492AD70F2BFF6761007221C8 /* NewVideoPlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD70E2BFF6761007221C8 /* NewVideoPlayerViewModel.swift */; };
 		492AD7112C001C7B007221C8 /* BVideoPlayPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */; };
 		492AD7132C001CA7007221C8 /* String+Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD7122C001CA7007221C8 /* String+Error.swift */; };
@@ -38,15 +38,18 @@
 		49508E0F2943420100D26812 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E0E2943420100D26812 /* CocoaLumberjack */; };
 		49508E112943420100D26812 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E102943420100D26812 /* CocoaLumberjackSwift */; };
 		496400D32943431E0098ACA6 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496400D22943431E0098ACA6 /* Logger.swift */; };
-		496E5A4D2C018F150062951B /* BVideoClipsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A4C2C018F150062951B /* BVideoClipsPlugin.swift */; };
 		496E5A4F2C0194720062951B /* MaskViewPugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A4E2C0194720062951B /* MaskViewPugin.swift */; };
 		496E5A512C0194CD0062951B /* BUpnpPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A502C0194CD0062951B /* BUpnpPlugin.swift */; };
-		496E5A532C01B1CA0062951B /* BVideoInfoPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A522C01B1CA0062951B /* BVideoInfoPlugin.swift */; };
 		496E5A552C01CDBB0062951B /* DebugPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A542C01CDBB0062951B /* DebugPlugin.swift */; };
 		496E5A572C01CDCA0062951B /* SpeedChangerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A562C01CDCA0062951B /* SpeedChangerPlugin.swift */; };
 		4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502A29161B770045C26B /* WeeklyWatchViewController.swift */; };
 		4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */; };
 		497361082BF1A16600ED213F /* Keys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497361072BF1A16600ED213F /* Keys.swift */; };
+		497CF22F2C16EBA4006E1488 /* Published+..swift in Sources */ = {isa = PBXBuildFile; fileRef = 497CF22E2C16EBA4006E1488 /* Published+..swift */; };
+		497CF2312C16ED45006E1488 /* MaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497CF2302C16ED45006E1488 /* MaskProvider.swift */; };
+		497CF2372C16EDE5006E1488 /* BVideoClipsPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497CF2342C16EDE5006E1488 /* BVideoClipsPlugin.swift */; };
+		497CF2382C16EDE5006E1488 /* BVideoInfoPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497CF2352C16EDE5006E1488 /* BVideoInfoPlugin.swift */; };
+		497CF2392C16EDE5006E1488 /* VideoPlayListPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 497CF2362C16EDE5006E1488 /* VideoPlayListPlugin.swift */; };
 		498CF2902B63AABE0009793E /* dictionary_hash.c in Sources */ = {isa = PBXBuildFile; fileRef = 498CF2422B63AABE0009793E /* dictionary_hash.c */; };
 		498CF2912B63AABE0009793E /* backward_references_hq.c in Sources */ = {isa = PBXBuildFile; fileRef = 498CF2432B63AABE0009793E /* backward_references_hq.c */; };
 		498CF2922B63AABE0009793E /* histogram.c in Sources */ = {isa = PBXBuildFile; fileRef = 498CF2462B63AABE0009793E /* histogram.c */; };
@@ -85,7 +88,6 @@
 		49D250A22C11A82B00173908 /* AVPlayerMetaUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
 		49D6A7122C0200ED0084A5A7 /* CommonPlayerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6A7112C0200ED0084A5A7 /* CommonPlayerPlugin.swift */; };
-		49D6A7142C0363F10084A5A7 /* VideoPlayListPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D6A7132C0363F10084A5A7 /* VideoPlayListPlugin.swift */; };
 		49DA01A0296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DA019F296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift */; };
 		49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */; };
 		49F9186E2931E3C9001D3EC3 /* DLNAInfo.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */; };
@@ -119,7 +121,6 @@
 		F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */; };
 		F927ED992610AD8D00EAB8E3 /* LiveViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F927ED982610AD8D00EAB8E3 /* LiveViewController.swift */; };
 		F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = F927ED9E2610B5C300EAB8E3 /* Kingfisher */; };
-		F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */; };
 		F99D28E12619591300F8E66A /* CommonPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */; };
 		F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28E926195EC200F8E66A /* UIView+Layout.swift */; };
 		F99D28F72619F5F000F8E66A /* FollowsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F99D28F62619F5F000F8E66A /* FollowsViewController.swift */; };
@@ -161,7 +162,7 @@
 		492731ED29096677005F5B0A /* HotViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotViewController.swift; sourceTree = "<group>"; };
 		492AD7082BFF1E6C007221C8 /* NewCommonPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewCommonPlayerViewController.swift; sourceTree = "<group>"; };
 		492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DanmuViewPlugin.swift; sourceTree = "<group>"; };
-		492AD70C2BFF33DF007221C8 /* NewVideoPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewVideoPlayerViewController.swift; sourceTree = "<group>"; };
+		492AD70C2BFF33DF007221C8 /* VideoPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewController.swift; sourceTree = "<group>"; };
 		492AD70E2BFF6761007221C8 /* NewVideoPlayerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewVideoPlayerViewModel.swift; sourceTree = "<group>"; };
 		492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BVideoPlayPlugin.swift; sourceTree = "<group>"; };
 		492AD7122C001CA7007221C8 /* String+Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Error.swift"; sourceTree = "<group>"; };
@@ -179,15 +180,18 @@
 		49474212290509F6005D6885 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
 		4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTextOnlyCollectionViewCell.swift; sourceTree = "<group>"; };
 		496400D22943431E0098ACA6 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		496E5A4C2C018F150062951B /* BVideoClipsPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BVideoClipsPlugin.swift; sourceTree = "<group>"; };
 		496E5A4E2C0194720062951B /* MaskViewPugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskViewPugin.swift; sourceTree = "<group>"; };
 		496E5A502C0194CD0062951B /* BUpnpPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BUpnpPlugin.swift; sourceTree = "<group>"; };
-		496E5A522C01B1CA0062951B /* BVideoInfoPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BVideoInfoPlugin.swift; sourceTree = "<group>"; };
 		496E5A542C01CDBB0062951B /* DebugPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugPlugin.swift; sourceTree = "<group>"; };
 		496E5A562C01CDCA0062951B /* SpeedChangerPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedChangerPlugin.swift; sourceTree = "<group>"; };
 		4973502A29161B770045C26B /* WeeklyWatchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyWatchViewController.swift; sourceTree = "<group>"; };
 		4973502C29162A6D0045C26B /* StandardVideoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandardVideoCollectionViewController.swift; sourceTree = "<group>"; };
 		497361072BF1A16600ED213F /* Keys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keys.swift; sourceTree = "<group>"; };
+		497CF22E2C16EBA4006E1488 /* Published+..swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Published+..swift"; sourceTree = "<group>"; };
+		497CF2302C16ED45006E1488 /* MaskProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskProvider.swift; sourceTree = "<group>"; };
+		497CF2342C16EDE5006E1488 /* BVideoClipsPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BVideoClipsPlugin.swift; sourceTree = "<group>"; };
+		497CF2352C16EDE5006E1488 /* BVideoInfoPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BVideoInfoPlugin.swift; sourceTree = "<group>"; };
+		497CF2362C16EDE5006E1488 /* VideoPlayListPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPlayListPlugin.swift; sourceTree = "<group>"; };
 		498CF2352B63AABE0009793E /* NSData+BrotliCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+BrotliCompression.h"; sourceTree = "<group>"; };
 		498CF2362B63AABE0009793E /* LMBrotliCompression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LMBrotliCompression.h; sourceTree = "<group>"; };
 		498CF2372B63AABE0009793E /* BrotliKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BrotliKit.h; sourceTree = "<group>"; };
@@ -281,7 +285,6 @@
 		49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVPlayerMetaUtils.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
 		49D6A7112C0200ED0084A5A7 /* CommonPlayerPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPlayerPlugin.swift; sourceTree = "<group>"; };
-		49D6A7132C0363F10084A5A7 /* VideoPlayListPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayListPlugin.swift; sourceTree = "<group>"; };
 		49DA019F296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AVInfoPanelCollectionViewThumbnailCell+Hook.swift"; sourceTree = "<group>"; };
 		49E5F84F28AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BilibiliVideoResourceLoaderDelegate.swift; sourceTree = "<group>"; };
 		49F9186D2931E3C9001D3EC3 /* DLNAInfo.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DLNAInfo.xml; sourceTree = "<group>"; };
@@ -312,7 +315,6 @@
 		F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookieManager.swift; sourceTree = "<group>"; };
 		F927ED982610AD8D00EAB8E3 /* LiveViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveViewController.swift; sourceTree = "<group>"; };
-		F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerViewController.swift; sourceTree = "<group>"; };
 		F99D28DA2618A55900F8E66A /* BilibiliLive-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BilibiliLive-Bridging-Header.h"; sourceTree = "<group>"; };
 		F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPlayerViewController.swift; sourceTree = "<group>"; };
 		F99D28E926195EC200F8E66A /* UIView+Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Layout.swift"; sourceTree = "<group>"; };
@@ -387,7 +389,6 @@
 				F927ED982610AD8D00EAB8E3 /* LiveViewController.swift */,
 				F9B57355260F5F7400771ED5 /* LivePlayerViewController.swift */,
 				F927ED672610113A00EAB8E3 /* LiveDanMuProvider.swift */,
-				49D2509F2C118FA700173908 /* URLPlayPlugin.swift */,
 			);
 			path = Live;
 			sourceTree = "<group>";
@@ -395,18 +396,12 @@
 		49389D5D28AFE6DC00B9DAFD /* Video */ = {
 			isa = PBXGroup;
 			children = (
-				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
 				F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */,
 				49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */,
-				498DB1DE291BC24700F95607 /* BMaskProvider.swift */,
-				49FB8EBF291F4C520045D5DE /* VMaskProvider.swift */,
-				492AD70C2BFF33DF007221C8 /* NewVideoPlayerViewController.swift */,
+				497CF2322C16EDAC006E1488 /* MaskProvider */,
+				492AD70C2BFF33DF007221C8 /* VideoPlayerViewController.swift */,
 				492AD70E2BFF6761007221C8 /* NewVideoPlayerViewModel.swift */,
-				492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */,
-				496E5A4C2C018F150062951B /* BVideoClipsPlugin.swift */,
-				496E5A502C0194CD0062951B /* BUpnpPlugin.swift */,
-				496E5A522C01B1CA0062951B /* BVideoInfoPlugin.swift */,
-				49D6A7132C0363F10084A5A7 /* VideoPlayListPlugin.swift */,
+				497CF2332C16EDC0006E1488 /* Plugins */,
 			);
 			path = Video;
 			sourceTree = "<group>";
@@ -425,6 +420,7 @@
 				AE2B41562914C02000BF2B0B /* Int.swift */,
 				49DA019F296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift */,
 				492AD7122C001CA7007221C8 /* String+Error.swift */,
+				497CF22E2C16EBA4006E1488 /* Published+..swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -438,6 +434,41 @@
 				490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		497CF2322C16EDAC006E1488 /* MaskProvider */ = {
+			isa = PBXGroup;
+			children = (
+				498DB1DE291BC24700F95607 /* BMaskProvider.swift */,
+				49FB8EBF291F4C520045D5DE /* VMaskProvider.swift */,
+				497CF2302C16ED45006E1488 /* MaskProvider.swift */,
+			);
+			path = MaskProvider;
+			sourceTree = "<group>";
+		};
+		497CF2332C16EDC0006E1488 /* Plugins */ = {
+			isa = PBXGroup;
+			children = (
+				497CF2342C16EDE5006E1488 /* BVideoClipsPlugin.swift */,
+				497CF2352C16EDE5006E1488 /* BVideoInfoPlugin.swift */,
+				497CF2362C16EDE5006E1488 /* VideoPlayListPlugin.swift */,
+				492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */,
+				496E5A502C0194CD0062951B /* BUpnpPlugin.swift */,
+			);
+			path = Plugins;
+			sourceTree = "<group>";
+		};
+		497CF23A2C16EE04006E1488 /* Plugins */ = {
+			isa = PBXGroup;
+			children = (
+				49D2509F2C118FA700173908 /* URLPlayPlugin.swift */,
+				492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */,
+				496E5A4E2C0194720062951B /* MaskViewPugin.swift */,
+				496E5A542C01CDBB0062951B /* DebugPlugin.swift */,
+				496E5A562C01CDCA0062951B /* SpeedChangerPlugin.swift */,
+				49D6A7112C0200ED0084A5A7 /* CommonPlayerPlugin.swift */,
+			);
+			path = Plugins;
 			sourceTree = "<group>";
 		};
 		498CF2342B63AABE0009793E /* BrotliKit */ = {
@@ -668,11 +699,7 @@
 				F99D28E02619591300F8E66A /* CommonPlayerViewController.swift */,
 				49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */,
 				492AD7082BFF1E6C007221C8 /* NewCommonPlayerViewController.swift */,
-				492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */,
-				496E5A4E2C0194720062951B /* MaskViewPugin.swift */,
-				496E5A542C01CDBB0062951B /* DebugPlugin.swift */,
-				496E5A562C01CDCA0062951B /* SpeedChangerPlugin.swift */,
-				49D6A7112C0200ED0084A5A7 /* CommonPlayerPlugin.swift */,
+				497CF23A2C16EE04006E1488 /* Plugins */,
 				49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */,
 			);
 			path = Player;
@@ -844,7 +871,6 @@
 			files = (
 				F9B9EAED261B25E40045C2C6 /* ToViewViewController.swift in Sources */,
 				4973502B29161B770045C26B /* WeeklyWatchViewController.swift in Sources */,
-				496E5A4D2C018F150062951B /* BVideoClipsPlugin.swift in Sources */,
 				AE7A3B20290298BE006FEBB0 /* Colors.swift in Sources */,
 				496E5A4F2C0194720062951B /* MaskViewPugin.swift in Sources */,
 				49FB8EC0291F4C520045D5DE /* VMaskProvider.swift in Sources */,
@@ -855,6 +881,7 @@
 				498CF29E2B63AABE0009793E /* bit_cost.c in Sources */,
 				498CF29B2B63AABE0009793E /* utf8_util.c in Sources */,
 				498CF2AA2B63AABE0009793E /* LMBrotliCompressor.m in Sources */,
+				497CF22F2C16EBA4006E1488 /* Published+..swift in Sources */,
 				AEA6AB1628FFE951007CE72E /* SettingsViewController.swift in Sources */,
 				49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */,
 				AE2B41572914C02000BF2B0B /* Int.swift in Sources */,
@@ -862,10 +889,9 @@
 				498CF2A72B63AABE0009793E /* decode.c in Sources */,
 				F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */,
 				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,
-				492AD70D2BFF33DF007221C8 /* NewVideoPlayerViewController.swift in Sources */,
+				492AD70D2BFF33DF007221C8 /* VideoPlayerViewController.swift in Sources */,
 				F9171D6629026AC5002868C7 /* TitleSupplementaryView.swift in Sources */,
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
-				F9562C92261A0D2200573B74 /* VideoPlayerViewController.swift in Sources */,
 				498CF2A12B63AABE0009793E /* metablock.c in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
 				498CF29D2B63AABE0009793E /* brotli_bit_stream.c in Sources */,
@@ -874,6 +900,7 @@
 				49FB8EE929208EBE0045D5DE /* SidxParseUtil.swift in Sources */,
 				F9171D6129010429002868C7 /* UICollectionView+..swift in Sources */,
 				498CF2982B63AABE0009793E /* encoder_dict.c in Sources */,
+				497CF2312C16ED45006E1488 /* MaskProvider.swift in Sources */,
 				AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */,
 				499C75EE29305A1E003160FB /* BiliBiliUpnpDMR.swift in Sources */,
 				49D250A22C11A82B00173908 /* AVPlayerMetaUtils.swift in Sources */,
@@ -909,18 +936,18 @@
 				492AD7132C001CA7007221C8 /* String+Error.swift in Sources */,
 				490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */,
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
+				497CF2392C16EDE5006E1488 /* VideoPlayListPlugin.swift in Sources */,
 				498CF2A92B63AABE0009793E /* bit_reader.c in Sources */,
 				498CF2972B63AABE0009793E /* encode.c in Sources */,
 				49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */,
 				498CF2992B63AABE0009793E /* cluster.c in Sources */,
 				498CF2952B63AABE0009793E /* compress_fragment_two_pass.c in Sources */,
-				49D6A7142C0363F10084A5A7 /* VideoPlayListPlugin.swift in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
+				497CF2382C16EDE5006E1488 /* BVideoInfoPlugin.swift in Sources */,
 				49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */,
 				AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */,
 				498CF2962B63AABE0009793E /* block_splitter.c in Sources */,
 				494741C6290177BB005D6885 /* UpSpaceViewController.swift in Sources */,
-				496E5A532C01B1CA0062951B /* BVideoInfoPlugin.swift in Sources */,
 				496E5A552C01CDBB0062951B /* DebugPlugin.swift in Sources */,
 				49DA01A0296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift in Sources */,
 				492731EE29096677005F5B0A /* HotViewController.swift in Sources */,
@@ -950,6 +977,7 @@
 				F9171D6429010DF1002868C7 /* FeedCollectionViewCell.swift in Sources */,
 				F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */,
 				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,
+				497CF2372C16EDE5006E1488 /* BVideoClipsPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

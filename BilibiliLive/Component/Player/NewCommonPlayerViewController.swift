@@ -8,7 +8,7 @@
 import AVKit
 import UIKit
 
-class NewCommonPlayerViewController: UIViewController {
+class CommonPlayerViewController: UIViewController {
     private let playerVC = AVPlayerViewController()
     private var activePlugins = [CommonPlayerPlugin]()
     private var observations = Set<NSKeyValueObservation>()
@@ -67,7 +67,7 @@ class NewCommonPlayerViewController: UIViewController {
     }
 }
 
-extension NewCommonPlayerViewController {
+extension CommonPlayerViewController {
     private func playerDidChange(player: AVPlayer?) {
         if let player {
             activePlugins.forEach { $0.playerDidChange(player: player) }
@@ -126,9 +126,9 @@ extension NewCommonPlayerViewController {
     }
 }
 
-extension NewCommonPlayerViewController: AVPlayerViewControllerDelegate {
+extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
     @objc func playerViewControllerShouldDismiss(_ playerViewController: AVPlayerViewController) -> Bool {
-        if let presentedViewController = UIViewController.topMostViewController() as? NewCommonPlayerViewController,
+        if let presentedViewController = UIViewController.topMostViewController() as? CommonPlayerViewController,
            presentedViewController.playerVC == playerViewController
         {
             dismiss(animated: true)
@@ -157,7 +157,7 @@ extension NewCommonPlayerViewController: AVPlayerViewControllerDelegate {
             completionHandler(false)
             return
         }
-        if presentedViewController is NewCommonPlayerViewController {
+        if presentedViewController is CommonPlayerViewController {
             let parent = presentedViewController.presentingViewController
             presentedViewController.dismiss(animated: false) {
                 parent?.present(containerPlayer, animated: false)
@@ -172,6 +172,6 @@ extension NewCommonPlayerViewController: AVPlayerViewControllerDelegate {
 
     class PipRecorder {
         static let shared = PipRecorder()
-        var playingPipViewController = [NewCommonPlayerViewController]()
+        var playingPipViewController = [CommonPlayerViewController]()
     }
 }

@@ -16,10 +16,6 @@ protocol DanmuProviderProtocol {
 }
 
 class DanmuViewPlugin: NSObject {
-    var showDanmu = Settings.defaultDanmuStatus {
-        didSet { danMuView.isHidden = !showDanmu }
-    }
-
     let danMuView = DanmakuView()
 
     init(provider: DanmuProviderProtocol) {
@@ -29,6 +25,13 @@ class DanmuViewPlugin: NSObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] in
                 self?.shoot($0)
+            }.store(in: &cancellable)
+
+        Defaults.shared.$showDanmu
+            .receive(on: DispatchQueue.main)
+            .sink {
+                [weak self] in
+                self?.danMuView.isHidden = !$0
             }.store(in: &cancellable)
     }
 
@@ -49,7 +52,7 @@ extension DanmuViewPlugin: CommonPlayerPlugin {
         player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1),
                                        queue: DispatchQueue.global()) { [weak self] time in
             guard let self else { return }
-            if danMuView.isHidden { return }
+            if !Defaults.shared.showDanmu { return }
             let seconds = time.seconds
             danmuProvider.playerTimeChange(time: seconds)
         }
@@ -66,7 +69,6 @@ extension DanmuViewPlugin: CommonPlayerPlugin {
         danMuView.makeConstraintsToBindToSuperview()
         danMuView.setNeedsLayout()
         danMuView.layoutIfNeeded()
-        danMuView.isHidden = showDanmu
         danMuView.paddingTop = 5
         danMuView.trackHeight = 50
         danMuView.displayArea = Settings.danmuArea.percent
@@ -85,11 +87,9 @@ extension DanmuViewPlugin: CommonPlayerPlugin {
         let danmuImage = UIImage(systemName: "list.bullet.rectangle.fill")
         let danmuImageDisable = UIImage(systemName: "list.bullet.rectangle")
         let danmuAction = UIAction(title: "Show Danmu", image: danMuView.isHidden ? danmuImageDisable : danmuImage) {
-            [weak self] action in
-            guard let self = self else { return }
-            Settings.defaultDanmuStatus.toggle()
-            self.danMuView.isHidden.toggle()
-            action.image = self.danMuView.isHidden ? danmuImageDisable : danmuImage
+            action in
+            Defaults.shared.showDanmu.toggle()
+            action.image = Defaults.shared.showDanmu ? danmuImage : danmuImageDisable
         }
         let danmuDurationMenu = UIMenu(title: "弹幕展示时长", options: [.displayInline, .singleSelection], children: [4, 6, 8].map { dur in
             UIAction(title: "\(dur) 秒", state: dur == Settings.danmuDuration ? .on : .off) { _ in Settings.danmuDuration = dur }

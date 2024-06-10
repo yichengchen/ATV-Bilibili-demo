@@ -11,7 +11,7 @@ import Foundation
 import SwiftyJSON
 import UIKit
 
-class LivePlayerViewController: NewCommonPlayerViewController {
+class LivePlayerViewController: CommonPlayerViewController {
     var room: LiveRoom?
 
     private var viewModel: LivePlayerViewModel?
