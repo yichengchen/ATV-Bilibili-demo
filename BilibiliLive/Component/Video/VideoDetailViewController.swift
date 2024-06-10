@@ -6,6 +6,7 @@
 //
 
 import AVKit
+import Combine
 import Foundation
 import UIKit
 
@@ -43,6 +44,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var pageCollectionView: UICollectionView!
     @IBOutlet var recommandCollectionView: UICollectionView!
     @IBOutlet var replysCollectionView: UICollectionView!
+    @IBOutlet var repliesCollectionViewHeightConstraints: NSLayoutConstraint!
     @IBOutlet var ugcCollectionView: UICollectionView!
 
     @IBOutlet var pageView: UIView!
@@ -70,6 +72,8 @@ class VideoDetailViewController: UIViewController {
     private var subTitles: [SubtitleData]?
 
     private var allUgcEpisodes = [VideoDetail.Info.UgcSeason.UgcVideoInfo]()
+
+    private var subscriptions = [AnyCancellable]()
 
     static func create(aid: Int, cid: Int?, epid: Int? = nil) -> VideoDetailViewController {
         let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
@@ -126,6 +130,11 @@ class VideoDetailViewController: UIViewController {
             focusGuide.bottomAnchor.constraint(equalTo: actionButtonSpaceView.bottomAnchor),
         ])
         focusGuide.preferredFocusEnvironments = [dislikeButton]
+
+        replysCollectionView.publisher(for: \.contentSize).sink { [weak self] newSize in
+            self?.repliesCollectionViewHeightConstraints.constant = newSize.height
+            self?.view.setNeedsLayout()
+        }.store(in: &subscriptions)
     }
 
     override var preferredFocusedView: UIView? {
@@ -456,7 +465,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             present(player, animated: true, completion: nil)
         case replysCollectionView:
             guard let reply = replys?.replies?[indexPath.item] else { return }
-            let detail = ContentDetailViewController.createReply(content: reply.content.message)
+            let detail = ReplyDetailViewController(reply: reply)
             present(detail, animated: true)
         case ugcCollectionView:
             let video = allUgcEpisodes[indexPath.item]
@@ -573,18 +582,6 @@ extension VideoDetailViewController {
             section.interGroupSpacing = 40
             return section
         }
-    }
-}
-
-class ReplyCell: UICollectionViewCell {
-    @IBOutlet var avatarImageView: UIImageView!
-    @IBOutlet var userNameLabel: UILabel!
-    @IBOutlet var contenLabel: UILabel!
-
-    func config(replay: Replys.Reply) {
-        avatarImageView.kf.setImage(with: URL(string: replay.member.avatar), options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
-        userNameLabel.text = replay.member.uname
-        contenLabel.text = replay.content.message
     }
 }
 

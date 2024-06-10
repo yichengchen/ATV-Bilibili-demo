@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     name: Build ipa
-    runs-on: macos-13
+    runs-on: macos-14
 
     steps:
       - name: Checkout
@@ -23,21 +23,21 @@ jobs:
           bundle install -j 4
           bundle exec fastlane build_unsign_ipa
 
-      - name: List, filter and delete artifacts
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: actions/github-script@v6
-        id: artifact
-        with:
-          script: |
-            const { owner, repo } = context.issue
+      # - name: List, filter and delete artifacts
+      #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      #   uses: actions/github-script@v6
+      #   id: artifact
+      #   with:
+      #     script: |
+      #       const { owner, repo } = context.issue
             
-            const res = await github.rest.actions.listArtifactsForRepo({
-              owner,
-              repo,
-            })
+      #       const res = await github.rest.actions.listArtifactsForRepo({
+      #         owner,
+      #         repo,
+      #       })
             
-            res.data.artifacts
-              .forEach(({ id }) => { github.rest.actions.deleteArtifact({ owner, repo, artifact_id: id, }) })
+      #       res.data.artifacts
+      #         .forEach(({ id }) => { github.rest.actions.deleteArtifact({ owner, repo, artifact_id: id, }) })
 
       - name: Upload latest artifact
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -45,4 +45,4 @@ jobs:
         with:
           name: main-unsigned.ipa
           path: BilbiliAtvDemo.ipa
-          retention-days: 30
+          retention-days: 60
