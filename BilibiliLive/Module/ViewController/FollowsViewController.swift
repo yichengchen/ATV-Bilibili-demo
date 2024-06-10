@@ -23,6 +23,7 @@ class FollowsViewController: StandardVideoCollectionViewController<DynamicFeedDa
         }
         let info = try await WebRequest.requestFollowsFeed(offset: lastOffset, page: page)
         lastOffset = info.offset
+        Logger.debug("request page\(page) get count:\(info.videoFeeds.count) next offset:\(info.offset)")
         return info.videoFeeds
     }
 
@@ -39,6 +40,7 @@ extension WebRequest {
         let offset: String
         let update_num: Int
         let update_baseline: String
+        let has_more: Bool
         var videoFeeds: [DynamicFeedData] {
             return items
                 .filter({ $0.aid != 0 || $0.modules.module_dynamic.major?.pgc != nil })
@@ -51,6 +53,9 @@ extension WebRequest {
             param["offset"] = offsetNum
         }
         let res: DynamicFeedInfo = try await request(url: "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/all", parameters: param)
+        if res.videoFeeds.isEmpty, res.has_more {
+            return try await requestFollowsFeed(offset: res.offset, page: page)
+        }
         return res
     }
 }
