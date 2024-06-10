@@ -11,6 +11,10 @@
 		0A41EE1C2A63102B0066444C /* dm.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A41EE1A2A63102B0066444C /* dm.pb.swift */; };
 		0A41EE1D2A63102B0066444C /* dmView.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A41EE1B2A63102B0066444C /* dmView.pb.swift */; };
 		27FECFCC2B0B98F400EC6A6D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 27FECFCB2B0B98F400EC6A6D /* Localizable.xcstrings */; };
+		2806E51E2C1593A000164C10 /* LookinServer in Frameworks */ = {isa = PBXBuildFile; productRef = 2806E51D2C1593A000164C10 /* LookinServer */; };
+		2806E5202C15A59E00164C10 /* ReplyDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2806E51F2C15A59E00164C10 /* ReplyDetailViewController.swift */; };
+		2806E5232C16011B00164C10 /* ReplyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2806E5212C16011B00164C10 /* ReplyCell.swift */; };
+		2806E5242C16011B00164C10 /* ReplyCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2806E5222C16011B00164C10 /* ReplyCell.xib */; };
 		2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */; };
 		490425F729AB54B200CDBC60 /* CategoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490425F629AB54B200CDBC60 /* CategoryViewController.swift */; };
 		49078E47291BEA2400F556BD /* PocketSVG in Frameworks */ = {isa = PBXBuildFile; productRef = 49078E46291BEA2400F556BD /* PocketSVG */; };
@@ -138,6 +142,9 @@
 		0A41EE1A2A63102B0066444C /* dm.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = dm.pb.swift; sourceTree = "<group>"; };
 		0A41EE1B2A63102B0066444C /* dmView.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = dmView.pb.swift; sourceTree = "<group>"; };
 		27FECFCB2B0B98F400EC6A6D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		2806E51F2C15A59E00164C10 /* ReplyDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplyDetailViewController.swift; sourceTree = "<group>"; };
+		2806E5212C16011B00164C10 /* ReplyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ReplyCell.swift; path = BilibiliLive/Component/View/ReplyCell.swift; sourceTree = SOURCE_ROOT; };
+		2806E5222C16011B00164C10 /* ReplyCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = ReplyCell.xib; path = BilibiliLive/Component/View/ReplyCell.xib; sourceTree = SOURCE_ROOT; };
 		2DBE4C4C2628818F00D20413 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		490425F629AB54B200CDBC60 /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
 		490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewController.swift; sourceTree = "<group>"; };
@@ -317,6 +324,7 @@
 				49508E0F2943420100D26812 /* CocoaLumberjack in Frameworks */,
 				499C75EC293058C9003160FB /* CocoaAsyncSocket in Frameworks */,
 				F927ED9F2610B5C300EAB8E3 /* Kingfisher in Frameworks */,
+				2806E51E2C1593A000164C10 /* LookinServer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -364,6 +372,9 @@
 			children = (
 				F9562C91261A0D2200573B74 /* VideoPlayerViewController.swift */,
 				F9EDADD2262AA421007CB99F /* VideoDetailViewController.swift */,
+				2806E51F2C15A59E00164C10 /* ReplyDetailViewController.swift */,
+				2806E5212C16011B00164C10 /* ReplyCell.swift */,
+				2806E5222C16011B00164C10 /* ReplyCell.xib */,
 				49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */,
 				498DB1DE291BC24700F95607 /* BMaskProvider.swift */,
 				49FB8EBF291F4C520045D5DE /* VMaskProvider.swift */,
@@ -697,6 +708,7 @@
 				49508E0E2943420100D26812 /* CocoaLumberjack */,
 				49508E102943420100D26812 /* CocoaLumberjackSwift */,
 				0A41EE182A630FEA0066444C /* SwiftProtobuf */,
+				2806E51D2C1593A000164C10 /* LookinServer */,
 			);
 			productName = BilibiliLive;
 			productReference = F9B57350260F5F7400771ED5 /* BilibiliLive.app */;
@@ -740,6 +752,7 @@
 				499C76142931A7AE003160FB /* XCRemoteSwiftPackageReference "SwiftyXMLParser" */,
 				49508E0D2943420100D26812 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */,
 				0A41EE172A630FEA0066444C /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				2806E51C2C1593A000164C10 /* XCRemoteSwiftPackageReference "LookinServer" */,
 			);
 			productRefGroup = F9B57351260F5F7400771ED5 /* Products */;
 			projectDirPath = "";
@@ -759,6 +772,7 @@
 				49F918722931E927001D3EC3 /* AvTransportScpd.xml in Resources */,
 				F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */,
 				F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */,
+				2806E5242C16011B00164C10 /* ReplyCell.xib in Resources */,
 				49F9186E2931E3C9001D3EC3 /* DLNAInfo.xml in Resources */,
 				27FECFCC2B0B98F400EC6A6D /* Localizable.xcstrings in Resources */,
 				F9B57359260F5F7400771ED5 /* Main.storyboard in Resources */,
@@ -801,6 +815,7 @@
 				497361082BF1A16600ED213F /* Keys.swift in Sources */,
 				49E5F85028AF73C500FAA3CE /* BilibiliVideoResourceLoaderDelegate.swift in Sources */,
 				498CF2A22B63AABE0009793E /* dictionary.c in Sources */,
+				2806E5202C15A59E00164C10 /* ReplyDetailViewController.swift in Sources */,
 				494741C82902C45D005D6885 /* Array+..swift in Sources */,
 				498CF29E2B63AABE0009793E /* bit_cost.c in Sources */,
 				498CF29B2B63AABE0009793E /* utf8_util.c in Sources */,
@@ -849,6 +864,7 @@
 				494741E7290391A7005D6885 /* BLButton.swift in Sources */,
 				F927ED992610AD8D00EAB8E3 /* LiveViewController.swift in Sources */,
 				490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */,
+				2806E5232C16011B00164C10 /* ReplyCell.swift in Sources */,
 				F927ED732610395300EAB8E3 /* DanmakuCell.swift in Sources */,
 				498CF2A92B63AABE0009793E /* bit_reader.c in Sources */,
 				498CF2972B63AABE0009793E /* encode.c in Sources */,
@@ -1126,6 +1142,14 @@
 				minimumVersion = 1.0.0;
 			};
 		};
+		2806E51C2C1593A000164C10 /* XCRemoteSwiftPackageReference "LookinServer" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/QMUI/LookinServer/";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.8;
+			};
+		};
 		49078E45291BEA2400F556BD /* XCRemoteSwiftPackageReference "PocketSVG" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pocketsvg/PocketSVG.git";
@@ -1221,6 +1245,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 0A41EE172A630FEA0066444C /* XCRemoteSwiftPackageReference "swift-protobuf" */;
 			productName = SwiftProtobuf;
+		};
+		2806E51D2C1593A000164C10 /* LookinServer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2806E51C2C1593A000164C10 /* XCRemoteSwiftPackageReference "LookinServer" */;
+			productName = LookinServer;
 		};
 		49078E46291BEA2400F556BD /* PocketSVG */ = {
 			isa = XCSwiftPackageProductDependency;

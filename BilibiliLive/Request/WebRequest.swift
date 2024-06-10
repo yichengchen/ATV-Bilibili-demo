@@ -707,6 +707,7 @@ struct Replys: Codable, Hashable {
 
         let member: Member
         let content: Content
+        let replies: [Reply]?
     }
 
     let replies: [Reply]?
