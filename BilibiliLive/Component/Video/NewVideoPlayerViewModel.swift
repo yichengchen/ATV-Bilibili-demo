@@ -78,7 +78,19 @@ class VideoPlayerViewModel {
             var clipInfos: [VideoPlayURLInfo.ClipInfo]?
 
             if playInfo.isBangumi {
-                playData = try await WebRequest.requestPcgPlayUrl(aid: aid, cid: cid)
+                do {
+                    playData = try await WebRequest.requestPcgPlayUrl(aid: aid, cid: cid)
+                } catch let err as RequestError {
+                    if case let .statusFail(code, _) = err,
+                       code == -404 || code == -10403,
+                       let data = try await fetchAreaLimitPcgVideoData()
+                    {
+                        playData = data
+                    } else {
+                        throw err
+                    }
+                }
+
                 clipInfos = playData.clip_info_list
             } else {
                 playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid)
@@ -97,15 +109,6 @@ class VideoPlayerViewModel {
 
         } catch let err {
             if case let .statusFail(code, message) = err as? RequestError {
-                if code == -404 || code == -10403 {
-//              解锁港澳台番剧处理
-//                do {
-//                    if let ok = try await fetchAreaLimitVideoData(), ok {
-//                        return
-//                    }
-//                } catch let err {
-//                }
-                }
                 throw "\(code) \(message)，可能需要大会员"
             } else if await infoReq?.is_upower_exclusive == true {
                 throw "该视频为充电专属视频 \(err)"
@@ -179,5 +182,58 @@ class VideoPlayerViewModel {
         }
 
         return plugins
+    }
+}
+
+// 港澳台解锁
+extension VideoPlayerViewModel {
+    private func fetchAreaLimitPcgVideoData() async throws -> VideoPlayURLInfo? {
+        guard Settings.areaLimitUnlock else { return nil }
+        guard let epid = playInfo.epid, epid > 0 else { return nil }
+
+        let season = try await WebRequest.requestBangumiSeasonView(epid: epid)
+        let checkTitle = season.title.contains("僅") ? season.title : season.series_title
+        let checkAreaList = parseAreaByTitle(title: checkTitle)
+        guard !checkAreaList.isEmpty else { return nil }
+
+        let playData = try await requestAreaLimitPcgPlayUrl(epid: epid, cid: playInfo.cid!, areaList: checkAreaList)
+        return playData
+    }
+
+    private func requestAreaLimitPcgPlayUrl(epid: Int, cid: Int, areaList: [String]) async throws -> VideoPlayURLInfo? {
+        for area in areaList {
+            do {
+                return try await WebRequest.requestAreaLimitPcgPlayUrl(epid: epid, cid: cid, area: area)
+            } catch let err {
+                if area == areaList.last {
+                    throw err
+                } else {
+                    print(err)
+                }
+            }
+        }
+        return nil
+    }
+
+    private func parseAreaByTitle(title: String) -> [String] {
+        if title.isMatch(pattern: "[仅|僅].*[东南亚|其他]") {
+            // TODO: 未支持
+            return []
+        }
+
+        var areas: [String] = []
+        if title.isMatch(pattern: "僅.*台") {
+            areas.append("tw")
+        }
+        if title.isMatch(pattern: "僅.*港") {
+            areas.append("hk")
+        }
+
+        if areas.isEmpty {
+            // 标题没有地区限制信息，返回尝试检测的区域
+            return ["tw", "hk"]
+        } else {
+            return areas
+        }
     }
 }
