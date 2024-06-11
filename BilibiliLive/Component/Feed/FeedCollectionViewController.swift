@@ -88,12 +88,12 @@ class FeedCollectionViewController: UIViewController {
     }
 
     func appendData(displayData: [any DisplayData]) {
+        isLoading = false
         _displayData.append(contentsOf: displayData.map { AnyDispplayData(data: $0) }.filter({ !_displayData.contains($0) }))
         if displayData.count < pageSize - 5 || displayData.count == 0 {
             finished = true
             return
         }
-        isLoading = false
 
         if _displayData.count < 12 {
             isLoading = true
