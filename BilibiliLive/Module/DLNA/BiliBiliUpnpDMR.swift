@@ -14,6 +14,9 @@ import UIKit
 
 class BiliBiliUpnpDMR: NSObject {
     static let shared = BiliBiliUpnpDMR()
+
+    weak var currentPlugin: BUpnpPlugin?
+
     private var udp: GCDAsyncUdpSocket!
     private var httpServer = HttpServer()
     private var connectedSockets = [GCDAsyncSocket]()
@@ -250,18 +253,18 @@ class BiliBiliUpnpDMR: NSObject {
             handlePlay(json: JSON(parseJSON: frame.body))
             session.sendEmpty()
         case "Pause":
-            (topMost as? CommonPlayerViewController)?.player?.pause()
+            currentPlugin?.pause()
             session.sendEmpty()
         case "Resume":
-            (topMost as? CommonPlayerViewController)?.player?.play()
+            currentPlugin?.resume()
             session.sendEmpty()
         case "SwitchDanmaku":
             let json = JSON(parseJSON: frame.body)
-            (topMost as? CommonPlayerViewController)?.danMuView.isHidden = !json["open"].boolValue
+            Defaults.shared.showDanmu = json["open"].boolValue
             session.sendEmpty()
         case "Seek":
             let json = JSON(parseJSON: frame.body)
-            (topMost as? VideoPlayerViewController)?.player?.seek(to: CMTime(seconds: json["seekTs"].doubleValue, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+            currentPlugin?.seek(to: json["seekTs"].doubleValue)
             session.sendEmpty()
         case "Stop":
             (topMost as? CommonPlayerViewController)?.dismiss(animated: true)

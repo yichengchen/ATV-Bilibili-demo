@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import Combine
 import Foundation
 import SwiftyXMLParser
 import UIKit
@@ -35,10 +36,13 @@ struct Danmu: Codable {
     }
 }
 
-class VideoDanmuProvider {
+class VideoDanmuProvider: DanmuProviderProtocol {
     var cid: Int!
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
+
+    let observerPlayerTime: Bool = true
+    let onSendTextModel = PassthroughSubject<DanmakuTextCellModel, Never>()
 
     var onShowDanmu: ((DanmakuTextCellModel) -> Void)?
 
@@ -55,7 +59,7 @@ class VideoDanmuProvider {
     private let segmentDuration = 60 * 6
     private func getSegmentIdx(time: TimeInterval) -> Int { Int(time) / segmentDuration + 1 }
 
-    func initVideo(cid id: Int?, startPos: Int) async {
+    func initVideo(cid id: Int, startPos: Int) async {
         cid = id
         upDanmus.removeAll()
         segmentDanmus.removeAll(keepingCapacity: true)
@@ -160,7 +164,9 @@ class VideoDanmuProvider {
             let dm = upDanmus[upDanmuIdx]
             guard dm.time < time else { break }
             upDanmuIdx += 1
-            onShowDanmu?(DanmakuTextCellModel(dm: dm))
+            let model = DanmakuTextCellModel(dm: dm)
+            onShowDanmu?(model)
+            onSendTextModel.send(model)
         }
 
         while danmuIdx < dms.count {
@@ -168,7 +174,9 @@ class VideoDanmuProvider {
             guard dm.time < time else { break }
             danmuIdx += 1
             if dm.aiLevel < Settings.danmuAILevel { continue }
-            onShowDanmu?(DanmakuTextCellModel(dm: dm))
+            let model = DanmakuTextCellModel(dm: dm)
+            onShowDanmu?(model)
+            onSendTextModel.send(model)
         }
     }
 }

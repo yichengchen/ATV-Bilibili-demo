@@ -5,7 +5,9 @@
 //  Created by whw on 2022/10/19.
 //
 
+import Combine
 import Foundation
+import SwiftUI
 
 enum FeedDisplayStyle: Codable, CaseIterable {
     case large
@@ -15,6 +17,13 @@ enum FeedDisplayStyle: Codable, CaseIterable {
     var hideInSetting: Bool {
         self == .sideBar
     }
+}
+
+class Defaults {
+    static let shared = Defaults()
+    private init() {}
+
+    @Published(key: "Settings.danmuStatus") var showDanmu = true
 }
 
 enum Settings {
@@ -44,9 +53,6 @@ enum Settings {
 
     @UserDefault("Settings.preferAvc", defaultValue: false)
     static var preferAvc: Bool
-
-    @UserDefault("Settings.defaultDanmuStatus", defaultValue: true)
-    static var defaultDanmuStatus: Bool
 
     @UserDefault("Settings.danmuMask", defaultValue: true)
     static var danmuMask: Bool
