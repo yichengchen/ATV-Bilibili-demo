@@ -12,7 +12,6 @@ class MaskViewPugin: NSObject, CommonPlayerPlugin {
     weak var maskView: UIView?
     var maskProvider: MaskProvider
     private var observer: Any?
-    private let queue = DispatchQueue(label: "plugin.mask")
     private var videoOutput: AVPlayerItemVideoOutput?
 
     init(maskView: UIView, maskProvider: MaskProvider) {
@@ -26,19 +25,12 @@ class MaskViewPugin: NSObject, CommonPlayerPlugin {
         }
 
         let timePerFrame = CMTime(value: 1, timescale: CMTimeScale(maskProvider.preferFPS()))
-
-        observer = player.addPeriodicTimeObserver(forInterval: timePerFrame, queue: queue) {
+        observer = player.addPeriodicTimeObserver(forInterval: timePerFrame, queue: .main) {
             [weak self] time in
             guard let self, let maskView, !maskView.isHidden else { return }
             maskProvider.getMask(for: time, frame: maskView.frame) {
                 [weak maskView] maskLayer in
-                if Thread.isMainThread {
-                    maskView?.layer.mask = maskLayer
-                } else {
-                    DispatchQueue.main.async {
-                        maskView?.layer.mask = maskLayer
-                    }
-                }
+                maskView?.layer.mask = maskLayer
             }
         }
     }
