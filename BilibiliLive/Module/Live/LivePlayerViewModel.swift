@@ -70,11 +70,18 @@ class LivePlayerViewModel {
     }
 
     func playerDidFailToPlay() {
-        retryCount += 1
         Task {
             do {
                 playInfos = Array(playInfos.dropFirst())
                 if playInfos.isEmpty {
+                    retryCount += 1
+                    if retryCount > 3 {
+                        await MainActor.run {
+                            onError?("播放失败")
+                        }
+                        return
+                    }
+                    try? await Task.sleep(nanoseconds: 1_000_000_000)
                     try await initPlayer()
                     return
                 } else {
