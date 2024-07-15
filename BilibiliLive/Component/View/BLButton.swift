@@ -122,7 +122,7 @@ class BLCustomTextButton: BLButton {
 
     override func setup() {
         super.setup()
-        effectView.layer.cornerRadius = 10
+        effectView.layer.cornerRadius = normailSornerRadius
         effectView.contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.top.bottom.equalToSuperview().inset(10)
@@ -165,7 +165,7 @@ class BLButton: UIControl {
         selectedWhiteView.isHidden = !isFocused
         addSubview(effectView)
         effectView.isUserInteractionEnabled = false
-        effectView.layer.cornerRadius = 8
+        effectView.layer.cornerRadius = normailSornerRadius
         effectView.clipsToBounds = true
         effectView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()

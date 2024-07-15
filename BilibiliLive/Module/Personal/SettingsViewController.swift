@@ -7,13 +7,19 @@
 
 import UIKit
 
+let bigItmeCount = 3
+let largeItmeCount = 4
+let normalItmeCount = 5
+
 extension FeedDisplayStyle {
     var desp: String {
         switch self {
+        case .big:
+            return "\(bigItmeCount)个"
         case .large:
-            return "3个"
+            return "\(largeItmeCount)个"
         case .normal:
-            return "4个"
+            return "\(normalItmeCount)个"
         case .sideBar:
             return "-"
         }
@@ -188,6 +194,13 @@ class SettingsViewController: UIViewController {
             self?.setupData()
         }
         cellModels.append(sideMenuAutoSelectChange)
+
+        let showVideoCover = CellModel(title: "弹出底部视频详情", desp: Settings.showCover ? "开" : "关") {
+            [weak self] in
+            Settings.showCover.toggle()
+            self?.setupData()
+        }
+        cellModels.append(showVideoCover)
 
         let areaLimitUnlock = CellModel(title: "解锁港澳台番剧限制", desp: Settings.areaLimitUnlock ? "开" : "关") {
             [weak self] in

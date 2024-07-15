@@ -33,12 +33,14 @@ class CategoryViewController: UIViewController, BLTabBarContentVCProtocol {
             return
         }
         typeCollectionView = UICollectionView(frame: .zero, collectionViewLayout: BLSettingLineCollectionViewCell.makeLayout())
+        typeCollectionView.setBlurEffectView()
+        typeCollectionView.setCornerRadius(cornerRadius: normailSornerRadius)
         typeCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         view.addSubview(typeCollectionView)
         typeCollectionView.snp.makeConstraints { make in
             make.leading.bottom.equalToSuperview()
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
-            make.width.equalTo(500)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(140)
+            make.width.equalTo(300)
         }
         typeCollectionView.dataSource = self
         typeCollectionView.delegate = self

@@ -8,7 +8,13 @@
 import UIKit
 
 class HotViewController: StandardVideoCollectionViewController<VideoDetail.Info> {
+    override func setupCollectionView() {
+        super.setupCollectionView()
+        collectionVC.isShowCove = true
+    }
+
     override func request(page: Int) async throws -> [VideoDetail.Info] {
+        collectionVC.headerText = "热门视频"
         return try await WebRequest.requestHotVideo(page: page).list
     }
 }

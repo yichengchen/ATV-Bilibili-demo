@@ -11,6 +11,7 @@ import SwiftyJSON
 import UIKit
 
 struct CellModel {
+    var iconImage: UIImage? = nil
     let title: String
     var desp: String? = nil
     var autoSelect: Bool? = true
@@ -28,6 +29,10 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     @IBOutlet var usernameLabel: UILabel!
     @IBOutlet var leftCollectionView: UICollectionView!
     weak var currentViewController: UIViewController?
+
+    @IBOutlet var menusView: UIView!
+
+    @IBOutlet var menusLeft: NSLayoutConstraint!
 
     var cellModels = [CellModel]()
     override func viewDidLoad() {
@@ -47,7 +52,25 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
                 break
             }
         }
+        menusLeft.constant = 40
     }
+
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//
+//        BLAnimate(withDuration: 0.3) {
+//            self.menusLeft.constant = 40
+//            self.view.layoutIfNeeded()
+//        }
+//    }
+//
+//    override func viewWillDisappear(_ animated: Bool) {
+//        super.viewWillDisappear(animated)
+//        BLAnimate(withDuration: 0.3) {
+//            self.menusLeft.constant = -300
+//            self.view.layoutIfNeeded()
+//        }
+//    }
 
     func setupData() {
         let setting = CellModel(title: "设置", contentVC: SettingsViewController.create())

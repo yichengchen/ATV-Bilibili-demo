@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder.AppleTV.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="appleTV" appearance="light"/>
+    <dependencies>
+        <deployment identifier="tvOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BLCoverView" customModule="BilibiliLive" customModuleProvider="target">
+            <connections>
+                <outlet property="contentView" destination="iN0-l3-epB" id="PQU-St-g7o"/>
+                <outlet property="coverImageView" destination="6uG-m1-Bws" id="Ukh-gq-alR"/>
+                <outlet property="headImage" destination="d6y-WI-cmr" id="hBp-J5-iwZ"/>
+                <outlet property="nameBgButton" destination="VGV-mU-7Rj" id="xEP-z1-6Ul"/>
+                <outlet property="nameLabel" destination="LEg-1E-SbN" id="sVZ-XZ-haq"/>
+                <outlet property="timeLabel" destination="Dyr-wa-lc3" id="nRp-dE-owN"/>
+                <outlet property="titleLabel" destination="1kG-RM-d6i" id="3e1-i0-OlW"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="1920" height="1080"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="6uG-m1-Bws">
+                    <rect key="frame" x="76.5" y="30" width="1813.5" height="1020"/>
+                    <constraints>
+                        <constraint firstAttribute="width" secondItem="6uG-m1-Bws" secondAttribute="height" multiplier="16:9" id="XJ1-oS-07C"/>
+                    </constraints>
+                </imageView>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="d6y-WI-cmr">
+                    <rect key="frame" x="96" y="140" width="118" height="118"/>
+                    <constraints>
+                        <constraint firstAttribute="width" secondItem="d6y-WI-cmr" secondAttribute="height" multiplier="1:1" id="S39-2s-HO4"/>
+                        <constraint firstAttribute="width" constant="118" id="dmw-gl-hlQ"/>
+                    </constraints>
+                </imageView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="VGV-mU-7Rj">
+                    <rect key="frame" x="230" y="140" width="150" height="68"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="name" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="LEg-1E-SbN">
+                            <rect key="frame" x="16" y="8" width="118" height="52"/>
+                            <fontDescription key="fontDescription" style="UICTFontTextStyleTitle3"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" secondItem="LEg-1E-SbN" secondAttribute="bottom" constant="8" id="291-pm-WVU"/>
+                        <constraint firstAttribute="height" constant="68" id="OB1-zM-52F"/>
+                        <constraint firstItem="LEg-1E-SbN" firstAttribute="top" secondItem="VGV-mU-7Rj" secondAttribute="top" constant="8" id="bPe-yB-oXt"/>
+                        <constraint firstAttribute="trailing" secondItem="LEg-1E-SbN" secondAttribute="trailing" constant="16" id="kau-b5-Pj6"/>
+                        <constraint firstItem="LEg-1E-SbN" firstAttribute="leading" secondItem="VGV-mU-7Rj" secondAttribute="leading" constant="16" id="w9U-JT-gnf"/>
+                    </constraints>
+                </view>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1kG-RM-d6i">
+                    <rect key="frame" x="246" y="284" width="616" height="37"/>
+                    <fontDescription key="fontDescription" style="UICTFontTextStyleCallout"/>
+                    <color key="textColor" name="videoDetalColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="date" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Dyr-wa-lc3">
+                    <rect key="frame" x="246" y="214" width="65" height="41"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="34"/>
+                    <color key="textColor" name="videoDetalColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bili" translatesAutoresizingMaskIntoConstraints="NO" id="lBH-jQ-VHX">
+                    <rect key="frame" x="96" y="1010" width="90" height="40"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="40" id="i8C-fc-HpV"/>
+                        <constraint firstAttribute="width" secondItem="lBH-jQ-VHX" secondAttribute="height" multiplier="18:8" id="sBb-kw-35r"/>
+                    </constraints>
+                </imageView>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="Pmt-tb-8Ig"/>
+            <constraints>
+                <constraint firstItem="1kG-RM-d6i" firstAttribute="leading" secondItem="VGV-mU-7Rj" secondAttribute="leading" constant="16" id="5Sv-Pv-bFR"/>
+                <constraint firstItem="VGV-mU-7Rj" firstAttribute="centerY" secondItem="d6y-WI-cmr" secondAttribute="centerY" constant="-25" id="7vz-qu-Xde"/>
+                <constraint firstItem="Dyr-wa-lc3" firstAttribute="leading" secondItem="VGV-mU-7Rj" secondAttribute="leading" constant="16" id="Ch7-dU-eWq"/>
+                <constraint firstAttribute="bottom" secondItem="6uG-m1-Bws" secondAttribute="bottom" constant="30" id="I1g-Zh-hKI"/>
+                <constraint firstItem="VGV-mU-7Rj" firstAttribute="leading" secondItem="d6y-WI-cmr" secondAttribute="trailing" constant="16" id="QRD-Bl-LiU"/>
+                <constraint firstItem="1kG-RM-d6i" firstAttribute="top" secondItem="VGV-mU-7Rj" secondAttribute="bottom" constant="76" id="RRh-bo-OcX"/>
+                <constraint firstItem="d6y-WI-cmr" firstAttribute="leading" secondItem="Pmt-tb-8Ig" secondAttribute="leading" constant="16" id="Soh-FW-YbL"/>
+                <constraint firstItem="1kG-RM-d6i" firstAttribute="width" secondItem="Pmt-tb-8Ig" secondAttribute="width" multiplier="0.35" id="UYC-eQ-9ug"/>
+                <constraint firstItem="lBH-jQ-VHX" firstAttribute="leading" secondItem="d6y-WI-cmr" secondAttribute="leading" id="gns-uc-jBN"/>
+                <constraint firstItem="Dyr-wa-lc3" firstAttribute="top" secondItem="VGV-mU-7Rj" secondAttribute="bottom" constant="6" id="mSu-8g-5mo"/>
+                <constraint firstAttribute="trailing" secondItem="6uG-m1-Bws" secondAttribute="trailing" constant="30" id="nHa-UT-ALd"/>
+                <constraint firstItem="lBH-jQ-VHX" firstAttribute="bottom" secondItem="6uG-m1-Bws" secondAttribute="bottom" id="rSw-6h-clf"/>
+                <constraint firstItem="d6y-WI-cmr" firstAttribute="top" secondItem="Pmt-tb-8Ig" secondAttribute="top" constant="80" id="rnZ-8o-js6"/>
+                <constraint firstItem="6uG-m1-Bws" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="30" id="vCZ-lP-Q86"/>
+            </constraints>
+            <point key="canvasLocation" x="-292" y="-50"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="bili" width="100" height="44.5"/>
+        <namedColor name="videoDetalColor">
+            <color red="0.25099998712539673" green="0.25400000810623169" blue="0.25400000810623169" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+        </namedColor>
+    </resources>
+</document>

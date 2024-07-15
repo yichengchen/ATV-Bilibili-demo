@@ -58,6 +58,8 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
 
         setViewControllers(vcs, animated: false)
         selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
+
+        view.backgroundColor = UIColor(named: "mainBgColor")
     }
 
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {

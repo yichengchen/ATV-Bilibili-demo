@@ -32,8 +32,14 @@ class FavoriteViewController: CategoryViewController {
                         categories.append(CategoryDisplayModel(title: $0.title, contentVC: FavoriteVideoContentViewController(info: $0)))
                     }
             }
+            guard favList?.count ?? 0 > 0 else {
+                return
+            }
 
             initTypeCollectionView()
+            if let vc = currentViewController as? StandardVideoCollectionViewController<FavData> {
+                vc.collectionVC.collectionView.contentInset = UIEdgeInsets(top: 160, left: 0, bottom: 0, right: 0)
+            }
         }
     }
 }

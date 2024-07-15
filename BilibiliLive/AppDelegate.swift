@@ -29,7 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             } else {
                 ApiRequest.refreshToken()
             }
-            window?.rootViewController = BLTabBarViewController()
+            window?.rootViewController = MenusViewController.create()
         } else {
             window?.rootViewController = LoginViewController.create()
         }
@@ -47,7 +47,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func showTabBar() {
-        window?.rootViewController = BLTabBarViewController()
+        window?.rootViewController = MenusViewController.create()
     }
 
     static var shared: AppDelegate {
