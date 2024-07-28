@@ -23,3 +23,14 @@ extension UIColor {
         UIColor(hex: 0xff6699)
     }
 }
+
+extension UIImageView {
+    func setImageColor(color: UIColor? = nil) {
+        guard color != nil else {
+            return
+        }
+        let templateImage = image?.withRenderingMode(.alwaysTemplate)
+        image = templateImage
+        tintColor = color
+    }
+}

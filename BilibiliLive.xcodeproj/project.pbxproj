@@ -10,6 +10,11 @@
 		0A41EE192A630FEA0066444C /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = 0A41EE182A630FEA0066444C /* SwiftProtobuf */; };
 		0A41EE1C2A63102B0066444C /* dm.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A41EE1A2A63102B0066444C /* dm.pb.swift */; };
 		0A41EE1D2A63102B0066444C /* dmView.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A41EE1B2A63102B0066444C /* dmView.pb.swift */; };
+		1801D59C2C377DC9001739E5 /* BLMenuLineCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801D59B2C377DC9001739E5 /* BLMenuLineCollectionViewCell.swift */; };
+		1801D59E2C377DCF001739E5 /* BSCollectionVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1801D59D2C377DCF001739E5 /* BSCollectionVIew.swift */; };
+		1836FCCB2C32A02300B5503A /* BLCoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1836FCC92C32A02300B5503A /* BLCoverView.swift */; };
+		1836FCCC2C32A02300B5503A /* BLCoverView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1836FCCA2C32A02300B5503A /* BLCoverView.xib */; };
+		189D79B02C3699E500CE6D1D /* MenusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 189D79AF2C3699E500CE6D1D /* MenusViewController.swift */; };
 		27FECFCC2B0B98F400EC6A6D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 27FECFCB2B0B98F400EC6A6D /* Localizable.xcstrings */; };
 		2806E51E2C1593A000164C10 /* LookinServer in Frameworks */ = {isa = PBXBuildFile; productRef = 2806E51D2C1593A000164C10 /* LookinServer */; };
 		2806E5202C15A59E00164C10 /* ReplyDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2806E51F2C15A59E00164C10 /* ReplyDetailViewController.swift */; };
@@ -157,6 +162,11 @@
 /* Begin PBXFileReference section */
 		0A41EE1A2A63102B0066444C /* dm.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = dm.pb.swift; sourceTree = "<group>"; };
 		0A41EE1B2A63102B0066444C /* dmView.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = dmView.pb.swift; sourceTree = "<group>"; };
+		1801D59B2C377DC9001739E5 /* BLMenuLineCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BLMenuLineCollectionViewCell.swift; sourceTree = "<group>"; };
+		1801D59D2C377DCF001739E5 /* BSCollectionVIew.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BSCollectionVIew.swift; sourceTree = "<group>"; };
+		1836FCC92C32A02300B5503A /* BLCoverView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BLCoverView.swift; sourceTree = "<group>"; };
+		1836FCCA2C32A02300B5503A /* BLCoverView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BLCoverView.xib; sourceTree = "<group>"; };
+		189D79AF2C3699E500CE6D1D /* MenusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenusViewController.swift; sourceTree = "<group>"; };
 		27FECFCB2B0B98F400EC6A6D /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		2806E51F2C15A59E00164C10 /* ReplyDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplyDetailViewController.swift; sourceTree = "<group>"; };
 		2806E5212C16011B00164C10 /* ReplyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ReplyCell.swift; path = BilibiliLive/Component/View/ReplyCell.swift; sourceTree = SOURCE_ROOT; };
@@ -437,6 +447,8 @@
 		4947420D2903B8C9005D6885 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				1836FCC92C32A02300B5503A /* BLCoverView.swift */,
+				1836FCCA2C32A02300B5503A /* BLCoverView.xib */,
 				494741E6290391A7005D6885 /* BLButton.swift */,
 				494742102905053E005D6885 /* BLMotionCollectionViewCell.swift */,
 				4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */,
@@ -740,6 +752,9 @@
 				F9B57357260F5F7400771ED5 /* Main.storyboard */,
 				F927ED8C2610A5A800EAB8E3 /* LoginViewController.swift */,
 				F9B9EAE6261AC6F80045C2C6 /* BLTabBarViewController.swift */,
+				1801D59D2C377DCF001739E5 /* BSCollectionVIew.swift */,
+				1801D59B2C377DC9001739E5 /* BLMenuLineCollectionViewCell.swift */,
+				189D79AF2C3699E500CE6D1D /* MenusViewController.swift */,
 				F927ED6A2610391000EAB8E3 /* Vendor */,
 				2D3CD3F72635BD7000191419 /* Supporting Files */,
 				496400D22943431E0098ACA6 /* Logger.swift */,
@@ -842,6 +857,7 @@
 			files = (
 				49F918702931E473001D3EC3 /* NirvanaControl.xml in Resources */,
 				49F918722931E927001D3EC3 /* AvTransportScpd.xml in Resources */,
+				1836FCCC2C32A02300B5503A /* BLCoverView.xib in Resources */,
 				F9B5735E260F5F7600771ED5 /* LaunchScreen.storyboard in Resources */,
 				F9B5735B260F5F7600771ED5 /* Assets.xcassets in Resources */,
 				2806E5242C16011B00164C10 /* ReplyCell.xib in Resources */,
@@ -891,6 +907,7 @@
 				2806E5202C15A59E00164C10 /* ReplyDetailViewController.swift in Sources */,
 				494741C82902C45D005D6885 /* Array+..swift in Sources */,
 				498CF29E2B63AABE0009793E /* bit_cost.c in Sources */,
+				189D79B02C3699E500CE6D1D /* MenusViewController.swift in Sources */,
 				498CF29B2B63AABE0009793E /* utf8_util.c in Sources */,
 				498CF2AA2B63AABE0009793E /* LMBrotliCompressor.m in Sources */,
 				497CF22F2C16EBA4006E1488 /* Published+..swift in Sources */,
@@ -899,12 +916,14 @@
 				AE2B41572914C02000BF2B0B /* Int.swift in Sources */,
 				498CF2932B63AABE0009793E /* memory.c in Sources */,
 				498CF2A72B63AABE0009793E /* decode.c in Sources */,
+				1836FCCB2C32A02300B5503A /* BLCoverView.swift in Sources */,
 				F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */,
 				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,
 				492AD70D2BFF33DF007221C8 /* VideoPlayerViewController.swift in Sources */,
 				F9171D6629026AC5002868C7 /* TitleSupplementaryView.swift in Sources */,
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
 				498CF2A12B63AABE0009793E /* metablock.c in Sources */,
+				1801D59E2C377DCF001739E5 /* BSCollectionVIew.swift in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
 				498CF29D2B63AABE0009793E /* brotli_bit_stream.c in Sources */,
 				498CF2A62B63AABE0009793E /* state.c in Sources */,
@@ -989,6 +1008,7 @@
 				F9171D6429010DF1002868C7 /* FeedCollectionViewCell.swift in Sources */,
 				F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */,
 				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,
+				1801D59C2C377DC9001739E5 /* BLMenuLineCollectionViewCell.swift in Sources */,
 				497CF2372C16EDE5006E1488 /* BVideoClipsPlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1142,7 +1162,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = MEWHFZ92DY;
+				DEVELOPMENT_TEAM = 22SKM3KM3L;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/BilibiliLive/Vendor",
@@ -1157,7 +1177,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/BilibiliLive/Vendor",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.etan.tv.BilibiliLive;
+				PRODUCT_BUNDLE_IDENTIFIER = com.popsand.Bili;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "BilibiliLive/Supporting Files/BilibiliLive-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -1174,7 +1194,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = MEWHFZ92DY;
+				DEVELOPMENT_TEAM = 22SKM3KM3L;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/BilibiliLive/Vendor",
@@ -1189,7 +1209,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)/BilibiliLive/Vendor",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.etan.tv.BilibiliLive;
+				PRODUCT_BUNDLE_IDENTIFIER = com.popsand.Bili;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "BilibiliLive/Supporting Files/BilibiliLive-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

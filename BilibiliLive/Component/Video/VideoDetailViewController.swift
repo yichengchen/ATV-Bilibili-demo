@@ -29,8 +29,12 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var playButton: BLCustomButton!
     @IBOutlet var likeButton: BLCustomButton!
     @IBOutlet var coinButton: BLCustomButton!
-    @IBOutlet var noteView: NoteDetailView!
     @IBOutlet var dislikeButton: BLCustomButton!
+    @IBOutlet var favButton: BLCustomButton!
+    @IBOutlet var noteView: NoteDetailView!
+
+    @IBOutlet var videoDetalBgImageView: UIImageView!
+    @IBOutlet var timeView: UIView!
 
     @IBOutlet var actionButtonSpaceView: UIView!
     @IBOutlet var durationLabel: UILabel!
@@ -40,7 +44,6 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var bvidLabel: UILabel!
     @IBOutlet var followersLabel: UILabel!
     @IBOutlet var avatarImageView: UIImageView!
-    @IBOutlet var favButton: BLCustomButton!
     @IBOutlet var pageCollectionView: UICollectionView!
     @IBOutlet var recommandCollectionView: UICollectionView!
     @IBOutlet var replysCollectionView: UICollectionView!
@@ -62,6 +65,13 @@ class VideoDetailViewController: UIViewController {
             if didSentCoins > 0 {
                 coinButton.isOn = true
             }
+        }
+    }
+
+    @IBOutlet var playBgStackView: UIView! {
+        didSet {
+            playBgStackView.setBlurEffectView()
+            playBgStackView.setCornerRadius(cornerRadius: lessBigSornerRadius, shadowColor: UIColor(hex: 0x0D0D0D0D))
         }
     }
 
@@ -132,7 +142,7 @@ class VideoDetailViewController: UIViewController {
         focusGuide.preferredFocusEnvironments = [dislikeButton]
 
         replysCollectionView.publisher(for: \.contentSize).sink { [weak self] newSize in
-            self?.repliesCollectionViewHeightConstraints.constant = newSize.height
+//            self?.repliesCollectionViewHeightConstraints.constant = newSize.height
             self?.view.setNeedsLayout()
         }.store(in: &subscriptions)
     }
@@ -543,7 +553,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
 class BLCardView: TVCardView {
     override func didMoveToSuperview() {
         super.didMoveToSuperview()
-        subviews.first?.subviews.first?.subviews.last?.subviews.first?.subviews.first?.layer.cornerRadius = 12
+        subviews.first?.subviews.first?.subviews.last?.subviews.first?.subviews.first?.layer.cornerRadius = littleSornerRadius
     }
 
     override func layoutSubviews() {
@@ -596,7 +606,7 @@ class RelatedVideoCell: BLMotionCollectionViewCell {
             make.top.left.right.equalToSuperview()
             make.width.equalTo(imageView.snp.height).multipliedBy(14.0 / 9)
         }
-        imageView.layer.cornerRadius = 12
+        imageView.layer.cornerRadius = littleSornerRadius
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
         titleLabel.snp.makeConstraints { make in
@@ -604,7 +614,7 @@ class RelatedVideoCell: BLMotionCollectionViewCell {
             make.top.equalTo(imageView.snp.bottom).offset(6)
         }
         titleLabel.setContentHuggingPriority(.required, for: .vertical)
-        titleLabel.font = UIFont.systemFont(ofSize: 28)
+        titleLabel.font = UIFont.systemFont(ofSize: 22)
         stopScroll()
     }
 
@@ -685,7 +695,7 @@ class NoteDetailView: UIControl {
         backgroundView.layer.shadowOffset = CGSizeMake(0, 10)
         backgroundView.layer.shadowOpacity = 0.15
         backgroundView.layer.shadowRadius = 16.0
-        backgroundView.layer.cornerRadius = 20
+        backgroundView.layer.cornerRadius = normailSornerRadius
         backgroundView.layer.cornerCurve = .continuous
         backgroundView.isHidden = !isFocused
         backgroundView.snp.makeConstraints { make in
@@ -696,7 +706,7 @@ class NoteDetailView: UIControl {
 
         addSubview(label)
         label.numberOfLines = 0
-        label.font = UIFont.systemFont(ofSize: 29)
+        label.font = UIFont.systemFont(ofSize: 22)
         label.textColor = UIColor(named: "titleColor")
         label.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()

@@ -20,11 +20,16 @@ class BLSettingLineCollectionViewCell: BLMotionCollectionViewCell {
     override func setup() {
         super.setup()
         scaleFactor = 1.05
+
+        addsubViews()
+    }
+
+    func addsubViews() {
         contentView.addSubview(effectView)
         effectView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        effectView.layer.cornerRadius = 10
+        effectView.layer.cornerRadius = moreLittleSornerRadius
         effectView.layer.cornerCurve = .continuous
         effectView.clipsToBounds = true
         selectedWhiteView.backgroundColor = UIColor.white
@@ -40,7 +45,7 @@ class BLSettingLineCollectionViewCell: BLMotionCollectionViewCell {
             make.top.bottom.equalToSuperview().inset(8)
         }
         titleLabel.textAlignment = .left
-        titleLabel.font = UIFont.systemFont(ofSize: 40, weight: .regular)
+        titleLabel.font = UIFont.systemFont(ofSize: 30, weight: .medium)
         titleLabel.textColor = .black
     }
 

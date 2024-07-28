@@ -11,9 +11,11 @@ class FeedViewController: StandardVideoCollectionViewController<ApiRequest.FeedR
     override func setupCollectionView() {
         super.setupCollectionView()
         collectionVC.pageSize = 1
+        collectionVC.isShowCove = true
     }
 
     override func request(page: Int) async throws -> [ApiRequest.FeedResp.Items] {
+        collectionVC.headerText = "推荐视频"
         if page == 1 {
             return try await ApiRequest.getFeeds()
         } else if let last = (collectionVC.displayDatas.last as? ApiRequest.FeedResp.Items)?.idx {

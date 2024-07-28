@@ -148,7 +148,7 @@ class UpCell: BLMotionCollectionViewCell {
         despLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
         despLabel.textColor = UIColor(named: "titleColor")
         contentView.backgroundColor = UIColor(named: "bgColor")
-        contentView.layer.cornerRadius = 16
+        contentView.layer.cornerRadius = normailSornerRadius
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {

@@ -18,6 +18,10 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
     var reloadInterval: TimeInterval = 60 * 60
     var reloading = false
     private var page = 0
+
+    var backMenuAction: (() -> Void)?
+    var didUpdateFocus: (() -> Void)?
+
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
         return [collectionVC.collectionView]
     }
@@ -28,6 +32,9 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
         collectionVC.show(in: self)
         reloadData()
         NotificationCenter.default.addObserver(self, selector: #selector(didBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
+
+        collectionVC.backMenuAction = backMenuAction
+        collectionVC.didUpdateFocus = didUpdateFocus
     }
 
     override func viewDidAppear(_ animated: Bool) {
