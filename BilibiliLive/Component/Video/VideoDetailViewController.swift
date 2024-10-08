@@ -429,6 +429,12 @@ class VideoDetailViewController: UIViewController {
             guard let favList = try? await WebRequest.requestFavVideosList() else {
                 return
             }
+            if favButton.isOn {
+                favButton.title? -= 1
+                favButton.isOn = false
+                WebRequest.removeFavorite(aid: aid, mid: favList.map { $0.id })
+                return
+            }
             let alert = UIAlertController(title: "收藏", message: nil, preferredStyle: .actionSheet)
             let aid = aid
             for fav in favList {
