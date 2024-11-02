@@ -163,6 +163,11 @@ class VideoPlayerViewModel {
             plugins.append(clip)
         }
 
+        if Settings.enableSponsorBlock != .none, let bvid = data.detail?.View.bvid, let duration = data.detail?.View.duration {
+            let sponsor = SponsorSkipPlugin(bvid: bvid, duration: duration)
+            plugins.append(sponsor)
+        }
+
         if Settings.danmuMask {
             if let mask = data.playerInfo?.dm_mask,
                let video = data.videoPlayURLInfo.dash.video.first,

@@ -101,6 +101,11 @@ class SettingsViewController: UIViewController {
         }
         cellModels.append(hotWithoutCookie)
 
+        let sponsorBlock = cellModelWithActions(title: "空降助手广告屏蔽", message: "", current: Settings.enableSponsorBlock.title, options: SponsorBlockType.allCases, optionString: SponsorBlockType.allCases.map({ $0.title })) {
+            Settings.enableSponsorBlock = $0
+        }
+        cellModels.append(sponsorBlock)
+
         let continuePlay = CellModel(title: "从上次退出的位置继续播放", desp: Settings.continuePlay ? "开" : "关") {
             [weak self] in
             Settings.continuePlay.toggle()

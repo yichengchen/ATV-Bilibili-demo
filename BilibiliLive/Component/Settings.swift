@@ -101,11 +101,31 @@ enum Settings {
 
     @UserDefault("Settings.ui.sideMenuAutoSelectChange", defaultValue: false)
     static var sideMenuAutoSelectChange: Bool
+
+    @UserDefaultCodable("Settings.SponsorBlockType", defaultValue: SponsorBlockType.none)
+    static var enableSponsorBlock: SponsorBlockType
 }
 
 struct MediaQuality {
     var qn: Int
     var fnval: Int
+}
+
+enum SponsorBlockType: String, Codable, CaseIterable {
+    case none
+    case jump
+    case tip
+
+    var title: String {
+        switch self {
+        case .none:
+            return "关"
+        case .jump:
+            return "自动跳过"
+        case .tip:
+            return "手动跳过"
+        }
+    }
 }
 
 enum DanmuArea: Codable, CaseIterable {

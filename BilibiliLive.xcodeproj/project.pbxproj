@@ -20,6 +20,8 @@
 		49078E47291BEA2400F556BD /* PocketSVG in Frameworks */ = {isa = PBXBuildFile; productRef = 49078E46291BEA2400F556BD /* PocketSVG */; };
 		490EC3E7290CC8F8001E00B6 /* RankingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */; };
 		490EC3E9290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */; };
+		492138A02CD5CA6000891D56 /* SponsorBlockRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4921389F2CD5CA6000891D56 /* SponsorBlockRequest.swift */; };
+		492138A22CD5CDBA00891D56 /* SponsorSkipPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492138A12CD5CDBA00891D56 /* SponsorSkipPlugin.swift */; };
 		492731EE29096677005F5B0A /* HotViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492731ED29096677005F5B0A /* HotViewController.swift */; };
 		492AD7092BFF1E6C007221C8 /* CommonPlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD7082BFF1E6C007221C8 /* CommonPlayerViewController.swift */; };
 		492AD70B2BFF23B1007221C8 /* DanmuViewPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */; };
@@ -165,6 +167,8 @@
 		490425F629AB54B200CDBC60 /* CategoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViewController.swift; sourceTree = "<group>"; };
 		490EC3E6290CC8F8001E00B6 /* RankingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RankingViewController.swift; sourceTree = "<group>"; };
 		490EC3E8290CE23E001E00B6 /* BLSettingLineCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLSettingLineCollectionViewCell.swift; sourceTree = "<group>"; };
+		4921389F2CD5CA6000891D56 /* SponsorBlockRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SponsorBlockRequest.swift; sourceTree = "<group>"; };
+		492138A12CD5CDBA00891D56 /* SponsorSkipPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SponsorSkipPlugin.swift; sourceTree = "<group>"; };
 		492731ED29096677005F5B0A /* HotViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotViewController.swift; sourceTree = "<group>"; };
 		492AD7082BFF1E6C007221C8 /* CommonPlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonPlayerViewController.swift; sourceTree = "<group>"; };
 		492AD70A2BFF23B1007221C8 /* DanmuViewPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DanmuViewPlugin.swift; sourceTree = "<group>"; };
@@ -476,6 +480,7 @@
 				496E5A542C01CDBB0062951B /* DebugPlugin.swift */,
 				496E5A562C01CDCA0062951B /* SpeedChangerPlugin.swift */,
 				49D6A7112C0200ED0084A5A7 /* CommonPlayerPlugin.swift */,
+				492138A12CD5CDBA00891D56 /* SponsorSkipPlugin.swift */,
 			);
 			path = Plugins;
 			sourceTree = "<group>";
@@ -624,6 +629,7 @@
 				49D39F27263AD40000F14497 /* WebRequest.swift */,
 				F9D382B326359EF90070508F /* ApiRequest.swift */,
 				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
+				4921389F2CD5CA6000891D56 /* SponsorBlockRequest.swift */,
 			);
 			path = Request;
 			sourceTree = "<group>";
@@ -903,6 +909,7 @@
 				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,
 				492AD70D2BFF33DF007221C8 /* VideoPlayerViewController.swift in Sources */,
 				F9171D6629026AC5002868C7 /* TitleSupplementaryView.swift in Sources */,
+				492138A02CD5CA6000891D56 /* SponsorBlockRequest.swift in Sources */,
 				F9B9EAE7261AC6F80045C2C6 /* BLTabBarViewController.swift in Sources */,
 				498CF2A12B63AABE0009793E /* metablock.c in Sources */,
 				F99D28EA26195EC200F8E66A /* UIView+Layout.swift in Sources */,
@@ -923,6 +930,7 @@
 				49D6A7122C0200ED0084A5A7 /* CommonPlayerPlugin.swift in Sources */,
 				490425F729AB54B200CDBC60 /* CategoryViewController.swift in Sources */,
 				4973502D29162A6D0045C26B /* StandardVideoCollectionViewController.swift in Sources */,
+				492138A22CD5CDBA00891D56 /* SponsorSkipPlugin.swift in Sources */,
 				F927ED752610395300EAB8E3 /* DanmakuAsyncLayer.swift in Sources */,
 				498CF2942B63AABE0009793E /* entropy_encode.c in Sources */,
 				498CF2A82B63AABE0009793E /* huffman.c in Sources */,
