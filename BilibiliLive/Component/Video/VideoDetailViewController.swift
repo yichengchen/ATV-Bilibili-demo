@@ -304,7 +304,7 @@ class VideoDetailViewController: UIViewController {
 
         var notes = [String]()
         let status = data.View.dynamic ?? ""
-        if status.count > 1 {
+        if status.count > 1, status != data.View.desc {
             notes.append(status)
         }
         notes.append(data.View.desc ?? "")
