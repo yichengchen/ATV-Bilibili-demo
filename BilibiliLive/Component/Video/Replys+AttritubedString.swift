@@ -17,13 +17,24 @@ extension Replys.Reply {
         for (tag, emote) in emote {
             guard let url = URL(string: emote.url) else { continue }
             let ranges = attr.string.ranges(of: tag).reversed()
+            let descender: CGFloat
+            if let label = displayView as? UILabel {
+                descender = label.font.descender
+            } else {
+                descender = -5
+            }
+            let emoteSize = 36.0
             for range in ranges {
                 let textAttachment = NSTextAttachment()
-                attr.replaceCharacters(in: NSRange(range, in: attr.string), with: NSAttributedString(attachment: textAttachment))
-                // TODO: 文本对其，添加间距
+                let textAttachmentString = NSMutableAttributedString(attachment: textAttachment)
+                textAttachmentString.append(NSAttributedString(string: " ", attributes: [.font: UIFont.systemFont(ofSize: 10)]))
+                attr.replaceCharacters(in: NSRange(range, in: attr.string), with: textAttachmentString)
                 KF.url(url)
-                    .resizing(referenceSize: CGSize(width: 36, height: 36))
-                    .roundCorner(radius: .point(15))
+                    .resizing(referenceSize: CGSize(width: emoteSize, height: emoteSize))
+                    .onSuccess { [weak textAttachment] res in
+                        guard let textAttachment = textAttachment else { return }
+                        textAttachment.bounds = CGRect(x: 0, y: descender, width: emoteSize, height: emoteSize)
+                    }
                     .set(to: textAttachment, attributedView: displayView)
             }
         }
