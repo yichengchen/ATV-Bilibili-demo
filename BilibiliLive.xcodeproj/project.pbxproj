@@ -43,6 +43,7 @@
 		4947423B2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */; };
 		49508E0F2943420100D26812 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E0E2943420100D26812 /* CocoaLumberjack */; };
 		49508E112943420100D26812 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E102943420100D26812 /* CocoaLumberjackSwift */; };
+		495E6E102CDF92AB00689A08 /* Replys+AttritubedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495E6E0F2CDF92AB00689A08 /* Replys+AttritubedString.swift */; };
 		496400D32943431E0098ACA6 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496400D22943431E0098ACA6 /* Logger.swift */; };
 		496E5A4F2C0194720062951B /* MaskViewPugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A4E2C0194720062951B /* MaskViewPugin.swift */; };
 		496E5A512C0194CD0062951B /* BUpnpPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A502C0194CD0062951B /* BUpnpPlugin.swift */; };
@@ -189,6 +190,7 @@
 		494742102905053E005D6885 /* BLMotionCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLMotionCollectionViewCell.swift; sourceTree = "<group>"; };
 		49474212290509F6005D6885 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
 		4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTextOnlyCollectionViewCell.swift; sourceTree = "<group>"; };
+		495E6E0F2CDF92AB00689A08 /* Replys+AttritubedString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Replys+AttritubedString.swift"; sourceTree = "<group>"; };
 		496400D22943431E0098ACA6 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		496E5A4E2C0194720062951B /* MaskViewPugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskViewPugin.swift; sourceTree = "<group>"; };
 		496E5A502C0194CD0062951B /* BUpnpPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BUpnpPlugin.swift; sourceTree = "<group>"; };
@@ -415,6 +417,7 @@
 				492AD70C2BFF33DF007221C8 /* VideoPlayerViewController.swift */,
 				492AD70E2BFF6761007221C8 /* NewVideoPlayerViewModel.swift */,
 				497CF2332C16EDC0006E1488 /* Plugins */,
+				495E6E0F2CDF92AB00689A08 /* Replys+AttritubedString.swift */,
 			);
 			path = Video;
 			sourceTree = "<group>";
@@ -962,6 +965,7 @@
 				498CF2972B63AABE0009793E /* encode.c in Sources */,
 				49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */,
 				498CF2992B63AABE0009793E /* cluster.c in Sources */,
+				495E6E102CDF92AB00689A08 /* Replys+AttritubedString.swift in Sources */,
 				498CF2952B63AABE0009793E /* compress_fragment_two_pass.c in Sources */,
 				F927ED772610395300EAB8E3 /* DanmakuQueuePool.swift in Sources */,
 				497CF2382C16EDE5006E1488 /* BVideoInfoPlugin.swift in Sources */,

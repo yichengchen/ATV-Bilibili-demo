@@ -30,6 +30,11 @@ class ReplyDetailViewController: UIViewController {
 
         setUpViews()
         replyLabel.setTitle(reply.content.message, for: .normal)
+
+        if let attr = reply.createAttributedString(displayView: replyLabel) {
+            replyLabel.setAttributedTitle(attr, for: .normal)
+        }
+
         reply.content.pictures?.compactMap { URL(string: $0.img_src) }.forEach { url in
             let imageView = UIImageView()
             imageView.kf.setImage(with: url)

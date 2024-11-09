@@ -705,9 +705,15 @@ struct Replys: Codable, Hashable {
             let avatar: String
         }
 
+        struct Emote: Codable, Hashable {
+            let text: String
+            let url: String
+        }
+
         struct Content: Codable, Hashable {
             let message: String
             let pictures: [Picture]?
+            let emote: [String: Emote]?
 
             struct Picture: Codable, Hashable {
                 let img_src: String
