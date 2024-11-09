@@ -707,6 +707,11 @@ struct Replys: Codable, Hashable {
 
         struct Content: Codable, Hashable {
             let message: String
+            let pictures: [Picture]?
+
+            struct Picture: Codable, Hashable {
+                let img_src: String
+            }
         }
 
         let member: Member
