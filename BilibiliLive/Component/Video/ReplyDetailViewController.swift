@@ -30,7 +30,7 @@ class ReplyDetailViewController: UIViewController {
 
         setUpViews()
         replyLabel.setTitle(reply.content.message, for: .normal)
-
+        replyLabel.setTitleColor(UIColor.label, for: .normal)
         if let attr = reply.createAttributedString(displayView: replyLabel) {
             replyLabel.setAttributedTitle(attr, for: .normal)
         }
