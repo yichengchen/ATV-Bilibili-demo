@@ -7,222 +7,218 @@
 
 import UIKit
 
-extension FeedDisplayStyle {
-    var desp: String {
-        switch self {
-        case .large:
-            return "3个"
-        case .normal:
-            return "4个"
-        case .sideBar:
-            return "-"
+class SettingsViewController: UIViewController {
+    class SectionModel: Hashable, Equatable {
+        let title: String
+        let items: [CellModel]
+
+        init(title: String, @ArrayBuilder<CellModel> items: () -> [CellModel]) {
+            self.title = title
+            self.items = items()
+        }
+
+        static func == (lhs: SectionModel, rhs: SectionModel) -> Bool {
+            lhs.title == rhs.title && lhs.items == rhs.items
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(title)
+            hasher.combine(items)
+        }
+    }
+
+    class CellModel: Hashable, Equatable {
+        let title: String
+        let desp: () -> String
+        let action: ((@escaping () -> Void) -> Void)?
+
+        var updateAction: (() -> Void)?
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(title)
+        }
+
+        static func == (lhs: CellModel, rhs: CellModel) -> Bool {
+            lhs.title == rhs.title
+        }
+
+        init(title: String, desp: @autoclosure @escaping () -> String, action: ((@escaping () -> Void) -> Void)?) {
+            self.title = title
+            self.desp = desp
+            self.action = action
+        }
+    }
+
+    let collectionView: UICollectionView = {
+        let layout = UICollectionViewCompositionalLayout { sectionIndex, environment -> NSCollectionLayoutSection? in
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(68))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(68))
+            let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+            group.interItemSpacing = .fixed(10)
+
+            let section = NSCollectionLayoutSection(group: group)
+            let headerSize = NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .estimated(44)
+            )
+
+            let header = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: headerSize,
+                elementKind: "header",
+                alignment: .top
+            )
+            header.pinToVisibleBounds = false
+            section.boundarySupplementaryItems = [header]
+            section.interGroupSpacing = 10
+            return section
+        }
+        return UICollectionView(frame: .zero, collectionViewLayout: layout)
+    }()
+
+    var dataSource: UICollectionViewDiffableDataSource<SectionModel, CellModel>!
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.addSubview(collectionView)
+        collectionView.remembersLastFocusedIndexPath = false
+        collectionView.snp.makeConstraints { make in
+            make.top.right.bottom.equalToSuperview()
+            make.left.equalToSuperview().offset(20)
+        }
+
+        collectionView.delegate = self
+        collectionView.register(SettingsSwitchCell.self, forCellWithReuseIdentifier: String(describing: SettingsSwitchCell.self))
+        collectionView.register(SettingsHeaderView.self, forSupplementaryViewOfKind: "header", withReuseIdentifier: "HeaderView")
+
+        configureDataSource()
+        setupData()
+    }
+
+    private func configureDataSource() {
+        dataSource = UICollectionViewDiffableDataSource<SectionModel, CellModel>(collectionView: collectionView) { collectionView, indexPath, cellModel -> UICollectionViewCell? in
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SettingsSwitchCell.self), for: indexPath) as! SettingsSwitchCell
+            cell.set(with: cellModel)
+            return cell
+        }
+        dataSource.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
+            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! SettingsHeaderView
+            let title = self?.dataSource.snapshot().sectionIdentifiers[indexPath.section].title ?? UUID().uuidString
+
+            header.label.text = title
+            return header
+        }
+    }
+
+    private func setupData() {
+        createSnapshot {
+            SectionModel(title: "通用") {
+                Toggle(title: "启用投屏", setting: Settings.enableDLNA, onChange: Settings.enableDLNA.toggle()) {
+                    _ in
+                    BiliBiliUpnpDMR.shared.start()
+                }
+
+                Toggle(title: "热门个性化推荐", setting: Settings.requestHotWithoutCookie, onChange: Settings.requestHotWithoutCookie.toggle())
+            }
+
+            SectionModel(title: "音视频") {
+                Actions(title: "最高画质", message: "4k以上需要大会员",
+                        current: Settings.mediaQuality.desp,
+                        options: MediaQualityEnum.allCases,
+                        optionString: MediaQualityEnum.allCases.map({ $0.desp })) {
+                    Settings.mediaQuality = $0
+                }
+                Toggle(title: "Avc优先(卡顿尝试开启)", setting: Settings.preferAvc, onChange: Settings.preferAvc.toggle())
+                Toggle(title: "无损音频和杜比全景声", setting: Settings.losslessAudio, onChange: Settings.losslessAudio.toggle())
+                Toggle(title: "匹配视频内容", setting: Settings.contentMatch, onChange: Settings.contentMatch.toggle())
+                Toggle(title: "仅在HDR视频匹配视频内容", setting: Settings.contentMatchOnlyInHDR, onChange: Settings.contentMatchOnlyInHDR.toggle())
+            }
+
+            SectionModel(title: "界面") {
+                Actions(title: "视频每行显示个数", message: "重启app生效",
+                        current: Settings.displayStyle.desp,
+                        options: FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }),
+                        optionString: FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }).map({ $0.desp })) {
+                    Settings.displayStyle = $0
+                }
+                Toggle(title: "侧边栏菜单自动切换", setting: Settings.sideMenuAutoSelectChange, onChange: Settings.sideMenuAutoSelectChange.toggle())
+
+                Toggle(title: "不显示详情页直接进入视频",
+                       setting: Settings.direatlyEnterVideo,
+                       onChange: Settings.direatlyEnterVideo.toggle())
+
+                Actions(title: "视频详情相关推荐加载模式", message: "4k以上需要大会员",
+                        current: Settings.showRelatedVideoInCurrentVC ? "页面刷新" : "新页面中打开",
+                        options: [true, false],
+                        optionString: ["页面刷新", "新页面中打开"]) {
+                    Settings.showRelatedVideoInCurrentVC = $0
+                }
+            }
+
+            SectionModel(title: "进度控制") {
+                Toggle(title: "从上次退出的位置继续播放", setting: Settings.continuePlay, onChange: Settings.continuePlay.toggle())
+                Toggle(title: "自动跳过片头片尾", setting: Settings.autoSkip, onChange: Settings.autoSkip.toggle())
+                Toggle(title: "连续播放", setting: Settings.continouslyPlay, onChange: Settings.continouslyPlay.toggle())
+                Actions(title: "空降助手广告屏蔽", message: "",
+                        current: Settings.enableSponsorBlock.title,
+                        options: SponsorBlockType.allCases,
+                        optionString: SponsorBlockType.allCases.map({ $0.title })) {
+                    Settings.enableSponsorBlock = $0
+                }
+            }
+
+            SectionModel(title: "弹幕") {
+                Actions(title: "弹幕大小", message: "默认为36", current: Settings.danmuSize.title, options: DanmuSize.allCases, optionString: DanmuSize.allCases.map({ $0.title })) {
+                    Settings.danmuSize = $0
+                }
+                Actions(title: "弹幕显示区域", message: "设置弹幕显示区域",
+                        current: Settings.danmuArea.title,
+                        options: DanmuArea.allCases,
+                        optionString: DanmuArea.allCases.map({ $0.title })) {
+                    Settings.danmuArea = $0
+                }
+                Toggle(title: "智能防档弹幕", setting: Settings.danmuMask, onChange: Settings.danmuMask.toggle())
+                Toggle(title: "按需本地运算智能防档弹幕(Exp)", setting: Settings.vnMask, onChange: Settings.vnMask.toggle())
+            }
+
+            SectionModel(title: "港澳台解锁") {
+                Toggle(title: "解锁港澳台番剧限制", setting: Settings.areaLimitUnlock, onChange: Settings.areaLimitUnlock.toggle())
+                TextField(title: "设置港澳台解析服务器", message: "为了安全考虑建议自建服务器，公共服务器可用性难保证，请多尝试几个。\n公共服务器请参考：http://985.so/mjq9u", current: Settings.areaLimitCustomServer, placeholder: "api.example.com") {
+                    Settings.areaLimitCustomServer = $0 ?? ""
+                }
+            }
         }
     }
 }
 
-class SettingsViewController: UIViewController {
-    @IBOutlet var collectionView: UICollectionView!
-    var cellModels = [CellModel]()
-
-    static func create() -> SettingsViewController {
-        return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! SettingsViewController
-    }
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupData()
-    }
-
-    func setupData() {
-        cellModels.removeAll()
-        let directlyVideo = CellModel(title: "不显示详情页直接进入视频", desp: Settings.direatlyEnterVideo ? "开" : "关") {
-            [weak self] in
-            Settings.direatlyEnterVideo.toggle()
-            self?.setupData()
-        }
-        cellModels.append(directlyVideo)
-
-        let dlanEnable = CellModel(title: "启用投屏", desp: Settings.enableDLNA ? "开" : "关") {
-            [weak self] in
-            Settings.enableDLNA.toggle()
-            self?.setupData()
-            BiliBiliUpnpDMR.shared.start()
-        }
-        cellModels.append(dlanEnable)
-
-        let cancelAction = UIAlertAction(title: nil, style: .cancel)
-        let dmStyle = CellModel(title: "弹幕显示区域", desp: Settings.danmuArea.title) { [weak self] in
-            let alert = UIAlertController(title: "弹幕显示区域", message: "设置弹幕显示区域", preferredStyle: .actionSheet)
-            for style in DanmuArea.allCases {
-                let action = UIAlertAction(title: style.title, style: .default) { _ in
-                    Settings.danmuArea = style
-                    self?.setupData()
-                }
-                alert.addAction(action)
-            }
-            alert.addAction(cancelAction)
-            self?.present(alert, animated: true)
-        }
-        cellModels.append(dmStyle)
-
-        let style = CellModel(title: "视频每行显示个数", desp: Settings.displayStyle.desp) { [weak self] in
-            let alert = UIAlertController(title: "显示模式", message: "重启app生效", preferredStyle: .actionSheet)
-            for style in FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }) {
-                let action = UIAlertAction(title: style.desp, style: .default) { _ in
-                    Settings.displayStyle = style
-                    self?.setupData()
-                }
-                alert.addAction(action)
-            }
-            alert.addAction(cancelAction)
-            self?.present(alert, animated: true)
-        }
-        cellModels.append(style)
-
-        let relatedVideoLoadMode = CellModel(title: "视频详情相关推荐加载模式", desp: Settings.showRelatedVideoInCurrentVC ? "页面刷新" : "新页面中打开") { [weak self] in
-            let alert = UIAlertController(title: "视频详情相关推荐加载模式", message: "", preferredStyle: .actionSheet)
-            alert.addAction(UIAlertAction(title: "页面刷新", style: .default) { _ in
-                Settings.showRelatedVideoInCurrentVC = true
-                self?.setupData()
-            })
-            alert.addAction(UIAlertAction(title: "新页面中打开", style: .default) { _ in
-                Settings.showRelatedVideoInCurrentVC = false
-                self?.setupData()
-            })
-            alert.addAction(cancelAction)
-            self?.present(alert, animated: true)
-        }
-        cellModels.append(relatedVideoLoadMode)
-
-        let hotWithoutCookie = CellModel(title: "热门个性化推荐", desp: Settings.requestHotWithoutCookie ? "关" : "开") {
-            [weak self] in
-            Settings.requestHotWithoutCookie.toggle()
-            self?.setupData()
-        }
-        cellModels.append(hotWithoutCookie)
-
-        let sponsorBlock = cellModelWithActions(title: "空降助手广告屏蔽", message: "", current: Settings.enableSponsorBlock.title, options: SponsorBlockType.allCases, optionString: SponsorBlockType.allCases.map({ $0.title })) {
-            Settings.enableSponsorBlock = $0
-        }
-        cellModels.append(sponsorBlock)
-
-        let continuePlay = CellModel(title: "从上次退出的位置继续播放", desp: Settings.continuePlay ? "开" : "关") {
-            [weak self] in
-            Settings.continuePlay.toggle()
-            self?.setupData()
-        }
-        cellModels.append(continuePlay)
-
-        let autoSkip = CellModel(title: "自动跳过片头片尾", desp: Settings.autoSkip ? "开" : "关") {
-            [weak self] in
-            Settings.autoSkip.toggle()
-            self?.setupData()
-        }
-        cellModels.append(autoSkip)
-
-        let quality = CellModel(title: "最高画质", desp: Settings.mediaQuality.desp) { [weak self] in
-            let alert = UIAlertController(title: "最高画质", message: "4k以上需要大会员", preferredStyle: .actionSheet)
-            for quality in MediaQualityEnum.allCases {
-                let action = UIAlertAction(title: quality.desp, style: .default) { _ in
-                    Settings.mediaQuality = quality
-                    self?.setupData()
-                }
-                alert.addAction(action)
-            }
-            alert.addAction(cancelAction)
-            self?.present(alert, animated: true)
-        }
-        cellModels.append(quality)
-        let losslessAudio = CellModel(title: "无损音频和杜比全景声", desp: Settings.losslessAudio ? "开" : "关") {
-            [weak self] in
-            Settings.losslessAudio.toggle()
-            self?.setupData()
-        }
-        cellModels.append(losslessAudio)
-
-        let hevc = CellModel(title: "Avc优先(卡顿尝试开启)", desp: Settings.preferAvc ? "开" : "关") {
-            [weak self] in
-            Settings.preferAvc.toggle()
-            self?.setupData()
-        }
-        cellModels.append(hevc)
-
-        let continouslyPlay = CellModel(title: "连续播放", desp: Settings.continouslyPlay ? "开" : "关") {
-            [weak self] in
-            Settings.continouslyPlay.toggle()
-            self?.setupData()
-        }
-        cellModels.append(continouslyPlay)
-
-        let fontSize = cellModelWithActions(title: "弹幕大小", message: "默认为36", current: Settings.danmuSize.title, options: DanmuSize.allCases, optionString: DanmuSize.allCases.map({ $0.title })) {
-            Settings.danmuSize = $0
-        }
-        cellModels.append(fontSize)
-
-        let mask = CellModel(title: "智能防档弹幕", desp: Settings.danmuMask ? "开" : "关") {
-            [weak self] in
-            Settings.danmuMask.toggle()
-            self?.setupData()
-        }
-        cellModels.append(mask)
-
-        let localMask = CellModel(title: "按需本地运算智能防档弹幕(Exp)", desp: Settings.vnMask ? "开" : "关") {
-            [weak self] in
-            Settings.vnMask.toggle()
-            self?.setupData()
-        }
-        cellModels.append(localMask)
-
-        let match = CellModel(title: "匹配视频内容", desp: Settings.contentMatch ? "开" : "关") {
-            [weak self] in
-            Settings.contentMatch.toggle()
-            self?.setupData()
-        }
-        cellModels.append(match)
-
-        let matchHdrOnly = CellModel(title: "仅在HDR视频匹配视频内容", desp: Settings.contentMatchOnlyInHDR ? "开" : "关") {
-            [weak self] in
-            Settings.contentMatchOnlyInHDR.toggle()
-            self?.setupData()
-        }
-        cellModels.append(matchHdrOnly)
-
-        let sideMenuAutoSelectChange = CellModel(title: "侧边栏菜单自动切换", desp: Settings.sideMenuAutoSelectChange ? "开" : "关") {
-            [weak self] in
-            Settings.sideMenuAutoSelectChange.toggle()
-            self?.setupData()
-        }
-        cellModels.append(sideMenuAutoSelectChange)
-
-        let areaLimitUnlock = CellModel(title: "解锁港澳台番剧限制", desp: Settings.areaLimitUnlock ? "开" : "关") {
-            [weak self] in
-            Settings.areaLimitUnlock.toggle()
-            self?.setupData()
-        }
-        cellModels.append(areaLimitUnlock)
-
-        let areaLimitCustomServer = cellModelWithTextField(title: "设置港澳台解析服务器", message: "为了安全考虑建议自建服务器，公共服务器可用性难保证，请多尝试几个。\n公共服务器请参考：http://985.so/mjq9u", current: Settings.areaLimitCustomServer, placeholder: "api.example.com") {
-            Settings.areaLimitCustomServer = $0 ?? ""
-        }
-        cellModels.append(areaLimitCustomServer)
-
-        collectionView.reloadData()
-    }
-
-    func cellModelWithActions<T>(title: String,
-                                 message: String?,
-                                 current: String,
-                                 options: [T],
-                                 optionString: [String],
-                                 onSelect: ((T) -> Void)? = nil) -> CellModel
+extension SettingsViewController {
+    func Toggle(title: String, setting: @autoclosure @escaping () -> Bool,
+                onChange: @autoclosure @escaping () -> Void,
+                extraAction: ((Bool) -> Void)? = nil) -> CellModel
     {
-        return CellModel(title: title, desp: current) { [weak self] in
+        return CellModel(title: title, desp: setting() ? "开" : "关") {
+            update in
+            onChange()
+            extraAction?(setting())
+            update()
+        }
+    }
+
+    func Actions<T>(title: String,
+                    message: String?,
+                    current: @autoclosure @escaping () -> String,
+                    options: [T],
+                    optionString: [String],
+                    onSelect: ((T) -> Void)? = nil) -> CellModel
+    {
+        return CellModel(title: title, desp: current()) { [weak self] update in
             let alert = UIAlertController(title: title, message: message, preferredStyle: .actionSheet)
 
             for (idx, string) in optionString.enumerated() {
                 let action = UIAlertAction(title: string, style: .default) { _ in
                     onSelect?(options[idx])
-                    self?.setupData()
+                    update()
                 }
                 alert.addAction(action)
             }
@@ -232,14 +228,14 @@ class SettingsViewController: UIViewController {
         }
     }
 
-    func cellModelWithTextField(title: String,
-                                message: String?,
-                                current: String,
-                                placeholder: String?,
-                                isSecureTextEntry: Bool = false,
-                                onSubmit: ((String?) -> Void)? = nil) -> CellModel
+    func TextField(title: String,
+                   message: String?,
+                   current: String,
+                   placeholder: String?,
+                   isSecureTextEntry: Bool = false,
+                   onSubmit: ((String?) -> Void)? = nil) -> CellModel
     {
-        return CellModel(title: title, desp: current) { [weak self] in
+        return CellModel(title: title, desp: current) { [weak self] update in
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
             alert.addTextField { textField in
                 textField.text = current
@@ -250,7 +246,7 @@ class SettingsViewController: UIViewController {
 
             let action = UIAlertAction(title: "确定", style: .default) { _ in
                 onSubmit?(alert.textFields![0].text)
-                self?.setupData()
+                update()
             }
             alert.addAction(action)
 
@@ -262,45 +258,123 @@ class SettingsViewController: UIViewController {
 }
 
 extension SettingsViewController: UICollectionViewDelegate {
+    private func createSnapshot(@ArrayBuilder<SectionModel> builder: () -> [SectionModel]) {
+        var snapshot = NSDiffableDataSourceSnapshot<SectionModel, CellModel>()
+        for section in builder() {
+            snapshot.appendSections([section])
+            snapshot.appendItems(section.items, toSection: section)
+        }
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        cellModels[indexPath.row].action?()
+        let cellModel = dataSource.itemIdentifier(for: indexPath)!
+        cellModel.action?() { [weak cellModel] in
+            cellModel?.updateAction?()
+        }
     }
 }
 
-extension SettingsViewController: UICollectionViewDataSource {
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 1
+class SettingsSwitchCell: BLMotionCollectionViewCell {
+    private let titleLabel = UILabel()
+    private let descLabel = UILabel()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupView()
     }
 
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return cellModels.count
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SettingsSwitchCell.self), for: indexPath) as! SettingsSwitchCell
-        let data = cellModels[indexPath.row]
-        cell.titleLabel.text = data.title
-        cell.descLabel.text = data.desp
-        return cell
+    func set(with model: SettingsViewController.CellModel) {
+        titleLabel.text = model.title
+        descLabel.text = model.desp()
+        model.updateAction = { [weak self] in
+            self?.descLabel.text = model.desp()
+        }
     }
-}
-
-class SettingsSwitchCell: UICollectionViewCell {
-    @IBOutlet var titleLabel: UILabel!
-    @IBOutlet var descLabel: UILabel!
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        updateColor()
+    }
+
+    func setupView() {
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(descLabel)
+        contentView.layer.cornerRadius = 10
+
+        titleLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(20)
+            make.centerY.equalToSuperview()
+            make.trailing.lessThanOrEqualTo(descLabel.snp.leading).offset(-10)
+        }
+
+        descLabel.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-20)
+            make.centerY.equalToSuperview()
+        }
+
+        descLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        updateColor()
+    }
+
+    func updateColor() {
         if traitCollection.userInterfaceStyle == .dark {
             if isFocused {
+                contentView.backgroundColor = UIColor.white
                 titleLabel.textColor = UIColor.black
                 descLabel.textColor = UIColor.black
             } else {
+                contentView.backgroundColor = UIColor.clear
                 titleLabel.textColor = UIColor.white
-                descLabel.textColor = UIColor.white
+                descLabel.textColor = UIColor.secondaryLabel
             }
         } else {
+            contentView.backgroundColor = isFocused ? UIColor.white : UIColor.clear
             titleLabel.textColor = .black
-            descLabel.textColor = UIColor.black
+            descLabel.textColor = UIColor.secondaryLabel
+        }
+    }
+}
+
+class SettingsHeaderView: UICollectionReusableView {
+    let label = UILabel()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setup()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func setup() {
+        addSubview(label)
+        label.font = .preferredFont(forTextStyle: .footnote)
+        label.textColor = UIColor.secondaryLabel
+        label.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(20)
+            make.top.equalToSuperview().offset(20)
+            make.bottom.equalToSuperview().offset(-20)
+        }
+    }
+}
+
+extension FeedDisplayStyle {
+    var desp: String {
+        switch self {
+        case .large:
+            return "3个"
+        case .normal:
+            return "4个"
+        case .sideBar:
+            return "-"
         }
     }
 }

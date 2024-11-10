@@ -44,6 +44,7 @@
 		49508E0F2943420100D26812 /* CocoaLumberjack in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E0E2943420100D26812 /* CocoaLumberjack */; };
 		49508E112943420100D26812 /* CocoaLumberjackSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 49508E102943420100D26812 /* CocoaLumberjackSwift */; };
 		495E6E102CDF92AB00689A08 /* Replys+AttritubedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495E6E0F2CDF92AB00689A08 /* Replys+AttritubedString.swift */; };
+		495E6E122CE0D9AA00689A08 /* ArrayBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 495E6E112CE0D9AA00689A08 /* ArrayBuilder.swift */; };
 		496400D32943431E0098ACA6 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496400D22943431E0098ACA6 /* Logger.swift */; };
 		496E5A4F2C0194720062951B /* MaskViewPugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A4E2C0194720062951B /* MaskViewPugin.swift */; };
 		496E5A512C0194CD0062951B /* BUpnpPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496E5A502C0194CD0062951B /* BUpnpPlugin.swift */; };
@@ -191,6 +192,7 @@
 		49474212290509F6005D6885 /* DateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormatter.swift; sourceTree = "<group>"; };
 		4947423A2906B308005D6885 /* BLTextOnlyCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BLTextOnlyCollectionViewCell.swift; sourceTree = "<group>"; };
 		495E6E0F2CDF92AB00689A08 /* Replys+AttritubedString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Replys+AttritubedString.swift"; sourceTree = "<group>"; };
+		495E6E112CE0D9AA00689A08 /* ArrayBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrayBuilder.swift; sourceTree = "<group>"; };
 		496400D22943431E0098ACA6 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		496E5A4E2C0194720062951B /* MaskViewPugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskViewPugin.swift; sourceTree = "<group>"; };
 		496E5A502C0194CD0062951B /* BUpnpPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BUpnpPlugin.swift; sourceTree = "<group>"; };
@@ -689,6 +691,7 @@
 		F927ED6A2610391000EAB8E3 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
+				495E6E112CE0D9AA00689A08 /* ArrayBuilder.swift */,
 				498CF2342B63AABE0009793E /* BrotliKit */,
 				F927ED6B2610395300EAB8E3 /* DanmakuKit */,
 			);
@@ -988,6 +991,7 @@
 				F9B57356260F5F7400771ED5 /* LivePlayerViewController.swift in Sources */,
 				498CF29F2B63AABE0009793E /* static_dict.c in Sources */,
 				492AD70F2BFF6761007221C8 /* NewVideoPlayerViewModel.swift in Sources */,
+				495E6E122CE0D9AA00689A08 /* ArrayBuilder.swift in Sources */,
 				498CF2A02B63AABE0009793E /* literal_cost.c in Sources */,
 				F99D28F72619F5F000F8E66A /* FollowsViewController.swift in Sources */,
 				F9D382B426359EF90070508F /* ApiRequest.swift in Sources */,
