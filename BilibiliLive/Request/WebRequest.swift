@@ -691,10 +691,16 @@ struct SubtitleResp: Codable {
 
 struct SubtitleData: Codable, Hashable {
     let lan_doc: String
-    let subtitle_url: URL
+    let subtitle_url: String?
     let lan: String
 
-    var url: URL { subtitle_url.addSchemeIfNeed() }
+    var url: URL? {
+        if let subtitle_url, let sub_url = URL(string: subtitle_url) {
+            return sub_url.addSchemeIfNeed()
+        }
+        return nil
+    }
+
     var subtitleContents: [SubtitleContent]?
 }
 

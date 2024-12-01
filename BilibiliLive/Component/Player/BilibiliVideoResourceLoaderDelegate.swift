@@ -286,7 +286,9 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             httpPort = (try? httpServer.port()) ?? 0
         }
         for subtitle in subtitles {
-            addSubtitleData(lang: subtitle.lan, name: subtitle.lan_doc, duration: info.dash.duration, url: subtitle.url.absoluteString)
+            if let url = subtitle.url {
+                addSubtitleData(lang: subtitle.lan, name: subtitle.lan_doc, duration: info.dash.duration, url: url.absoluteString)
+            }
         }
 
         // i-frame
