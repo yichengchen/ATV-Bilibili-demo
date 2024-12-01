@@ -30,6 +30,7 @@
 		492AD7112C001C7B007221C8 /* BVideoPlayPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */; };
 		492AD7132C001CA7007221C8 /* String+Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492AD7122C001CA7007221C8 /* String+Error.swift */; };
 		493307FD2BF230DB003622ED /* LivePlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493307FC2BF230DB003622ED /* LivePlayerViewModel.swift */; };
+		4933B8912CFC1B070056B04D /* WebRequest+WbiSign.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4933B8902CFC1B070056B04D /* WebRequest+WbiSign.swift */; };
 		49389D6228AFEA2900B9DAFD /* VideoDanmuProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */; };
 		49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */; };
 		49389D8C28B0A84500B9DAFD /* PersonalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */; };
@@ -179,6 +180,7 @@
 		492AD7102C001C7B007221C8 /* BVideoPlayPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BVideoPlayPlugin.swift; sourceTree = "<group>"; };
 		492AD7122C001CA7007221C8 /* String+Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+Error.swift"; sourceTree = "<group>"; };
 		493307FC2BF230DB003622ED /* LivePlayerViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LivePlayerViewModel.swift; sourceTree = "<group>"; };
+		4933B8902CFC1B070056B04D /* WebRequest+WbiSign.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WebRequest+WbiSign.swift"; sourceTree = "<group>"; };
 		49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDanmuProvider.swift; sourceTree = "<group>"; };
 		49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Ext.swift"; sourceTree = "<group>"; };
 		49389D8B28B0A84500B9DAFD /* PersonalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonalViewController.swift; sourceTree = "<group>"; };
@@ -632,6 +634,7 @@
 				0A41EE1A2A63102B0066444C /* dm.pb.swift */,
 				0A41EE1B2A63102B0066444C /* dmView.pb.swift */,
 				49D39F27263AD40000F14497 /* WebRequest.swift */,
+				4933B8902CFC1B070056B04D /* WebRequest+WbiSign.swift */,
 				F9D382B326359EF90070508F /* ApiRequest.swift */,
 				F927ED8F2610A5E900EAB8E3 /* CookieManager.swift */,
 				4921389F2CD5CA6000891D56 /* SponsorBlockRequest.swift */,
@@ -975,6 +978,7 @@
 				49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */,
 				AEA6AB1928FFF3DD007CE72E /* Settings.swift in Sources */,
 				498CF2962B63AABE0009793E /* block_splitter.c in Sources */,
+				4933B8912CFC1B070056B04D /* WebRequest+WbiSign.swift in Sources */,
 				494741C6290177BB005D6885 /* UpSpaceViewController.swift in Sources */,
 				496E5A552C01CDBB0062951B /* DebugPlugin.swift in Sources */,
 				49DA01A0296C466C00EEAE15 /* AVInfoPanelCollectionViewThumbnailCell+Hook.swift in Sources */,
