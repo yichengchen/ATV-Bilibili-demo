@@ -728,10 +728,15 @@ struct Replys: Codable, Hashable {
             let url: String
         }
 
+        struct JumpUrl: Codable, Hashable {
+            let title: String
+        }
+
         struct Content: Codable, Hashable {
             let message: String
             let pictures: [Picture]?
             let emote: [String: Emote]?
+            let jump_url: [String: JumpUrl]?
 
             struct Picture: Codable, Hashable {
                 let img_src: String

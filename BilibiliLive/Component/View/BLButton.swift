@@ -103,6 +103,7 @@ class BLCustomButton: BLButton {
 @MainActor
 class BLCustomTextButton: BLButton {
     private let titleLabel = UILabel()
+    var object: Any?
 
     @IBInspectable var title: String? {
         didSet { titleLabel.text = title }
@@ -145,6 +146,8 @@ class BLButton: UIControl {
     fileprivate let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     private let selectedWhiteView = UIView()
 
+    var onPrimaryAction: ((BLButton) -> Void)?
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
@@ -182,6 +185,7 @@ class BLButton: UIControl {
         super.pressesEnded(presses, with: event)
         if presses.first?.type == .select {
             sendActions(for: .primaryActionTriggered)
+            onPrimaryAction?(self)
         }
     }
 

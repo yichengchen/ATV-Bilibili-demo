@@ -94,6 +94,7 @@
 		499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76152931A7AE003160FB /* SwiftyXMLParser */; };
 		49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */; };
 		49ADA8392D0BCD79004801EF /* MainActor+Safe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ADA8382D0BCD71004801EF /* MainActor+Safe.swift */; };
+		49ADA83D2D0C0FC2004801EF /* BvidConvertor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ADA83C2D0C0FC2004801EF /* BvidConvertor.swift */; };
 		49D250A02C118FA700173908 /* URLPlayPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D2509F2C118FA700173908 /* URLPlayPlugin.swift */; };
 		49D250A22C11A82B00173908 /* AVPlayerMetaUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
@@ -299,6 +300,7 @@
 		499C760E2930E068003160FB /* NVASocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NVASocket.swift; sourceTree = "<group>"; };
 		49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpsViewController.swift; sourceTree = "<group>"; };
 		49ADA8382D0BCD71004801EF /* MainActor+Safe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainActor+Safe.swift"; sourceTree = "<group>"; };
+		49ADA83C2D0C0FC2004801EF /* BvidConvertor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BvidConvertor.swift; sourceTree = "<group>"; };
 		49D2509F2C118FA700173908 /* URLPlayPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLPlayPlugin.swift; sourceTree = "<group>"; };
 		49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVPlayerMetaUtils.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
@@ -634,6 +636,7 @@
 		49D39F26263AD3F100F14497 /* Request */ = {
 			isa = PBXGroup;
 			children = (
+				49ADA83C2D0C0FC2004801EF /* BvidConvertor.swift */,
 				0A41EE1A2A63102B0066444C /* dm.pb.swift */,
 				0A41EE1B2A63102B0066444C /* dmView.pb.swift */,
 				49D39F27263AD40000F14497 /* WebRequest.swift */,
@@ -1011,6 +1014,7 @@
 				F927ED8826103CFB00EAB8E3 /* DanmakuTextCell.swift in Sources */,
 				0A41EE1C2A63102B0066444C /* dm.pb.swift in Sources */,
 				F9171D6429010DF1002868C7 /* FeedCollectionViewCell.swift in Sources */,
+				49ADA83D2D0C0FC2004801EF /* BvidConvertor.swift in Sources */,
 				F927ED902610A5E900EAB8E3 /* CookieManager.swift in Sources */,
 				F927ED792610395400EAB8E3 /* DanmakuCellModel.swift in Sources */,
 				497CF2372C16EDE5006E1488 /* BVideoClipsPlugin.swift in Sources */,
