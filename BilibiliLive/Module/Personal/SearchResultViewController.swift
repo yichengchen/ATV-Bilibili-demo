@@ -11,9 +11,15 @@ import UIKit
 
 class SearchResultViewController: UIViewController {
     var collectionView: UICollectionView!
-    var dataSource: UICollectionViewDiffableDataSource<SearchList, AnyHashable>!
-    var currentSnapshot: NSDiffableDataSourceSnapshot<SearchList, AnyHashable>!
+    var dataSource: UICollectionViewDiffableDataSource<SearchList, Item>!
+    var currentSnapshot: NSDiffableDataSourceSnapshot<SearchList, Item>!
     static let titleElementKind = "titleElementKind"
+
+    enum Item: Hashable {
+        case video(SearchResult.Video)
+        case bangumi(SearchResult.Bangumi)
+        case user(SearchResult.User)
+    }
 
     @Published var searchText: String = ""
     var cancellable: Cancellable?
@@ -48,19 +54,19 @@ class SearchResultViewController: UIViewController {
                         case let .video(data):
                             let list = SearchList(title: "视频", height: defaultHeight, scrollingBehavior: .continuous)
                             currentSnapshot.appendSections([list])
-                            currentSnapshot.appendItems(data, toSection: list)
+                            currentSnapshot.appendItems(data.map { .video($0) }, toSection: list)
                         case let .bangumi(data):
                             let list = SearchList(title: "番剧", height: defaultHeight, scrollingBehavior: .continuous)
                             currentSnapshot.appendSections([list])
-                            currentSnapshot.appendItems(data, toSection: list)
+                            currentSnapshot.appendItems(data.map { .bangumi($0) }, toSection: list)
                         case let .movie(data):
                             let list = SearchList(title: "影视", height: defaultHeight, scrollingBehavior: .none)
                             currentSnapshot.appendSections([list])
-                            currentSnapshot.appendItems(data, toSection: list)
+                            currentSnapshot.appendItems(data.map { .bangumi($0) }, toSection: list)
                         case let .user(data):
                             let list = SearchList(title: "用户", height: .estimated(140), scrollingBehavior: .continuous)
                             currentSnapshot.appendSections([list])
-                            currentSnapshot.appendItems(data, toSection: list)
+                            currentSnapshot.appendItems(data.map { .user($0) }, toSection: list)
                         case .none:
                             break
                         }
@@ -133,14 +139,15 @@ extension SearchResultViewController {
             $0.despLabel.text = $2.usign
             $0.imageView.kf.setImage(with: $2.upic.addSchemeIfNeed(), options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
         }
-        dataSource = UICollectionViewDiffableDataSource<SearchList, AnyHashable>(collectionView: collectionView) {
+        dataSource = UICollectionViewDiffableDataSource<SearchList, Item>(collectionView: collectionView) {
             collectionView, indexPath, item in
-            if let item = item as? any DisplayData {
+            switch item {
+            case let .video(item):
                 return collectionView.dequeueConfiguredReusableCell(using: displayCell, for: indexPath, item: item)
-            } else if let item = item as? SearchResult.User {
+            case let .bangumi(item):
+                return collectionView.dequeueConfiguredReusableCell(using: displayCell, for: indexPath, item: item)
+            case let .user(item):
                 return collectionView.dequeueConfiguredReusableCell(using: userCell, for: indexPath, item: item)
-            } else {
-                fatalError("Unknown item type")
             }
         }
 
@@ -158,7 +165,7 @@ extension SearchResultViewController {
             )
         }
 
-        currentSnapshot = NSDiffableDataSourceSnapshot<SearchList, AnyHashable>()
+        currentSnapshot = NSDiffableDataSourceSnapshot<SearchList, Item>()
     }
 }
 
@@ -166,18 +173,16 @@ extension SearchResultViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let data = dataSource.itemIdentifier(for: indexPath) else { return }
         switch data {
-        case let data as SearchResult.Video:
+        case let .video(data):
             let detailVC = VideoDetailViewController.create(aid: data.aid, cid: 0)
             detailVC.present(from: self)
-        case let data as SearchResult.Bangumi:
+        case let .bangumi(data):
             let detailVC = VideoDetailViewController.create(seasonId: data.season_id)
             detailVC.present(from: self)
-        case let data as SearchResult.User:
+        case let .user(data):
             let upSpaceVC = UpSpaceViewController()
             upSpaceVC.mid = data.mid
             present(upSpaceVC, animated: true)
-        default:
-            break
         }
     }
 
