@@ -95,6 +95,7 @@
 		49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */; };
 		49ADA8392D0BCD79004801EF /* MainActor+Safe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ADA8382D0BCD71004801EF /* MainActor+Safe.swift */; };
 		49ADA83D2D0C0FC2004801EF /* BvidConvertor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ADA83C2D0C0FC2004801EF /* BvidConvertor.swift */; };
+		49ADA83F2D0C1ADF004801EF /* VideoDanmuFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ADA83E2D0C1ADF004801EF /* VideoDanmuFilter.swift */; };
 		49D250A02C118FA700173908 /* URLPlayPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D2509F2C118FA700173908 /* URLPlayPlugin.swift */; };
 		49D250A22C11A82B00173908 /* AVPlayerMetaUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
@@ -301,6 +302,7 @@
 		49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpsViewController.swift; sourceTree = "<group>"; };
 		49ADA8382D0BCD71004801EF /* MainActor+Safe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainActor+Safe.swift"; sourceTree = "<group>"; };
 		49ADA83C2D0C0FC2004801EF /* BvidConvertor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BvidConvertor.swift; sourceTree = "<group>"; };
+		49ADA83E2D0C1ADF004801EF /* VideoDanmuFilter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDanmuFilter.swift; sourceTree = "<group>"; };
 		49D2509F2C118FA700173908 /* URLPlayPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLPlayPlugin.swift; sourceTree = "<group>"; };
 		49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVPlayerMetaUtils.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
@@ -421,6 +423,7 @@
 				2806E5212C16011B00164C10 /* ReplyCell.swift */,
 				2806E5222C16011B00164C10 /* ReplyCell.xib */,
 				49389D6128AFEA2900B9DAFD /* VideoDanmuProvider.swift */,
+				49ADA83E2D0C1ADF004801EF /* VideoDanmuFilter.swift */,
 				497CF2322C16EDAC006E1488 /* MaskProvider */,
 				492AD70C2BFF33DF007221C8 /* VideoPlayerViewController.swift */,
 				492AD70E2BFF6761007221C8 /* NewVideoPlayerViewModel.swift */,
@@ -918,6 +921,7 @@
 				AEA6AB1628FFE951007CE72E /* SettingsViewController.swift in Sources */,
 				49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */,
 				AE2B41572914C02000BF2B0B /* Int.swift in Sources */,
+				49ADA83F2D0C1ADF004801EF /* VideoDanmuFilter.swift in Sources */,
 				498CF2932B63AABE0009793E /* memory.c in Sources */,
 				49ADA8392D0BCD79004801EF /* MainActor+Safe.swift in Sources */,
 				498CF2A72B63AABE0009793E /* decode.c in Sources */,

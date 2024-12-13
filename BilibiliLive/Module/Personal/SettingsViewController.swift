@@ -169,6 +169,17 @@ class SettingsViewController: UIViewController {
             }
 
             SectionModel(title: "弹幕") {
+                Toggle(title: "用户自定义弹幕屏蔽", setting: Settings.enableDanmuFilter, onChange: Settings.enableDanmuFilter.toggle()) {
+                    enable in
+                    if enable {
+                        Task {
+                            let toast = await VideoDanmuFilter.shared.update()
+                            let alert = UIAlertController(title: "同步结果", message: toast, preferredStyle: .alert)
+                            alert.addAction(.init(title: "Ok", style: .cancel))
+                            self.present(alert, animated: true)
+                        }
+                    }
+                }
                 Actions(title: "弹幕大小", message: "默认为36", current: Settings.danmuSize.title, options: DanmuSize.allCases, optionString: DanmuSize.allCases.map({ $0.title })) {
                     Settings.danmuSize = $0
                 }

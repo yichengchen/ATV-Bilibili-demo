@@ -104,6 +104,9 @@ enum Settings {
 
     @UserDefaultCodable("Settings.SponsorBlockType", defaultValue: SponsorBlockType.none)
     static var enableSponsorBlock: SponsorBlockType
+
+    @UserDefault("Settings.danmuFilter", defaultValue: false)
+    static var enableDanmuFilter: Bool
 }
 
 struct MediaQuality {

@@ -107,9 +107,17 @@ class VideoDanmuProvider: DanmuProviderProtocol {
 
         var dms = reply.elems
             .filter { $0.mode <= 5 }
+
+        if Settings.enableDanmuFilter {
+            dms = dms.filter {
+                VideoDanmuFilter.shared.accept($0.content)
+            }
+        }
+
+        var models = dms
             .map { Danmu(dm: $0) }
-        dms.sort { $0.time < $1.time }
-        segmentDanmus[idx] = dms
+        models.sort { $0.time < $1.time }
+        segmentDanmus[idx] = models
 
         Logger.debug("[dm] cid:\(cid!) sidx:\(idx) danmu cnt: \(dms.count)")
     }
