@@ -51,7 +51,7 @@ class CommonPlayerViewController: UIViewController {
         plugin.addViewToPlayerOverlay(container: playerVC.contentOverlayView!)
         activePlugins.append(plugin)
         plugin.playerDidLoad(playerVC: playerVC)
-        if let player = playerVC.player, playerVC.transportBarCustomMenuItems.isEmpty == false {
+        if playerVC.transportBarCustomMenuItems.isEmpty == false {
             updateMenus()
         }
     }

@@ -55,7 +55,7 @@ class FollowUpsViewController: UIViewController {
                 widthDimension: .fractionalWidth(1),
                 heightDimension: heightDimension
             ),
-            subitem: item,
+            repeatingSubitem: item,
             count: 3
         )
         let vSpacing: CGFloat = 16

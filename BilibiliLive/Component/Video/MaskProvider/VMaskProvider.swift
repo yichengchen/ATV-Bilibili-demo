@@ -78,8 +78,9 @@ class VMaskProvider: MaskProvider {
             }).forEach { layer.insertSublayer($0, at: 0) }
         }
 
+        let ciImage = CIImage(cvImageBuffer: pixelBuffer)
         queue.async {
-            guard let image = self.bodyDetect(buffer: pixelBuffer, videoSize: self.videoSize!) else {
+            guard let image = self.bodyDetect(buffer: ciImage, videoSize: self.videoSize!) else {
                 self.processing = false
                 return
             }
@@ -104,7 +105,7 @@ class VMaskProvider: MaskProvider {
         return 10
     }
 
-    func bodyDetect(buffer: CVPixelBuffer, videoSize: CGSize) -> CGImage? {
+    func bodyDetect(buffer: CIImage, videoSize: CGSize) -> CGImage? {
         do {
             try requestHandler.perform([segmentationRequest], on: buffer)
             guard let mask = segmentationRequest.results?.first else { return nil }

@@ -28,7 +28,7 @@ class SponsorSkipPlugin: NSObject, CommonPlayerPlugin {
                 abs(duration - $0.videoDuration) < 4
             }
 
-            Logger.debug("[SponsorBlockRequest] get segs:" + clipInfos.map { "\($0.start)-\($0.end)" }.joined(separator: ","))
+            Logger.debug("[SponsorBlockRequest] get segs: \(clipInfos.map { "\($0.start)-\($0.end)" }.joined(separator: ","))")
             if !set, let player = await playerVC?.player {
                 set = true
                 sendClipToPlayer(player: player)

@@ -51,7 +51,9 @@ class BVideoInfoPlugin: NSObject, CommonPlayerPlugin {
 
         let metas = viewPoints.compactMap { convertTimedMetadataGroup(viewPoint: $0) }
 
-        player.currentItem?.navigationMarkerGroups = [AVNavigationMarkersGroup(title: nil, timedNavigationMarkers: metas)]
+        MainActor.callSafely {
+            player.currentItem?.navigationMarkerGroups = [AVNavigationMarkersGroup(title: nil, timedNavigationMarkers: metas)]
+        }
     }
 
     private func convertTimedMetadataGroup(viewPoint: PlayerInfo.ViewPoint) -> AVTimedMetadataGroup {

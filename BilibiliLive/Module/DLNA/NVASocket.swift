@@ -38,7 +38,7 @@ public func nvasocket(
             do {
                 try read()
             } catch let err {
-                Logger.warn(err)
+                Logger.warn("\(err)")
             }
             didDisconnect?(session)
         }
@@ -95,7 +95,7 @@ public class NVASession: Hashable, Equatable {
         frame.command = String(bytes: try socket.read(length: Int(frame.commandLength)).reversed(), encoding: .utf8)!
 
         if fst != 0xe0 || frame.paramCount == 1 {
-            Logger.debug("reply:", frame.command)
+            Logger.debug("reply: \(frame.command)")
             return frame
         }
 

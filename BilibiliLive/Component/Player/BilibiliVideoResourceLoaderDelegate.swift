@@ -303,7 +303,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
         masterPlaylist.append("\n#EXT-X-ENDLIST\n")
 
-        Logger.debug("masterPlaylist:", masterPlaylist)
+        Logger.debug("masterPlaylist: \(masterPlaylist)")
     }
 
     private func reportError(_ loadingRequest: AVAssetResourceLoadingRequest, withErrorCode error: Int) {
@@ -382,7 +382,7 @@ private extension BilibiliVideoResourceLoaderDelegate {
             }
             return
         }
-        Logger.debug("handle loading", customUrl)
+        Logger.debug("handle loading \(customUrl)")
     }
 
     func bindHttpServer() {

@@ -93,6 +93,7 @@
 		499C76132931A781003160FB /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76122931A781003160FB /* Swifter */; };
 		499C76162931A7AE003160FB /* SwiftyXMLParser in Frameworks */ = {isa = PBXBuildFile; productRef = 499C76152931A7AE003160FB /* SwiftyXMLParser */; };
 		49A441CD293F6DFD0007606C /* FollowUpsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */; };
+		49ADA8392D0BCD79004801EF /* MainActor+Safe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ADA8382D0BCD71004801EF /* MainActor+Safe.swift */; };
 		49D250A02C118FA700173908 /* URLPlayPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D2509F2C118FA700173908 /* URLPlayPlugin.swift */; };
 		49D250A22C11A82B00173908 /* AVPlayerMetaUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */; };
 		49D39F28263AD40000F14497 /* WebRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D39F27263AD40000F14497 /* WebRequest.swift */; };
@@ -297,6 +298,7 @@
 		499C75ED29305A1E003160FB /* BiliBiliUpnpDMR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiliBiliUpnpDMR.swift; sourceTree = "<group>"; };
 		499C760E2930E068003160FB /* NVASocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NVASocket.swift; sourceTree = "<group>"; };
 		49A441CC293F6DFD0007606C /* FollowUpsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FollowUpsViewController.swift; sourceTree = "<group>"; };
+		49ADA8382D0BCD71004801EF /* MainActor+Safe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MainActor+Safe.swift"; sourceTree = "<group>"; };
 		49D2509F2C118FA700173908 /* URLPlayPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLPlayPlugin.swift; sourceTree = "<group>"; };
 		49D250A12C11A82B00173908 /* AVPlayerMetaUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVPlayerMetaUtils.swift; sourceTree = "<group>"; };
 		49D39F27263AD40000F14497 /* WebRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRequest.swift; sourceTree = "<group>"; };
@@ -429,6 +431,7 @@
 		49389D6028AFE91E00B9DAFD /* Extensions */ = {
 			isa = PBXGroup;
 			children = (
+				49ADA8382D0BCD71004801EF /* MainActor+Safe.swift */,
 				F99D28E926195EC200F8E66A /* UIView+Layout.swift */,
 				49389D8828B0A1B700B9DAFD /* UIViewController+Ext.swift */,
 				494741BF29002797005D6885 /* UserDefault+..swift */,
@@ -913,6 +916,7 @@
 				49389D8928B0A1B700B9DAFD /* UIViewController+Ext.swift in Sources */,
 				AE2B41572914C02000BF2B0B /* Int.swift in Sources */,
 				498CF2932B63AABE0009793E /* memory.c in Sources */,
+				49ADA8392D0BCD79004801EF /* MainActor+Safe.swift in Sources */,
 				498CF2A72B63AABE0009793E /* decode.c in Sources */,
 				F90AAE04265549B5008DE7C2 /* FeedViewController.swift in Sources */,
 				2DBE4C4D2628818F00D20413 /* HistoryViewController.swift in Sources */,

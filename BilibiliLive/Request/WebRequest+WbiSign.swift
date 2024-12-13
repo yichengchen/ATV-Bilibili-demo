@@ -6,7 +6,7 @@
 //
 
 import Alamofire
-import CommonCrypto
+import CryptoKit
 import SwiftyJSON
 
 extension WebRequest {
@@ -102,12 +102,10 @@ extension WebRequest {
         }
 
         func calculateMD5(string: String) -> String {
-            let data = Data(string.utf8)
-            var digest = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
-            _ = data.withUnsafeBytes {
-                CC_MD5($0.baseAddress, CC_LONG(data.count), &digest)
-            }
-            return digest.map { String(format: "%02hhx", $0) }.joined()
+            let messageData = string.data(using: .utf8)!
+            let digestData = Insecure.MD5.hash(data: messageData)
+            let digestHex = String(digestData.map { String(format: "%02hhx", $0) }.joined().prefix(32))
+            return digestHex
         }
 
         let mixinKeyEncTab = [

@@ -157,7 +157,7 @@ class LivePlayerViewModel {
 
     func playFirstInfo() async throws {
         if let info = playInfos.first {
-            Logger.debug("play =>", playInfos)
+            Logger.debug("play => \(playInfos)")
             await MainActor.run {
                 playPlugin.play(urlString: info.url)
             }

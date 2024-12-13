@@ -139,7 +139,7 @@ class FeedCollectionViewController: UIViewController {
                 widthDimension: .fractionalWidth(1),
                 heightDimension: selfSizeingEnable ? heightDimension : .fractionalWidth(style.fractionalHeight)
             ),
-            subitem: item,
+            repeatingSubitem: item,
             count: style.feedColCount
         )
         let vSpacing: CGFloat = style == .large ? 24 : 16

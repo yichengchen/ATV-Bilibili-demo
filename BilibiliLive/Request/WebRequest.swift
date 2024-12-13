@@ -184,7 +184,7 @@ enum WebRequest {
             switch response {
             case let .success(data):
                 do {
-                    let protobufObject = try T(serializedData: data)
+                    let protobufObject = try T(serializedBytes: data)
                     complete?(.success(protobufObject))
                 } catch let err {
                     Logger.warn("Protobuf parsing error: \(err.localizedDescription)")

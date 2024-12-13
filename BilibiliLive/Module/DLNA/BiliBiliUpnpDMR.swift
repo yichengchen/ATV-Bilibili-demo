@@ -67,12 +67,12 @@ class BiliBiliUpnpDMR: NSObject {
         }
 
         httpServer["projection"] = nvasocket(uuid: bUuid, didConnect: { [weak self] session in
-            Logger.info("session connected", session)
+            Logger.info("session connected \(session)")
             DispatchQueue.main.async {
                 self?.sessions.insert(session)
             }
         }, didDisconnect: { [weak self] session in
-            Logger.info("session disconnect", session)
+            Logger.info("session disconnect \(session)")
             DispatchQueue.main.async {
                 self?.sessions.remove(session)
             }
@@ -164,7 +164,7 @@ class BiliBiliUpnpDMR: NSObject {
                 Logger.info("dmr started")
             } catch let err {
                 started = false
-                Logger.warn("dmr start fail", err.localizedDescription)
+                Logger.warn("dmr start fail: \(err.localizedDescription)")
             }
         }
         boardcastTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) {
@@ -276,13 +276,13 @@ class BiliBiliUpnpDMR: NSObject {
                   let extStr = URLComponents(string: url.absoluteString)?.queryItems?
                   .first(where: { $0.name == "nva_ext" })?.value
             else {
-                Logger.warn("get play url: ", frame.body)
+                Logger.warn("get play url: \(frame.body)")
                 return
             }
             let ext = JSON(parseJSON: extStr)
             handlePlay(json: ext["content"])
         default:
-            Logger.debug("action:", frame.action)
+            Logger.debug("action: \(frame.action)")
             session.sendEmpty()
         }
     }
@@ -305,7 +305,7 @@ class BiliBiliUpnpDMR: NSObject {
     }
 
     @MainActor func sendStatus(status: PlayStatus) {
-        Logger.debug("send status:", status)
+        Logger.debug("send status: \(status)")
         Array(sessions).forEach { $0.sendCommand(action: "OnPlayState", content: ["playState": status.rawValue]) }
     }
 
