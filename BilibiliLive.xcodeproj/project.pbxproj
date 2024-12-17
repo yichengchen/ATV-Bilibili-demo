@@ -107,6 +107,7 @@
 		49F918722931E927001D3EC3 /* AvTransportScpd.xml in Resources */ = {isa = PBXBuildFile; fileRef = 49F918712931E927001D3EC3 /* AvTransportScpd.xml */; };
 		49FB8EC0291F4C520045D5DE /* VMaskProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FB8EBF291F4C520045D5DE /* VMaskProvider.swift */; };
 		49FB8EE929208EBE0045D5DE /* SidxParseUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49FB8EE829208EBE0045D5DE /* SidxParseUtil.swift */; };
+		695081FB2D0FD9E30063044D /* PocketSVG in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 49078E46291BEA2400F556BD /* PocketSVG */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		AE2B41552912706700BF2B0B /* SearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41542912706700BF2B0B /* SearchResultViewController.swift */; };
 		AE2B41572914C02000BF2B0B /* Int.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B41562914C02000BF2B0B /* Int.swift */; };
 		AE4889B228FE55DA00E8C5CD /* FavoriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE4889B128FE55DA00E8C5CD /* FavoriteViewController.swift */; };
@@ -156,6 +157,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				695081FB2D0FD9E30063044D /* PocketSVG in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
