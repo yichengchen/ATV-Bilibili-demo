@@ -129,6 +129,12 @@ class SettingsViewController: UIViewController {
                         optionString: MediaQualityEnum.allCases.map({ $0.desp })) {
                     Settings.mediaQuality = $0
                 }
+                Actions(title: "默认播放速度", message: "默认设置为1.0",
+                        current: Settings.mediaPlayerSpeed.name,
+                        options: PlaySpeed.blDefaults,
+                        optionString: PlaySpeed.blDefaults.map({ $0.name })) {
+                    Settings.mediaPlayerSpeed = $0
+                }
                 Toggle(title: "Avc优先(卡顿尝试开启)", setting: Settings.preferAvc, onChange: Settings.preferAvc.toggle())
                 Toggle(title: "无损音频和杜比全景声", setting: Settings.losslessAudio, onChange: Settings.losslessAudio.toggle())
                 Toggle(title: "匹配视频内容", setting: Settings.contentMatch, onChange: Settings.contentMatch.toggle())
