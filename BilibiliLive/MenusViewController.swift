@@ -90,28 +90,30 @@ class MenusViewController: UIViewController, BLTabBarContentVCProtocol {
 
     func showMensu() {
         NotificationCenter.default.post(name: EVENT_COLLECTION_TO_TOP, object: nil)
-        if menuRecognizer != nil {
-            view.removeGestureRecognizer(menuRecognizer!)
-        }
-        // Request a focus update
-        view.setNeedsFocusUpdate()
+        BLAfter(afterTime: 0.3) {
+            if self.menuRecognizer != nil {
+                self.view.removeGestureRecognizer(self.menuRecognizer!)
+            }
+            // Request a focus update
+            self.view.setNeedsFocusUpdate()
 
-        BLAnimate(withDuration: 0.3) {
-            self.leftCollectionView.alpha = 1
-            self.homeIcon.alpha = 0
-            self.collectionTop.constant = 40
-            self.menusViewHeight.constant = 1020
-//            self.vcLeft.constant = 340
-            self.headViewLeading.constant = 20
-            self.headingViewTop.constant = 20
-            self.menusView.setCornerRadius(cornerRadius: bigSornerRadius)
-            self.usernameLabel.text = self.userName
-            self.menuViewWidth.constant = 320
-            self.view.layoutIfNeeded()
-        } completion: { _ in
-            self.menuIsShowing = true
-            self.leftCollectionView.setNeedsLayout()
-            self.leftCollectionView.layoutIfNeeded()
+            BLAnimate(withDuration: 0.3) {
+                self.leftCollectionView.alpha = 1
+                self.homeIcon.alpha = 0
+                self.collectionTop.constant = 40
+                self.menusViewHeight.constant = 1020
+                //            self.vcLeft.constant = 340
+                self.headViewLeading.constant = 20
+                self.headingViewTop.constant = 20
+                self.menusView.setCornerRadius(cornerRadius: bigSornerRadius)
+                self.usernameLabel.text = self.userName
+                self.menuViewWidth.constant = 320
+                self.view.layoutIfNeeded()
+            } completion: { _ in
+                self.menuIsShowing = true
+                self.leftCollectionView.setNeedsLayout()
+                self.leftCollectionView.layoutIfNeeded()
+            }
         }
     }
 
@@ -143,18 +145,24 @@ class MenusViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 
     func setupData() {
-        cellModels.append(CellModel(iconImage: UIImage(systemName: "person.badge.plus"), title: "关注", contentVC: FollowsViewController()))
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "person.crop.circle.badge.checkmark"), title: "关注", contentVC: FollowsViewController()))
         cellModels.append(CellModel(iconImage: UIImage(systemName: "timelapse"), title: "推荐", contentVC: FeedViewController()))
         cellModels.append(CellModel(iconImage: UIImage(systemName: "livephoto.play"), title: "热门", contentVC: HotViewController()))
         cellModels.append(CellModel(iconImage: UIImage(systemName: "arrow.up.and.person.rectangle.portrait"), title: "排行榜", contentVC: RankingViewController()))
-        cellModels.append(CellModel(iconImage: UIImage(systemName: "star"), title: "收藏", contentVC: FavoriteViewController()))
-        cellModels.append(CellModel(iconImage: UIImage(systemName: "gear"), title: "设置", contentVC: PersonalViewController.create()))
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "airplayvideo"), title: "直播", contentVC: LiveViewController()))
 
-        let logout = CellModel(iconImage: UIImage(systemName: "figure.run"), title: "登出", autoSelect: false) {
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "star"), title: "收藏", contentVC: FavoriteViewController()))
+
+        let logout = CellModel(iconImage: UIImage(systemName: "magnifyingglass.circle"), title: "搜索", autoSelect: false) {
             [weak self] in
-            self?.actionLogout()
+//            self?.actionLogout()
+            let resultVC = SearchResultViewController()
+            let searchVC = UISearchController(searchResultsController: resultVC)
+            searchVC.searchResultsUpdater = resultVC
+            self?.present(UISearchContainerViewController(searchController: searchVC), animated: true)
         }
         cellModels.append(logout)
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "gear"), title: "设置", contentVC: PersonalViewController.create()))
     }
 
     func setViewController(vc: UIViewController) {

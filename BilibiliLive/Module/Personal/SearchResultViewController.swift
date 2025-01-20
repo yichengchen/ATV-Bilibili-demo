@@ -125,7 +125,7 @@ extension SearchResultViewController {
     }
 
     private func configureDataSource() {
-        let displayCell = UICollectionView.CellRegistration<FeedCollectionViewCell, DisplayData> {
+        let displayCell = UICollectionView.CellRegistration<FeedCollectionViewCell, any DisplayData> {
             $0.setup(data: $2)
         }
         let userCell = UICollectionView.CellRegistration<UpCell, SearchResult.User> {

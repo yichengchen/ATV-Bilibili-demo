@@ -41,7 +41,7 @@ class BLSettingLineCollectionViewCell: BLMotionCollectionViewCell {
         effectView.contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.leading.equalToSuperview().offset(26)
-            make.trailing.equalToSuperview().offset(20)
+            make.trailing.equalToSuperview().offset(26)
             make.top.bottom.equalToSuperview().inset(8)
         }
         titleLabel.textAlignment = .left

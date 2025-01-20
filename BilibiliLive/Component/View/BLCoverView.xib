@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder.AppleTV.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder.AppleTV.XIB" version="3.0" toolsVersion="23094" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="appleTV" appearance="light"/>
     <dependencies>
         <deployment identifier="tvOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -31,8 +31,8 @@
                         <constraint firstAttribute="width" secondItem="6uG-m1-Bws" secondAttribute="height" multiplier="16:9" id="XJ1-oS-07C"/>
                     </constraints>
                 </imageView>
-                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="d6y-WI-cmr">
-                    <rect key="frame" x="96" y="140" width="118" height="118"/>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="person.crop.circle.badge.checkmark" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="d6y-WI-cmr">
+                    <rect key="frame" x="93" y="140" width="121" height="118.5"/>
                     <constraints>
                         <constraint firstAttribute="width" secondItem="d6y-WI-cmr" secondAttribute="height" multiplier="1:1" id="S39-2s-HO4"/>
                         <constraint firstAttribute="width" constant="118" id="dmw-gl-hlQ"/>
@@ -98,6 +98,7 @@
     </objects>
     <resources>
         <image name="bili" width="100" height="44.5"/>
+        <image name="person.crop.circle.badge.checkmark" catalog="system" width="128" height="116"/>
         <namedColor name="videoDetalColor">
             <color red="0.25099998712539673" green="0.25400000810623169" blue="0.25400000810623169" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
         </namedColor>

@@ -26,7 +26,7 @@ class BLMenuLineCollectionViewCell: BLSettingLineCollectionViewCell {
         iconImageView.contentMode = .scaleAspectFit
         iconImageView.snp.makeConstraints { make in
             make.width.height.equalTo(imageViewHeight)
-            make.left.equalTo(8)
+            make.left.equalTo(16)
             make.centerY.equalToSuperview()
         }
         iconBgView.snp.makeConstraints { make in

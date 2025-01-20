@@ -156,9 +156,9 @@ class FeedCollectionViewController: UIViewController {
         NotificationCenter.default.addObserver(forName: EVENT_COLLECTION_TO_TOP, object: nil, queue: .main) { [weak self] _ in
             guard let self, collectionView.visibleCells.count > 0 else { return }
 
-//            let indexPath = IndexPath(item: 0, section: 0)
-//            collectionView.scrollToItem(at: indexPath, at: .top, animated: true)
-//            collectionView.setContentOffset(CGPoint(x: 0, y: -collectionEdgeInsetTop), animated: true)
+            let indexPath = IndexPath(item: 0, section: 0)
+            collectionView.scrollToItem(at: indexPath, at: .top, animated: true)
+            collectionView.setContentOffset(CGPoint(x: 0, y: -collectionEdgeInsetTop), animated: true)
 
             if coverViewIsShowing {
                 hiddenCoverView()
