@@ -11,7 +11,8 @@ class BLMenuLineCollectionViewCell: BLSettingLineCollectionViewCell {
     var iconImageView = UIImageView()
     var iconBgView = UIView()
     override func addsubViews() {
-        selectedWhiteView.setCornerRadius(cornerRadius: moreLittleSornerRadius)
+//        selectedWhiteView.setAutoGlassEffectView(cornerRadius: selectedWhiteView.height / 2)
+        selectedWhiteView.setCornerRadius(cornerRadius: height / 2)
         selectedWhiteView.backgroundColor = UIColor(named: "menuCellColor")
         selectedWhiteView.isHidden = !isFocused
         addSubview(selectedWhiteView)
@@ -33,7 +34,7 @@ class BLMenuLineCollectionViewCell: BLSettingLineCollectionViewCell {
             make.top.left.equalTo(iconImageView).offset(-4)
             make.right.bottom.equalTo(iconImageView).offset(4)
         }
-        iconBgView.setBlurEffectView()
+//        iconBgView.setAutoGlassEffectView()
         iconBgView.setCornerRadius(cornerRadius: (imageViewHeight + 8) / 2.0)
 
         addSubview(titleLabel)

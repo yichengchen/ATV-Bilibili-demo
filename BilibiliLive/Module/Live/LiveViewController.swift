@@ -12,8 +12,8 @@ import UIKit
 class LiveViewController: CategoryViewController {
     override func viewDidLoad() {
         categories = [
-            CategoryDisplayModel(title: "关注", contentVC: MyLiveViewController()),
             CategoryDisplayModel(title: "推荐", contentVC: AreaLiveViewController(areaID: -1)),
+            CategoryDisplayModel(title: "关注", contentVC: MyLiveViewController()),
             CategoryDisplayModel(title: "人气", contentVC: AreaLiveViewController(areaID: 0)),
             CategoryDisplayModel(title: "娱乐", contentVC: AreaLiveViewController(areaID: 1)),
             CategoryDisplayModel(title: "虚拟主播", contentVC: AreaLiveViewController(areaID: 9)),

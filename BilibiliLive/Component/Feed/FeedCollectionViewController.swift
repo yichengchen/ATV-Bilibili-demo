@@ -10,13 +10,14 @@ import TVUIKit
 import UIKit
 
 let sornerRadius = 8.0
-let littleSornerRadius = 12.0
+let littleSornerRadius = 24.0
 let moreLittleSornerRadius = 18.0
 let normailSornerRadius = 25.0
 let lessBigSornerRadius = 35.0
 let bigSornerRadius = 45.0
 
 let EVENT_COLLECTION_TO_TOP = NSNotification.Name("EVENT_COLLECTION_TO_TOP")
+let EVENT_COLLECTION_TO_SHOW_MENU = NSNotification.Name("EVENT_COLLECTION_TO_SHOW_MENU")
 
 protocol DisplayData: Hashable {
     var title: String { get }
@@ -74,6 +75,9 @@ class FeedCollectionViewController: UIViewController {
 
     var backMenuAction: (() -> Void)?
     var didUpdateFocus: (() -> Void)?
+
+    var didSelectToLastLeft: (() -> Void)?
+    private var beforeSeleteIndex: IndexPath?
 
     var displayDatas: [any DisplayData] {
         set {
@@ -154,15 +158,23 @@ class FeedCollectionViewController: UIViewController {
         }
 
         NotificationCenter.default.addObserver(forName: EVENT_COLLECTION_TO_TOP, object: nil, queue: .main) { [weak self] _ in
-            guard let self, collectionView.visibleCells.count > 0 else { return }
+            self?.handleMenuPress()
+        }
+    }
 
+    func handleMenuPress() {
+        if collectionView.contentOffset.y > 100 {
             let indexPath = IndexPath(item: 0, section: 0)
-            collectionView.scrollToItem(at: indexPath, at: .top, animated: true)
-            collectionView.setContentOffset(CGPoint(x: 0, y: -collectionEdgeInsetTop), animated: true)
+//            collectionView.scrollToItem(at: indexPath, at: .top, animated: true)
+//            collectionView.setContentOffset(CGPoint(x: 0, y: -collectionEdgeInsetTop), animated: true)
+            collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .top)
+            collectionView.reloadData()
 
-            if coverViewIsShowing {
-                hiddenCoverView()
-            }
+        } else {
+            NotificationCenter.default.post(name: EVENT_COLLECTION_TO_SHOW_MENU, object: nil)
+        }
+        if coverViewIsShowing {
+            hiddenCoverView()
         }
     }
 
@@ -375,6 +387,30 @@ extension FeedCollectionViewController: UICollectionViewDelegate {
             }
             coverView.titleLabel.text = data.data.title
         }
+    }
+
+    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        super.pressesEnded(presses, with: event)
+
+        // 检测“左方向键”
+        guard presses.contains(where: { $0.type == .leftArrow }) else { return }
+
+        // 当前获得焦点的 view
+        guard let focused = UIScreen.main.focusedView as? UICollectionViewCell,
+              let indexPath = collectionView.indexPath(for: focused) else { return }
+
+        // 当前 item 是最左边？
+        let style = styleOverride ?? Settings.displayStyle
+
+        print("⬅️ indexPath.item = \(indexPath.item)")
+        if indexPath.item % style.feedColCount == 0 && beforeSeleteIndex == indexPath {
+            print("⬅️ 焦点在最左边，再按左键！")
+            // 👉 这里执行你想要的逻辑，比如：
+            // showPreviousPage()
+            // moveToLeftMenu()
+            didSelectToLastLeft?()
+        }
+        beforeSeleteIndex = indexPath
     }
 }
 

@@ -33,6 +33,7 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
             make.top.equalToSuperview()
             make.height.equalTo(imageView.snp.width).multipliedBy(9.0 / 16)
         }
+
         imageView.layer.cornerRadius = moreLittleSornerRadius
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
@@ -57,7 +58,7 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
 //        sortLabel.snp.makeConstraints { make in
 //            make.width.height.equalTo(70)
 //        }
-        sortLabel.textColor = .gray
+        sortLabel.textColor = .white
 
         hStackView.addArrangedSubview(stackView)
         hStackView.snp.makeConstraints { make in

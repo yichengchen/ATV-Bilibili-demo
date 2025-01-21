@@ -17,15 +17,27 @@ class MenusViewController: UIViewController, BLTabBarContentVCProtocol {
 
     @IBOutlet var contentView: UIView!
     @IBOutlet var avatarImageView: UIImageView!
-    @IBOutlet var usernameLabel: UILabel!
+    @IBOutlet var usernameLabel: UILabel! {
+        didSet {
+            usernameLabel.text = "主页"
+        }
+    }
+
     @IBOutlet var leftCollectionView: BSCollectionVIew!
     weak var currentViewController: UIViewController?
     private var menuIsShowing = false
+    var menuRecognizer: UITapGestureRecognizer?
+    private var selectMenuItem: CellModel?
 
     @IBOutlet var menusView: UIView! {
         didSet {
-            menusView.setBlurEffectView(cornerRadius: lessBigSornerRadius)
-            menusView.setCornerRadius(cornerRadius: lessBigSornerRadius, borderColor: .lightGray, borderWidth: 0.5)
+            if #available(tvOS 26.0, *) {
+                menusView.setAutoGlassEffectView(cornerRadius: lessBigSornerRadius)
+
+            } else {
+                menusView.setBlurEffectView(cornerRadius: lessBigSornerRadius)
+                menusView.setCornerRadius(cornerRadius: lessBigSornerRadius, borderColor: .lightGray, borderWidth: 0.5)
+            }
         }
     }
 
@@ -45,7 +57,6 @@ class MenusViewController: UIViewController, BLTabBarContentVCProtocol {
 
     @IBOutlet var menuViewWidth: NSLayoutConstraint!
 
-    var menuRecognizer: UITapGestureRecognizer?
     var focusableView = true
 
     var userName = ""
@@ -70,10 +81,16 @@ class MenusViewController: UIViewController, BLTabBarContentVCProtocol {
         }
         menusLeft.constant = 40
 
+        view.backgroundColor = UIColor(named: "mainBgColor")
+
+        NotificationCenter.default.removeObserver(self)
+        NotificationCenter.default.addObserver(forName: EVENT_COLLECTION_TO_SHOW_MENU, object: nil, queue: .main) { [weak self] _ in
+            self?.showMenus()
+        }
+
         menuRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleMenuPress))
         menuRecognizer?.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
         view.addGestureRecognizer(menuRecognizer!)
-        view.backgroundColor = UIColor(named: "mainBgColor")
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -81,23 +98,23 @@ class MenusViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 
     @objc func handleMenuPress() {
-        showMensu()
+        NotificationCenter.default.post(name: EVENT_COLLECTION_TO_TOP, object: nil)
     }
 
     @objc func handleRightPress() {
         hiddenMensu()
     }
 
-    func showMensu() {
-        NotificationCenter.default.post(name: EVENT_COLLECTION_TO_TOP, object: nil)
+    func showMenus() {
         BLAfter(afterTime: 0.3) {
-            if self.menuRecognizer != nil {
-                self.view.removeGestureRecognizer(self.menuRecognizer!)
-            }
             // Request a focus update
             self.view.setNeedsFocusUpdate()
 
             BLAnimate(withDuration: 0.3) {
+                if self.menuRecognizer != nil {
+                    self.view.removeGestureRecognizer(self.menuRecognizer!)
+                }
+
                 self.leftCollectionView.alpha = 1
                 self.homeIcon.alpha = 0
                 self.collectionTop.constant = 40
@@ -127,12 +144,12 @@ class MenusViewController: UIViewController, BLTabBarContentVCProtocol {
             self.headViewLeading.constant = 7
             self.headingViewTop.constant = 0
             self.menusView.setCornerRadius(cornerRadius: 30)
-            self.usernameLabel.text = "主页"
             self.menuViewWidth.constant = 160
 
             self.view.layoutIfNeeded()
         } completion: { _ in
             self.menuIsShowing = false
+            self.usernameLabel.text = self.selectMenuItem?.title
         }
 
         if menuRecognizer != nil {
@@ -145,13 +162,25 @@ class MenusViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 
     func setupData() {
-        cellModels.append(CellModel(iconImage: UIImage(systemName: "person.crop.circle.badge.checkmark"), title: "关注", contentVC: FollowsViewController()))
-        cellModels.append(CellModel(iconImage: UIImage(systemName: "timelapse"), title: "推荐", contentVC: FeedViewController()))
-        cellModels.append(CellModel(iconImage: UIImage(systemName: "livephoto.play"), title: "热门", contentVC: HotViewController()))
-        cellModels.append(CellModel(iconImage: UIImage(systemName: "arrow.up.and.person.rectangle.portrait"), title: "排行榜", contentVC: RankingViewController()))
-        cellModels.append(CellModel(iconImage: UIImage(systemName: "airplayvideo"), title: "直播", contentVC: LiveViewController()))
+        let lastLeft: () -> Void = { [weak self] in
+            self?.showMenus()
+        }
+        let followsViewController = FollowsViewController()
+        followsViewController.didSelectToLastLeft = lastLeft
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "person.crop.circle.badge.checkmark"), title: "关注", contentVC: followsViewController))
 
-        cellModels.append(CellModel(iconImage: UIImage(systemName: "star"), title: "收藏", contentVC: FavoriteViewController()))
+        let FeedViewController = FeedViewController()
+        FeedViewController.didSelectToLastLeft = lastLeft
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "timelapse"), title: "推荐", contentVC: FeedViewController))
+
+        let HotViewController = HotViewController()
+        HotViewController.didSelectToLastLeft = lastLeft
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "livephoto.play"), title: "热门", contentVC: HotViewController))
+
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "theatermasks.circle"), title: "排行榜", contentVC: RankingViewController()))
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "infinity.circle"), title: "直播", contentVC: LiveViewController()))
+
+        cellModels.append(CellModel(iconImage: UIImage(systemName: "star.circle"), title: "收藏", contentVC: FavoriteViewController()))
 
         let logout = CellModel(iconImage: UIImage(systemName: "magnifyingglass.circle"), title: "搜索", autoSelect: false) {
             [weak self] in
@@ -222,6 +251,7 @@ extension MenusViewController: UICollectionViewDelegate {
         if let vc = model.contentVC {
             setViewController(vc: vc)
         }
+        selectMenuItem = model
         model.action?()
     }
 

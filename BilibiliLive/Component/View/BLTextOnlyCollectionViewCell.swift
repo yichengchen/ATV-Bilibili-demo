@@ -12,6 +12,7 @@ class BLTextOnlyCollectionViewCell: BLMotionCollectionViewCell {
     private let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     private let selectedWhiteView = UIView()
     let titleLabel = UILabel()
+    var didSelect: ((_ isFocused: Bool) -> Void)?
 
     override func setup() {
         super.setup()
@@ -29,12 +30,13 @@ class BLTextOnlyCollectionViewCell: BLMotionCollectionViewCell {
         titleLabel.textColor = .white
         titleLabel.numberOfLines = 2
         titleLabel.font = UIFont.systemFont(ofSize: 22, weight: .medium)
-        effectView.layer.cornerRadius = littleSornerRadius
+        effectView.layer.cornerRadius = normailSornerRadius
         effectView.clipsToBounds = true
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
+        didSelect?(isFocused)
         selectedWhiteView.isHidden = !isFocused
     }
 }

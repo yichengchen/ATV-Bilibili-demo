@@ -42,8 +42,7 @@ extension UIView {
                            cornerMask: CACornerMask? = nil,
                            alpha: CGFloat = 1.0)
     {
-        var setStyle = style
-
+        let setStyle = style
         let eView = getblurEffectView(style: setStyle)
         eView.alpha = alpha
         eView.isUserInteractionEnabled = true
@@ -57,6 +56,43 @@ extension UIView {
         }
 
         sendSubviewToBack(eView)
+    }
+
+    func setAutoGlassEffectView(
+        cornerRadius: CGFloat? = 0,
+        cornerMask: CACornerMask? = nil
+    ) {
+        if #available(tvOS 26.0, *) {
+            self.backgroundColor = .clear
+            let glassEffect = UIGlassEffect()
+            let effectView = UIVisualEffectView()
+            self.insertSubview(effectView, at: 0)
+            if let v = cornerRadius {
+                effectView.cornerConfiguration = .corners(radius: .fixed(v))
+            }
+            effectView.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
+            }
+
+            effectView.effect = glassEffect
+
+        } else {
+            setBlurEffectView(cornerRadius: cornerRadius, cornerMask: cornerMask)
+        }
+    }
+
+    func setGlassEffectView() {
+        if #available(tvOS 26.0, *) {
+            //            self.backgroundColor = .clear
+            let glassEffect = UIGlassEffect()
+            let effectView = UIVisualEffectView()
+            self.insertSubview(effectView, at: 0)
+            effectView.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
+            }
+
+            effectView.effect = glassEffect
+        }
     }
 
     /// 设置圆角边框

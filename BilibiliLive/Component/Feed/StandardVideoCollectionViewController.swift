@@ -21,6 +21,7 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
 
     var backMenuAction: (() -> Void)?
     var didUpdateFocus: (() -> Void)?
+    var didSelectToLastLeft: (() -> Void)?
 
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
         return [collectionVC.collectionView]
@@ -35,6 +36,7 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
 
         collectionVC.backMenuAction = backMenuAction
         collectionVC.didUpdateFocus = didUpdateFocus
+        collectionVC.didSelectToLastLeft = didSelectToLastLeft
     }
 
     override func viewDidAppear(_ animated: Bool) {

@@ -29,11 +29,11 @@ class BLCustomButton: BLButton {
         }
     }
 
-    @IBInspectable var titleColor: UIColor = UIColor.black.withAlphaComponent(0.9) {
+    @IBInspectable var titleColor: UIColor = .white.withAlphaComponent(0.9) {
         didSet { titleLabel.textColor = titleColor }
     }
 
-    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 24) {
+    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 20) {
         didSet { titleLabel.font = titleFont }
     }
 
@@ -59,7 +59,7 @@ class BLCustomButton: BLButton {
         addSubview(titleLabel)
         titleLabel.textAlignment = .center
         titleLabel.font = titleFont
-        titleLabel.textColor = titleColor
+        titleLabel.textColor = .white
         updateTitleLabel(force: true)
     }
 
@@ -84,12 +84,28 @@ class BLCustomButton: BLButton {
     }
 
     private func updateButton() {
+        action?(isFocused)
         if isFocused {
-            imageView.image = highLightImage ?? getImage()
-            imageView.tintColor = .black
+            if UITraitCollection.current.userInterfaceStyle == .dark {
+                print("当前是暗黑模式 🌙")
+                imageView.image = highLightImage ?? getImage()
+                imageView.tintColor = .black
+            } else {
+                print("当前是浅色模式 ☀️")
+                imageView.image = highLightImage ?? getImage()
+                imageView.tintColor = .black
+            }
+
         } else {
-            imageView.image = getImage()
-            imageView.tintColor = .white
+            if UITraitCollection.current.userInterfaceStyle == .dark {
+                print("当前是暗黑模式 🌙")
+                imageView.image = getImage()
+                imageView.tintColor = .white
+            } else {
+                print("当前是浅色模式 ☀️")
+                imageView.image = getImage()
+                imageView.tintColor = .white
+            }
         }
     }
 
@@ -116,7 +132,7 @@ class BLCustomTextButton: BLButton {
         didSet { titleLabel.textColor = titleColor }
     }
 
-    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 28) {
+    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 18) {
         didSet { titleLabel.font = titleFont }
     }
 
@@ -125,25 +141,40 @@ class BLCustomTextButton: BLButton {
         effectView.layer.cornerRadius = normailSornerRadius
         effectView.contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
-            make.top.bottom.equalToSuperview().inset(10)
+            make.centerY.equalToSuperview()
             make.left.right.equalToSuperview().inset(24)
         }
         titleLabel.text = title
         titleLabel.font = titleFont
-        titleLabel.textColor = isFocused ? titleSelectedColor : titleColor
+        if UITraitCollection.current.userInterfaceStyle == .dark {
+            print("当前是暗黑模式 🌙")
+            titleLabel.textColor = titleColor
+        } else {
+            print("当前是浅色模式 ☀️")
+            titleLabel.textColor = titleColor
+        }
         titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
     }
 
     override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
         super.didUpdateFocus(in: context, with: coordinator)
-        titleLabel.textColor = isFocused ? titleSelectedColor : titleColor
+        if UITraitCollection.current.userInterfaceStyle == .dark {
+            print("当前是暗黑模式 🌙")
+            titleLabel.textColor = isFocused ? titleSelectedColor : titleColor
+        } else {
+            print("当前是浅色模式 ☀️")
+            titleLabel.textColor = isFocused ? titleSelectedColor : titleColor
+        }
     }
 }
 
 class BLButton: UIControl {
     private var motionEffect: UIInterpolatingMotionEffect!
-    fileprivate let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+
+    fileprivate var effectView = UIVisualEffectView()
     private let selectedWhiteView = UIView()
+
+    var action: ((_ isFocused: Bool) -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -158,6 +189,9 @@ class BLButton: UIControl {
     override var canBecomeFocused: Bool { return true }
 
     func setup() {
+        if #available(tvOS 26.0, *) {
+            effectView.effect = UIGlassEffect(style: .regular)
+        }
         isUserInteractionEnabled = true
         motionEffect = UIInterpolatingMotionEffect(keyPath: "center.x", type: .tiltAlongHorizontalAxis)
         motionEffect.maximumRelativeValue = 8
@@ -165,12 +199,16 @@ class BLButton: UIControl {
         selectedWhiteView.isHidden = !isFocused
         addSubview(effectView)
         effectView.isUserInteractionEnabled = false
-        effectView.layer.cornerRadius = normailSornerRadius
         effectView.clipsToBounds = true
+        effectView.layer.cornerRadius = normailSornerRadius
         effectView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.bottom.equalToSuperview().priority(.high)
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.effectView.layer.cornerRadius = self.effectView.height / 2
+        }
+
         effectView.contentView.addSubview(selectedWhiteView)
         selectedWhiteView.backgroundColor = UIColor.white
         selectedWhiteView.snp.makeConstraints { make in
