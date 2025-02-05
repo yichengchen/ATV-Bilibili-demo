@@ -36,6 +36,9 @@ enum Settings {
     @UserDefaultCodable("Settings.mediaQuality", defaultValue: .quality_1080p)
     static var mediaQuality: MediaQualityEnum
 
+    @UserDefaultCodable("Settings.mediaPlayerSpeed", defaultValue: PlaySpeed.default)
+    static var mediaPlayerSpeed: PlaySpeed
+
     @UserDefaultCodable("Settings.danmuArea", defaultValue: .style_75)
     static var danmuArea: DanmuArea
 

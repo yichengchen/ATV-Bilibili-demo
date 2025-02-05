@@ -8,13 +8,29 @@
 import AVKit
 
 class SpeedChangerPlugin: NSObject, CommonPlayerPlugin {
+    private var notifyView: UILabel?
+    private weak var containerView: UIView?
     private weak var player: AVPlayer?
     private weak var playerVC: AVPlayerViewController?
 
     @Published private(set) var currentPlaySpeed: PlaySpeed = .default
 
+    func addViewToPlayerOverlay(container: UIView) {
+        containerView = container
+    }
+
+    private func fadeOutNotifyView() {
+        UIView.animate(withDuration: 1.0, animations: {
+            self.notifyView?.alpha = 0.0 // Fade out to invisible
+        }) { _ in
+            self.notifyView?.removeFromSuperview() // Optionally remove from superview after fading out
+        }
+    }
+
     func playerDidLoad(playerVC: AVPlayerViewController) {
         self.playerVC = playerVC
+
+        currentPlaySpeed = Settings.mediaPlayerSpeed
     }
 
     func playerDidChange(player: AVPlayer) {
@@ -23,6 +39,32 @@ class SpeedChangerPlugin: NSObject, CommonPlayerPlugin {
 
     func playerWillStart(player: AVPlayer) {
         playerVC?.selectSpeed(AVPlaybackSpeed(rate: currentPlaySpeed.value, localizedName: currentPlaySpeed.name))
+    }
+
+    func playerDidStart(player: AVPlayer) {
+        if notifyView == nil {
+            notifyView = UILabel()
+            notifyView?.backgroundColor = UIColor.black.withAlphaComponent(0.3)
+            notifyView?.textColor = UIColor.white
+            containerView?.addSubview(notifyView!)
+            notifyView?.numberOfLines = 0
+            notifyView?.layer.cornerRadius = 10 // Set the corner radius
+            notifyView?.layer.masksToBounds = true // Enable masks to bounds
+            notifyView?.font = UIFont.systemFont(ofSize: 26)
+            notifyView?.textAlignment = NSTextAlignment.center
+            notifyView?.snp.makeConstraints { make in
+                // make.bottom.equalToSuperview().inset(20) // 20 points from the bottom
+                make.center.equalToSuperview() // Center horizontally
+                make.width.equalTo(300) // Set a width (optional)
+                make.height.equalTo(60) // Set a height (optional)
+            }
+        }
+        notifyView?.isHidden = false
+        notifyView?.text = "播放速度设置为 \(currentPlaySpeed.name)"
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            self.fadeOutNotifyView()
+        }
     }
 
     func addMenuItems(current: inout [UIMenuElement]) -> [UIMenuElement] {
@@ -43,7 +85,7 @@ class SpeedChangerPlugin: NSObject, CommonPlayerPlugin {
     }
 }
 
-struct PlaySpeed {
+struct PlaySpeed: Codable {
     var name: String
     var value: Float
 }
