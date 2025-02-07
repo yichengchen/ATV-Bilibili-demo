@@ -13,15 +13,19 @@ import SwiftyJSON
 
 class LiveDanMuProvider: DanmuProviderProtocol {
     let observerPlayerTime = false
+    let enableDanmuRemoveDup: Bool
     var onSendTextModel = PassthroughSubject<DanmakuTextCellModel, Never>()
 
     private var websocket: WebSocketRequest?
     private var heartBeatTimer: Timer?
     private let roomID: Int
     private var token = ""
+    private var danmuSet = Set<String>()
+    private var danmuSetClearTimer: Timer?
 
-    init(roomID: Int) {
+    init(roomID: Int, removeDup: Bool) {
         self.roomID = roomID
+        enableDanmuRemoveDup = removeDup
     }
 
     deinit {
@@ -31,6 +35,7 @@ class LiveDanMuProvider: DanmuProviderProtocol {
     func playerTimeChange(time: TimeInterval) {}
 
     func start() async throws {
+        stop()
         let info = try await WebRequest.requestDanmuServerInfo(roomID: roomID)
         guard let server = info.host_list.first else {
             Logger.info("Get room server info Fail")
@@ -45,11 +50,20 @@ class LiveDanMuProvider: DanmuProviderProtocol {
         websocket = AF.webSocketRequest(to: "wss://\(server.host):\(server.wss_port)/sub", headers: afheaders).streamMessageEvents { [weak self] event in
             self?.handleWebsocketEvent(event: event)
         }
+
+        if enableDanmuRemoveDup {
+            danmuSetClearTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) {
+                [weak self] _ in
+                self?.danmuSet.removeAll(keepingCapacity: true)
+            }
+        }
     }
 
     func stop() {
         websocket?.close(sending: .normalClosure)
         heartBeatTimer?.invalidate()
+        danmuSet.removeAll()
+        danmuSetClearTimer?.invalidate()
     }
 
     private func setupHeartBeat() {
@@ -122,7 +136,7 @@ extension LiveDanMuProvider {
                 case "DANMU_MSG":
                     if let str = json["info"][1].string {
                         let model = DanmakuTextCellModel(str: str)
-                        onSendTextModel.send(model)
+                        sentDanmuModel(model)
                     }
                 case "DM_INTERACTION":
                     guard let data = json["data"]["data"].string else { return }
@@ -130,7 +144,7 @@ extension LiveDanMuProvider {
                     for combo in comboArr.arrayValue {
                         if let str = combo["content"].string {
                             let model = DanmakuTextCellModel(str: str)
-                            onSendTextModel.send(model)
+                            sentDanmuModel(model)
                         }
                     }
                 case "SUPER_CHAT_MESSAGE":
@@ -138,6 +152,7 @@ extension LiveDanMuProvider {
                         let model = DanmakuTextCellModel(str: str)
                         model.type = .top
                         model.displayTime = 60
+                        sentDanmuModel(model)
                     }
                 default:
                     break
@@ -145,12 +160,14 @@ extension LiveDanMuProvider {
             }
     }
 
-    private func getDanMu(data: [JSON]) -> [String] {
-        return data.filter {
-            $0["cmd"].stringValue == "DANMU_MSG"
-        }.compactMap { json in
-            json["info"][1].string
+    private func sentDanmuModel(_ model: DanmakuTextCellModel) {
+        if enableDanmuRemoveDup {
+            if danmuSet.contains(model.text) {
+                return
+            }
+            danmuSet.insert(model.text)
         }
+        onSendTextModel.send(model)
     }
 }
 

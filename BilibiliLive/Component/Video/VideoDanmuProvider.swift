@@ -37,7 +37,9 @@ struct Danmu: Codable {
 }
 
 class VideoDanmuProvider: DanmuProviderProtocol {
-    var cid: Int!
+    private var cid: Int!
+    private let enableDanmuFilter: Bool
+    private let enableDanmuRemoveDup: Bool
     private var allDanmus = [Danmu]()
     private var playingDanmus = [Danmu]()
 
@@ -58,6 +60,11 @@ class VideoDanmuProvider: DanmuProviderProtocol {
 
     private let segmentDuration = 60 * 6
     private func getSegmentIdx(time: TimeInterval) -> Int { Int(time) / segmentDuration + 1 }
+
+    init(enableDanmuFilter: Bool, enableDanmuRemoveDup: Bool) {
+        self.enableDanmuFilter = enableDanmuFilter
+        self.enableDanmuRemoveDup = enableDanmuRemoveDup
+    }
 
     func initVideo(cid id: Int, startPos: Int) async {
         cid = id
@@ -108,7 +115,12 @@ class VideoDanmuProvider: DanmuProviderProtocol {
         var dms = reply.elems
             .filter { $0.mode <= 5 }
 
-        if Settings.enableDanmuFilter {
+        if enableDanmuRemoveDup {
+            var set = Set<String>()
+            dms = dms.filter { set.insert($0.content).inserted }
+        }
+
+        if enableDanmuFilter {
             dms = dms.filter {
                 VideoDanmuFilter.shared.accept($0.content)
             }

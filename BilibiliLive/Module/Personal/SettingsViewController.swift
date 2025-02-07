@@ -186,6 +186,7 @@ class SettingsViewController: UIViewController {
                         }
                     }
                 }
+                Toggle(title: "移除重复弹幕", setting: Settings.enableDanmuRemoveDup, onChange: Settings.enableDanmuRemoveDup.toggle())
                 Actions(title: "弹幕大小", message: "默认为36", current: Settings.danmuSize.title, options: DanmuSize.allCases, optionString: DanmuSize.allCases.map({ $0.title })) {
                     Settings.danmuSize = $0
                 }
