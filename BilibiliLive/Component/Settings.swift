@@ -110,6 +110,9 @@ enum Settings {
 
     @UserDefault("Settings.danmuFilter", defaultValue: false)
     static var enableDanmuFilter: Bool
+
+    @UserDefault("Settings.danmuRemoveDup", defaultValue: false)
+    static var enableDanmuRemoveDup: Bool
 }
 
 struct MediaQuality {
