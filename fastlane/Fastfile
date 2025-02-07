@@ -13,6 +13,8 @@ platform :tvos do
   lane :build_unsign_ipa do
     sh "cd .. && rm -rf Payload *.xcarchive *.ipa *.zip"
     build_app(
+    destination: "generic/platform=tvOS",
+    configuration: "Release",
     codesigning_identity:"",
     skip_codesigning: true,
     skip_package_ipa: true,
