@@ -205,7 +205,8 @@ enum ReplyUrlBVParser {
         if url.hasPrefix("BV"), url.count == 12 {
             return url
         }
-        if url.hasPrefix("https://www.bilibili.com/video/") {
+        let urlPrefixs = ["https://www.bilibili.com/video/", "https://b23.tv/"]
+        if urlPrefixs.contains(where: url.hasPrefix) {
             // get bvid in url
             guard let url = URL(string: url),
                   let bvid = url.path.split(separator: "/").filter({ !$0.isEmpty }).last
