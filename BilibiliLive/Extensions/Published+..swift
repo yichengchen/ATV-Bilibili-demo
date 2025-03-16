@@ -6,6 +6,7 @@
 //
 
 import Combine
+import Foundation
 
 fileprivate var cancellables = [String: AnyCancellable]()
 

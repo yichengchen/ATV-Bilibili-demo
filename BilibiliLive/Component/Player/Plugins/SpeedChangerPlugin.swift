@@ -12,6 +12,7 @@ class SpeedChangerPlugin: NSObject, CommonPlayerPlugin {
     private weak var containerView: UIView?
     private weak var player: AVPlayer?
     private weak var playerVC: AVPlayerViewController?
+    private var hasShownSpeedNotification = false
 
     @Published private(set) var currentPlaySpeed: PlaySpeed = .default
 
@@ -42,6 +43,12 @@ class SpeedChangerPlugin: NSObject, CommonPlayerPlugin {
     }
 
     func playerDidStart(player: AVPlayer) {
+        guard !hasShownSpeedNotification else { return }
+        hasShownSpeedNotification = true
+
+        // 只有在速度不为默认值1时才显示提示
+        guard currentPlaySpeed != .default else { return }
+
         if notifyView == nil {
             notifyView = UILabel()
             notifyView?.backgroundColor = UIColor.black.withAlphaComponent(0.3)

@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import Foundation
 import SwiftyJSON
 
 enum LiveError: String, LocalizedError {

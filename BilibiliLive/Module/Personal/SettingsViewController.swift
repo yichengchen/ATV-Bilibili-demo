@@ -198,6 +198,30 @@ class SettingsViewController: UIViewController {
                 }
                 Toggle(title: "智能防档弹幕", setting: Settings.danmuMask, onChange: Settings.danmuMask.toggle())
                 Toggle(title: "按需本地运算智能防档弹幕(Exp)", setting: Settings.vnMask, onChange: Settings.vnMask.toggle())
+
+                // 添加弹幕透明度设置
+                Actions(title: "弹幕透明度", message: "调整弹幕的透明度",
+                        current: Settings.danmuAlpha.title,
+                        options: DanmuAlpha.allCases,
+                        optionString: DanmuAlpha.allCases.map({ $0.title })) { value in
+                    Settings.danmuAlpha = value
+                }
+
+                // 添加弹幕描边宽度设置
+                Actions(title: "弹幕描边宽度", message: "调整弹幕描边的粗细",
+                        current: Settings.danmuStrokeWidth.title,
+                        options: DanmuStrokeWidth.allCases,
+                        optionString: DanmuStrokeWidth.allCases.map({ $0.title })) { value in
+                    Settings.danmuStrokeWidth = value
+                }
+
+                // 添加弹幕描边透明度设置
+                Actions(title: "弹幕描边透明度", message: "调整弹幕描边的透明度",
+                        current: Settings.danmuStrokeAlpha.title,
+                        options: DanmuStrokeAlpha.allCases,
+                        optionString: DanmuStrokeAlpha.allCases.map({ $0.title })) { value in
+                    Settings.danmuStrokeAlpha = value
+                }
             }
 
             SectionModel(title: "港澳台解锁") {
