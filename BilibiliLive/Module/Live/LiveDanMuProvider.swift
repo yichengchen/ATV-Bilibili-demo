@@ -19,6 +19,7 @@ class LiveDanMuProvider: DanmuProviderProtocol {
     private var heartBeatTimer: Timer?
     private let roomID: Int
     private var token = ""
+    private let brotliDcompressor = BrotliDecompressor()
 
     init(roomID: Int) {
         self.roomID = roomID
@@ -94,7 +95,7 @@ extension LiveDanMuProvider {
         case .normal:
             if header.protocolType == 0 {
                 parseNormalData(data: contentData)
-            } else if let data = (contentData as NSData).decompressBrotli() {
+            } else if let data = brotliDcompressor.decompressed(compressed: contentData) {
                 parseData(data: data)
             } else {
                 parseNormalData(data: contentData)

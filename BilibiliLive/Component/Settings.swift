@@ -189,7 +189,7 @@ enum DanmuAlpha: Double, Codable, CaseIterable {
     case alpha_08 = 0.8
     case alpha_09 = 0.9
     case alpha_10 = 1.0
-    
+
     var title: String {
         return String(format: "%.1f", rawValue)
     }
@@ -201,7 +201,7 @@ enum DanmuStrokeWidth: Double, Codable, CaseIterable {
     case width_10 = 1.0
     case width_15 = 1.5
     case width_20 = 2.0
-    
+
     var title: String {
         return String(format: "%.1f", rawValue)
     }
@@ -219,7 +219,7 @@ enum DanmuStrokeAlpha: Double, Codable, CaseIterable {
     case alpha_08 = 0.8
     case alpha_09 = 0.9
     case alpha_10 = 1.0
-    
+
     var title: String {
         return String(format: "%.1f", rawValue)
     }
