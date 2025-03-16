@@ -55,7 +55,6 @@ private class DecompressionBufferPool {
         if let buffer = availableBuffers.popLast() {
             return buffer
         }
-        print("----> create new buffer")
         return UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
     }
 
