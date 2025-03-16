@@ -8,6 +8,7 @@
 import Alamofire
 import AVFoundation
 import Foundation
+import Gzip
 import PocketSVG
 import UIKit
 

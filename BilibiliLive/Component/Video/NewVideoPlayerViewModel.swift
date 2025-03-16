@@ -28,7 +28,8 @@ class VideoPlayerViewModel {
     var nextProvider: VideoNextProvider?
 
     private var playInfo: PlayInfo
-    private let danmuProvider = VideoDanmuProvider()
+    private let danmuProvider = VideoDanmuProvider(enableDanmuFilter: Settings.enableDanmuFilter,
+                                                   enableDanmuRemoveDup: Settings.enableDanmuRemoveDup)
     private var videoDetail: VideoDetail?
     private var cancellable = Set<AnyCancellable>()
     private var playPlugin: CommonPlayerPlugin?

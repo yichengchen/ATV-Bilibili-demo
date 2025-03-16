@@ -111,6 +111,9 @@ enum Settings {
     @UserDefault("Settings.danmuFilter", defaultValue: false)
     static var enableDanmuFilter: Bool
 
+    @UserDefault("Settings.danmuRemoveDup", defaultValue: false)
+    static var enableDanmuRemoveDup: Bool
+
     @UserDefaultCodable("Settings.danmuAlpha", defaultValue: .alpha_10)
     static var danmuAlpha: DanmuAlpha
 
