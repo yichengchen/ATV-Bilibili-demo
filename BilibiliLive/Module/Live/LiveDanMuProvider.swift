@@ -8,7 +8,6 @@
 import Combine
 import Foundation
 @_spi(WebSocket) import Alamofire
-import Gzip
 import SwiftyJSON
 
 class LiveDanMuProvider: DanmuProviderProtocol {
