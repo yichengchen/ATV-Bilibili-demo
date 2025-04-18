@@ -37,7 +37,7 @@ jobs:
       #         .forEach(({ id }) => { github.rest.actions.deleteArtifact({ owner, repo, artifact_id: id, }) })
 
       - name: Delete GitHub release if exist then create release
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && github.event.repository.fork == false
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
