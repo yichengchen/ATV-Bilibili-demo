@@ -54,7 +54,7 @@ class VideoDanmuFilter {
     private func refreshCache(rules: [VideoDanmuFilterData.Rule]) {
         stringFilters.removeAll()
         regexFilters.removeAll()
-        rules.forEach { filter in
+        for filter in rules {
             switch filter.type {
             case 0:
                 stringFilters.append(filter.filter)

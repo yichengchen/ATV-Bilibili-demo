@@ -58,8 +58,8 @@ let DANMAKU_CELL_KEY = "DANMAKU_CELL_KEY"
 class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     var positionY: CGFloat = 0 {
         didSet {
-            cells.forEach {
-                $0.layer.position.y = positionY
+            for cell in cells {
+                cell.layer.position.y = positionY
             }
         }
     }
@@ -128,8 +128,8 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     }
 
     func play() {
-        cells.forEach {
-            addAnimation(to: $0)
+        for cell in cells {
+            addAnimation(to: cell)
         }
     }
 
@@ -142,9 +142,9 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     }
 
     func pause() {
-        cells.forEach {
-            $0.center = CGPoint(x: $0.realFrame.midX, y: $0.realFrame.midY)
-            $0.layer.removeAllAnimations()
+        for cell in cells {
+            cell.center = CGPoint(x: cell.realFrame.midX, y: cell.realFrame.midY)
+            cell.layer.removeAllAnimations()
         }
     }
 
@@ -158,9 +158,9 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     }
 
     func stop() {
-        cells.forEach {
-            $0.removeFromSuperview()
-            $0.layer.removeAllAnimations()
+        for cell in cells {
+            cell.removeFromSuperview()
+            cell.layer.removeAllAnimations()
         }
         cells.removeAll()
     }
@@ -237,8 +237,8 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
 class DanmakuVerticalTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     var positionY: CGFloat = 0 {
         didSet {
-            cells.forEach {
-                $0.layer.position = CGPoint(x: view!.bounds.width / 2.0, y: positionY)
+            for cell in cells {
+                cell.layer.position = CGPoint(x: view!.bounds.width / 2.0, y: positionY)
             }
         }
     }
@@ -276,8 +276,8 @@ class DanmakuVerticalTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     }
 
     func play() {
-        cells.forEach {
-            addAnimation(to: $0)
+        for cell in cells {
+            addAnimation(to: cell)
         }
     }
 
@@ -290,8 +290,8 @@ class DanmakuVerticalTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     }
 
     func pause() {
-        cells.forEach {
-            $0.layer.removeAllAnimations()
+        for cell in cells {
+            cell.layer.removeAllAnimations()
         }
     }
 
@@ -304,9 +304,9 @@ class DanmakuVerticalTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     }
 
     func stop() {
-        cells.forEach {
-            $0.removeFromSuperview()
-            $0.layer.removeAllAnimations()
+        for cell in cells {
+            cell.removeFromSuperview()
+            cell.layer.removeAllAnimations()
         }
         cells.removeAll()
     }
