@@ -13,11 +13,9 @@ class VMaskProvider: MaskProvider {
     let queue = DispatchQueue(label: "bodydetect")
     weak var videoOutput: AVPlayerItemVideoOutput?
     var processing = false
-    lazy var context: CIContext = {
-        return CIContext(options: [.useSoftwareRenderer: false,
-                                   .cacheIntermediates: false,
-                                   .name: "vn"])
-    }()
+    lazy var context: CIContext = .init(options: [.useSoftwareRenderer: false,
+                                                  .cacheIntermediates: false,
+                                                  .name: "vn"])
 
     private let requestHandler = VNSequenceRequestHandler()
     private lazy var segmentationRequest: VNGeneratePersonSegmentationRequest = {

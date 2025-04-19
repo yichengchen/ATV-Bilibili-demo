@@ -308,7 +308,7 @@ struct DmWebViewReply {
     }
 
     /// Returns true if `dmSge` has been explicitly set.
-    var hasDmSge: Bool { return self._dmSge != nil }
+    var hasDmSge: Bool { return _dmSge != nil }
     /// Clears the value of `dmSge`. Subsequent reads from it will return its default value.
     mutating func clearDmSge() { _dmSge = nil }
 
@@ -319,7 +319,7 @@ struct DmWebViewReply {
     }
 
     /// Returns true if `flag` has been explicitly set.
-    var hasFlag: Bool { return self._flag != nil }
+    var hasFlag: Bool { return _flag != nil }
     /// Clears the value of `flag`. Subsequent reads from it will return its default value.
     mutating func clearFlag() { _flag = nil }
 
@@ -342,7 +342,7 @@ struct DmWebViewReply {
     }
 
     /// Returns true if `playerConfig` has been explicitly set.
-    var hasPlayerConfig: Bool { return self._playerConfig != nil }
+    var hasPlayerConfig: Bool { return _playerConfig != nil }
     /// Clears the value of `playerConfig`. Subsequent reads from it will return its default value.
     mutating func clearPlayerConfig() { _playerConfig = nil }
 
@@ -662,7 +662,7 @@ extension DanmuWebPlayerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
                 case 20: try decoder.decodeSingularStringField(value: &_storage._drawType)
                 case 21: try decoder.decodeSingularInt32Field(value: &_storage._seniorModeSwitch)
                 case 22: try decoder.decodeSingularInt32Field(value: &_storage._aiLevelV2)
-                case 23: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufInt32, SwiftProtobuf.ProtobufInt32>.self, value: &_storage._aiLevelV2Map) }()
+                case 23: try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufInt32, SwiftProtobuf.ProtobufInt32>.self, value: &_storage._aiLevelV2Map)
                 default: break
                 }
             }

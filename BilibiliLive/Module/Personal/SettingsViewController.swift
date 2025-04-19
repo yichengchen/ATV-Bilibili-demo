@@ -126,13 +126,15 @@ class SettingsViewController: UIViewController {
                 Actions(title: "最高画质", message: "4k以上需要大会员",
                         current: Settings.mediaQuality.desp,
                         options: MediaQualityEnum.allCases,
-                        optionString: MediaQualityEnum.allCases.map({ $0.desp })) {
+                        optionString: MediaQualityEnum.allCases.map({ $0.desp }))
+                {
                     Settings.mediaQuality = $0
                 }
                 Actions(title: "默认播放速度", message: "默认设置为1.0",
                         current: Settings.mediaPlayerSpeed.name,
                         options: PlaySpeed.blDefaults,
-                        optionString: PlaySpeed.blDefaults.map({ $0.name })) {
+                        optionString: PlaySpeed.blDefaults.map({ $0.name }))
+                {
                     Settings.mediaPlayerSpeed = $0
                 }
                 Toggle(title: "Avc优先(卡顿尝试开启)", setting: Settings.preferAvc, onChange: Settings.preferAvc.toggle())
@@ -145,7 +147,8 @@ class SettingsViewController: UIViewController {
                 Actions(title: "视频每行显示个数", message: "重启app生效",
                         current: Settings.displayStyle.desp,
                         options: FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }),
-                        optionString: FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }).map({ $0.desp })) {
+                        optionString: FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }).map({ $0.desp }))
+                {
                     Settings.displayStyle = $0
                 }
                 Toggle(title: "侧边栏菜单自动切换", setting: Settings.sideMenuAutoSelectChange, onChange: Settings.sideMenuAutoSelectChange.toggle())
@@ -157,7 +160,8 @@ class SettingsViewController: UIViewController {
                 Actions(title: "视频详情相关推荐加载模式", message: "4k以上需要大会员",
                         current: Settings.showRelatedVideoInCurrentVC ? "页面刷新" : "新页面中打开",
                         options: [true, false],
-                        optionString: ["页面刷新", "新页面中打开"]) {
+                        optionString: ["页面刷新", "新页面中打开"])
+                {
                     Settings.showRelatedVideoInCurrentVC = $0
                 }
             }
@@ -169,7 +173,8 @@ class SettingsViewController: UIViewController {
                 Actions(title: "空降助手广告屏蔽", message: "",
                         current: Settings.enableSponsorBlock.title,
                         options: SponsorBlockType.allCases,
-                        optionString: SponsorBlockType.allCases.map({ $0.title })) {
+                        optionString: SponsorBlockType.allCases.map({ $0.title }))
+                {
                     Settings.enableSponsorBlock = $0
                 }
             }
@@ -193,7 +198,8 @@ class SettingsViewController: UIViewController {
                 Actions(title: "弹幕显示区域", message: "设置弹幕显示区域",
                         current: Settings.danmuArea.title,
                         options: DanmuArea.allCases,
-                        optionString: DanmuArea.allCases.map({ $0.title })) {
+                        optionString: DanmuArea.allCases.map({ $0.title }))
+                {
                     Settings.danmuArea = $0
                 }
                 Toggle(title: "智能防档弹幕", setting: Settings.danmuMask, onChange: Settings.danmuMask.toggle())
@@ -203,7 +209,8 @@ class SettingsViewController: UIViewController {
                 Actions(title: "弹幕透明度", message: "调整弹幕的透明度",
                         current: Settings.danmuAlpha.title,
                         options: DanmuAlpha.allCases,
-                        optionString: DanmuAlpha.allCases.map({ $0.title })) { value in
+                        optionString: DanmuAlpha.allCases.map({ $0.title }))
+                { value in
                     Settings.danmuAlpha = value
                 }
 
@@ -211,7 +218,8 @@ class SettingsViewController: UIViewController {
                 Actions(title: "弹幕描边宽度", message: "调整弹幕描边的粗细",
                         current: Settings.danmuStrokeWidth.title,
                         options: DanmuStrokeWidth.allCases,
-                        optionString: DanmuStrokeWidth.allCases.map({ $0.title })) { value in
+                        optionString: DanmuStrokeWidth.allCases.map({ $0.title }))
+                { value in
                     Settings.danmuStrokeWidth = value
                 }
 
@@ -219,7 +227,8 @@ class SettingsViewController: UIViewController {
                 Actions(title: "弹幕描边透明度", message: "调整弹幕描边的透明度",
                         current: Settings.danmuStrokeAlpha.title,
                         options: DanmuStrokeAlpha.allCases,
-                        optionString: DanmuStrokeAlpha.allCases.map({ $0.title })) { value in
+                        optionString: DanmuStrokeAlpha.allCases.map({ $0.title }))
+                { value in
                     Settings.danmuStrokeAlpha = value
                 }
             }

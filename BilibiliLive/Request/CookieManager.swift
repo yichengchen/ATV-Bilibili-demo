@@ -1,5 +1,5 @@
 //
-//  LoginViewController.swift
+//  CookieManager.swift
 //  BilibiliLive
 //
 //  Created by Etan Chen on 2021/3/28.

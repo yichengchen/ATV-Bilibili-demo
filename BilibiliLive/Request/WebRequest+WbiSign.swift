@@ -120,7 +120,7 @@ extension WebRequest {
             case let .success(keys):
                 let spdParam = param.components(separatedBy: "&")
                 var spdDicParam = [String: String]()
-                spdParam.forEach { pair in
+                for pair in spdParam {
                     let components = pair.components(separatedBy: "=")
                     if components.count == 2 {
                         spdDicParam[components[0]] = components[1]
