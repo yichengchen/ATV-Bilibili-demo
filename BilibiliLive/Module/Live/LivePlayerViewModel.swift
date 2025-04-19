@@ -1,5 +1,5 @@
 //
-//  LiveInfoViewModel.swift
+//  LivePlayerViewModel.swift
 //  BilibiliLive
 //
 //  Created by yicheng on 2024/5/13.

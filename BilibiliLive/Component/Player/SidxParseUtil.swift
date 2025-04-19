@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 enum SidxParseUtil {
     struct Sidx {
         let timescale: Int

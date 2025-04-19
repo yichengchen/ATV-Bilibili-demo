@@ -1,5 +1,5 @@
 //
-//  NewVideoPlayerViewController.swift
+//  VideoPlayerViewController.swift
 //  BilibiliLive
 //
 //  Created by yicheng on 2024/5/23.

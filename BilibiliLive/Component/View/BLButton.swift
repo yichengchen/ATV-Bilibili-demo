@@ -33,7 +33,7 @@ class BLCustomButton: BLButton {
         didSet { titleLabel.textColor = titleColor }
     }
 
-    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 24) {
+    @IBInspectable var titleFont: UIFont = .systemFont(ofSize: 24) {
         didSet { titleLabel.font = titleFont }
     }
 
@@ -117,7 +117,7 @@ class BLCustomTextButton: BLButton {
         didSet { titleLabel.textColor = titleColor }
     }
 
-    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 28) {
+    @IBInspectable var titleFont: UIFont = .systemFont(ofSize: 28) {
         didSet { titleLabel.font = titleFont }
     }
 

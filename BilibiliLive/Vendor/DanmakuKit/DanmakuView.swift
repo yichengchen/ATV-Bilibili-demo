@@ -131,8 +131,8 @@ public class DanmakuView: UIView {
     public var enableFloatingDanmaku: Bool = true {
         didSet {
             if !enableFloatingDanmaku {
-                floatingTracks.forEach {
-                    $0.stop()
+                for floatingTrack in floatingTracks {
+                    floatingTrack.stop()
                 }
             }
         }
@@ -142,8 +142,8 @@ public class DanmakuView: UIView {
     public var enableTopDanmaku: Bool = true {
         didSet {
             if !enableTopDanmaku {
-                topTracks.forEach {
-                    $0.stop()
+                for topTrack in topTracks {
+                    topTrack.stop()
                 }
             }
         }
@@ -153,8 +153,8 @@ public class DanmakuView: UIView {
     public var enableBottomDanmaku: Bool = true {
         didSet {
             if !enableBottomDanmaku {
-                bottomTracks.forEach {
-                    $0.stop()
+                for bottomTrack in bottomTracks {
+                    bottomTrack.stop()
                 }
             }
         }
@@ -292,42 +292,42 @@ public extension DanmakuView {
 
     func play() {
         guard status != .play else { return }
-        floatingTracks.forEach {
-            $0.play()
+        for floatingTrack in floatingTracks {
+            floatingTrack.play()
         }
-        topTracks.forEach {
-            $0.play()
+        for topTrack in topTracks {
+            topTrack.play()
         }
-        bottomTracks.forEach {
-            $0.play()
+        for bottomTrack in bottomTracks {
+            bottomTrack.play()
         }
         status = .play
     }
 
     func pause() {
         guard status != .pause else { return }
-        floatingTracks.forEach {
-            $0.pause()
+        for floatingTrack in floatingTracks {
+            floatingTrack.pause()
         }
-        topTracks.forEach {
-            $0.pause()
+        for topTrack in topTracks {
+            topTrack.pause()
         }
-        bottomTracks.forEach {
-            $0.pause()
+        for bottomTrack in bottomTracks {
+            bottomTrack.pause()
         }
         status = .pause
     }
 
     func stop() {
         guard status != .stop else { return }
-        floatingTracks.forEach {
-            $0.stop()
+        for floatingTrack in floatingTracks {
+            floatingTrack.stop()
         }
-        topTracks.forEach {
-            $0.stop()
+        for topTrack in topTracks {
+            topTrack.stop()
         }
-        bottomTracks.forEach {
-            $0.stop()
+        for bottomTrack in bottomTracks {
+            bottomTrack.stop()
         }
         status = .stop
     }

@@ -1,5 +1,5 @@
 //
-//  PersonalMasterViewController.swift
+//  PersonalViewController.swift
 //  BilibiliLive
 //
 //  Created by yicheng on 2022/8/20.
