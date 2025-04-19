@@ -2,6 +2,7 @@
 // Created by Yam on 2024/6/9.
 //
 
+import Alamofire
 import Kingfisher
 import UIKit
 
@@ -47,13 +48,15 @@ class ReplyDetailViewController: UIViewController {
         }
 
         reply.content.jump_url?.forEach { url, jump in
-            guard let bvId = ReplyUrlBVParser.parser(url: url) else { return }
-            let button = BLCustomTextButton()
-            button.title = jump.title
-            button.onPrimaryAction = { [weak self] _ in
-                self?.jumpLink(bvid: bvId)
+            Task {
+                guard let bvId = await ReplyUrlBVParser.parser(url: url) else { return }
+                let button = BLCustomTextButton()
+                button.title = jump.title
+                button.onPrimaryAction = { [weak self] _ in
+                    self?.jumpLink(bvid: bvId)
+                }
+                buttonStackView.addArrangedSubview(button)
             }
-            buttonStackView.addArrangedSubview(button)
         }
     }
 
@@ -201,18 +204,28 @@ extension ReplyDetailViewController: UICollectionViewDataSource, UICollectionVie
 }
 
 enum ReplyUrlBVParser {
-    static func parser(url: String) -> String? {
+    static func parser(url: String) async -> String? {
         if url.hasPrefix("BV"), url.count == 12 {
             return url
         }
-        let urlPrefixs = ["https://www.bilibili.com/video/", "https://b23.tv/"]
-        if urlPrefixs.contains(where: url.hasPrefix) {
-            // get bvid in url
-            guard let url = URL(string: url),
-                  let bvid = url.path.split(separator: "/").filter({ !$0.isEmpty }).last
+
+        if url.hasPrefix("https://www.bilibili.com/video/") {
+            guard let urlComponents = URLComponents(string: url)
             else { return nil }
-            return parser(url: String(bvid))
+            let path = urlComponents.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            if let bvid = path.split(separator: "/").filter({ !$0.isEmpty }).last {
+                return await parser(url: String(bvid))
+            }
+            return nil
         }
+
+        // need to get 302 for real url
+        if url.hasPrefix("https://b23.tv/") {
+            if let realUrl = await AF.request(url, method: .head).serializingData().response.response?.url {
+                return await parser(url: realUrl.absoluteString)
+            }
+        }
+
         return nil
     }
 }
