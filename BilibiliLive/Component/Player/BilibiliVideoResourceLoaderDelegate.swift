@@ -1,5 +1,5 @@
 //
-//  CustomPlaylistDelegate.swift
+//  BilibiliVideoResourceLoaderDelegate.swift
 //  MPEGDASHAVPlayerDemo
 //
 //  Created by yicheng on 2022/08/20.
