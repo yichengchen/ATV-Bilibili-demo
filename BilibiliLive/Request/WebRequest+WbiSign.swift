@@ -18,7 +18,7 @@ extension WebRequest {
     {
         do {
             let urlObj = try url.asURL()
-            if urlObj.absoluteString.contains("/wbi/") == true, method == .get {
+            if method == .get {
                 var request = URLRequest(url: urlObj)
                 request.method = .get
                 request = try URLEncoding.queryString.encode(request, with: parameters)
