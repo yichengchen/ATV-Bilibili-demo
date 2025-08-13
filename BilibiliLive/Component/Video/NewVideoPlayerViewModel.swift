@@ -183,7 +183,17 @@ class VideoPlayerViewModel {
         }
 
         if let detail = data.detail {
-            let info = BVideoInfoPlugin(title: detail.title, subTitle: detail.ownerName, desp: detail.View.desc, pic: detail.pic, viewPoints: data.playerInfo?.view_points)
+            // 默认视频标题作主标题 up主用户名作副标题
+            var title = detail.title
+            var subTitle = detail.ownerName
+            // 分页播放时则以分页标题作主标题 up主用户名+视频标题作副标题
+            let pages = detail.View.pages ?? []
+            if pages.count > 0, let index = pages.firstIndex(where: { $0.cid == playInfo.cid }) {
+                let page = pages[index]
+                title = page.part
+                subTitle += "·\(detail.title)"
+            }
+            let info = BVideoInfoPlugin(title: title, subTitle: subTitle, desp: detail.View.desc, pic: detail.pic, viewPoints: data.playerInfo?.view_points)
             plugins.append(info)
         }
 
