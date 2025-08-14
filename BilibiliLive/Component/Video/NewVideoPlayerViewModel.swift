@@ -188,7 +188,7 @@ class VideoPlayerViewModel {
             var subTitle = detail.ownerName
             // 分页播放时则以分页标题作主标题 up主用户名+视频标题作副标题
             let pages = detail.View.pages ?? []
-            if pages.count > 0, let index = pages.firstIndex(where: { $0.cid == playInfo.cid }) {
+            if pages.count > 1, let index = pages.firstIndex(where: { $0.cid == playInfo.cid }) {
                 let page = pages[index]
                 title = page.part
                 subTitle += "·\(detail.title)"
