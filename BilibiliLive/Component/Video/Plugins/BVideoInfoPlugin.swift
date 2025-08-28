@@ -9,19 +9,11 @@ import AVKit
 import Kingfisher
 
 class BVideoInfoPlugin: NSObject, CommonPlayerPlugin {
-    let title: String?
-    let subTitle: String?
-    let desp: String?
-    let pic: URL?
-    let viewPoints: [PlayerInfo.ViewPoint]?
-
-    init(title: String?, subTitle: String?, desp: String?, pic: URL?, viewPoints: [PlayerInfo.ViewPoint]?) {
-        self.title = title
-        self.subTitle = subTitle
-        self.desp = desp
-        self.pic = pic
-        self.viewPoints = viewPoints
-    }
+    var title: String?
+    var subTitle: String?
+    var desp: String?
+    var pic: URL?
+    var viewPoints: [PlayerInfo.ViewPoint]?
 
     func playerWillStart(player: AVPlayer) {
         Task {
