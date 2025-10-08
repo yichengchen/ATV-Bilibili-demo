@@ -7,43 +7,75 @@
 
 import Foundation
 
+struct StoredCookie: Codable, Equatable {
+    let name: String
+    let value: String
+    let domain: String
+    let path: String
+    let expiresDate: Date?
+    let isSecure: Bool
+    let isHTTPOnly: Bool
+
+    init(cookie: HTTPCookie) {
+        name = cookie.name
+        value = cookie.value
+        domain = cookie.domain
+        path = cookie.path
+        expiresDate = cookie.expiresDate
+        isSecure = cookie.isSecure
+        isHTTPOnly = cookie.isHTTPOnly
+    }
+
+    func makeHTTPCookie() -> HTTPCookie? {
+        var properties: [HTTPCookiePropertyKey: Any] = [
+            .domain: domain,
+            .name: name,
+            .path: path,
+            .value: value,
+        ]
+        if let expiresDate {
+            properties[.expires] = expiresDate
+        }
+        if isSecure {
+            properties[.secure] = "TRUE"
+        }
+        properties[HTTPCookiePropertyKey("HttpOnly")] = isHTTPOnly ? "TRUE" : "FALSE"
+        return HTTPCookie(properties: properties)
+    }
+}
+
 class CookieHandler {
     static let shared: CookieHandler = .init()
 
-    let defaults = UserDefaults.standard
     let cookieStorage = HTTPCookieStorage.shared
 
     func getCookie(forURL url: String) -> [HTTPCookie] {
         let computedUrl = URL(string: url)
         let cookies = cookieStorage.cookies(for: computedUrl!) ?? []
-
         return cookies
     }
 
-    func backupCookies() {
-        var cookieDict = [String: AnyObject]()
-        for cookie in cookieStorage.cookies ?? [] {
-            cookieDict[cookie.name] = cookie.properties as AnyObject?
-        }
+    func currentStoredCookies() -> [StoredCookie] {
+        cookieStorage.cookies?.map(StoredCookie.init) ?? []
+    }
 
-        defaults.set(cookieDict, forKey: "SavedCookie")
+    func replaceCookies(with cookies: [StoredCookie]) {
+        removeCookie()
+        cookies.compactMap { $0.makeHTTPCookie() }.forEach { cookieStorage.setCookie($0) }
+    }
+
+    func backupCookies() {
+        AccountManager.shared.syncActiveAccountCookies()
     }
 
     func removeCookie() {
-        defaults.removeObject(forKey: "SavedCookie")
-    }
-
-    func restoreCookies() {
-        if let cookieDictionary = defaults.dictionary(forKey: "SavedCookie") {
-            for (_, cookieProperties) in cookieDictionary {
-                if let cookie = HTTPCookie(properties: cookieProperties as! [HTTPCookiePropertyKey: Any]) {
-                    cookieStorage.setCookie(cookie)
-                }
-            }
+        for cookie in cookieStorage.cookies ?? [] {
+            cookieStorage.deleteCookie(cookie)
         }
     }
 
     func saveCookie(list: [HTTPCookie]) {
+        removeCookie()
         list.forEach({ cookieStorage.setCookie($0) })
         backupCookies()
     }
