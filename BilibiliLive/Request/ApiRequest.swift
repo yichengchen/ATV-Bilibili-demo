@@ -10,7 +10,7 @@ import CryptoKit
 import Foundation
 import SwiftyJSON
 
-struct LoginToken: Codable {
+struct LoginToken: Codable, Equatable {
     let mid: Int
     let accessToken: String
     let refreshToken: String

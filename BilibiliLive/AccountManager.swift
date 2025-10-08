@@ -70,16 +70,16 @@ final class AccountManager {
                                          profile: profile,
                                          cookies: storedCookies,
                                          lastActiveAt: Date())
-                upsert(account: newAccount)
-                setActiveAccount(mid: newAccount.profile.mid, applyingCookies: false, notify: false)
-                updateAccount(mid: newAccount.profile.mid) { account in
+                self.upsert(account: newAccount)
+                self.setActiveAccount(mid: newAccount.profile.mid, applyingCookies: false, notify: false)
+                self.updateAccount(mid: newAccount.profile.mid) { account in
                     account.cookies = storedCookies
                     account.lastActiveAt = Date()
                     newAccount = account
                 }
-                applyActiveAccountCookies()
-                persistAll()
-                notifyChange()
+                self.applyActiveAccountCookies()
+                self.persistAll()
+                self.notifyChange()
                 completion(newAccount)
             }
         }
