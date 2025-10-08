@@ -74,10 +74,12 @@ class CookieHandler {
         }
     }
 
-    func saveCookie(list: [HTTPCookie]) {
+    func saveCookie(list: [HTTPCookie], syncWithAccount: Bool = true) {
         removeCookie()
         list.forEach({ cookieStorage.setCookie($0) })
-        backupCookies()
+        if syncWithAccount {
+            backupCookies()
+        }
     }
 
     func csrf() -> String? {

@@ -215,7 +215,7 @@ enum ApiRequest {
             case var .success(res):
                 res.tokenInfo.expireDate = Date().addingTimeInterval(TimeInterval(res.tokenInfo.expiresIn))
                 let cookies = res.cookieInfo.toCookies()
-                CookieHandler.shared.saveCookie(list: cookies)
+                CookieHandler.shared.saveCookie(list: cookies, syncWithAccount: false)
                 handler?(.success(token: res.tokenInfo, cookies: cookies))
             case let .failure(error):
                 switch error {
