@@ -43,14 +43,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func showLogin() {
-        window?.rootViewController = LoginViewController.create()
+        replaceRootViewController(with: LoginViewController.create(), animated: false)
     }
 
     func showTabBar() {
-        window?.rootViewController = BLTabBarViewController()
+        replaceRootViewController(with: BLTabBarViewController(), animated: false)
+    }
+
+    func resetTabBar() {
+        replaceRootViewController(with: BLTabBarViewController(), animated: true)
     }
 
     static var shared: AppDelegate {
         return UIApplication.shared.delegate as! AppDelegate
+    }
+
+    private func replaceRootViewController(with viewController: UIViewController, animated: Bool) {
+        guard let window else { return }
+        if animated, let snapshot = window.snapshotView(afterScreenUpdates: false) {
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+            viewController.view.addSubview(snapshot)
+            UIView.animate(withDuration: 0.25, animations: {
+                snapshot.alpha = 0
+            }, completion: { _ in
+                snapshot.removeFromSuperview()
+            })
+        } else {
+            window.rootViewController = viewController
+            window.makeKeyAndVisible()
+        }
     }
 }

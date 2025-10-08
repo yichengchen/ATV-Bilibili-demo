@@ -130,9 +130,14 @@ final class AccountSwitcherViewController: UIViewController {
     }
 
     private func switchToAccount(_ account: AccountManager.Account) {
+        let currentMID = AccountManager.shared.activeAccount?.profile.mid
         AccountManager.shared.setActiveAccount(account)
         dismiss(animated: true) {
-            AccountManager.shared.refreshActiveAccountProfile()
+            if currentMID == account.profile.mid {
+                AccountManager.shared.refreshActiveAccountProfile()
+            } else {
+                AppDelegate.shared.resetTabBar()
+            }
         }
     }
 }
