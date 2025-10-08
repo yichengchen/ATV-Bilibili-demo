@@ -52,7 +52,7 @@ final class AccountManager {
 
     func registerAccount(token: LoginToken, cookies: [HTTPCookie], completion: @escaping (Account) -> Void) {
         let storedCookies = cookies.map(StoredCookie.init)
-        fetchProfile { [weak self] result in
+        fetchProfile(using: token) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self else { return }
                 let profile: Profile
@@ -188,8 +188,8 @@ final class AccountManager {
 
     // MARK: - Private helpers
 
-    private func fetchProfile(completion: @escaping (Result<JSON, RequestError>) -> Void) {
-        WebRequest.requestLoginInfo(complete: completion)
+    private func fetchProfile(using token: LoginToken? = nil, completion: @escaping (Result<JSON, RequestError>) -> Void) {
+        WebRequest.requestLoginInfo(accessKey: token?.accessToken, complete: completion)
     }
 
     private func applyActiveAccountCookies() {

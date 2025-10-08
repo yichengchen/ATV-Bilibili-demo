@@ -515,8 +515,14 @@ extension WebRequest {
         }
     }
 
-    static func requestLoginInfo(complete: ((Result<JSON, RequestError>) -> Void)?) {
-        requestJSON(url: "https://api.bilibili.com/x/web-interface/nav", complete: complete)
+    static func requestLoginInfo(accessKey: String? = nil, complete: ((Result<JSON, RequestError>) -> Void)?) {
+        var parameters: [String: Any] = [:]
+        var auth = true
+        if let accessKey {
+            parameters["access_key"] = accessKey
+            auth = false
+        }
+        requestJSON(url: "https://api.bilibili.com/x/web-interface/nav", parameters: parameters, auth: auth, complete: complete)
     }
 }
 

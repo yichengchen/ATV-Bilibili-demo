@@ -131,8 +131,9 @@ final class AccountSwitcherViewController: UIViewController {
 
     private func switchToAccount(_ account: AccountManager.Account) {
         AccountManager.shared.setActiveAccount(account)
-        AccountManager.shared.refreshActiveAccountProfile()
-        dismiss(animated: true)
+        dismiss(animated: true) {
+            AccountManager.shared.refreshActiveAccountProfile()
+        }
     }
 }
 
