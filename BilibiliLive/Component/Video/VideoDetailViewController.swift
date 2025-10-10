@@ -18,7 +18,7 @@ import TVUIKit
 
 class VideoDetailViewController: UIViewController {
     private let animateTime = 0.8
-    private let topImageMoveOffset: CGFloat = -300
+    private let topImageMoveOffset: CGFloat = -340
     private var loadingView = UIActivityIndicatorView()
     @IBOutlet var backgroundImageView: UIImageView!
     @IBOutlet var effectContainerView: UIVisualEffectView!
@@ -201,10 +201,9 @@ class VideoDetailViewController: UIViewController {
 //        BLAfter(afterTime: 0.1) {
         if isFocused {
             if scrollView.contentOffset.y > 20 {
-                scrollView.setContentOffset(.zero, animated: true)
+                animateTopImage(constant: 0)
             }
         }
-        animateTopImage(constant: 0)
     }
 
     override var preferredFocusedView: UIView? {
@@ -526,6 +525,7 @@ class VideoDetailViewController: UIViewController {
 
 extension VideoDetailViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        animateTopImage(constant: 0)
         switch collectionView {
         case pageCollectionView:
             let page = pages[indexPath.item]
@@ -574,6 +574,10 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             UIView.animate(springDuration: self.animateTime) {
                 self.coverImageViewTop.constant = constant!
                 self.topInfoViewHeight.constant = 780 - abs(constant! / 2)
+
+                if constant! == 0 {
+                    scrollView.setContentOffset(.zero, animated: false)
+                }
                 self.view?.layoutIfNeeded()
             }
         }
@@ -806,8 +810,8 @@ class NoteDetailView: UIControl {
         label.textAlignment = .left
         label.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
-            make.top.equalToSuperview().offset(14)
-            make.bottom.lessThanOrEqualToSuperview().offset(-14)
+            make.top.equalToSuperview().offset(8)
+            make.bottom.lessThanOrEqualToSuperview().offset(-8)
         }
     }
 

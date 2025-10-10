@@ -48,7 +48,7 @@ struct AnyDispplayData: Hashable {
 }
 
 class FeedCollectionViewController: UIViewController {
-    var collectionView: UICollectionView!
+    var collectionView: BLCollectionView!
 
     private enum Section: CaseIterable {
         case main
@@ -137,7 +137,7 @@ class FeedCollectionViewController: UIViewController {
         }
         bgImageView.setBlurEffectView()
 
-        collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
+        collectionView = BLCollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
         view.addSubview(collectionView)
         collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()

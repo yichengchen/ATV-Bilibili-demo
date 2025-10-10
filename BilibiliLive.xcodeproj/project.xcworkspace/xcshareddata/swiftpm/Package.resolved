@@ -1,5 +1,5 @@
 {
-  "originHash" : "45c5c9267c8c84275fa647f629e1033e605b18efefc17e781b907af506eb5385",
+  "originHash" : "ca691c7b1535dc69687c14db0fdd40c65b1bda4744aa300f4d6b5234c63799db",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -87,8 +87,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-log",
       "state" : {
-        "revision" : "e97a6fcb1ab07462881ac165fdbb37f067e205d5",
-        "version" : "1.5.4"
+        "revision" : "ce592ae52f982c847a4efc0dd881cc9eb32d29f2",
+        "version" : "1.6.4"
       }
     },
     {
@@ -107,6 +107,15 @@
       "state" : {
         "branch" : "stable",
         "revision" : "4850fa96759cbfb81f4178bf7ba9d58afe55d7fd"
+      }
+    },
+    {
+      "identity" : "swiftformat",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nicklockwood/SwiftFormat.git",
+      "state" : {
+        "revision" : "de413fec1d5ab86fa61fa90b771063d2702440dc",
+        "version" : "0.58.3"
       }
     },
     {

@@ -189,13 +189,12 @@ class BLButton: UIControl {
     override var canBecomeFocused: Bool { return true }
 
     func setup() {
-        if #available(tvOS 26.0, *) {
-            effectView.effect = UIGlassEffect(style: .regular)
-        }
+        effectView.effect = UIBlurEffect(style: .dark)
+
         isUserInteractionEnabled = true
         motionEffect = UIInterpolatingMotionEffect(keyPath: "center.x", type: .tiltAlongHorizontalAxis)
-        motionEffect.maximumRelativeValue = 8
-        motionEffect.minimumRelativeValue = -8
+        motionEffect.maximumRelativeValue = 2
+        motionEffect.minimumRelativeValue = -2
         selectedWhiteView.isHidden = !isFocused
         addSubview(effectView)
         effectView.isUserInteractionEnabled = false
