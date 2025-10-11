@@ -11,7 +11,7 @@ import UIKit
 class BLMotionCollectionViewCell: UICollectionViewCell {
     private var motionEffectV: UIInterpolatingMotionEffect!
     private var motionEffectH: UIInterpolatingMotionEffect!
-    var scaleFactor: CGFloat = 1.1
+    var scaleFactor: CGFloat = 1.04
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()

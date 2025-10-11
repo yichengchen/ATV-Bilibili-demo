@@ -189,7 +189,7 @@ class BLButton: UIControl {
     override var canBecomeFocused: Bool { return true }
 
     func setup() {
-        effectView.effect = UIBlurEffect(style: .dark)
+        effectView.effect = UIBlurEffect(style: .extraDark)
 
         isUserInteractionEnabled = true
         motionEffect = UIInterpolatingMotionEffect(keyPath: "center.x", type: .tiltAlongHorizontalAxis)
@@ -226,9 +226,10 @@ class BLButton: UIControl {
         super.didUpdateFocus(in: context, with: coordinator)
         if isFocused {
             selectedWhiteView.isHidden = false
+            let scale = 1.04
             coordinator.addCoordinatedAnimations {
-                self.transform = CGAffineTransformMakeScale(1.1, 1.1)
-                let scaleDiff = (self.bounds.size.height * 1.1 - self.bounds.size.height) / 2
+                self.transform = CGAffineTransformMakeScale(scale, scale)
+                let scaleDiff = (self.bounds.size.height * scale - self.bounds.size.height) / 2
                 self.transform = CGAffineTransformTranslate(self.transform, 0, -scaleDiff)
                 self.layer.shadowOffset = CGSizeMake(0, 10)
                 self.layer.shadowOpacity = 0.15

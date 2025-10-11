@@ -18,7 +18,7 @@ import TVUIKit
 
 class VideoDetailViewController: UIViewController {
     private let animateTime = 0.8
-    private let topImageMoveOffset: CGFloat = -340
+    private var isCoveImageToToped: Bool = false
     private var loadingView = UIActivityIndicatorView()
     @IBOutlet var backgroundImageView: UIImageView!
     @IBOutlet var effectContainerView: UIVisualEffectView!
@@ -171,25 +171,25 @@ class VideoDetailViewController: UIViewController {
             self?.present(detail, animated: true)
         }
 
-//        var focusGuide = UIFocusGuide()
-//        view.addLayoutGuide(focusGuide)
-//        NSLayoutConstraint.activate([
-//            focusGuide.topAnchor.constraint(equalTo: upButton.topAnchor),
-//            focusGuide.leftAnchor.constraint(equalTo: followButton.rightAnchor),
-//            focusGuide.rightAnchor.constraint(equalTo: coverImageView.leftAnchor),
-//            focusGuide.bottomAnchor.constraint(equalTo: upButton.bottomAnchor),
-//        ])
-//        focusGuide.preferredFocusEnvironments = [followButton]
-//
         let focusGuide = UIFocusGuide()
         view.addLayoutGuide(focusGuide)
         NSLayoutConstraint.activate([
-            focusGuide.topAnchor.constraint(equalTo: actionButtonSpaceView.topAnchor),
-            focusGuide.leftAnchor.constraint(equalTo: actionButtonSpaceView.leftAnchor),
-            focusGuide.rightAnchor.constraint(equalTo: actionButtonSpaceView.rightAnchor),
-            focusGuide.bottomAnchor.constraint(equalTo: actionButtonSpaceView.bottomAnchor),
+            focusGuide.topAnchor.constraint(equalTo: durationLabel.topAnchor),
+            focusGuide.leftAnchor.constraint(equalTo: durationLabel.leftAnchor),
+            focusGuide.rightAnchor.constraint(equalTo: durationLabel.rightAnchor),
+            focusGuide.bottomAnchor.constraint(equalTo: durationLabel.bottomAnchor),
         ])
-        focusGuide.preferredFocusEnvironments = [playButton]
+        focusGuide.preferredFocusEnvironments = [upButton]
+
+        let focusGuidePlay = UIFocusGuide()
+        view.addLayoutGuide(focusGuidePlay)
+        NSLayoutConstraint.activate([
+            focusGuidePlay.topAnchor.constraint(equalTo: actionButtonSpaceView.topAnchor),
+            focusGuidePlay.leftAnchor.constraint(equalTo: actionButtonSpaceView.leftAnchor),
+            focusGuidePlay.rightAnchor.constraint(equalTo: actionButtonSpaceView.rightAnchor),
+            focusGuidePlay.bottomAnchor.constraint(equalTo: actionButtonSpaceView.bottomAnchor),
+        ])
+        focusGuidePlay.preferredFocusEnvironments = [playButton]
 
         replysCollectionView.publisher(for: \.contentSize).sink { [weak self] _ in
 //            self?.repliesCollectionViewHeightConstraints.constant = newSize.height
@@ -200,9 +200,9 @@ class VideoDetailViewController: UIViewController {
     private func toTopContent(isFocused: Bool) {
 //        BLAfter(afterTime: 0.1) {
         if isFocused {
-            if scrollView.contentOffset.y > 20 {
-                animateTopImage(constant: 0)
-            }
+//            if scrollView.contentOffset.y > 20 {
+            animateTopImage(isAnimateToTop: false)
+//            }
         }
     }
 
@@ -525,7 +525,7 @@ class VideoDetailViewController: UIViewController {
 
 extension VideoDetailViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        animateTopImage(constant: 0)
+        animateTopImage(isAnimateToTop: false)
         switch collectionView {
         case pageCollectionView:
             let page = pages[indexPath.item]
@@ -569,18 +569,22 @@ extension VideoDetailViewController: UICollectionViewDelegate {
         }
     }
 
-    private func animateTopImage(constant: CGFloat? = -200) {
+    private func animateTopImage(isAnimateToTop: Bool = false) {
+        guard isCoveImageToToped != isAnimateToTop else { return }
         if #available(tvOS 17.0, *) {
             UIView.animate(springDuration: self.animateTime) {
-                self.coverImageViewTop.constant = constant!
-                self.topInfoViewHeight.constant = 780 - abs(constant! / 2)
-
-                if constant! == 0 {
+                if isAnimateToTop {
+                    self.coverImageViewTop.constant = -640
+                    self.topInfoViewHeight.constant = 420
+                } else {
+                    self.topInfoViewHeight.constant = 820
+                    self.coverImageViewTop.constant = 0
                     scrollView.setContentOffset(.zero, animated: false)
                 }
                 self.view?.layoutIfNeeded()
             }
         }
+        isCoveImageToToped = isAnimateToTop
     }
 }
 
@@ -608,7 +612,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             cell.titleLabel.text = page.part
             cell.didSelect = { [weak self] isFocused in
                 if isFocused {
-                    self?.animateTopImage(constant: self?.topImageMoveOffset)
+                    self?.animateTopImage(isAnimateToTop: true)
                 }
             }
             return cell
@@ -624,7 +628,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             cell.update(data: record)
             cell.didSelect = { [weak self] isFocused in
                 if isFocused {
-                    self?.animateTopImage(constant: self?.topImageMoveOffset)
+                    self?.animateTopImage(isAnimateToTop: true)
                 }
             }
             return cell
@@ -635,7 +639,7 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             }
             cell.didSelect = { [weak self] isFocused in
                 if isFocused {
-                    self?.animateTopImage(constant: self?.topImageMoveOffset)
+                    self?.animateTopImage(isAnimateToTop: true)
                 }
             }
             return cell
@@ -646,15 +650,15 @@ extension VideoDetailViewController: UICollectionViewDataSource {
 }
 
 class BLCardView: TVCardView {
-    override func didMoveToSuperview() {
-        super.didMoveToSuperview()
-        subviews.first?.subviews.first?.subviews.last?.subviews.first?.subviews.first?.layer.cornerRadius = littleSornerRadius
-    }
+//    override func didMoveToSuperview() {
+//        super.didMoveToSuperview()
+//        subviews.first?.subviews.first?.subviews.last?.subviews.first?.subviews.first?.layer.cornerRadius = littleSornerRadius
+//    }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        cardBackgroundColor = UIColor(named: "bgColor")
-    }
+//    override func layoutSubviews() {
+//        super.layoutSubviews()
+//        cardBackgroundColor = .red
+//    }
 }
 
 extension VideoDetailViewController {
