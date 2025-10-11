@@ -18,7 +18,9 @@ enum AVPlayerMetaUtils {
         ]
         var metas = mapping.compactMap { createMetadataItem(for: $0, value: $1) }
 
-        player.currentItem?.externalMetadata = metas
+        MainActor.callSafely {
+            player.currentItem?.externalMetadata = metas
+        }
 
         if let pic = pic,
            let resource = try? await KingfisherManager.shared.retrieveImage(with: Kingfisher.ImageResource(downloadURL: pic)),
@@ -26,7 +28,9 @@ enum AVPlayerMetaUtils {
            let item = createMetadataItem(for: .commonIdentifierArtwork, value: data)
         {
             metas.append(item)
-            player.currentItem?.externalMetadata = metas
+            MainActor.callSafely {
+                player.currentItem?.externalMetadata = metas
+            }
         }
     }
 

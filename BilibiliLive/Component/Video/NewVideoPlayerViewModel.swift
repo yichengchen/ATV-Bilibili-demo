@@ -28,10 +28,12 @@ class VideoPlayerViewModel {
     var nextProvider: VideoNextProvider?
 
     private var playInfo: PlayInfo
-    private let danmuProvider = VideoDanmuProvider()
+    private let danmuProvider = VideoDanmuProvider(enableDanmuFilter: Settings.enableDanmuFilter,
+                                                   enableDanmuRemoveDup: Settings.enableDanmuRemoveDup)
     private var videoDetail: VideoDetail?
     private var cancellable = Set<AnyCancellable>()
-    private var playPlugin: CommonPlayerPlugin?
+    private var playPlugin: BVideoPlayPlugin?
+    private var infoPlugin: BVideoInfoPlugin?
 
     init(playInfo: PlayInfo) {
         self.playInfo = playInfo
@@ -120,17 +122,48 @@ class VideoPlayerViewModel {
 
     private func playNext(newPlayInfo: PlayInfo) {
         playInfo = newPlayInfo
+
         if let playPlugin {
+            Logger.debug("playNext: remove previous playPlugin: \(playPlugin)")
             onPluginRemove.send(playPlugin)
         }
+
         Task {
             do {
+                // 加载下一个视频数据
                 let data = try await loadVideoInfo()
+                // 更新视频标题、副标题等显示组件
+                updateInfoPlugin(data)
+                // 初始化下一个视频播放器组件
                 let player = BVideoPlayPlugin(detailData: data)
+                // 保存新播放器引用以便后续删除
+                playPlugin = player
+                // 呈现新播放器
                 onPluginReady.send([player])
             } catch let err {
                 onPluginReady.send(completion: .failure(err.localizedDescription))
             }
+        }
+    }
+
+    private func updateInfoPlugin(_ data: PlayerDetailData) {
+        if let detail = data.detail, let infoPlugin {
+            // 默认视频标题作主标题 up主用户名作副标题
+            var title = detail.title
+            var subTitle = detail.ownerName
+            // 分页播放时则以分页标题作主标题 up主用户名+视频标题作副标题
+            let pages = detail.View.pages ?? []
+            if pages.count > 1, let index = pages.firstIndex(where: { $0.cid == playInfo.cid }) {
+                let page = pages[index]
+                title = page.part
+                subTitle += "·\(detail.title)"
+            }
+            infoPlugin.title = title
+            infoPlugin.subTitle = subTitle
+            infoPlugin.desp = detail.View.desc
+            infoPlugin.pic = detail.pic
+            infoPlugin.viewPoints = data.playerInfo?.view_points
+            Logger.debug("updateInfoPlugin: title: \(title) subTitle: \(subTitle)")
         }
     }
 
@@ -163,6 +196,11 @@ class VideoPlayerViewModel {
             plugins.append(clip)
         }
 
+        if Settings.enableSponsorBlock != .none, let bvid = data.detail?.View.bvid, let duration = data.detail?.View.duration {
+            let sponsor = SponsorSkipPlugin(bvid: bvid, duration: duration)
+            plugins.append(sponsor)
+        }
+
         if Settings.danmuMask {
             if let mask = data.playerInfo?.dm_mask,
                let video = data.videoPlayURLInfo.dash.video.first,
@@ -176,9 +214,10 @@ class VideoPlayerViewModel {
             }
         }
 
-        if let detail = data.detail {
-            let info = BVideoInfoPlugin(title: detail.title, subTitle: detail.ownerName, desp: detail.View.desc, pic: detail.pic, viewPoints: data.playerInfo?.view_points)
-            plugins.append(info)
+        infoPlugin = BVideoInfoPlugin()
+        updateInfoPlugin(data)
+        if let infoPlugin {
+            plugins.append(infoPlugin)
         }
 
         return plugins

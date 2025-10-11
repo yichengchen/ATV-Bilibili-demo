@@ -14,26 +14,23 @@ struct RankCategoryInfo {
     var isSeason = false
 
     static let all = [RankCategoryInfo(title: "全站", rid: 0),
-                      RankCategoryInfo(title: "动画", rid: 1),
+                      RankCategoryInfo(title: "动画", rid: 1005),
                       RankCategoryInfo(title: "番剧", rid: 1, isSeason: true),
                       RankCategoryInfo(title: "国创", rid: 4, isSeason: true),
-                      RankCategoryInfo(title: "音乐", rid: 3),
-                      RankCategoryInfo(title: "舞蹈", rid: 129),
-                      RankCategoryInfo(title: "游戏", rid: 4),
-                      RankCategoryInfo(title: "知识", rid: 36),
-                      RankCategoryInfo(title: "科技", rid: 188),
-                      RankCategoryInfo(title: "运动", rid: 234),
-                      RankCategoryInfo(title: "汽车", rid: 223),
+                      RankCategoryInfo(title: "音乐", rid: 1003),
+                      RankCategoryInfo(title: "舞蹈", rid: 1004),
+                      RankCategoryInfo(title: "游戏", rid: 1008),
+                      RankCategoryInfo(title: "知识", rid: 1010),
+                      RankCategoryInfo(title: "科技", rid: 1012),
+                      RankCategoryInfo(title: "运动", rid: 1018),
+                      RankCategoryInfo(title: "汽车", rid: 1013),
                       RankCategoryInfo(title: "生活", rid: 160),
-                      RankCategoryInfo(title: "美食", rid: 211),
-                      RankCategoryInfo(title: "动物圈", rid: 217),
-                      RankCategoryInfo(title: "鬼畜", rid: 119),
-                      RankCategoryInfo(title: "时尚", rid: 155),
-                      RankCategoryInfo(title: "娱乐", rid: 5),
-                      RankCategoryInfo(title: "影视", rid: 181),
-                      RankCategoryInfo(title: "纪录片", rid: 177),
-                      RankCategoryInfo(title: "电影", rid: 23),
-                      RankCategoryInfo(title: "电视剧", rid: 11)]
+                      RankCategoryInfo(title: "美食", rid: 1020),
+                      RankCategoryInfo(title: "动物", rid: 1024),
+                      RankCategoryInfo(title: "鬼畜", rid: 1007),
+                      RankCategoryInfo(title: "时尚", rid: 1014),
+                      RankCategoryInfo(title: "娱乐", rid: 1002),
+                      RankCategoryInfo(title: "影视", rid: 1001)]
 }
 
 class RankingViewController: CategoryViewController {

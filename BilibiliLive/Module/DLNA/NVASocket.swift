@@ -38,7 +38,7 @@ public func nvasocket(
             do {
                 try read()
             } catch let err {
-                Logger.warn(err)
+                Logger.warn("\(err)")
             }
             didDisconnect?(session)
         }
@@ -79,7 +79,7 @@ public class NVASession: Hashable, Equatable {
         var frame = NVAFrame()
         let fst = try socket.read()
         frame.isCommand = fst == 0xe0
-        frame.paramCount = Int(try socket.read())
+        frame.paramCount = try Int(socket.read())
 
         let versions = try socket.read(length: 4)
         let version = Data(versions).reversed().withUnsafeBytes({ $0.load(as: UInt32.self) })
@@ -92,21 +92,21 @@ public class NVASession: Hashable, Equatable {
         }
         _ = try socket.read() // 0x01
         frame.commandLength = try socket.read()
-        frame.command = String(bytes: try socket.read(length: Int(frame.commandLength)).reversed(), encoding: .utf8)!
+        frame.command = try String(bytes: socket.read(length: Int(frame.commandLength)).reversed(), encoding: .utf8)!
 
         if fst != 0xe0 || frame.paramCount == 1 {
-            Logger.debug("reply:", frame.command)
+            Logger.debug("reply: \(frame.command)")
             return frame
         }
 
         frame.actionLength = try socket.read()
-        frame.action = String(bytes: try socket.read(length: Int(frame.actionLength)), encoding: .utf8)!
+        frame.action = try String(bytes: socket.read(length: Int(frame.actionLength)), encoding: .utf8)!
 
         if frame.paramCount == 3 {
             let p3L = try socket.read(length: 4)
             let part3Length = Data(p3L).reversed().withUnsafeBytes({ $0.load(as: UInt32.self) })
             frame.bodyLength = part3Length
-            frame.body = String(bytes: try socket.read(length: Int(frame.bodyLength)), encoding: .utf8)!
+            frame.body = try String(bytes: socket.read(length: Int(frame.bodyLength)), encoding: .utf8)!
         }
 
         return frame

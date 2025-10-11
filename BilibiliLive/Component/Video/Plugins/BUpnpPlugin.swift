@@ -7,6 +7,7 @@
 
 import AVFoundation
 import Foundation
+
 class BUpnpPlugin: NSObject, CommonPlayerPlugin {
     let duration: Int?
     weak var player: AVPlayer?

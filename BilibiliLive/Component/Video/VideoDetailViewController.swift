@@ -373,7 +373,7 @@ class VideoDetailViewController: UIViewController {
 
         var notes = [String]()
         let status = data.View.dynamic ?? ""
-        if status.count > 1 {
+        if status.count > 1, status != data.View.desc {
             notes.append(status)
         }
         notes.append(data.View.desc ?? "")
@@ -503,6 +503,12 @@ class VideoDetailViewController: UIViewController {
             guard let favList = try? await WebRequest.requestFavVideosList() else {
                 return
             }
+            if favButton.isOn {
+                favButton.title? -= 1
+                favButton.isOn = false
+                WebRequest.removeFavorite(aid: aid, mid: favList.map { $0.id })
+                return
+            }
             let alert = UIAlertController(title: "收藏", message: nil, preferredStyle: .actionSheet)
             let aid = aid
             for fav in favList {
@@ -538,7 +544,6 @@ extension VideoDetailViewController: UICollectionViewDelegate {
                 player.nextProvider = nextProvider
             }
             present(player, animated: true, completion: nil)
-
         case replysCollectionView:
             guard let reply = replys?.replies?[indexPath.item] else { return }
             let detail = ReplyDetailViewController(reply: reply)
@@ -716,7 +721,11 @@ class RelatedVideoCell: BLMotionCollectionViewCell {
             make.top.equalTo(imageView.snp.bottom).offset(6)
         }
         titleLabel.setContentHuggingPriority(.required, for: .vertical)
+
         titleLabel.font = UIFont.systemFont(ofSize: 18)
+
+        titleLabel.fadeLength = 60
+
         stopScroll()
     }
 

@@ -210,7 +210,8 @@ enum ApiRequest {
         decoder.keyDecodingStrategy = .convertFromSnakeCase
 
         request(EndPoint.verifyQR,
-                method: .post, parameters: ["auth_code": code], auth: false, decoder: decoder) {
+                method: .post, parameters: ["auth_code": code], auth: false, decoder: decoder)
+        {
             (result: Result<LoginResp, RequestError>) in
             switch result {
             case var .success(res):

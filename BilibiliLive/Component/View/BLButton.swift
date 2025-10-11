@@ -33,7 +33,7 @@ class BLCustomButton: BLButton {
         didSet { titleLabel.textColor = titleColor }
     }
 
-    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 20) {
+    @IBInspectable var titleFont: UIFont = .systemFont(ofSize: 20) {
         didSet { titleLabel.font = titleFont }
     }
 
@@ -119,6 +119,7 @@ class BLCustomButton: BLButton {
 @MainActor
 class BLCustomTextButton: BLButton {
     private let titleLabel = UILabel()
+    var object: Any?
 
     @IBInspectable var title: String? {
         didSet { titleLabel.text = title }
@@ -132,7 +133,7 @@ class BLCustomTextButton: BLButton {
         didSet { titleLabel.textColor = titleColor }
     }
 
-    @IBInspectable var titleFont: UIFont = UIFont.systemFont(ofSize: 18) {
+    @IBInspectable var titleFont: UIFont = .systemFont(ofSize: 18) {
         didSet { titleLabel.font = titleFont }
     }
 
@@ -175,6 +176,8 @@ class BLButton: UIControl {
     private let selectedWhiteView = UIView()
 
     var action: ((_ isFocused: Bool) -> Void)?
+
+    var onPrimaryAction: ((BLButton) -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -219,6 +222,7 @@ class BLButton: UIControl {
         super.pressesEnded(presses, with: event)
         if presses.first?.type == .select {
             sendActions(for: .primaryActionTriggered)
+            onPrimaryAction?(self)
         }
     }
 

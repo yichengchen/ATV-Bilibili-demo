@@ -24,6 +24,10 @@ class ReplyCell: UICollectionViewCell {
             ]
         )
         userNameLabel.text = replay.member.uname
-        contenLabel.text = replay.content.message
+        if let attr = replay.createAttributedString(displayView: contenLabel) {
+            contenLabel.attributedText = attr
+        } else {
+            contenLabel.text = replay.content.message
+        }
     }
 }

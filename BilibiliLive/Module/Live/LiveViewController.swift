@@ -87,12 +87,18 @@ struct LiveRoom: DisplayData, Codable {
     let title: String
     let room_id: Int
     let uname: String
-    let keyframe: URL?
+    let keyframe: String?
     let face: URL?
     let cover_from_user: URL?
 
     var ownerName: String { uname }
-    var pic: URL? { keyframe }
+    var pic: URL? {
+        if let keyframe {
+            return URL(string: keyframe)
+        }
+        return nil
+    }
+
     var avatar: URL? { face }
 }
 
@@ -161,6 +167,6 @@ struct AreaLiveRoom: DisplayData, Codable, PlayableData {
     var aid: Int { 0 }
 
     func toLiveRoom() -> LiveRoom {
-        return LiveRoom(title: title, room_id: roomid, uname: uname, keyframe: system_cover, face: face, cover_from_user: user_cover)
+        return LiveRoom(title: title, room_id: roomid, uname: uname, keyframe: system_cover.absoluteString, face: face, cover_from_user: user_cover)
     }
 }

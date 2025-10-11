@@ -24,13 +24,15 @@ class DanmakuTextCell: DanmakuCell {
     override func displaying(_ context: CGContext, _ size: CGSize, _ isCancelled: Bool) {
         guard let model = model as? DanmakuTextCellModel else { return }
         let text = NSString(string: model.text)
-        context.setLineWidth(2)
+        context.setAlpha(CGFloat(Settings.danmuAlpha.rawValue))
+        context.setLineWidth(CGFloat(Settings.danmuStrokeWidth.rawValue))
         context.setLineJoin(.round)
         context.saveGState()
         context.setTextDrawingMode(.stroke)
 
-        let attributes: [NSAttributedString.Key: Any] = [.font: model.font, .foregroundColor: UIColor.black]
-        context.setStrokeColor(UIColor.black.cgColor)
+        let strokeColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: CGFloat(Settings.danmuStrokeAlpha.rawValue))
+        let attributes: [NSAttributedString.Key: Any] = [.font: model.font, .foregroundColor: strokeColor]
+        context.setStrokeColor(strokeColor.cgColor)
         text.draw(at: .zero, withAttributes: attributes)
         context.restoreGState()
 

@@ -1,5 +1,5 @@
 //
-//  PersonalMasterViewController.swift
+//  PersonalViewController.swift
 //  BilibiliLive
 //
 //  Created by yicheng on 2022/8/20.
@@ -20,6 +20,13 @@ struct CellModel {
 }
 
 class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
+    struct CellModel {
+        let title: String
+        var autoSelect: Bool? = true
+        var contentVC: UIViewController? = nil
+        var action: (() -> Void)? = nil
+    }
+
     static func create() -> PersonalViewController {
         return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! PersonalViewController
     }
@@ -73,7 +80,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
 //    }
 
     func setupData() {
-        let setting = CellModel(title: "设置", contentVC: SettingsViewController.create())
+        let setting = CellModel(title: "设置", contentVC: SettingsViewController())
         cellModels.append(setting)
         cellModels.append(CellModel(title: "搜索", autoSelect: false, action: {
             [weak self] in

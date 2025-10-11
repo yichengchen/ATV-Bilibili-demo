@@ -13,11 +13,9 @@ class VMaskProvider: MaskProvider {
     let queue = DispatchQueue(label: "bodydetect")
     weak var videoOutput: AVPlayerItemVideoOutput?
     var processing = false
-    lazy var context: CIContext = {
-        return CIContext(options: [.useSoftwareRenderer: false,
-                                   .cacheIntermediates: false,
-                                   .name: "vn"])
-    }()
+    lazy var context: CIContext = .init(options: [.useSoftwareRenderer: false,
+                                                  .cacheIntermediates: false,
+                                                  .name: "vn"])
 
     private let requestHandler = VNSequenceRequestHandler()
     private lazy var segmentationRequest: VNGeneratePersonSegmentationRequest = {
@@ -78,8 +76,9 @@ class VMaskProvider: MaskProvider {
             }).forEach { layer.insertSublayer($0, at: 0) }
         }
 
+        let ciImage = CIImage(cvImageBuffer: pixelBuffer)
         queue.async {
-            guard let image = self.bodyDetect(buffer: pixelBuffer, videoSize: self.videoSize!) else {
+            guard let image = self.bodyDetect(buffer: ciImage, videoSize: self.videoSize!) else {
                 self.processing = false
                 return
             }
@@ -104,7 +103,7 @@ class VMaskProvider: MaskProvider {
         return 10
     }
 
-    func bodyDetect(buffer: CVPixelBuffer, videoSize: CGSize) -> CGImage? {
+    func bodyDetect(buffer: CIImage, videoSize: CGSize) -> CGImage? {
         do {
             try requestHandler.perform([segmentationRequest], on: buffer)
             guard let mask = segmentationRequest.results?.first else { return nil }

@@ -1,5 +1,5 @@
 //
-//  BLSettingLineCollectionViewCell.swift
+//  BLMenuLineCollectionViewCell.swift
 //  BilibiliLive
 //
 //  Created by ManTie on 2024/7/4.

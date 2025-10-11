@@ -38,8 +38,8 @@ enum WebRequest {
         static let like = "https://api.bilibili.com/x/web-interface/archive/like"
         static let likeStatus = "https://api.bilibili.com/x/web-interface/archive/has/like"
         static let coin = "https://api.bilibili.com/x/web-interface/coin/add"
-        static let playerInfo = "https://api.bilibili.com/x/player/v2"
-        static let playUrl = "https://api.bilibili.com/x/player/playurl"
+        static let playerInfo = "https://api.bilibili.com/x/player/wbi/v2"
+        static let playUrl = "https://api.bilibili.com/x/player/wbi/playurl"
         static let pcgPlayUrl = "https://api.bilibili.com/pgc/player/web/playurl"
         static let bangumiSeason = "https://bangumi.bilibili.com/view/web_api/season"
         static let userEpisodeInfo = "https://api.bilibili.com/pgc/season/episode/web/info"
@@ -83,21 +83,33 @@ enum WebRequest {
         }
         session.sessionConfiguration.timeoutIntervalForResource = 10
         session.sessionConfiguration.timeoutIntervalForRequest = 10
-        session.request(url,
-                        method: method,
-                        parameters: parameters,
-                        encoding: URLEncoding.default,
-                        headers: afheaders,
-                        interceptor: nil)
-            .responseData { response in
-                switch response.result {
-                case let .success(data):
-                    complete?(.success(data))
-                case let .failure(err):
-                    print(err)
-                    complete?(.failure(.networkFail))
-                }
+
+        let completionHandler: (AFDataResponse<Data>) -> Void = { response in
+            switch response.result {
+            case let .success(data):
+                complete?(.success(data))
+            case let .failure(err):
+                print(err)
+                complete?(.failure(.networkFail))
             }
+        }
+
+        addWbiSign(method: method, url: url, parameters: parameters) { wbiSign in
+            if let wbiSign {
+                session.request(wbiSign,
+                                method: method,
+                                encoding: URLEncoding.default,
+                                headers: afheaders)
+                    .responseData(completionHandler: completionHandler)
+            } else {
+                session.request(url,
+                                method: method,
+                                parameters: parameters,
+                                encoding: URLEncoding.default,
+                                headers: afheaders)
+                    .responseData(completionHandler: completionHandler)
+            }
+        }
     }
 
     static func requestJSON(method: HTTPMethod = .get,
@@ -145,10 +157,11 @@ enum WebRequest {
                     let object = try (decoder ?? JSONDecoder()).decode(T.self, from: data)
                     complete?(.success(object))
                 } catch let err {
-                    print("decode fail:", err)
+                    Logger.warn("decode fail: \(err)")
                     complete?(.failure(.decodeFail(message: err.localizedDescription + String(describing: err))))
                 }
             case let .failure(err):
+                Logger.warn("request fail: \(err)")
                 complete?(.failure(err))
             }
         }
@@ -172,7 +185,7 @@ enum WebRequest {
             switch response {
             case let .success(data):
                 do {
-                    let protobufObject = try T(serializedData: data)
+                    let protobufObject = try T(serializedBytes: data)
                     complete?(.success(protobufObject))
                 } catch let err {
                     Logger.warn("Protobuf parsing error: \(err.localizedDescription)")
@@ -392,6 +405,10 @@ extension WebRequest {
 
     static func requestFavorite(aid: Int, mid: Int) {
         requestJSON(method: .post, url: "https://api.bilibili.com/x/v3/fav/resource/deal", parameters: ["rid": aid, "type": 2, "add_media_ids": mid])
+    }
+
+    static func removeFavorite(aid: Int, mid: [Int]) {
+        requestJSON(method: .post, url: "https://api.bilibili.com/x/v3/fav/resource/deal", parameters: ["rid": aid, "type": 2, "del_media_ids": mid.map { "\($0)" }.joined(separator: ",")])
     }
 
     static func requestFavoriteStatus(aid: Int, complete: ((Bool) -> Void)?) {
@@ -687,10 +704,16 @@ struct SubtitleResp: Codable {
 
 struct SubtitleData: Codable, Hashable {
     let lan_doc: String
-    let subtitle_url: URL
+    let subtitle_url: String?
     let lan: String
 
-    var url: URL { subtitle_url.addSchemeIfNeed() }
+    var url: URL? {
+        if let subtitle_url, let sub_url = URL(string: subtitle_url) {
+            return sub_url.addSchemeIfNeed()
+        }
+        return nil
+    }
+
     var subtitleContents: [SubtitleContent]?
 }
 
@@ -701,8 +724,24 @@ struct Replys: Codable, Hashable {
             let avatar: String
         }
 
+        struct Emote: Codable, Hashable {
+            let text: String
+            let url: String
+        }
+
+        struct JumpUrl: Codable, Hashable {
+            let title: String
+        }
+
         struct Content: Codable, Hashable {
             let message: String
+            let pictures: [Picture]?
+            let emote: [String: Emote]?
+            let jump_url: [String: JumpUrl]?
+
+            struct Picture: Codable, Hashable {
+                let img_src: String
+            }
         }
 
         let member: Member

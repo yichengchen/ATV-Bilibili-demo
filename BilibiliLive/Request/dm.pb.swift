@@ -182,7 +182,7 @@ struct DmSegMobileReply {
     }
 
     /// Returns true if `aiFlag` has been explicitly set.
-    var hasAiFlag: Bool { return self._aiFlag != nil }
+    var hasAiFlag: Bool { return _aiFlag != nil }
     /// Clears the value of `aiFlag`. Subsequent reads from it will return its default value.
     mutating func clearAiFlag() { _aiFlag = nil }
 

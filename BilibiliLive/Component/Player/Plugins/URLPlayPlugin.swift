@@ -1,5 +1,5 @@
 //
-//  LivePlayPlugin.swift
+//  URLPlayPlugin.swift
 //  BilibiliLive
 //
 //  Created by yicheng on 2024/6/6.

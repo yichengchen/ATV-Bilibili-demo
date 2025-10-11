@@ -93,7 +93,11 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
         titleLabel.numberOfLines = 2
         titleLabel.setContentHuggingPriority(.required, for: .vertical)
         titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+
         titleLabel.textColor = UIColor(named: "titleColor")
+
+//        titleLabel.fadeLength = 60
+
         upLabel.setContentHuggingPriority(.required, for: .vertical)
         upLabel.setContentCompressionResistancePriority(.required, for: .vertical)
         upLabel.textColor = UIColor(named: "upTitleColor")

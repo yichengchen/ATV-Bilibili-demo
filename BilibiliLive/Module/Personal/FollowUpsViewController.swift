@@ -55,7 +55,7 @@ class FollowUpsViewController: UIViewController {
                 widthDimension: .fractionalWidth(1),
                 heightDimension: heightDimension
             ),
-            subitem: item,
+            repeatingSubitem: item,
             count: 3
         )
         let vSpacing: CGFloat = 16
@@ -145,6 +145,7 @@ class UpCell: BLMotionCollectionViewCell {
         }
 
         nameLabel.font = UIFont.systemFont(ofSize: 30, weight: .semibold)
+        nameLabel.fadeLength = 60
         despLabel.font = UIFont.systemFont(ofSize: 20, weight: .regular)
         despLabel.textColor = UIColor(named: "titleColor")
         contentView.backgroundColor = UIColor(named: "bgColor")

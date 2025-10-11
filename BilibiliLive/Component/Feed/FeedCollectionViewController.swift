@@ -187,17 +187,15 @@ class FeedCollectionViewController: UIViewController {
         }
     }
 
-    private var selfSizeingEnable: Bool {
-        true
-    }
-
     private func makeGridLayoutSection() -> NSCollectionLayoutSection {
         let style = styleOverride ?? Settings.displayStyle
 
         // top
         let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(style.fractionalWidth),
+
             heightDimension: .fractionalHeight(1)
+
         ))
         let hSpacing = style.hSpacing
         item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: hSpacing, bottom: 0, trailing: hSpacing)
@@ -209,6 +207,7 @@ class FeedCollectionViewController: UIViewController {
 
         let vSpacing: CGFloat = style == .large ? 34 : 26
         let baseSpacing: CGFloat = style == .sideBar ? 34 : 0
+
         group.edgeSpacing = NSCollectionLayoutEdgeSpacing(leading: .fixed(baseSpacing), top: .fixed(vSpacing), trailing: .fixed(0), bottom: .fixed(vSpacing))
 
         // section
