@@ -22,12 +22,15 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
     var backMenuAction: (() -> Void)?
     var didUpdateFocus: (() -> Void)?
     var didSelectToLastLeft: (() -> Void)?
+    var isShowTopCover: (() -> Bool)?
 
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
         return [collectionVC.collectionView]
     }
 
     override func viewDidLoad() {
+        collectionVC.isShowTopCover = isShowTopCover
+        
         super.viewDidLoad()
         setupCollectionView()
         collectionVC.show(in: self)

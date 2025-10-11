@@ -34,6 +34,8 @@ class FollowsViewController: StandardVideoCollectionViewController<DynamicFeedDa
         let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid, epid: epid)
         detailVC.present(from: self)
     }
+    
+    
 }
 
 extension WebRequest {

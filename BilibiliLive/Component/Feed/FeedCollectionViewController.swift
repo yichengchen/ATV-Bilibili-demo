@@ -6,6 +6,7 @@
 //
 
 import SnapKit
+import SwiftUI
 import TVUIKit
 import UIKit
 
@@ -65,7 +66,7 @@ class FeedCollectionViewController: UIViewController {
     var showHeader: Bool = true
     var headerText = ""
     var coverViewHeight = 500.0
-    let collectionEdgeInsetTop = 200.0
+    let collectionEdgeInsetTop = 40.0
     var isShowCove = false
     var timer = Timer()
     let coverView = BLCoverView()
@@ -75,9 +76,14 @@ class FeedCollectionViewController: UIViewController {
 
     var backMenuAction: (() -> Void)?
     var didUpdateFocus: (() -> Void)?
+    var isShowTopCover: (() -> Bool)?
 
     var didSelectToLastLeft: (() -> Void)?
     private var beforeSeleteIndex: IndexPath?
+    private var bannerSwiftUIView: BannerView?
+    private var bannerUIView:UIView?
+    private let animationOffSet = -200.0
+    
 
     var displayDatas: [any DisplayData] {
         set {
@@ -130,19 +136,89 @@ class FeedCollectionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+//        背景图
         view.addSubview(bgImageView)
         bgImageView.snp.makeConstraints { make in
             make.left.right.bottom.equalToSuperview()
             make.top.equalToSuperview().offset(-60)
         }
         bgImageView.setBlurEffectView()
+        
+        
+        if isShowTopCover?() ?? false{
+            // 顶部大图
+            var bannerSwiftUIView = BannerView()
+            self.bannerSwiftUIView = bannerSwiftUIView
+            bannerSwiftUIView.focusedBannerButton = {[weak self] in
+                guard let self = self else {return}
+                if bannerUIView?.superview != nil{
+                    UIView.animate(springDuration: 0.6, bounce: 0.1){
+                        self.bannerUIView?.snp.updateConstraints { make in
+                            make.top.equalToSuperview()
+                        }
+                        self.collectionView.snp.updateConstraints { make in
+                            make.top.equalTo(self.bannerUIView!.snp.bottom).offset(self.animationOffSet)
+                        }
+                        self.view.layoutIfNeeded()
+                    }
+                }
+            }
+            
+            bannerSwiftUIView.overMoveLeft = {[weak self] in
+                guard let self = self else {return}
+                didSelectToLastLeft?()
+                
+            }
+            
+            bannerSwiftUIView.playAction = {[weak self] data in
+                guard let self = self else {return}
+                let player = VideoPlayerViewController(playInfo: PlayInfo(aid: data.id, cid: data.cid, epid: 0, isBangumi: false))
+                self.present(player, animated: true)
+                
+            }
+            
+            bannerSwiftUIView.detailAction = {[weak self] data in
+                guard let self = self else {return}
+                let detailVC = VideoDetailViewController.create(aid: data.id, cid: data.cid)
+                detailVC.present(from: self)
+                
+            }
+            // 创建 UIHostingController
+            let hostingController = UIHostingController(rootView: bannerSwiftUIView)
+            // 获取 hostingController 的 view
+            bannerUIView = hostingController.view
+            bannerUIView?.translatesAutoresizingMaskIntoConstraints = false
 
-        collectionView = BLCollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
-        view.addSubview(collectionView)
-        collectionView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            if let bannerUIView = bannerUIView {
+                view.addSubview(bannerUIView)
+                bannerUIView.snp.makeConstraints { make in
+                    make.left.right.equalToSuperview()
+                    make.top.equalToSuperview()
+                    make.height.equalTo(1080)
+                }
+            }
+            
+            
+            // 内容
+            collectionView = BLCollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
+            view.addSubview(collectionView)
+            collectionView.snp.makeConstraints { make in
+                make.left.right.equalToSuperview()
+                make.top.equalTo(bannerUIView!.snp.bottom).offset(animationOffSet)
+                make.height.equalTo(1080)
+            }
+            collectionView.contentInset = UIEdgeInsets(top: collectionEdgeInsetTop, left: 0, bottom: 0, right: 0)
+        } else {
+            
+            
+            // 内容
+            collectionView = BLCollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
+            view.addSubview(collectionView)
+            collectionView.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
+            }
+            collectionView.contentInset = UIEdgeInsets(top: 200, left: 0, bottom: 0, right: 0)
         }
-        collectionView.contentInset = UIEdgeInsets(top: collectionEdgeInsetTop, left: 0, bottom: 0, right: 0)
 
         collectionView.dataSource = dataSource
         collectionView.delegate = self
@@ -343,10 +419,44 @@ extension FeedCollectionViewController: UICollectionViewDelegate {
 //                cell.infoView.isHidden = false
                 cell.infoView.alpha = 1
             }
-
+            
+            if isShowTopCover?() ?? false{
+                
+                // 当前 item 是最左边？
+                let style = styleOverride ?? Settings.displayStyle
+                if (indexPath.row+1) > style.feedColCount{
+                    //第二行把上面的全部隐藏
+                    UIView.animate(springDuration: 0.6, bounce: 0.1){
+                        bannerUIView?.snp.updateConstraints { make in
+                            make.top.equalToSuperview().offset(-1120)
+                        }
+                        
+                        collectionView.snp.updateConstraints { make in
+                            make.top.equalTo(bannerUIView!.snp.bottom).offset(-10)
+                        }
+                        view.layoutIfNeeded()
+                    }
+                } else {
+                    //第一行
+                    BLAfter(afterTime: 0.1) {
+                        UIView.animate(springDuration: 0.6, bounce: 0.1){
+                            self.bannerUIView?.snp.updateConstraints { make in
+                                make.top.equalToSuperview().offset(-720)
+                            }
+                            collectionView.snp.updateConstraints { make in
+                                if let bannerUIView = self.bannerUIView{
+                                    make.top.equalTo(bannerUIView.snp.bottom).offset(0)
+                                }
+                            }
+                            self.view.layoutIfNeeded()
+                        }
+                    }
+                   
+                }
+            }
+            
             // 焦点在第二行
             nextFocusedIndexPath = indexPath
-
             guard isShowCove else {
                 return
             }
@@ -364,7 +474,7 @@ extension FeedCollectionViewController: UICollectionViewDelegate {
                     self.view.layoutIfNeeded()
                 }
             }
-        }
+        } 
     }
 
     func setCoverView(indexPath: IndexPath) {
@@ -407,7 +517,7 @@ extension FeedCollectionViewController: UICollectionViewDelegate {
             // 👉 这里执行你想要的逻辑，比如：
             // showPreviousPage()
             // moveToLeftMenu()
-            didSelectToLastLeft?()
+//            didSelectToLastLeft?()
         }
         beforeSeleteIndex = indexPath
     }

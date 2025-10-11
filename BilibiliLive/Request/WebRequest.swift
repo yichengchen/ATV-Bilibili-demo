@@ -554,6 +554,7 @@ struct FavData: PlayableData, Codable {
     var ownerName: String { upper.name }
     var pic: URL? { URL(string: cover) }
 
+    var intro: String?
     struct Ogv: Codable, Hashable {
         let season_id: Int?
     }

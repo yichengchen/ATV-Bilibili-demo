@@ -167,6 +167,9 @@ class MenusViewController: UIViewController, BLTabBarContentVCProtocol {
         }
         let followsViewController = FollowsViewController()
         followsViewController.didSelectToLastLeft = lastLeft
+        followsViewController.isShowTopCover = {
+            return true
+        }
         cellModels.append(CellModel(iconImage: UIImage(systemName: "person.crop.circle.badge.checkmark"), title: "关注", contentVC: followsViewController))
 
         let FeedViewController = FeedViewController()

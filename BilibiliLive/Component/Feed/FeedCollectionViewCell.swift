@@ -34,7 +34,18 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
             make.height.equalTo(imageView.snp.width).multipliedBy(9.0 / 16)
         }
 
-        imageView.layer.cornerRadius = moreLittleSornerRadius
+        let style = styleOverride ?? Settings.displayStyle
+        
+        switch style.feedColCount {
+        case 3:
+            imageView.layer.cornerRadius = lessBigSornerRadius
+        case 4:
+            imageView.layer.cornerRadius = lessBigSornerRadius
+        case 5:
+            imageView.layer.cornerRadius = normailSornerRadius
+        default:
+            imageView.layer.cornerRadius = lessBigSornerRadius
+        }
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
 
@@ -70,7 +81,7 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
         hStackView.alignment = .top
         hStackView.spacing = 10
         avatarView.backgroundColor = .clear
-        let style = styleOverride ?? Settings.displayStyle
+        
         let aHeight: CGFloat = style == .large ? 44 : 33
         avatarView.snp.makeConstraints { make in
             make.bottom.right.equalToSuperview().offset(-4)
