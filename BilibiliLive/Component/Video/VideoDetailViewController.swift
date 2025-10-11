@@ -660,10 +660,10 @@ class BLCardView: TVCardView {
 //        subviews.first?.subviews.first?.subviews.last?.subviews.first?.subviews.first?.layer.cornerRadius = littleSornerRadius
 //    }
 
-//    override func layoutSubviews() {
-//        super.layoutSubviews()
-//        cardBackgroundColor = .red
-//    }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+//        contentView.setBlurEffectView(cornerRadius: lessBigSornerRadius)
+    }
 }
 
 extension VideoDetailViewController {
@@ -686,9 +686,9 @@ extension VideoDetailViewController {
         UICollectionViewCompositionalLayout {
             _, _ in
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                  heightDimension: .estimated(200))
+                                                  heightDimension: .estimated(180))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.18), heightDimension: .estimated(200))
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.225), heightDimension: .estimated(180))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
             let section = NSCollectionLayoutSection(group: group)
             section.contentInsets = .init(top: 40, leading: 0, bottom: 0, trailing: 0)

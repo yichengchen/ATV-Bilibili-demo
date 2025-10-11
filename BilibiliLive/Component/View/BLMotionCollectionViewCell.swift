@@ -53,9 +53,9 @@ class BLMotionCollectionViewCell: UICollectionViewCell {
             transform = CGAffineTransformMakeScale(scaleFactor, scaleFactor)
             let scaleDiff = (bounds.size.height * scaleFactor - bounds.size.height) / 2
             transform = CGAffineTransformTranslate(transform, 0, -scaleDiff)
-            layer.shadowOffset = CGSizeMake(0, 16)
+            layer.shadowOffset = CGSizeMake(0, 8)
             layer.shadowOpacity = 0.2
-            layer.shadowRadius = 18.0
+            layer.shadowRadius = 9.0
         } else {
             transform = CGAffineTransformIdentity
             layer.shadowOpacity = 0
