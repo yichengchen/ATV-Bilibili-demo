@@ -30,8 +30,7 @@ struct RankCategoryInfo {
                       RankCategoryInfo(title: "鬼畜", rid: 1007),
                       RankCategoryInfo(title: "时尚", rid: 1014),
                       RankCategoryInfo(title: "娱乐", rid: 1002),
-                      RankCategoryInfo(title: "影视", rid: 1001),
-                      ]
+                      RankCategoryInfo(title: "影视", rid: 1001)]
 }
 
 class RankingViewController: CategoryViewController {

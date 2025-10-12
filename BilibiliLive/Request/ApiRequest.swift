@@ -10,7 +10,7 @@ import CryptoKit
 import Foundation
 import SwiftyJSON
 
-struct LoginToken: Codable {
+struct LoginToken: Codable, Equatable {
     let mid: Int
     let accessToken: String
     let refreshToken: String
@@ -32,25 +32,18 @@ enum ApiRequest {
     }
 
     enum LoginState {
-        case success(token: LoginToken)
+        case success(token: LoginToken, cookies: [HTTPCookie])
         case fail
         case expire
         case waiting
     }
 
-    static func save(token: LoginToken) {
-        UserDefaults.standard.set(token, forKey: "token")
-    }
-
     static func getToken() -> LoginToken? {
-        if let token: LoginToken = UserDefaults.standard.codable(forKey: "token") {
-            return token
-        }
-        return nil
+        return AccountManager.shared.activeAccount?.token
     }
 
     static func isLogin() -> Bool {
-        return getToken() != nil
+        return AccountManager.shared.isLoggedIn
     }
 
     static func sign(for param: [String: Any]) -> [String: Any] {
@@ -75,9 +68,12 @@ enum ApiRequest {
         return newParam
     }
 
-    static func logout(complete: (() -> Void)? = nil) {
-        UserDefaults.standard.removeObject(forKey: "token")
-        complete?()
+    static func logout(complete: ((Bool) -> Void)? = nil) {
+        var hasAccount = false
+        if let account = AccountManager.shared.activeAccount {
+            hasAccount = AccountManager.shared.removeAccount(account)
+        }
+        complete?(hasAccount)
     }
 
     static func requestJSON(_ url: URLConvertible,
@@ -100,8 +96,10 @@ enum ApiRequest {
                 let errorCode = json["code"].intValue
                 if errorCode != 0 {
                     if errorCode == -101 {
-                        UserDefaults.standard.removeObject(forKey: "token")
-                        AppDelegate.shared.showLogin()
+                        AccountManager.shared.handleAuthenticationFailure()
+                        if !AccountManager.shared.isLoggedIn {
+                            AppDelegate.shared.showLogin()
+                        }
                     }
                     let message = json["message"].stringValue
                     print(errorCode, message)
@@ -216,8 +214,9 @@ enum ApiRequest {
             switch result {
             case var .success(res):
                 res.tokenInfo.expireDate = Date().addingTimeInterval(TimeInterval(res.tokenInfo.expiresIn))
-                CookieHandler.shared.saveCookie(list: res.cookieInfo.toCookies())
-                handler?(.success(token: res.tokenInfo))
+                let cookies = res.cookieInfo.toCookies()
+                CookieHandler.shared.saveCookie(list: cookies, syncWithAccount: false)
+                handler?(.success(token: res.tokenInfo, cookies: cookies))
             case let .failure(error):
                 switch error {
                 case let .statusFail(code, _):
@@ -243,8 +242,9 @@ enum ApiRequest {
             switch result {
             case var .success(res):
                 res.tokenInfo.expireDate = Date().addingTimeInterval(TimeInterval(res.tokenInfo.expiresIn))
-                CookieHandler.shared.saveCookie(list: res.cookieInfo.toCookies())
-                UserDefaults.standard.set(codable: res.tokenInfo, forKey: "token")
+                let cookies = res.cookieInfo.toCookies()
+                CookieHandler.shared.saveCookie(list: cookies)
+                AccountManager.shared.updateActiveAccount(token: res.tokenInfo, cookies: cookies)
             case let .failure(err):
                 print(err)
             }

@@ -37,20 +37,26 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         leftCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         leftCollectionView.selectItem(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .top)
         collectionView(leftCollectionView, didSelectItemAt: IndexPath(row: 0, section: 0))
-        WebRequest.requestLoginInfo { [weak self] response in
-            switch response {
-            case let .success(json):
-                self?.avatarImageView.kf.setImage(with: URL(string: json["face"].stringValue))
-                self?.usernameLabel.text = json["uname"].stringValue
-            case .failure:
-                break
-            }
-        }
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleAccountUpdate),
+                                               name: AccountManager.didUpdateNotification,
+                                               object: nil)
+        updateAccountInfo()
+        AccountManager.shared.refreshActiveAccountProfile()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     func setupData() {
         let setting = CellModel(title: "设置", contentVC: SettingsViewController())
         cellModels.append(setting)
+        cellModels.append(CellModel(title: "账号切换", autoSelect: false, action: { [weak self] in
+            let controller = AccountSwitcherViewController()
+            controller.modalPresentationStyle = .overFullScreen
+            self?.present(controller, animated: true)
+        }))
         cellModels.append(CellModel(title: "搜索", autoSelect: false, action: {
             [weak self] in
             let resultVC = SearchResultViewController()
@@ -90,14 +96,36 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         let alert = UIAlertController(title: "确定登出？", message: nil, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "确定", style: .default) {
             _ in
-            ApiRequest.logout {
-                WebRequest.logout {
-                    AppDelegate.shared.showLogin()
+            WebRequest.logout {
+                ApiRequest.logout { hasRemainingAccount in
+                    if hasRemainingAccount {
+                        AccountManager.shared.refreshActiveAccountProfile()
+                    } else {
+                        AppDelegate.shared.showLogin()
+                    }
                 }
             }
         })
         alert.addAction(UIAlertAction(title: "取消", style: .cancel))
         present(alert, animated: true)
+    }
+
+    @objc private func handleAccountUpdate() {
+        updateAccountInfo()
+    }
+
+    private func updateAccountInfo() {
+        guard let account = AccountManager.shared.activeAccount else {
+            usernameLabel.text = "未登录"
+            avatarImageView.image = nil
+            return
+        }
+        usernameLabel.text = account.profile.username
+        if let url = URL(string: account.profile.avatar), !account.profile.avatar.isEmpty {
+            avatarImageView.kf.setImage(with: url)
+        } else {
+            avatarImageView.image = UIImage(systemName: "person.crop.circle.fill")
+        }
     }
 }
 

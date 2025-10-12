@@ -92,10 +92,11 @@ class LoginViewController: UIViewController {
                 self.initValidation()
             case .waiting:
                 break
-            case let .success(token):
+            case let .success(token, cookies):
                 print(token)
-                UserDefaults.standard.set(codable: token, forKey: "token")
-                self.didValidationSuccess()
+                AccountManager.shared.registerAccount(token: token, cookies: cookies) { [weak self] _ in
+                    self?.didValidationSuccess()
+                }
             case .fail:
                 break
             }
