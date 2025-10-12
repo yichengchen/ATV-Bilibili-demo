@@ -26,6 +26,15 @@
 - HDR播放
 - 字幕
 
+
+Apple tv+ 风格修改
+1. 修改了 Apple tv+ 主菜单
+ ![](imgs/4.png)
+2. 首页关注 可以显示 个人收藏首个目录的封面，可以直接播放
+ ![](imgs/5.png)
+3. 修改视频详情页面的布局
+ ![](imgs/6.png)
+
  ![](imgs/1.png)
  ![](imgs/2.png)
  ![](imgs/3.png)
