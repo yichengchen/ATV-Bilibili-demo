@@ -43,6 +43,65 @@ extension WebRequest {
 
     // https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/wbi.md#Swift
     private static func biliWbiSign(param: String, completion: @escaping (String?) -> Void) {
+        // WebId Cache
+        class WebIdCache {
+            var webId: String?
+            static let shared = WebIdCache()
+        }
+
+        func getWebId(completion: @escaping (String?) -> Void) {
+            if let cached = WebIdCache.shared.webId {
+                completion(cached)
+                return
+            }
+
+            // Generate random visit_id (16 char lowercase hex string)
+            let visitId = UUID().uuidString.replacingOccurrences(of: "-", with: "").prefix(16).lowercased()
+            let urlString = "https://live.bilibili.com/p/eden/area-tags?parentAreaId=2&areaId=0&visit_id=\(visitId)"
+
+            guard let url = URL(string: urlString) else {
+                completion(nil)
+                return
+            }
+
+            var request = URLRequest(url: url)
+            request.setValue(Keys.userAgent, forHTTPHeaderField: "User-Agent")
+            request.setValue(Keys.liveReferer, forHTTPHeaderField: "Referer")
+
+            if let cookies = HTTPCookieStorage.shared.cookies(for: url) {
+                let cookieHeaders = HTTPCookie.requestHeaderFields(with: cookies)
+                for (key, value) in cookieHeaders {
+                    request.setValue(value, forHTTPHeaderField: key)
+                }
+            }
+
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                guard let data = data,
+                      let html = String(data: data, encoding: .utf8),
+                      error == nil
+                else {
+                    completion(nil)
+                    return
+                }
+
+                do {
+                    // Look for window._render_data_ = {"access_id":"..."}
+                    let regex = try NSRegularExpression(pattern: #"window\._render_data_\s*=\s*\{\"access_id\":\"([^\"]+)\""#, options: [])
+                    if let match = regex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
+                       let range = Range(match.range(at: 1), in: html)
+                    {
+                        let accessId = String(html[range])
+                        WebIdCache.shared.webId = accessId
+                        completion(accessId)
+                        return
+                    }
+                } catch {}
+
+                completion(nil)
+            }
+            task.resume()
+        }
+
         func getMixinKey(orig: String) -> String {
             let mixinKeyEncTab = [
                 46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35, 27, 43, 5, 49,
@@ -56,11 +115,20 @@ extension WebRequest {
         func encWbi(params: [String: Any], imgKey: String, subKey: String) -> [String: Any] {
             var params = params
             let mixinKey = getMixinKey(orig: imgKey + subKey)
-            let currTime = round(Date().timeIntervalSince1970)
+            let currTime = Int(Date().timeIntervalSince1970)
             params["wts"] = currTime
-            params = params.sorted { $0.key < $1.key }.reduce(into: [:]) { $0[$1.key] = $1.value }
-            params = params.mapValues { String(describing: $0).filter { !"!'()*".contains($0) } }
-            let query = params.map { "\($0.key)=\($0.value)" }.joined(separator: "&")
+
+            // Keep parameters as sorted array for query generation
+            let sortedParams = params.sorted { $0.key < $1.key }
+
+            // Generate query string directly from sorted array
+            let query = sortedParams
+                .map { key, value in
+                    let filteredValue = String(describing: value).filter { !"!'()*".contains($0) }
+                    return "\(key)=\(filteredValue)"
+                }
+                .joined(separator: "&")
+
             let wbiSign = calculateMD5(string: query + mixinKey)
             params["w_rid"] = wbiSign
             return params
@@ -118,18 +186,42 @@ extension WebRequest {
         getWbiKeys { result in
             switch result {
             case let .success(keys):
-                let spdParam = param.components(separatedBy: "&")
-                var spdDicParam = [String: String]()
-                for pair in spdParam {
-                    let components = pair.components(separatedBy: "=")
-                    if components.count == 2 {
-                        spdDicParam[components[0]] = components[1]
+                getWebId { webId in
+                    let spdParam = param.components(separatedBy: "&")
+                    var spdDicParam = [String: String]()
+                    for pair in spdParam {
+                        let components = pair.components(separatedBy: "=")
+                        if components.count == 2 {
+                            // URL decode the parameter value
+                            let decodedValue = components[1].removingPercentEncoding ?? components[1]
+                            spdDicParam[components[0]] = decodedValue
+                        }
                     }
-                }
 
-                let signedParams = encWbi(params: spdDicParam, imgKey: keys.imgKey, subKey: keys.subKey)
-                let query = signedParams.map { "\($0.key)=\($0.value)" }.joined(separator: "&")
-                completion(query)
+                    // Add w_webid parameter
+                    if let webId = webId {
+                        spdDicParam["w_webid"] = webId
+                    }
+
+                    let signedParams = encWbi(params: spdDicParam, imgKey: keys.imgKey, subKey: keys.subKey)
+
+                    // Correct parameter ordering (reference: bilibili-plus)
+                    let wbiKeys = ["w_webid", "w_rid", "wts"]
+                    var orderedParams = signedParams
+                        .filter { !wbiKeys.contains($0.key) }
+                        .sorted { $0.key < $1.key }
+                        .map { "\($0.key)=\($0.value)" }
+
+                    // Append WBI parameters in fixed order
+                    for key in wbiKeys {
+                        if let value = signedParams[key] {
+                            orderedParams.append("\(key)=\(value)")
+                        }
+                    }
+
+                    let query = orderedParams.joined(separator: "&")
+                    completion(query)
+                }
             case let .failure(error):
                 print("Error getting keys: \(error)")
                 completion(nil)
