@@ -12,6 +12,7 @@ struct PlayerDetailData {
     let aid: Int
     let cid: Int
     let epid: Int? // 港澳台解锁需要
+    let seasonId: Int? // 番剧 season_id
     let isBangumi: Bool
 
     var playerStartPos: Int?
@@ -101,7 +102,7 @@ class VideoPlayerViewModel {
             let info = await infoReq
             _ = await detailUpdate
 
-            var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, isBangumi: playInfo.isBangumi, detail: videoDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
+            var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, seasonId: playInfo.seasonId, isBangumi: playInfo.isBangumi, detail: videoDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
 
             if let info, info.last_play_cid == cid, playData.dash.duration - info.playTimeInSecond > 5, Settings.continuePlay {
                 detail.playerStartPos = info.playTimeInSecond

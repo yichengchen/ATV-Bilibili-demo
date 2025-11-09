@@ -34,6 +34,7 @@ enum WebRequest {
         static let favFolderCollectedList = "https://api.bilibili.com/x/v3/fav/folder/collected/list"
         static let favSeason = "https://api.bilibili.com/x/space/fav/season/list"
         static let reportHistory = "https://api.bilibili.com/x/v2/history/report"
+        static let heartbeat = "https://api.bilibili.com/x/click-interface/web/heartbeat"
         static let upSpace = "https://api.bilibili.com/x/space/wbi/arc/search"
         static let like = "https://api.bilibili.com/x/web-interface/archive/like"
         static let likeStatus = "https://api.bilibili.com/x/web-interface/archive/has/like"
@@ -341,10 +342,38 @@ extension WebRequest {
         return res.medias ?? []
     }
 
-    static func reportWatchHistory(aid: Int, cid: Int, currentTime: Int) {
+    static func reportWatchHistory(aid: Int, cid: Int, currentTime: Int, epid: Int? = nil, seasonId: Int? = nil, isBangumi: Bool = false) {
+        var parameters: [String: Any] = [
+            "aid": aid,
+            "cid": cid,
+            "played_time": currentTime,
+        ]
+
+        if isBangumi {
+            // 番剧类型标识
+            parameters["type"] = 4
+            parameters["sub_type"] = 1
+
+            // 番剧ID
+            if let epid = epid {
+                parameters["epid"] = epid
+            }
+            if let seasonId = seasonId {
+                parameters["sid"] = seasonId
+            }
+
+            // Web平台标识（关键：用于正确识别番剧历史记录）
+            parameters["mobi_app"] = "web"
+            parameters["device"] = "web"
+            parameters["platform"] = "web"
+        } else {
+            parameters["type"] = 3
+            parameters["sub_type"] = 0
+        }
+
         requestJSON(method: .post,
-                    url: EndPoint.reportHistory,
-                    parameters: ["aid": aid, "cid": cid, "progress": currentTime],
+                    url: EndPoint.heartbeat,
+                    parameters: parameters,
                     complete: nil)
     }
 
