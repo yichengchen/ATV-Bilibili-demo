@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     name: Build ipa
-    runs-on: macos-latest
+    runs-on: macos-26
     permissions:
       contents: write
     steps:
