@@ -574,7 +574,24 @@ struct HistoryData: DisplayData, Codable {
     let aid: Int
     let progress: Int
     let duration: Int
-//    let bangumi: BangumiData?
+    let stat: Stat?
+    //    let bangumi: BangumiData?
+
+    var overlay: DisplayOverlay? {
+        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+        if let stat {
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: stat.view == 0 ? "-" : stat.view.numberString()))
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: stat.danmaku == 0 ? "-" : stat.danmaku.numberString()))
+        }
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+    }
+
+    struct Stat: Codable, Hashable {
+        let view: Int
+        let danmaku: Int
+    }
 }
 
 struct FavData: PlayableData, Codable {
@@ -586,9 +603,16 @@ struct FavData: PlayableData, Codable {
     var ogv: Ogv?
     var ownerName: String { upper.name }
     var pic: URL? { URL(string: cover) }
+    let duration: Int
+    let cnt_info: CountInfo?
 
     struct Ogv: Codable, Hashable {
         let season_id: Int?
+    }
+
+    struct CountInfo: Codable, Hashable {
+        let play: Int
+        let danmaku: Int
     }
 
     var aid: Int {
@@ -597,6 +621,17 @@ struct FavData: PlayableData, Codable {
 
     var cid: Int {
         return 0
+    }
+
+    var overlay: DisplayOverlay? {
+        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+        if let stat = cnt_info {
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: stat.play == 0 ? "-" : stat.play.numberString()))
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: stat.danmaku == 0 ? "-" : stat.danmaku.numberString()))
+        }
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
     }
 }
 
@@ -729,6 +764,15 @@ extension VideoDetail.Info: DisplayData, PlayableData {
     }
 
     var date: String? { DateFormatter.stringFor(timestamp: pubdate) }
+
+    var overlay: DisplayOverlay? {
+        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+        leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: stat.view == 0 ? "-" : stat.view.numberString()))
+        leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: stat.danmaku == 0 ? "-" : stat.danmaku.numberString()))
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+    }
 }
 
 struct SubtitleResp: Codable {

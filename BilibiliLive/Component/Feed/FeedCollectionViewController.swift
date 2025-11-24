@@ -15,11 +15,13 @@ protocol DisplayData: Hashable {
     var pic: URL? { get }
     var avatar: URL? { get }
     var date: String? { get }
+    var overlay: DisplayOverlay? { get }
 }
 
 extension DisplayData {
     var avatar: URL? { return nil }
     var date: String? { return nil }
+    var overlay: DisplayOverlay? { return nil }
 }
 
 struct AnyDispplayData: Hashable {
@@ -34,6 +36,21 @@ struct AnyDispplayData: Hashable {
 
     func hash(into hasher: inout Hasher) {
         data.hash(into: &hasher)
+    }
+}
+
+struct DisplayOverlay {
+    var leftItems: [DisplayOverlayItem]
+    var rightItems: [DisplayOverlayItem]
+
+    init(leftItems: [DisplayOverlayItem], rightItems: [DisplayOverlayItem] = []) {
+        self.leftItems = leftItems
+        self.rightItems = rightItems
+    }
+
+    struct DisplayOverlayItem {
+        var icon: String?
+        var text: String
     }
 }
 

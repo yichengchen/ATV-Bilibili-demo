@@ -71,6 +71,25 @@ struct ToViewData: PlayableData, Codable {
     let owner: VideoOwner
     let pic: URL?
     let pubdate: Int
+    let duration: Int
+    let stat: Stat?
+
+    var durationString: String {
+        let formatter = DateComponentsFormatter()
+        if duration >= 3600 {
+            formatter.allowedUnits = [.hour, .minute, .second]
+        } else {
+            formatter.allowedUnits = [.minute, .second]
+        }
+        formatter.zeroFormattingBehavior = .pad
+        formatter.unitsStyle = .positional
+        return formatter.string(from: TimeInterval(duration)) ?? ""
+    }
+
+    struct Stat: Codable, Hashable {
+        let view: Int
+        let danmaku: Int
+    }
 
     var ownerName: String {
         return owner.name
@@ -85,6 +104,17 @@ struct ToViewData: PlayableData, Codable {
 
     var date: String? {
         return DateFormatter.stringFor(timestamp: pubdate)
+    }
+
+    var overlay: DisplayOverlay? {
+        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+        if let stat {
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: stat.view == 0 ? "-" : stat.view.numberString()))
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: stat.danmaku == 0 ? "-" : stat.danmaku.numberString()))
+        }
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: durationString))
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
     }
 }
 

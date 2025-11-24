@@ -263,6 +263,9 @@ enum ApiRequest {
             let cover: String
             let goto: String
             let rcmd_reason: String?
+            let cover_left_text_1: String?
+            let cover_left_text_2: String?
+            let cover_left_text_3: String?
 
             var ownerName: String {
                 return args.up_name ?? ""
@@ -273,6 +276,21 @@ enum ApiRequest {
             }
 
             var date: String? { rcmd_reason }
+
+            var overlay: DisplayOverlay? {
+                var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+                var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+                if let text = cover_left_text_2 {
+                    leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: text))
+                }
+                if let text = cover_left_text_3 {
+                    leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: text))
+                }
+                if let text = cover_left_text_1 {
+                    rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: text))
+                }
+                return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+            }
         }
 
         struct Args: Codable, Hashable {

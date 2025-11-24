@@ -90,6 +90,23 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
         return modules.module_author.pub_time
     }
 
+    var overlay: DisplayOverlay? {
+        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+        if let stat = modules.module_dynamic.major?.archive?.stat {
+            if let play = stat.play {
+                leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: play == "0" ? "-" : "\(play)"))
+            }
+            if let danmaku = stat.danmaku {
+                leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: danmaku == "0" ? "-" : "\(danmaku)"))
+            }
+        }
+        if let durationText = modules.module_dynamic.major?.archive?.duration_text {
+            rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: durationText))
+        }
+        return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+    }
+
     let type: String
     let basic: Basic
     let modules: Modules
@@ -123,6 +140,13 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
                     let cover: String?
                     let desc: String?
                     let title: String?
+                    let duration_text: String?
+                    let stat: Stat?
+
+                    struct Stat: Codable, Hashable {
+                        let danmaku: String?
+                        let play: String?
+                    }
                 }
 
                 struct Pgc: Codable, Hashable {
