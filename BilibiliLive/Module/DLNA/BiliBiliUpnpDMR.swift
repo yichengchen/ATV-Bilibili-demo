@@ -337,7 +337,7 @@ class BiliBiliUpnpDMR: NSObject {
 extension BiliBiliUpnpDMR {
     func playLive(roomID: Int) {
         let player = LivePlayerViewController()
-        player.room = LiveRoom(title: "", room_id: roomID, uname: "", keyframe: nil, face: nil, cover_from_user: nil)
+        player.room = LiveRoom(title: "", room_id: roomID, uname: "", area_v2_name: "", keyframe: nil, face: nil, cover_from_user: nil)
         UIViewController.topMostViewController().present(player, animated: true)
     }
 
