@@ -642,6 +642,7 @@ struct FavData: PlayableData, Codable {
     var pic: URL? { URL(string: cover) }
     let duration: Int
     let cnt_info: CountInfo?
+    let pubtime: Int
 
     struct Ogv: Codable, Hashable {
         let season_id: Int?
@@ -660,6 +661,11 @@ struct FavData: PlayableData, Codable {
         return 0
     }
 
+    var date: String? {
+        return ogv == nil ? DateFormatter.stringFor(timestamp: pubtime) : nil
+    }
+
+    var avatar: URL? { URL(string: upper.face ?? "") }
     var overlay: DisplayOverlay? {
         var leftItems = [DisplayOverlay.DisplayOverlayItem]()
         var rightItems = [DisplayOverlay.DisplayOverlayItem]()
