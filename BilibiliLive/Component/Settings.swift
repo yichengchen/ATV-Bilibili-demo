@@ -122,6 +122,36 @@ enum Settings {
 
     @UserDefaultCodable("Settings.danmuStrokeAlpha", defaultValue: .alpha_08)
     static var danmuStrokeAlpha: DanmuStrokeAlpha
+
+    @UserDefaultCodable("Search.histories", defaultValue: [])
+    static var searchHistories: [String]
+}
+
+extension Settings {
+    static func addHistory(_ query: String, limitSize: Int = 10) {
+        if query.isEmpty {
+            return
+        }
+
+        var histories = Settings.searchHistories
+        if histories.first == query {
+            return
+        }
+
+        if let i = histories.firstIndex(of: query) {
+            histories.remove(at: i)
+        }
+
+        histories.insert(query, at: 0)
+        if histories.count > limitSize {
+            histories.removeLast()
+        }
+        Settings.searchHistories = histories
+    }
+
+    static func clearHistory() {
+        Settings.searchHistories = []
+    }
 }
 
 struct MediaQuality {
