@@ -259,13 +259,22 @@ enum ApiRequest {
             let title: String
             let param: String
             let args: Args
+            let avatar_info: Avatar
             let idx: Int
             let cover: String
             let goto: String
-            let rcmd_reason: String?
+            let top_rcmd_reason: String?
+            let bottom_rcmd_reason: String?
+            let desc: String?
             let cover_left_text_1: String?
             let cover_left_text_2: String?
             let cover_left_text_3: String?
+
+            enum CodingKeys: String, CodingKey {
+                case can_play, title, param, args, idx, cover, goto, top_rcmd_reason, bottom_rcmd_reason, desc
+                case cover_left_text_1, cover_left_text_2, cover_left_text_3
+                case avatar_info = "avatar"
+            }
 
             var ownerName: String {
                 return args.up_name ?? ""
@@ -275,8 +284,20 @@ enum ApiRequest {
                 return URL(string: cover)
             }
 
-            var date: String? { rcmd_reason }
+            var date: String? {
+                if let top_rcmd_reason {
+                    return top_rcmd_reason
+                }
+                if let bottom_rcmd_reason {
+                    return bottom_rcmd_reason
+                }
+                if let desc, desc.contains("·") {
+                    return desc.components(separatedBy: "·").last?.trimmingCharacters(in: .whitespaces)
+                }
+                return nil
+            }
 
+            var avatar: URL? { URL(string: avatar_info.cover ?? "") }
             var overlay: DisplayOverlay? {
                 var leftItems = [DisplayOverlay.DisplayOverlayItem]()
                 var rightItems = [DisplayOverlay.DisplayOverlayItem]()
@@ -296,6 +317,10 @@ enum ApiRequest {
         struct Args: Codable, Hashable {
             let up_name: String?
 //            let aid: Int?
+        }
+
+        struct Avatar: Codable, Hashable {
+            let cover: String?
         }
     }
 
@@ -346,19 +371,34 @@ enum ApiRequest {
     }
 
     struct UpSpaceListData: Codable, Hashable, DisplayData, PlayableData {
-        var pic: URL? { return cover }
-
-        var aid: Int { return Int(param) ?? 0 }
-
         let title: String
         let author: String
         let param: String
         let cover: URL?
+        let play: Int
+        let danmaku: Int
+        let duration: Int
+        let ctime: Int
+
+        // PlayableData
+        var aid: Int { return Int(param) ?? 0 }
+        var cid: Int { return 0 }
+
+        // DisplayData
         var ownerName: String {
             return author
         }
 
-        var cid: Int { return 0 }
+        var pic: URL? { return cover }
+        var date: String? { DateFormatter.stringFor(timestamp: ctime) }
+        var overlay: DisplayOverlay? {
+            var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+            var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: play == 0 ? "-" : play.numberString()))
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: danmaku == 0 ? "-" : danmaku.numberString()))
+            rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
+            return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+        }
     }
 
     static func requestUpSpaceVideo(mid: Int, lastAid: Int?, pageSize: Int = 20) async throws -> [UpSpaceListData] {
