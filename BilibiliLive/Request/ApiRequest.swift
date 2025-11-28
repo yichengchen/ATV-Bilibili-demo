@@ -346,19 +346,34 @@ enum ApiRequest {
     }
 
     struct UpSpaceListData: Codable, Hashable, DisplayData, PlayableData {
-        var pic: URL? { return cover }
-
-        var aid: Int { return Int(param) ?? 0 }
-
         let title: String
         let author: String
         let param: String
         let cover: URL?
+        let play: Int
+        let danmaku: Int
+        let duration: Int
+        let ctime: Int
+
+        // PlayableData
+        var aid: Int { return Int(param) ?? 0 }
+        var cid: Int { return 0 }
+
+        // DisplayData
         var ownerName: String {
             return author
         }
 
-        var cid: Int { return 0 }
+        var pic: URL? { return cover }
+        var date: String? { DateFormatter.stringFor(timestamp: ctime) }
+        var overlay: DisplayOverlay? {
+            var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+            var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: play == 0 ? "-" : play.numberString()))
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: danmaku == 0 ? "-" : danmaku.numberString()))
+            rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
+            return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+        }
     }
 
     static func requestUpSpaceVideo(mid: Int, lastAid: Int?, pageSize: Int = 20) async throws -> [UpSpaceListData] {
