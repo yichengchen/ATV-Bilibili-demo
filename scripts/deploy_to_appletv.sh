@@ -188,8 +188,9 @@ build_app() {
     print_info "开始构建..."
     echo ""
 
-    # 构建命令
-    if xcodebuild \
+    # 构建命令 - 使用 pipefail 确保正确检测构建失败
+    set -o pipefail
+    xcodebuild \
         -project "${PROJECT_NAME}.xcodeproj" \
         -scheme "$SCHEME" \
         -configuration "$BUILD_CONFIG" \
@@ -197,16 +198,23 @@ build_app() {
         -derivedDataPath "$derived_data_path" \
         -allowProvisioningUpdates \
         build 2>&1 | tee "$LOG_FILE" | \
-        grep -E --line-buffered "(BUILD SUCCEEDED|BUILD FAILED|error:|warning:.*error|Compiling|Linking)"; then
+        grep -E --line-buffered "(BUILD SUCCEEDED|BUILD FAILED|error:|Compiling|Linking)"
 
-        echo ""
+    local build_result=${PIPESTATUS[0]}
+    set +o pipefail
+
+    echo ""
+
+    # 检查构建结果
+    if [ $build_result -eq 0 ] && grep -q "BUILD SUCCEEDED" "$LOG_FILE"; then
         print_success "构建成功!"
         return 0
     else
-        echo ""
         print_error "构建失败!"
         print_info "查看完整日志: $LOG_FILE"
-        print_info "快速查看错误: grep 'error:' $LOG_FILE"
+        echo ""
+        print_info "错误信息:"
+        grep "error:" "$LOG_FILE" | head -5
         return 1
     fi
 }

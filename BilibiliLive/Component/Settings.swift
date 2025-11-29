@@ -325,6 +325,30 @@ extension MediaQualityEnum {
             return 976
         }
     }
+
+    /// 是否需要大会员
+    var requiresVIP: Bool {
+        switch self {
+        case .quality_1080p:
+            return false
+        case .quality_2160p, .quality_hdr_dolby:
+            return true
+        }
+    }
+
+    /// 根据 qn 值获取对应的枚举
+    static func from(qn: Int) -> MediaQualityEnum? {
+        switch qn {
+        case 116:
+            return .quality_1080p
+        case 120:
+            return .quality_2160p
+        case 126:
+            return .quality_hdr_dolby
+        default:
+            return nil
+        }
+    }
 }
 
 /// 循环播放模式

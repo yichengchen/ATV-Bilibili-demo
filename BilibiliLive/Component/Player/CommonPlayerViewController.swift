@@ -162,7 +162,10 @@ extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
     @objc func playerViewController(_ playerViewController: AVPlayerViewController,
                                     restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void)
     {
-        let presentedViewController = UIViewController.topMostViewController()
+        guard let presentedViewController = UIViewController.topMostViewController() else {
+            completionHandler(false)
+            return
+        }
         guard let containerPlayer = PipRecorder.shared.playingPipViewController.first(where: { $0.playerVC == playerViewController }) else {
             completionHandler(false)
             return
