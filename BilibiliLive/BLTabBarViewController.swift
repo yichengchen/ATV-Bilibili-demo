@@ -43,6 +43,10 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         rank.tabBarItem.title = "排行榜"
         vcs.append(rank)
 
+        let historyVC = HistoryViewController()
+        historyVC.tabBarItem.title = "历史"
+        vcs.append(historyVC)
+
         let followVC = FollowsViewController()
         followVC.tabBarItem.title = "关注"
         vcs.append(followVC)
@@ -50,6 +54,10 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         let fav = FavoriteViewController()
         fav.tabBarItem.title = "收藏"
         vcs.append(fav)
+
+        let uploads = MyUploadsViewController()
+        uploads.tabBarItem.title = "投稿"
+        vcs.append(uploads)
 
         let persionVC = PersonalViewController.create()
         persionVC.extendedLayoutIncludesOpaqueBars = true

@@ -73,7 +73,11 @@ class BMaskProvider: MaskProvider {
 
             var buffer2 = buffer.subdata(in: 0..<Data.Index(length))
             buffer = buffer.subdata(in: Int(length)..<buffer.count)
-            buffer2 = try! buffer2.gunzipped()
+            guard let decompressed = try? buffer2.gunzipped() else {
+                Logger.warn("[BMaskProvider] Failed to decompress gzip data")
+                continue
+            }
+            buffer2 = decompressed
             autoreleasepool {
                 while buffer2.count > 0 {
                     let offset = buffer2[0..<4].withUnsafeBytes({ $0.load(as: UInt32.self) }).bigEndian
@@ -87,10 +91,18 @@ class BMaskProvider: MaskProvider {
                     }
                     lastTime = time
                     let b64Data = buffer2[12..<12 + Int(offset)]
-                    var b64String = String(data: b64Data, encoding: .utf8)!.replacingOccurrences(of: "\n", with: "")
+                    guard let b64Raw = String(data: b64Data, encoding: .utf8) else {
+                        Logger.warn("[BMaskProvider] Failed to decode base64 string")
+                        continue
+                    }
+                    var b64String = b64Raw.replacingOccurrences(of: "\n", with: "")
                     b64String = String(b64String.components(separatedBy: ";base64,").last ?? b64String)
-                    let newb64Data = Data(base64Encoded: b64String)!
-                    let decodedString = String(data: newb64Data, encoding: .utf8)!
+                    guard let newb64Data = Data(base64Encoded: b64String),
+                          let decodedString = String(data: newb64Data, encoding: .utf8)
+                    else {
+                        Logger.warn("[BMaskProvider] Failed to decode base64 data")
+                        continue
+                    }
 
                     let paths = SVGBezierPath.paths(fromSVGString: decodedString)
 

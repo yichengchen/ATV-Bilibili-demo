@@ -84,8 +84,8 @@ enum Settings {
     @UserDefault("Settings.continouslyPlay", defaultValue: true)
     static var continouslyPlay: Bool
 
-    @UserDefault("Settings.loopPlay", defaultValue: false)
-    static var loopPlay: Bool
+    @UserDefaultCodable("Settings.loopMode", defaultValue: .none)
+    static var loopMode: LoopMode
 
     @UserDefault("Settings.play.autoSkip", defaultValue: true)
     static var autoSkip: Bool
@@ -323,6 +323,35 @@ extension MediaQualityEnum {
             return 144
         case .quality_hdr_dolby:
             return 976
+        }
+    }
+}
+
+/// 循环播放模式
+enum LoopMode: String, Codable, CaseIterable {
+    case none // 不循环
+    case single // 单集循环
+    case list // 列表循环
+
+    var title: String {
+        switch self {
+        case .none:
+            return "不循环"
+        case .single:
+            return "单集循环"
+        case .list:
+            return "列表循环"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .none:
+            return "arrow.right"
+        case .single:
+            return "repeat.1"
+        case .list:
+            return "repeat"
         }
     }
 }

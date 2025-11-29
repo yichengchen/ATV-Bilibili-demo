@@ -169,7 +169,14 @@ class SettingsViewController: UIViewController {
             SectionModel(title: "进度控制") {
                 Toggle(title: "从上次退出的位置继续播放", setting: Settings.continuePlay, onChange: Settings.continuePlay.toggle())
                 Toggle(title: "自动跳过片头片尾", setting: Settings.autoSkip, onChange: Settings.autoSkip.toggle())
-                Toggle(title: "连续播放", setting: Settings.continouslyPlay, onChange: Settings.continouslyPlay.toggle())
+                Toggle(title: "自动连播", setting: Settings.continouslyPlay, onChange: Settings.continouslyPlay.toggle())
+                Actions(title: "循环模式", message: "播放结束后的行为",
+                        current: Settings.loopMode.title,
+                        options: LoopMode.allCases,
+                        optionString: LoopMode.allCases.map({ $0.title }))
+                {
+                    Settings.loopMode = $0
+                }
                 Actions(title: "空降助手广告屏蔽", message: "",
                         current: Settings.enableSponsorBlock.title,
                         options: SponsorBlockType.allCases,

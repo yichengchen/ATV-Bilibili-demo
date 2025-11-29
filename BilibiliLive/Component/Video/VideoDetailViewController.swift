@@ -157,6 +157,12 @@ class VideoDetailViewController: UIViewController {
             vc.present(self, animated: false) { [weak self] in
                 guard let self else { return }
                 let player = VideoPlayerViewController(playInfo: PlayInfo(aid: self.aid, cid: self.cid, epid: self.epid, isBangumi: self.isBangumi))
+                // 设置推荐视频作为播放序列（如果有的话）
+                if let related = self.data?.Related, related.count > 0 {
+                    var seq = [PlayInfo(aid: self.aid, cid: self.cid, epid: self.epid, isBangumi: self.isBangumi)]
+                    seq.append(contentsOf: related.map({ PlayInfo(aid: $0.aid, cid: $0.cid) }))
+                    player.nextProvider = VideoNextProvider(seq: seq)
+                }
                 self.present(player, animated: true)
             }
         }
@@ -365,12 +371,20 @@ class VideoDetailViewController: UIViewController {
     @IBAction func actionPlay(_ sender: Any) {
         let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, isBangumi: isBangumi))
         player.data = data
-        if pages.count > 0, let index = pages.firstIndex(where: { $0.cid == cid }) {
+
+        // 优先使用分P列表作为播放序列
+        if pages.count > 1, let index = pages.firstIndex(where: { $0.cid == cid }) {
             let seq = pages.dropFirst(index).map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, isBangumi: isBangumi) })
             if seq.count > 0 {
                 let nextProvider = VideoNextProvider(seq: seq)
                 player.nextProvider = nextProvider
             }
+        } else if let related = data?.Related, related.count > 0 {
+            // 如果没有多分P，使用推荐视频作为播放序列
+            var seq = [PlayInfo(aid: aid, cid: cid, epid: epid, isBangumi: isBangumi)]
+            seq.append(contentsOf: related.map({ PlayInfo(aid: $0.aid, cid: $0.cid) }))
+            let nextProvider = VideoNextProvider(seq: seq)
+            player.nextProvider = nextProvider
         }
         present(player, animated: true, completion: nil)
     }
@@ -459,6 +473,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch collectionView {
         case pageCollectionView:
+            guard indexPath.item < pages.count else { return }
             let page = pages[indexPath.item]
             let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: isBangumi ? seasonId : nil, isBangumi: isBangumi))
             player.data = isBangumi ? nil : data
@@ -474,6 +489,7 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             let detail = ReplyDetailViewController(reply: reply)
             present(detail, animated: true)
         case ugcCollectionView:
+            guard indexPath.item < allUgcEpisodes.count else { return }
             let video = allUgcEpisodes[indexPath.item]
             if Settings.showRelatedVideoInCurrentVC {
                 aid = video.aid
@@ -484,15 +500,15 @@ extension VideoDetailViewController: UICollectionViewDelegate {
                 detailVC.present(from: self)
             }
         case recommandCollectionView:
-            if let video = data?.Related[indexPath.item] {
-                if Settings.showRelatedVideoInCurrentVC {
-                    aid = video.aid
-                    cid = video.cid
-                    Task { await fetchData() }
-                } else {
-                    let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
-                    detailVC.present(from: self)
-                }
+            guard indexPath.item < (data?.Related.count ?? 0),
+                  let video = data?.Related[indexPath.item] else { return }
+            if Settings.showRelatedVideoInCurrentVC {
+                aid = video.aid
+                cid = video.cid
+                Task { await fetchData() }
+            } else {
+                let detailVC = VideoDetailViewController.create(aid: video.aid, cid: video.cid)
+                detailVC.present(from: self)
             }
         default:
             break
@@ -520,8 +536,10 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         switch collectionView {
         case pageCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as! BLTextOnlyCollectionViewCell
-            let page = pages[indexPath.item]
-            cell.titleLabel.text = page.part
+            if indexPath.item < pages.count {
+                let page = pages[indexPath.item]
+                cell.titleLabel.text = page.part
+            }
             return cell
         case replysCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ReplyCell.self), for: indexPath) as! ReplyCell
@@ -531,12 +549,16 @@ extension VideoDetailViewController: UICollectionViewDataSource {
             return cell
         case ugcCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
-            let record = allUgcEpisodes[indexPath.row]
-            cell.update(data: record)
+            if indexPath.row < allUgcEpisodes.count {
+                let record = allUgcEpisodes[indexPath.row]
+                cell.update(data: record)
+            }
             return cell
         case recommandCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
-            if let related = data?.Related[indexPath.row] {
+            if indexPath.row < (data?.Related.count ?? 0),
+               let related = data?.Related[indexPath.row]
+            {
                 cell.update(data: related)
             }
             return cell

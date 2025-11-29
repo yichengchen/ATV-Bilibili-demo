@@ -92,7 +92,11 @@ public class NVASession: Hashable, Equatable {
         }
         _ = try socket.read() // 0x01
         frame.commandLength = try socket.read()
-        frame.command = try String(bytes: socket.read(length: Int(frame.commandLength)).reversed(), encoding: .utf8)!
+        guard let command = try String(bytes: socket.read(length: Int(frame.commandLength)).reversed(), encoding: .utf8) else {
+            Logger.warn("[NVASocket] Failed to decode command string")
+            return frame
+        }
+        frame.command = command
 
         if fst != 0xe0 || frame.paramCount == 1 {
             Logger.debug("reply: \(frame.command)")
@@ -100,13 +104,21 @@ public class NVASession: Hashable, Equatable {
         }
 
         frame.actionLength = try socket.read()
-        frame.action = try String(bytes: socket.read(length: Int(frame.actionLength)), encoding: .utf8)!
+        guard let action = try String(bytes: socket.read(length: Int(frame.actionLength)), encoding: .utf8) else {
+            Logger.warn("[NVASocket] Failed to decode action string")
+            return frame
+        }
+        frame.action = action
 
         if frame.paramCount == 3 {
             let p3L = try socket.read(length: 4)
             let part3Length = Data(p3L).reversed().withUnsafeBytes({ $0.load(as: UInt32.self) })
             frame.bodyLength = part3Length
-            frame.body = try String(bytes: socket.read(length: Int(frame.bodyLength)), encoding: .utf8)!
+            guard let body = try String(bytes: socket.read(length: Int(frame.bodyLength)), encoding: .utf8) else {
+                Logger.warn("[NVASocket] Failed to decode body string")
+                return frame
+            }
+            frame.body = body
         }
 
         return frame
@@ -119,7 +131,10 @@ public class NVASession: Hashable, Equatable {
     }
 
     func sendReply(content: [String: Any]) {
-        let str = try! JSON(content).rawData()
+        guard let str = try? JSON(content).rawData() else {
+            Logger.warn("[NVASocket] Failed to serialize reply content")
+            return
+        }
         let length = UInt32(str.count)
         var arr: [UInt8] = [0xc0, 0x01]
         currentVersion += 1
@@ -138,16 +153,23 @@ public class NVASession: Hashable, Equatable {
     }
 
     func sendCommand(action: String, content: [String: Any]) {
-        let str = try! JSON(content).rawData()
+        guard let str = try? JSON(content).rawData() else {
+            Logger.warn("[NVASocket] Failed to serialize command content")
+            return
+        }
+        guard let command = "Command".data(using: .ascii),
+              let actionData = action.data(using: .utf8)
+        else {
+            Logger.warn("[NVASocket] Failed to encode command/action")
+            return
+        }
         let length = UInt32(str.count)
         var arr = Data([0xe0, 0x03])
         currentVersion += 1
         arr.append(contentsOf: UInt32(currentVersion).toUInt8s)
-        let command = "Command".data(using: .ascii)!
         arr.append(0x01)
         arr.append(UInt8(command.count))
         arr.append(command)
-        let actionData = action.data(using: .ascii)!
         arr.append(UInt8(actionData.count))
         arr.append(actionData)
 
