@@ -248,7 +248,7 @@ extension VideoPlayerViewModel {
                 if area == areaList.last {
                     throw err
                 } else {
-                    print(err)
+                    Logger.debug("Area limit request failed for \(area): \(err.localizedDescription)")
                 }
             }
         }

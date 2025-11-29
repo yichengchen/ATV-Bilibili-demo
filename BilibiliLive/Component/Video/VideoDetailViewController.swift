@@ -76,7 +76,9 @@ class VideoDetailViewController: UIViewController {
     private var subscriptions = [AnyCancellable]()
 
     static func create(aid: Int, cid: Int?, epid: Int? = nil) -> VideoDetailViewController {
-        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
+        guard let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as? VideoDetailViewController else {
+            fatalError("VideoDetailViewController not found in Main storyboard")
+        }
         vc.aid = aid
         vc.cid = cid ?? 0
         vc.epid = epid ?? 0
@@ -84,13 +86,17 @@ class VideoDetailViewController: UIViewController {
     }
 
     static func create(epid: Int) -> VideoDetailViewController {
-        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
+        guard let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as? VideoDetailViewController else {
+            fatalError("VideoDetailViewController not found in Main storyboard")
+        }
         vc.epid = epid
         return vc
     }
 
     static func create(seasonId: Int) -> VideoDetailViewController {
-        let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as! VideoDetailViewController
+        guard let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as? VideoDetailViewController else {
+            fatalError("VideoDetailViewController not found in Main storyboard")
+        }
         vc.seasonId = seasonId
         return vc
     }
@@ -281,7 +287,7 @@ class VideoDetailViewController: UIViewController {
             }
 
         } catch let err {
-            print(err)
+            Logger.warn("Failed to fetch PGC data: \(err.localizedDescription)")
         }
 
         return false
@@ -535,27 +541,35 @@ extension VideoDetailViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         switch collectionView {
         case pageCollectionView:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as! BLTextOnlyCollectionViewCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as? BLTextOnlyCollectionViewCell else {
+                return UICollectionViewCell()
+            }
             if indexPath.item < pages.count {
                 let page = pages[indexPath.item]
                 cell.titleLabel.text = page.part
             }
             return cell
         case replysCollectionView:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ReplyCell.self), for: indexPath) as! ReplyCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ReplyCell.self), for: indexPath) as? ReplyCell else {
+                return UICollectionViewCell()
+            }
             if let reply = replys?.replies?[indexPath.item] {
                 cell.config(replay: reply)
             }
             return cell
         case ugcCollectionView:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as? RelatedVideoCell else {
+                return UICollectionViewCell()
+            }
             if indexPath.row < allUgcEpisodes.count {
                 let record = allUgcEpisodes[indexPath.row]
                 cell.update(data: record)
             }
             return cell
         case recommandCollectionView:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as? RelatedVideoCell else {
+                return UICollectionViewCell()
+            }
             if indexPath.row < (data?.Related.count ?? 0),
                let related = data?.Related[indexPath.row]
             {

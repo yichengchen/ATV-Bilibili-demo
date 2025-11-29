@@ -37,9 +37,9 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
 
     func setupCollectionView() {
         collectionVC.pageSize = 20
-        collectionVC.didSelect = {
-            [weak self] in
-            self?.goDetail(with: $0 as! T)
+        collectionVC.didSelect = { [weak self] data in
+            guard let record = data as? T else { return }
+            self?.goDetail(with: record)
         }
         collectionVC.loadMore = {
             [weak self] in
