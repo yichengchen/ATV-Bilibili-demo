@@ -17,7 +17,7 @@ class BiliBiliUpnpDMR: NSObject {
 
     weak var currentPlugin: BUpnpPlugin?
 
-    private var udp: GCDAsyncUdpSocket!
+    private var udp: GCDAsyncUdpSocket?
     private var httpServer = HttpServer()
     private var connectedSockets = [GCDAsyncSocket]()
     @MainActor private var sessions = Set<NVASession>()
@@ -26,18 +26,33 @@ class BiliBiliUpnpDMR: NSObject {
     private var boardcastTimer: Timer?
 
     private lazy var serverInfo: String = {
-        let file = Bundle.main.url(forResource: "DLNAInfo", withExtension: "xml")!
-        return try! String(contentsOf: file).replacingOccurrences(of: "{{UUID}}", with: bUuid)
+        guard let file = Bundle.main.url(forResource: "DLNAInfo", withExtension: "xml"),
+              let content = try? String(contentsOf: file)
+        else {
+            Logger.warn("Failed to load DLNAInfo.xml")
+            return ""
+        }
+        return content.replacingOccurrences(of: "{{UUID}}", with: bUuid)
     }()
 
     private lazy var nirvanaControl: String = {
-        let file = Bundle.main.url(forResource: "NirvanaControl", withExtension: "xml")!
-        return try! String(contentsOf: file)
+        guard let file = Bundle.main.url(forResource: "NirvanaControl", withExtension: "xml"),
+              let content = try? String(contentsOf: file)
+        else {
+            Logger.warn("Failed to load NirvanaControl.xml")
+            return ""
+        }
+        return content
     }()
 
     private lazy var avTransportScpd: String = {
-        let file = Bundle.main.url(forResource: "AvTransportScpd", withExtension: "xml")!
-        return try! String(contentsOf: file)
+        guard let file = Bundle.main.url(forResource: "AvTransportScpd", withExtension: "xml"),
+              let content = try? String(contentsOf: file)
+        else {
+            Logger.warn("Failed to load AvTransportScpd.xml")
+            return ""
+        }
+        return content
     }()
 
     private lazy var bUuid: String = {
@@ -154,11 +169,12 @@ class BiliBiliUpnpDMR: NSObject {
         ip = getIPAddress()
         if !started {
             do {
-                udp = GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
-                try udp.enableBroadcast(true)
-                try udp.bind(toPort: 1900)
-                try udp.joinMulticastGroup("239.255.255.250")
-                try udp.beginReceiving()
+                let socket = GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
+                udp = socket
+                try socket.enableBroadcast(true)
+                try socket.bind(toPort: 1900)
+                try socket.joinMulticastGroup("239.255.255.250")
+                try socket.beginReceiving()
                 try httpServer.start(9958)
                 started = true
                 Logger.info("dmr started")
@@ -169,7 +185,7 @@ class BiliBiliUpnpDMR: NSObject {
         }
         boardcastTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) {
             [weak self] _ in
-            guard let self else { return }
+            guard let self, let udp = self.udp else { return }
             if let data = getSSDPNotify().data(using: .utf8) {
                 udp.send(data, toHost: "239.255.255.250", port: 1900, withTimeout: 1, tag: 0)
             }
@@ -338,7 +354,7 @@ extension BiliBiliUpnpDMR {
     func playLive(roomID: Int) {
         let player = LivePlayerViewController()
         player.room = LiveRoom(title: "", room_id: roomID, uname: "", area_v2_name: "", keyframe: nil, face: nil, cover_from_user: nil)
-        UIViewController.topMostViewController().present(player, animated: true)
+        UIViewController.topMostViewController()?.present(player, animated: true)
     }
 
     func playVideo(json: JSON) {
@@ -352,10 +368,14 @@ extension BiliBiliUpnpDMR {
         } else {
             player = VideoDetailViewController.create(aid: aid, cid: cid)
         }
-        let topMost = UIViewController.topMostViewController()
-        if let _ = AppDelegate.shared.window!.rootViewController?.presentedViewController {
-            AppDelegate.shared.window!.rootViewController?.dismiss(animated: false) {
-                player.present(from: UIViewController.topMostViewController(), direatlyEnterVideo: true)
+        guard let topMost = UIViewController.topMostViewController() else { return }
+        if let rootVC = AppDelegate.shared.window?.rootViewController,
+           rootVC.presentedViewController != nil
+        {
+            rootVC.dismiss(animated: false) {
+                if let newTopMost = UIViewController.topMostViewController() {
+                    player.present(from: newTopMost, direatlyEnterVideo: true)
+                }
             }
         } else {
             player.present(from: topMost, direatlyEnterVideo: true)
@@ -378,8 +398,8 @@ extension BiliBiliUpnpDMR: GCDAsyncUdpSocketDelegate {
         let str = String(data: data, encoding: .utf8)
         if str?.contains("ssdp:discover") == true {
             Logger.debug("handle ssdp discover from: \(ipAddress)")
-            let data = getSSDPResp().data(using: .utf8)!
-            sock.send(data, toAddress: address, withTimeout: -1, tag: 0)
+            guard let respData = getSSDPResp().data(using: .utf8) else { return }
+            sock.send(respData, toAddress: address, withTimeout: -1, tag: 0)
         }
     }
 }

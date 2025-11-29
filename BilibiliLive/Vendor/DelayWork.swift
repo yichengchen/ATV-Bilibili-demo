@@ -30,7 +30,11 @@ class DelayWork {
             do {
                 try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                 try await work()
-            } catch {}
+            } catch is CancellationError {
+                // Task was cancelled, this is expected behavior
+            } catch {
+                Logger.debug("DelayWork task error: \(error.localizedDescription)")
+            }
         }
     }
 
