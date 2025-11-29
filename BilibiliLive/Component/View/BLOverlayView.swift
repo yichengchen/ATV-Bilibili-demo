@@ -2,7 +2,7 @@
 //  BLOverlayView.swift
 //  BilibiliLive
 //
-//  Created by cxf on 2025/11/24.
+//  Created by bitxeno on 2025/11/24.
 //
 
 import SnapKit
@@ -38,6 +38,25 @@ class BLOverlayView: UIView {
         stack.spacing = 12
         stack.alignment = .center
         return stack
+    }()
+
+    // 4. 右上角角标容器
+    private let badgeContainer: UIView = {
+        let view = UIView()
+        view.backgroundColor = .systemPink
+        view.layer.cornerRadius = 12
+        view.layer.maskedCorners = [.layerMinXMaxYCorner]
+        view.layer.masksToBounds = true
+        view.isHidden = true
+        return view
+    }()
+
+    private let badgeLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .white
+        label.font = .systemFont(ofSize: 20, weight: .semibold)
+        label.textAlignment = .center
+        return label
     }()
 
     // MARK: - Init
@@ -76,6 +95,9 @@ class BLOverlayView: UIView {
 
         addSubview(leftStackView)
         addSubview(rightStackView)
+
+        addSubview(badgeContainer)
+        badgeContainer.addSubview(badgeLabel)
     }
 
     private func setupConstraints() {
@@ -90,9 +112,30 @@ class BLOverlayView: UIView {
             make.trailing.equalToSuperview().offset(-8)
             make.bottom.equalToSuperview().offset(-6)
         }
+
+        // 角标
+        badgeContainer.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.trailing.equalToSuperview()
+        }
+
+        badgeLabel.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 6, left: 10, bottom: 6, right: 10))
+        }
     }
 
     // MARK: - Public API
+
+    /// 设置角标
+    func setBadge(text: String?, color: UIColor = .systemPink) {
+        if let text = text, !text.isEmpty {
+            badgeLabel.text = text
+            badgeContainer.backgroundColor = color
+            badgeContainer.isHidden = false
+        } else {
+            badgeContainer.isHidden = true
+        }
+    }
 
     /// 配置显示数据
     func configure(_ overlay: DisplayOverlay) {
@@ -110,6 +153,17 @@ class BLOverlayView: UIView {
         for item in overlay.rightItems {
             let itemView = createInfoItem(icon: item.icon, text: item.text)
             rightStackView.addArrangedSubview(itemView)
+        }
+
+        // 配置角标
+        if let badgeText = overlay.badge?.text, !badgeText.isEmpty {
+            badgeLabel.text = badgeText
+            badgeContainer.isHidden = false
+        } else {
+            badgeContainer.isHidden = true
+        }
+        if let color = overlay.badge?.color {
+            badgeContainer.backgroundColor = color
         }
     }
 

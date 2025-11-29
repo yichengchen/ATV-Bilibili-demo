@@ -64,6 +64,10 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
             searchVC.searchResultsUpdater = resultVC
             self?.present(UISearchContainerViewController(searchController: searchVC), animated: true)
         }))
+        cellModels.append(CellModel(title: "追番追剧", autoSelect: false, action: { [weak self] in
+            let controller = FollowBangumiViewController()
+            self?.present(controller, animated: true)
+        }))
         cellModels.append(CellModel(title: "关注UP", contentVC: FollowUpsViewController()))
         cellModels.append(CellModel(title: "稍后再看", contentVC: ToViewViewController()))
         cellModels.append(CellModel(title: "历史记录", contentVC: HistoryViewController()))
