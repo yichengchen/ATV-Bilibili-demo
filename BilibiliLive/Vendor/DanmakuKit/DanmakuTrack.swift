@@ -85,8 +85,9 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     }
 
     func shoot(danmaku: DanmakuCell) {
+        guard let view = view else { return }
         cells.append(danmaku)
-        danmaku.layer.position = CGPoint(x: view!.bounds.width + danmaku.bounds.width / 2.0, y: positionY)
+        danmaku.layer.position = CGPoint(x: view.bounds.width + danmaku.bounds.width / 2.0, y: positionY)
         danmaku.model?.track = index
         prepare(danmaku: danmaku)
         addAnimation(to: danmaku)
@@ -94,17 +95,18 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
 
     func canShoot(danmaku: DanmakuCellModel) -> Bool {
         guard !isOverlap else { return true }
+        guard let view = view else { return true }
         // 初中数学的追击问题
         guard let cell = cells.last else { return true }
         guard let cellModel = cell.model else { return true }
 
         // 1. 获取前一个cell剩余的运动时间
-        let preWidth = view!.bounds.width + cell.frame.width
-        let nextWidth = view!.bounds.width + danmaku.size.width
+        let preWidth = view.bounds.width + cell.frame.width
+        let nextWidth = view.bounds.width + danmaku.size.width
         let preRight = max(cell.realFrame.maxX, 0)
         let preCellTime = min(preRight / preWidth * CGFloat(cellModel.displayTime), CGFloat(cellModel.displayTime))
         // 2. 计算出路程差，减10防止刚好追上
-        let distance = view!.bounds.width - preRight - 10
+        let distance = view.bounds.width - preRight - 10
         guard distance >= 0 else {
             // 路程小于0说明当前轨道有一条弹幕刚发送
             return false
@@ -167,8 +169,9 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
 
     func sync(_ danmaku: DanmakuCell, at progress: Float) {
         guard let model = danmaku.model else { return }
-        let totalWidth = view!.frame.width + danmaku.bounds.width
-        let syncFrame = CGRect(x: view!.frame.width - totalWidth * CGFloat(progress), y: positionY - danmaku.bounds.height / 2.0, width: danmaku.bounds.width, height: danmaku.bounds.height)
+        guard let view = view else { return }
+        let totalWidth = view.frame.width + danmaku.bounds.width
+        let syncFrame = CGRect(x: view.frame.width - totalWidth * CGFloat(progress), y: positionY - danmaku.bounds.height / 2.0, width: danmaku.bounds.width, height: danmaku.bounds.height)
         cells.append(danmaku)
         danmaku.layer.opacity = 1
         danmaku.frame = syncFrame
@@ -182,8 +185,9 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     }
 
     func canSync(_ danmaku: DanmakuCellModel, at progress: Float) -> Bool {
-        let totalWidth = view!.frame.width + danmaku.size.width
-        let syncFrame = CGRect(x: view!.frame.width - totalWidth * CGFloat(progress), y: positionY - danmaku.size.height / 2.0, width: danmaku.size.width, height: danmaku.size.height)
+        guard let view = view else { return true }
+        let totalWidth = view.frame.width + danmaku.size.width
+        let syncFrame = CGRect(x: view.frame.width - totalWidth * CGFloat(progress), y: positionY - danmaku.size.height / 2.0, width: danmaku.size.width, height: danmaku.size.height)
         return cells.first(where: { cell -> Bool in
             // realFrame是presentationLayer的frame，只有坐标是可靠的，size并不可靠，因此这里要使用cell设置size
             let cellRealyFrame = CGRect(x: cell.realFrame.midX - cell.bounds.width / 2.0, y: cell.realFrame.midY - cell.bounds.height / 2.0, width: cell.bounds.width, height: cell.bounds.height)
@@ -217,8 +221,9 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
 
     private func addAnimation(to danmaku: DanmakuCell) {
         guard let cellModel = danmaku.model else { return }
+        guard let view = view else { return }
         danmaku.animationBeginTime = CFAbsoluteTimeGetCurrent()
-        let rate = max(danmaku.frame.maxX / (view!.bounds.width + danmaku.frame.width), 0)
+        let rate = max(danmaku.frame.maxX / (view.bounds.width + danmaku.frame.width), 0)
         let animation = CABasicAnimation(keyPath: "position.x")
         animation.beginTime = CACurrentMediaTime()
         animation.duration = (cellModel.displayTime * Double(rate)) / Double(playingSpeed)
@@ -237,8 +242,9 @@ class DanmakuFloatingTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
 class DanmakuVerticalTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     var positionY: CGFloat = 0 {
         didSet {
+            guard let view = view else { return }
             for cell in cells {
-                cell.layer.position = CGPoint(x: view!.bounds.width / 2.0, y: positionY)
+                cell.layer.position = CGPoint(x: view.bounds.width / 2.0, y: positionY)
             }
         }
     }
@@ -264,8 +270,9 @@ class DanmakuVerticalTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
     }
 
     func shoot(danmaku: DanmakuCell) {
+        guard let view = view else { return }
         cells.append(danmaku)
-        danmaku.layer.position = CGPoint(x: view!.bounds.width / 2.0, y: positionY)
+        danmaku.layer.position = CGPoint(x: view.bounds.width / 2.0, y: positionY)
         danmaku.model?.track = index
         prepare(danmaku: danmaku)
         addAnimation(to: danmaku)
@@ -313,10 +320,11 @@ class DanmakuVerticalTrack: NSObject, DanmakuTrack, CAAnimationDelegate {
 
     func sync(_ danmaku: DanmakuCell, at progress: Float) {
         guard let model = danmaku.model else { return }
+        guard let view = view else { return }
         cells.append(danmaku)
         danmaku.animationTime = model.displayTime * Double(progress)
         danmaku.model?.track = index
-        danmaku.layer.position = CGPoint(x: view!.bounds.width / 2.0, y: positionY)
+        danmaku.layer.position = CGPoint(x: view.bounds.width / 2.0, y: positionY)
         danmaku.layer.opacity = 1
     }
 

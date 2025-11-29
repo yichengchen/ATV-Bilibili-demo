@@ -611,7 +611,9 @@ private extension DanmakuView {
         } else {
             cell?.frame = frame
             cell?.model = danmaku
-            delegate?.danmakuView(self, dequeueReusable: cell!)
+            if let cell = cell {
+                delegate?.danmakuView(self, dequeueReusable: cell)
+            }
         }
         return cell
     }

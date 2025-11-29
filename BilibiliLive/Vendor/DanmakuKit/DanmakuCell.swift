@@ -44,8 +44,8 @@ open class DanmakuCell: UIView {
 
 extension DanmakuCell {
     var realFrame: CGRect {
-        if layer.presentation() != nil {
-            return layer.presentation()!.frame
+        if let presentationLayer = layer.presentation() {
+            return presentationLayer.frame
         } else {
             return frame
         }

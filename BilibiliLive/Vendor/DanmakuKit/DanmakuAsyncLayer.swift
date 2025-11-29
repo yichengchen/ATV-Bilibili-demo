@@ -19,7 +19,7 @@ class Sentinel {
     }
 }
 
-var pool: DanmakuQueuePool!
+var pool: DanmakuQueuePool?
 
 class DanmakuAsyncLayer: CALayer {
     /// When true, it is drawn asynchronously and is ture by default.
@@ -79,7 +79,7 @@ class DanmakuAsyncLayer: CALayer {
             let scale = contentsScale
             let opaque = isOpaque
             let backgroundColor = (opaque && self.backgroundColor != nil) ? self.backgroundColor : nil
-            pool.queue.async {
+            pool?.queue.async {
                 guard !isCancelled() else { return }
                 let format = UIGraphicsImageRendererFormat.preferred()
                 format.opaque = opaque
