@@ -170,8 +170,9 @@ class LivePlayerViewModel {
     }
 
     @MainActor private func initDanmu() async -> [CommonPlayerPlugin] {
-        danMuProvider = LiveDanMuProvider(roomID: roomID, removeDup: Settings.enableDanmuRemoveDup)
-        let danmuPlugin = DanmuViewPlugin(provider: danMuProvider!)
+        let provider = LiveDanMuProvider(roomID: roomID, removeDup: Settings.enableDanmuRemoveDup)
+        danMuProvider = provider
+        let danmuPlugin = DanmuViewPlugin(provider: provider)
 
         try? await danMuProvider?.start()
         var plugins: [CommonPlayerPlugin] = [danmuPlugin]

@@ -38,7 +38,9 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
 
     @MainActor
     private func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?) async throws {
-        let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
+        guard let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play) else {
+            throw "Invalid play URL"
+        }
         let headers: [String: String] = [
             "User-Agent": Keys.userAgent,
             "Referer": Keys.referer(for: playData.aid),

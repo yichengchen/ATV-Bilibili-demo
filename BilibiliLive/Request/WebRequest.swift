@@ -601,10 +601,8 @@ struct HistoryData: DisplayData, Codable {
     let title: String
     var ownerName: String { owner.name }
     var avatar: URL? {
-        if owner.face != nil {
-            return URL(string: owner.face!)
-        }
-        return nil
+        guard let face = owner.face else { return nil }
+        return URL(string: face)
     }
 
     let pic: URL?
@@ -791,10 +789,8 @@ extension VideoDetail: DisplayData {
     var ownerName: String { View.owner.name }
     var pic: URL? { View.pic }
     var avatar: URL? {
-        if View.owner.face != nil {
-            return URL(string: View.owner.face!)
-        }
-        return nil
+        guard let face = View.owner.face else { return nil }
+        return URL(string: face)
     }
 
     var date: String? { DateFormatter.stringFor(timestamp: View.pubdate) }
@@ -803,10 +799,8 @@ extension VideoDetail: DisplayData {
 extension VideoDetail.Info: DisplayData, PlayableData {
     var ownerName: String { owner.name }
     var avatar: URL? {
-        if owner.face != nil {
-            return URL(string: owner.face!)
-        }
-        return nil
+        guard let face = owner.face else { return nil }
+        return URL(string: face)
     }
 
     var date: String? { DateFormatter.stringFor(timestamp: pubdate) }

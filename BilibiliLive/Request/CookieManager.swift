@@ -50,8 +50,11 @@ class CookieHandler {
     let cookieStorage = HTTPCookieStorage.shared
 
     func getCookie(forURL url: String) -> [HTTPCookie] {
-        let computedUrl = URL(string: url)
-        let cookies = cookieStorage.cookies(for: computedUrl!) ?? []
+        guard let computedUrl = URL(string: url) else {
+            Logger.warn("CookieHandler: Invalid URL string: \(url)")
+            return []
+        }
+        let cookies = cookieStorage.cookies(for: computedUrl) ?? []
         return cookies
     }
 

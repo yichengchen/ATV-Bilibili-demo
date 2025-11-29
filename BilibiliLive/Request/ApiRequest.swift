@@ -60,8 +60,12 @@ enum ApiRequest {
             .joined(separator: "&")
         rawParam.append(appsec)
 
+        guard let paramData = rawParam.data(using: .utf8) else {
+            Logger.warn("ApiRequest: Failed to encode parameters to UTF-8")
+            return newParam
+        }
         let md5 = Insecure.MD5
-            .hash(data: rawParam.data(using: .utf8)!)
+            .hash(data: paramData)
             .map { String(format: "%02hhx", $0) }
             .joined()
         newParam["sign"] = md5
