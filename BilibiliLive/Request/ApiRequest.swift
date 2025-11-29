@@ -92,7 +92,7 @@ enum ApiRequest {
             switch response.result {
             case let .success(data):
                 let json = JSON(data)
-                print(json)
+                Logger.debug("API response: \(json)")
                 let errorCode = json["code"].intValue
                 if errorCode != 0 {
                     if errorCode == -101 {
@@ -102,13 +102,13 @@ enum ApiRequest {
                         }
                     }
                     let message = json["message"].stringValue
-                    print(errorCode, message)
+                    Logger.warn("API error: \(errorCode), \(message)")
                     complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }
                 complete?(.success(json))
             case let .failure(err):
-                print(err)
+                Logger.warn("API network error: \(err.localizedDescription)")
                 complete?(.failure(.networkFail))
             }
         }
@@ -130,7 +130,7 @@ enum ApiRequest {
                     let object = try decoder.decode(T.self, from: data)
                     complete?(.success(object))
                 } catch let err {
-                    print(err)
+                    Logger.warn("API decode error: \(err.localizedDescription)")
                     complete?(.failure(.decodeFail(message: err.localizedDescription + String(describing: err))))
                 }
             case let .failure(err):
@@ -167,7 +167,7 @@ enum ApiRequest {
             case let .success(res):
                 handler?(res.authCode, res.url)
             case let .failure(error):
-                print(error)
+                Logger.warn("Login QR error: \(error)")
             }
         }
     }
@@ -246,7 +246,7 @@ enum ApiRequest {
                 CookieHandler.shared.saveCookie(list: cookies)
                 AccountManager.shared.updateActiveAccount(token: res.tokenInfo, cookies: cookies)
             case let .failure(err):
-                print(err)
+                Logger.warn("SSO cookie error: \(err)")
             }
         }
     }

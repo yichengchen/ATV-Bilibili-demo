@@ -90,7 +90,7 @@ enum WebRequest {
             case let .success(data):
                 complete?(.success(data))
             case let .failure(err):
-                print(err)
+                Logger.warn("WebRequest network error: \(err.localizedDescription)")
                 complete?(.failure(.networkFail))
             }
         }
@@ -128,12 +128,12 @@ enum WebRequest {
                 let errorCode = json["code"].intValue
                 if errorCode != 0 {
                     let message = json["message"].stringValue
-                    print(errorCode, message)
+                    Logger.warn("WebRequest API error: \(errorCode), \(message)")
                     complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }
                 let dataj = json[dataObj]
-                print("\(url) response: \(json)")
+                Logger.debug("\(url) response: \(json)")
                 complete?(.success(dataj))
             case let .failure(err):
                 complete?(.failure(err))
@@ -571,10 +571,9 @@ extension WebRequest {
         request(method: .post, url: EndPoint.logout) {
             (result: Result<[String: String], RequestError>) in
             if let details = try? result.get() {
-                print("logout success")
-                print(details)
+                Logger.info("Logout success: \(details)")
             } else {
-                print("logout fail")
+                Logger.warn("Logout failed")
             }
             CookieHandler.shared.removeCookie()
             complete?()

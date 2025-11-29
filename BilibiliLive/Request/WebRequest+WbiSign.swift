@@ -95,7 +95,9 @@ extension WebRequest {
                         completion(accessId)
                         return
                     }
-                } catch {}
+                } catch {
+                    Logger.debug("WebId regex error: \(error.localizedDescription)")
+                }
 
                 completion(nil)
             }
@@ -223,7 +225,7 @@ extension WebRequest {
                     completion(query)
                 }
             case let .failure(error):
-                print("Error getting keys: \(error)")
+                Logger.warn("Error getting WBI keys: \(error)")
                 completion(nil)
             }
         }
