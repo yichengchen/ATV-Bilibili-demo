@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root xmlns="urn:schemas-upnp-org:device-1-0">
+  <specVersion>
+    <major>1</major>
+    <minor>0</minor>
+  </specVersion>
+  <device>
+    <deviceType>urn:dial-multiscreen-org:device:dial:1</deviceType>
+    <friendlyName>我的小电视</friendlyName>
+    <manufacturer>Bilibili Inc.</manufacturer>
+    <manufacturerURL>https://bilibili.com/</manufacturerURL>
+    <modelDescription>云视听小电视</modelDescription>
+    <modelName>BRAVIA 4K 2015</modelName>
+    <UDN>uuid:{{UUID}}</UDN>
+    <serviceList>
+      <service>
+        <serviceType>urn:dial-multiscreen-org:service:dial:1</serviceType>
+        <serviceId>urn:dial-multiscreen-org:serviceId:dial</serviceId>
+        <controlURL>/apps</controlURL>
+        <eventSubURL>/dial/event</eventSubURL>
+        <SCPDURL>/dial/service.xml</SCPDURL>
+      </service>
+    </serviceList>
+  </device>
+</root>

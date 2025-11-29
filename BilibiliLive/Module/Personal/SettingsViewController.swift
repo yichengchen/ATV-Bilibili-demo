@@ -119,6 +119,12 @@ class SettingsViewController: UIViewController {
                     BiliBiliUpnpDMR.shared.start()
                 }
 
+                CellModel(title: "扫码投屏", desp: "显示二维码") { [weak self] _ in
+                    let qrVC = QRCastViewController()
+                    qrVC.modalPresentationStyle = .fullScreen
+                    self?.present(qrVC, animated: true)
+                }
+
                 Toggle(title: "热门个性化推荐", setting: Settings.requestHotWithoutCookie, onChange: Settings.requestHotWithoutCookie.toggle())
             }
 
