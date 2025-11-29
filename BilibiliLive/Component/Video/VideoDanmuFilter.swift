@@ -43,7 +43,7 @@ class VideoDanmuFilter {
     func update() async -> String {
         VideoDanmuFilterStorage.lastUpdate = Date()
         let data = await WebRequest.requestDanmuFilterList()
-        let rules = data.rule.filter({ $0.type == 0 || $0.type == 1 })
+        let rules = (data.rule ?? []).filter({ $0.type == 0 || $0.type == 1 })
         if !rules.isEmpty {
             VideoDanmuFilterStorage.filters = rules
             refreshCache(rules: rules)
@@ -87,7 +87,7 @@ private struct VideoDanmuFilterData: Codable {
         let type: Int
     }
 
-    let rule: [Rule]
+    let rule: [Rule]?
     let toast: String?
 }
 
