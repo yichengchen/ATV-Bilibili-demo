@@ -292,9 +292,11 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         }
 
         // i-frame
-        if let video = videos.last, let url = video.playableURLs.first {
+        if let video = videos.last, let url = video.playableURLs.first,
+           let width = video.width, let height = video.height
+        {
             let media = """
-            #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=\(video.bandwidth),RESOLUTION=\(video.width!)x\(video.height!),URI="\(URLs.customDashPrefix)\(videoInfo.count)"
+            #EXT-X-I-FRAME-STREAM-INF:BANDWIDTH=\(video.bandwidth),RESOLUTION=\(width)x\(height),URI="\(URLs.customDashPrefix)\(videoInfo.count)"
 
             """
             masterPlaylist.append(media)
@@ -358,19 +360,27 @@ private extension BilibiliVideoResourceLoaderDelegate {
             }
         }
         if urlStr.hasPrefix(URLs.customSubtitlePrefix) {
-            let url = String(urlStr.dropFirst(URLs.customSubtitlePrefix.count))
-            let req = url.removingPercentEncoding ?? url
+            let urlPath = String(urlStr.dropFirst(URLs.customSubtitlePrefix.count))
+            let req = urlPath.removingPercentEncoding ?? urlPath
             Task {
                 do {
                     if subtitles[req] == nil {
-                        let content = try await WebRequest.requestSubtitle(url: URL(string: req)!)
+                        guard let subtitleURL = URL(string: req) else {
+                            loadingRequest.finishLoading(with: NSError(domain: NSURLErrorDomain, code: NSURLErrorBadURL, userInfo: nil))
+                            return
+                        }
+                        let content = try await WebRequest.requestSubtitle(url: subtitleURL)
                         let vtt = BVideoUrlUtils.convertToVTT(subtitle: content)
                         subtitles[req] = vtt
                     }
                     let port = try self.httpServer.port()
-                    let url = "http://127.0.0.1:\(port)/subtitle?u=" + url
-                    let redirectRequest = URLRequest(url: URL(string: url)!)
-                    let redirectResponse = HTTPURLResponse(url: URL(string: url)!, statusCode: 302, httpVersion: nil, headerFields: nil)
+                    let redirectUrlString = "http://127.0.0.1:\(port)/subtitle?u=" + urlPath
+                    guard let redirectURL = URL(string: redirectUrlString) else {
+                        loadingRequest.finishLoading(with: NSError(domain: NSURLErrorDomain, code: NSURLErrorBadURL, userInfo: nil))
+                        return
+                    }
+                    let redirectRequest = URLRequest(url: redirectURL)
+                    let redirectResponse = HTTPURLResponse(url: redirectURL, statusCode: 302, httpVersion: nil, headerFields: nil)
 
                     loadingRequest.redirect = redirectRequest
                     loadingRequest.response = redirectResponse

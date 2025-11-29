@@ -34,7 +34,7 @@ class SponsorSkipPlugin: NSObject, CommonPlayerPlugin {
                 sendClipToPlayer(player: player)
             }
         } catch {
-            print(error)
+            Logger.debug("SponsorBlock error: \(error.localizedDescription)")
         }
     }
 

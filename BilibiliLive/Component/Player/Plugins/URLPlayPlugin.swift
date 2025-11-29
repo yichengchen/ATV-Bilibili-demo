@@ -23,11 +23,16 @@ class URLPlayPlugin: NSObject {
 
     func play(urlString: String) {
         currentUrl = urlString
+        guard let url = URL(string: urlString) else {
+            Logger.warn("Invalid URL string: \(urlString)")
+            onPlayFail?()
+            return
+        }
         let headers: [String: String] = [
             "User-Agent": Keys.userAgent,
             "Referer": referer,
         ]
-        let asset = AVURLAsset(url: URL(string: urlString)!, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
+        let asset = AVURLAsset(url: url, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
         let playerItem = AVPlayerItem(asset: asset)
         let player = AVPlayer(playerItem: playerItem)
         player.automaticallyWaitsToMinimizeStalling = !isLive
