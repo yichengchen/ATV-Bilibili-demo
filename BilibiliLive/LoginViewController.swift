@@ -17,7 +17,9 @@ class LoginViewController: UIViewController {
     var oauthKey: String = ""
 
     static func create() -> LoginViewController {
-        let loginVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "Login") as! LoginViewController
+        guard let loginVC = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: "Login") as? LoginViewController else {
+            fatalError("LoginViewController not found in Main storyboard")
+        }
         return loginVC
     }
 
@@ -93,7 +95,7 @@ class LoginViewController: UIViewController {
             case .waiting:
                 break
             case let .success(token, cookies):
-                print(token)
+                Logger.info("Login success for user: \(token.mid)")
                 AccountManager.shared.registerAccount(token: token, cookies: cookies) { [weak self] _ in
                     self?.didValidationSuccess()
                 }

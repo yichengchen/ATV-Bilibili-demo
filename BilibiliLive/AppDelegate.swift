@@ -55,7 +55,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     static var shared: AppDelegate {
-        return UIApplication.shared.delegate as! AppDelegate
+        guard let delegate = UIApplication.shared.delegate as? AppDelegate else {
+            fatalError("AppDelegate not found")
+        }
+        return delegate
     }
 
     private func replaceRootViewController(with viewController: UIViewController, animated: Bool) {

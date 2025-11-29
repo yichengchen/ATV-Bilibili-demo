@@ -21,7 +21,9 @@ extension String {
     }
 
     func isMatch(pattern: String) -> Bool {
-        let regex = try! NSRegularExpression(pattern: pattern, options: [])
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else {
+            return false
+        }
         return regex.firstMatch(in: self, options: [], range: NSMakeRange(0, utf16.count)) != nil
     }
 
