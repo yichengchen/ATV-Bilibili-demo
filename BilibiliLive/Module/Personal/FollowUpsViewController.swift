@@ -108,6 +108,7 @@ extension FollowUpsViewController: UICollectionViewDelegate {
                 finished = next.count < 40
                 follows.append(contentsOf: next)
             } catch {
+                Logger.warn("Failed to load more following users: \(error.localizedDescription)")
                 finished = true
             }
             requesting = false

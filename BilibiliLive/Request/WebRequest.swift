@@ -387,6 +387,7 @@ extension WebRequest {
             _ = try await requestJSON(method: .post, url: EndPoint.like, parameters: ["aid": aid, "like": like ? "1" : "2"])
             return true
         } catch {
+            Logger.warn("requestLike failed: \(error.localizedDescription)")
             return false
         }
     }
@@ -510,7 +511,10 @@ extension WebRequest {
 
     static func requestCid(aid: Int) async throws -> Int {
         let res = try await requestJSON(url: "https://api.bilibili.com/x/player/pagelist?aid=\(aid)&jsonp=jsonp")
-        let cid = res[0]["cid"].intValue
+        guard let firstPage = res.array?.first else {
+            throw RequestError.statusFail(code: -1, message: "No page list found")
+        }
+        let cid = firstPage["cid"].intValue
         return cid
     }
 
@@ -1119,8 +1123,8 @@ struct SubtitleContent: Codable, Hashable {
 
 extension URL {
     func addSchemeIfNeed() -> URL {
-        if scheme == nil {
-            return URL(string: "https:\(absoluteString)")!
+        if scheme == nil, let fixedURL = URL(string: "https:\(absoluteString)") {
+            return fixedURL
         }
         return self
     }

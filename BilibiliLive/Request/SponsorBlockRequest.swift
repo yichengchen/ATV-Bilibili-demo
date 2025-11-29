@@ -18,15 +18,17 @@ enum SponsorBlockRequest {
         let videoDuration: Double
 
         var vaild: Bool {
-            segment.count == 2
+            segment.count >= 2
         }
 
         var start: Double {
-            segment[0]
+            guard segment.count >= 1 else { return 0 }
+            return segment[0]
         }
 
         var end: Double {
-            segment[1]
+            guard segment.count >= 2 else { return 0 }
+            return segment[1]
         }
     }
 
@@ -42,7 +44,10 @@ enum SponsorBlockRequest {
             let videoID: String
         }
 
-        let sha256 = SHA256.hash(data: bvid.data(using: .utf8)!)
+        guard let bvidData = bvid.data(using: .utf8) else {
+            return []
+        }
+        let sha256 = SHA256.hash(data: bvidData)
             .map({ String(format: "%02x", $0) }).prefix(2).joined()
         let parameters = ["category": Category.sponsor.rawValue]
 

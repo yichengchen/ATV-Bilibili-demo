@@ -54,7 +54,9 @@ class ToViewViewController: StandardVideoCollectionViewController<ToViewData> {
         guard let csrf = CookieHandler.shared.csrf() else { return }
         AF.request("https://api.bilibili.com/x/v2/history/toview/del", method: .post, parameters: ["aid": aid, "csrf": csrf]).responseData {
             [weak self] resp in
-            print(resp.result)
+            if case let .failure(error) = resp.result {
+                Logger.warn("Failed to delete toview item: \(error.localizedDescription)")
+            }
             self?.reloadData()
         }
     }

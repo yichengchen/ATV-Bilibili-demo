@@ -74,7 +74,7 @@ class LiveDanMuProvider: DanmuProviderProtocol {
     }
 
     private func getHeartbeatPackage() -> Data {
-        let data = "[object Object]".data(using: .utf8)!
+        let data = "[object Object]".data(using: .utf8) ?? Data()
         let header = LiveWSHeader.encode(operatorType: .heartBeat, data: data)
         return header
     }
@@ -102,9 +102,9 @@ extension LiveDanMuProvider {
         case nil:
             assertionFailure()
         case .authReply:
-            print("get authReply")
+            Logger.debug("Live danmu: get authReply")
         case .heaerBeatReply:
-            print("get heaerBeatReply")
+            break // heartbeat reply, no action needed
         case .normal:
             if header.protocolType == 0 {
                 parseNormalData(data: contentData)
@@ -114,7 +114,7 @@ extension LiveDanMuProvider {
                 parseNormalData(data: contentData)
             }
         default:
-            print("get", operatorType?.rawValue ?? 0)
+            Logger.debug("Live danmu: get operatorType \(operatorType?.rawValue ?? 0)")
         }
 
         let nextData = data.dropFirst(Int(header.size))
@@ -125,7 +125,7 @@ extension LiveDanMuProvider {
 
     private func parseNormalData(data: Data) {
         guard let dataStr = String(data: data, encoding: .utf8) else {
-            print("decode fail")
+            Logger.debug("Live danmu: decode fail")
             return
         }
         dataStr.components(separatedBy: CharacterSet.controlCharacters)
@@ -240,7 +240,7 @@ private struct AuthPackage: Encodable {
     let key: String
 
     func encode() -> Data {
-        try! JSONEncoder().encode(self)
+        (try? JSONEncoder().encode(self)) ?? Data()
     }
 }
 

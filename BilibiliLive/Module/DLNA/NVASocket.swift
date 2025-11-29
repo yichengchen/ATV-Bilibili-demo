@@ -26,7 +26,7 @@ public func nvasocket(
                 while true {
                     let frame = try session.readFrame()
                     if frame.paramCount == 0 {
-                        print("get pong")
+                        Logger.debug("NVA: get pong")
                     } else {
                         if frame.isCommand {
                             processor?(session, frame)

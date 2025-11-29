@@ -303,7 +303,7 @@ extension SettingsViewController {
             }
 
             let action = UIAlertAction(title: "确定", style: .default) { _ in
-                onSubmit?(alert.textFields![0].text)
+                onSubmit?(alert.textFields?.first?.text)
                 update()
             }
             alert.addAction(action)
@@ -326,7 +326,7 @@ extension SettingsViewController: UICollectionViewDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let cellModel = dataSource.itemIdentifier(for: indexPath)!
+        guard let cellModel = dataSource.itemIdentifier(for: indexPath) else { return }
         cellModel.action?() { [weak cellModel] in
             cellModel?.updateAction?()
         }

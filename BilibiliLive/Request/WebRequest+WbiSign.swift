@@ -37,6 +37,7 @@ extension WebRequest {
             }
             onComplete(nil)
         } catch {
+            Logger.warn("WbiSign URL encoding failed: \(error.localizedDescription)")
             onComplete(nil)
         }
     }
@@ -179,7 +180,10 @@ extension WebRequest {
         }
 
         func calculateMD5(string: String) -> String {
-            let messageData = string.data(using: .utf8)!
+            guard let messageData = string.data(using: .utf8) else {
+                Logger.warn("WbiSign: Failed to encode string to UTF-8")
+                return ""
+            }
             let digestData = Insecure.MD5.hash(data: messageData)
             let digestHex = String(digestData.map { String(format: "%02hhx", $0) }.joined().prefix(32))
             return digestHex

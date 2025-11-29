@@ -73,7 +73,9 @@ class VideoPlayerViewModel {
     private func fetchVideoData() async throws -> PlayerDetailData {
         assert(playInfo.isCidVaild)
         let aid = playInfo.aid
-        let cid = playInfo.cid!
+        guard let cid = playInfo.cid else {
+            throw "Video cid is missing"
+        }
         async let infoReq = try? WebRequest.requestPlayerInfo(aid: aid, cid: cid)
         async let detailUpdate: () = updateVideoDetailIfNeeded()
         do {
@@ -102,7 +104,7 @@ class VideoPlayerViewModel {
             let info = await infoReq
             _ = await detailUpdate
 
-            var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, seasonId: playInfo.seasonId, isBangumi: playInfo.isBangumi, detail: videoDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
+            var detail = PlayerDetailData(aid: playInfo.aid, cid: cid, epid: playInfo.epid, seasonId: playInfo.seasonId, isBangumi: playInfo.isBangumi, detail: videoDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
 
             if let info, info.last_play_cid == cid, playData.dash.duration - info.playTimeInSecond > 5, Settings.continuePlay {
                 detail.playerStartPos = info.playTimeInSecond
@@ -236,7 +238,8 @@ extension VideoPlayerViewModel {
         let checkAreaList = parseAreaByTitle(title: checkTitle)
         guard !checkAreaList.isEmpty else { return nil }
 
-        let playData = try await requestAreaLimitPcgPlayUrl(epid: epid, cid: playInfo.cid!, areaList: checkAreaList)
+        guard let cid = playInfo.cid else { return nil }
+        let playData = try await requestAreaLimitPcgPlayUrl(epid: epid, cid: cid, areaList: checkAreaList)
         return playData
     }
 

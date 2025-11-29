@@ -36,11 +36,12 @@ enum SidxParseUtil {
         var typeString = ""
         var sidx: Sidx?
         while offset < data.count - 8 {
-            print("offset:", offset)
             var size = UInt64(data.getUint32(offset: &offset))
             let typeArr = data.getUint32(offset: &offset).toUInt8s
-            typeString = String(bytes: typeArr, encoding: .utf8)!
-            print(size, typeString)
+            guard let parsedType = String(bytes: typeArr, encoding: .utf8) else {
+                continue
+            }
+            typeString = parsedType
             switch typeString {
             case "sidx":
                 if size == 1 {

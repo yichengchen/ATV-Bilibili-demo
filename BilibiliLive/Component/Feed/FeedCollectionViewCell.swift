@@ -104,8 +104,8 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
         }
         upLabel.text = [data.ownerName, data.date].compactMap({ $0 }).joined(separator: " · ")
         if var pic = data.pic {
-            if pic.scheme == nil {
-                pic = URL(string: "http:\(pic.absoluteString)")!
+            if pic.scheme == nil, let fixedURL = URL(string: "http:\(pic.absoluteString)") {
+                pic = fixedURL
             }
             imageView.kf.setImage(with: pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202))), .cacheOriginalImage])
         }

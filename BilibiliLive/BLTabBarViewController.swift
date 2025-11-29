@@ -19,7 +19,7 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
     }
 
     deinit {
-        print("BLTabBarViewController deinit")
+        Logger.debug("BLTabBarViewController deinit")
     }
 
     override func viewDidLoad() {
@@ -73,7 +73,7 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         guard let buttonPress = presses.first?.type else { return }
         if buttonPress == .playPause {
             if let reloadVC = topMostViewController() as? BLTabBarContentVCProtocol {
-                print("send reload to \(reloadVC)")
+                Logger.debug("send reload to \(reloadVC)")
                 reloadVC.reloadData()
             }
         }

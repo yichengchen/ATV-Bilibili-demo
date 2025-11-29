@@ -16,7 +16,10 @@ class AVInfoPanelCollectionViewThumbnailCellHook {
 
 private extension UICollectionViewCell {
     static func swizzAVInfoPanelCollectionViewThumbnailCell() {
-        let swizzledClass: AnyClass = NSClassFromString("AVInfoPanelCollectionViewThumbnailCell")!
+        guard let swizzledClass: AnyClass = NSClassFromString("AVInfoPanelCollectionViewThumbnailCell") else {
+            Logger.warn("AVInfoPanelCollectionViewThumbnailCell class not found for swizzling")
+            return
+        }
         let originalSelector = NSSelectorFromString("setTitle:")
 
         let swizzledSelector = #selector(swizz_setTitle(_:))

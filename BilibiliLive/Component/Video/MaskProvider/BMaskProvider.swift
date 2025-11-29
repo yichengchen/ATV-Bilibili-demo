@@ -130,16 +130,16 @@ class BMaskProvider: MaskProvider {
         guard time != lastTime else { return }
         lastTime = time
         if time < 0 { return }
-        let path = getLatestMaskFrame(byMiliSeconds: UInt32(time * Double(1000)))
-        if path != nil {
-            shapeLayer.path = path!.cgPath
-            shapeLayer.fillColor = UIColor.white.cgColor
-            shapeLayer.backgroundColor = UIColor.white.cgColor
-            shapeLayer.strokeColor = UIColor.white.cgColor
-            shapeLayer.backgroundColor = UIColor.clear.cgColor
-            shapeLayer.frame = frame
-            onGet(shapeLayer)
+        guard let path = getLatestMaskFrame(byMiliSeconds: UInt32(time * Double(1000))) else {
+            return
         }
+        shapeLayer.path = path.cgPath
+        shapeLayer.fillColor = UIColor.white.cgColor
+        shapeLayer.backgroundColor = UIColor.white.cgColor
+        shapeLayer.strokeColor = UIColor.white.cgColor
+        shapeLayer.backgroundColor = UIColor.clear.cgColor
+        shapeLayer.frame = frame
+        onGet(shapeLayer)
     }
 
     private func getLatestMaskFrame(byMiliSeconds time: UInt32) -> UIBezierPath? {
