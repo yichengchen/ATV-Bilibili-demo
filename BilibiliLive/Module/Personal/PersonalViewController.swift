@@ -19,7 +19,10 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 
     static func create() -> PersonalViewController {
-        return UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as! PersonalViewController
+        guard let vc = UIStoryboard(name: "Main", bundle: Bundle.main).instantiateViewController(identifier: String(describing: self)) as? PersonalViewController else {
+            fatalError("PersonalViewController not found in Main storyboard")
+        }
+        return vc
     }
 
     @IBOutlet var contentView: UIView!
@@ -132,8 +135,12 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
 
 extension PersonalViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! BLSettingLineCollectionViewCell
-        cell.titleLabel.text = cellModels[indexPath.item].title
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as? BLSettingLineCollectionViewCell else {
+            return UICollectionViewCell()
+        }
+        if indexPath.item < cellModels.count {
+            cell.titleLabel.text = cellModels[indexPath.item].title
+        }
         return cell
     }
 
@@ -144,6 +151,7 @@ extension PersonalViewController: UICollectionViewDataSource {
 
 extension PersonalViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard indexPath.item < cellModels.count else { return }
         let model = cellModels[indexPath.item]
         if let vc = model.contentVC {
             setViewController(vc: vc)

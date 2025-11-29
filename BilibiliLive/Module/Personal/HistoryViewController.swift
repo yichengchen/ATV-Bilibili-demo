@@ -15,9 +15,9 @@ class HistoryViewController: UIViewController {
         super.viewDidLoad()
         collectionVC.styleOverride = .sideBar
         collectionVC.show(in: self)
-        collectionVC.didSelect = {
-            [weak self] in
-            self?.goDetail(with: $0 as! HistoryData)
+        collectionVC.didSelect = { [weak self] data in
+            guard let history = data as? HistoryData else { return }
+            self?.goDetail(with: history)
         }
     }
 

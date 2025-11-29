@@ -38,7 +38,9 @@ class FollowUpsViewController: UIViewController {
             requesting = true
             do {
                 follows = try await WebRequest.requestFollowing(page: 1)
-            } catch {}
+            } catch {
+                Logger.warn("Failed to load following users: \(error.localizedDescription)")
+            }
             requesting = false
         }
     }
