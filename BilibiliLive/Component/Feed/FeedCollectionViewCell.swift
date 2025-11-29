@@ -42,9 +42,9 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
             make.leading.equalTo(imageView.snp.leading)
             make.trailing.equalTo(imageView.snp.trailing)
             make.bottom.equalTo(imageView.snp.bottom)
-            make.height.equalTo(80)
+            make.top.equalTo(imageView.snp.top)
         }
-        overlayView.layer.cornerRadius = 12
+        overlayView.layer.cornerRadius = imageView.layer.cornerRadius
         overlayView.clipsToBounds = true
 
         contentView.addSubview(infoView)
