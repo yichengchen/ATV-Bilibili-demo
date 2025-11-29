@@ -1,5 +1,5 @@
 {
-  "originHash" : "0cfbbd8563ddd7bcc668337eb64d08748e8930f841fe447062f4e60b1fe5f8cb",
+  "originHash" : "45c5c9267c8c84275fa647f629e1033e605b18efefc17e781b907af506eb5385",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -44,6 +44,15 @@
       "state" : {
         "revision" : "d06df9adf50ed8cde5786d935836a5f445f780ba",
         "version" : "6.3.1"
+      }
+    },
+    {
+      "identity" : "lookinserver",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/QMUI/LookinServer/",
+      "state" : {
+        "revision" : "e553d1b689d147817dc54ad5c28fcff71e860101",
+        "version" : "1.2.8"
       }
     },
     {
