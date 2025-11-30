@@ -11,12 +11,18 @@ import SnapKit
 import UIKit
 
 class UpSpaceViewController: StandardVideoCollectionViewController<ApiRequest.UpSpaceListData> {
-    var mid: Int!
+    private var mid: Int = 0
 
     private var lastAid: Int?
     private var info: WebRequest.UpSpaceInfo?
     private var relation: WebRequest.UpSpaceRelation?
     private let blockedMessageLabel = UILabel()
+
+    static func create(mid: Int) -> UpSpaceViewController {
+        let vc = UpSpaceViewController()
+        vc.mid = mid
+        return vc
+    }
 
     override func setupCollectionView() {
         super.setupCollectionView()

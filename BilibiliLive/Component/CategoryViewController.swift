@@ -75,7 +75,14 @@ extension CategoryViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! BLSettingLineCollectionViewCell
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as? BLSettingLineCollectionViewCell else {
+            Logger.warn("CategoryViewController: Failed to dequeue BLSettingLineCollectionViewCell")
+            return UICollectionViewCell()
+        }
+        guard indexPath.item < categories.count else {
+            Logger.warn("CategoryViewController: Index out of bounds - \(indexPath.item) >= \(categories.count)")
+            return cell
+        }
         cell.titleLabel.text = categories[indexPath.item].title
         return cell
     }
@@ -83,6 +90,10 @@ extension CategoryViewController: UICollectionViewDataSource {
 
 extension CategoryViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard indexPath.item < categories.count else {
+            Logger.warn("CategoryViewController: didSelectItemAt index out of bounds - \(indexPath.item) >= \(categories.count)")
+            return
+        }
         setViewController(vc: categories[indexPath.item].contentVC)
     }
 
@@ -91,6 +102,10 @@ extension CategoryViewController: UICollectionViewDelegate {
             return
         }
         guard let nextFocusedIndexPath = context.nextFocusedIndexPath else {
+            return
+        }
+        guard nextFocusedIndexPath.item < categories.count else {
+            Logger.warn("CategoryViewController: didUpdateFocusIn index out of bounds - \(nextFocusedIndexPath.item) >= \(categories.count)")
             return
         }
         let categoryModel = categories[nextFocusedIndexPath.item]

@@ -349,8 +349,8 @@ class VideoDetailViewController: UIViewController {
         loadingView.stopAnimating()
         loadingView.removeFromSuperview()
         effectContainerView.isHidden = false
-        UIView.animate(withDuration: 0.25) {
-            self.backgroundImageView.alpha = 1
+        UIView.animate(withDuration: 0.25) { [weak self] in
+            self?.backgroundImageView.alpha = 1
         }
 
         if let season = data.View.ugc_season {
@@ -375,8 +375,11 @@ class VideoDetailViewController: UIViewController {
     }
 
     @IBAction func actionShowUpSpace(_ sender: Any) {
-        let upSpaceVC = UpSpaceViewController()
-        upSpaceVC.mid = data?.View.owner.mid
+        guard let mid = data?.View.owner.mid else {
+            Logger.warn("VideoDetailViewController: Cannot show up space - mid is nil")
+            return
+        }
+        let upSpaceVC = UpSpaceViewController.create(mid: mid)
         present(upSpaceVC, animated: true)
     }
 

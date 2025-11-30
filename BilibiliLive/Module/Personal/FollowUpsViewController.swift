@@ -78,7 +78,13 @@ extension FollowUpsViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! UpCell
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as? UpCell else {
+            return UICollectionViewCell()
+        }
+        guard indexPath.item < follows.count else {
+            Logger.warn("FollowUpsViewController: Index out of bounds - \(indexPath.item) >= \(follows.count)")
+            return cell
+        }
         let data = follows[indexPath.item]
         cell.nameLabel.text = data.uname
         cell.despLabel.text = data.sign
@@ -89,9 +95,12 @@ extension FollowUpsViewController: UICollectionViewDataSource {
 
 extension FollowUpsViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard indexPath.item < follows.count else {
+            Logger.warn("FollowUpsViewController: didSelectItemAt index out of bounds - \(indexPath.item) >= \(follows.count)")
+            return
+        }
         let data = follows[indexPath.item]
-        let upSpaceVC = UpSpaceViewController()
-        upSpaceVC.mid = data.mid
+        let upSpaceVC = UpSpaceViewController.create(mid: data.mid)
         present(upSpaceVC, animated: true)
     }
 

@@ -161,12 +161,22 @@ extension AccountSwitcherViewController: UICollectionViewDataSource {
         guard let section = Section(rawValue: indexPath.section) else { return UICollectionViewCell() }
         switch section {
         case .accounts:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AccountSwitcherCell.reuseIdentifier, for: indexPath) as! AccountSwitcherCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AccountSwitcherCell.reuseIdentifier, for: indexPath) as? AccountSwitcherCell else {
+                Logger.warn("AccountSwitcherViewController: Failed to dequeue AccountSwitcherCell")
+                return UICollectionViewCell()
+            }
+            guard indexPath.item < accounts.count else {
+                Logger.warn("AccountSwitcherViewController: Index out of bounds - \(indexPath.item) >= \(accounts.count)")
+                return cell
+            }
             let account = accounts[indexPath.item]
             cell.configure(with: account, active: account.profile.mid == AccountManager.shared.activeAccount?.profile.mid)
             return cell
         case .actions:
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AccountSwitcherAddCell.reuseIdentifier, for: indexPath) as! AccountSwitcherAddCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AccountSwitcherAddCell.reuseIdentifier, for: indexPath) as? AccountSwitcherAddCell else {
+                Logger.warn("AccountSwitcherViewController: Failed to dequeue AccountSwitcherAddCell")
+                return UICollectionViewCell()
+            }
             return cell
         }
     }
@@ -177,6 +187,10 @@ extension AccountSwitcherViewController: UICollectionViewDelegate {
         guard let section = Section(rawValue: indexPath.section) else { return }
         switch section {
         case .accounts:
+            guard indexPath.item < accounts.count else {
+                Logger.warn("AccountSwitcherViewController: didSelectItemAt index out of bounds - \(indexPath.item) >= \(accounts.count)")
+                return
+            }
             let account = accounts[indexPath.item]
             guard account.profile.mid != AccountManager.shared.activeAccount?.profile.mid else { return }
             switchToAccount(account)

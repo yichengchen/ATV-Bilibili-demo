@@ -13,3 +13,10 @@ extension Sequence where Element: Hashable {
         return filter { set.insert($0).inserted }
     }
 }
+
+extension Array {
+    /// Safe subscript that returns nil if index is out of bounds
+    subscript(safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+}

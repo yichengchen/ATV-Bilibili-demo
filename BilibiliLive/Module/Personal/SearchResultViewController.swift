@@ -211,8 +211,7 @@ extension SearchResultViewController: UICollectionViewDelegate {
             let detailVC = VideoDetailViewController.create(seasonId: data.season_id)
             detailVC.present(from: self)
         case let .user(data):
-            let upSpaceVC = UpSpaceViewController()
-            upSpaceVC.mid = data.mid
+            let upSpaceVC = UpSpaceViewController.create(mid: data.mid)
             present(upSpaceVC, animated: true)
         case let .liveRoom(data):
             let playerVC = LivePlayerViewController()

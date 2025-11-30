@@ -98,13 +98,20 @@ class SettingsViewController: UIViewController {
 
     private func configureDataSource() {
         dataSource = UICollectionViewDiffableDataSource<SectionModel, CellModel>(collectionView: collectionView) { collectionView, indexPath, cellModel -> UICollectionViewCell? in
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SettingsSwitchCell.self), for: indexPath) as! SettingsSwitchCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: SettingsSwitchCell.self), for: indexPath) as? SettingsSwitchCell else {
+                Logger.warn("SettingsViewController: Failed to dequeue SettingsSwitchCell")
+                return UICollectionViewCell()
+            }
             cell.set(with: cellModel)
             return cell
         }
         dataSource.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
-            let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as! SettingsHeaderView
-            let title = self?.dataSource.snapshot().sectionIdentifiers[indexPath.section].title ?? UUID().uuidString
+            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderView", for: indexPath) as? SettingsHeaderView else {
+                Logger.warn("SettingsViewController: Failed to dequeue SettingsHeaderView")
+                return UICollectionReusableView()
+            }
+            let sectionIdentifiers = self?.dataSource.snapshot().sectionIdentifiers ?? []
+            let title = indexPath.section < sectionIdentifiers.count ? sectionIdentifiers[indexPath.section].title : UUID().uuidString
 
             header.label.text = title
             return header
