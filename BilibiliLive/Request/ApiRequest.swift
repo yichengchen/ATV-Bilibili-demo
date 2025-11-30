@@ -19,8 +19,14 @@ struct LoginToken: Codable, Equatable {
 }
 
 enum ApiRequest {
+    // TV 客户端 appkey/appsec
     static let appkey = "5ae412b53418aac5"
     static let appsec = "5b9cf6c9786efd204dcf0c1ce2d08436"
+
+    // Android 客户端 appkey/appsec (用于代理服务器请求)
+    // 参考: https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/APPKey.md
+    static let androidAppkey = "1d8b6e7d45233436"
+    static let androidAppsec = "560c52ccd288fed045859ed18bffd973"
 
     enum EndPoint {
         static let loginQR = "https://passport.bilibili.com/x/passport-tv-login/qrcode/auth_code"
@@ -46,6 +52,7 @@ enum ApiRequest {
         return AccountManager.shared.isLoggedIn
     }
 
+    /// 计算 API 签名 (使用默认 TV 客户端 appkey)
     static func sign(for param: [String: Any]) -> [String: Any] {
         var newParam = param
         newParam["appkey"] = appkey
@@ -54,6 +61,24 @@ enum ApiRequest {
         newParam["mobi_app"] = "iphone"
         newParam["device"] = "pad"
         newParam["device_name"] = "iPad"
+        return signWithSecret(params: newParam, appsec: appsec)
+    }
+
+    /// 计算 API 签名 (使用 Android 客户端 appkey，用于代理服务器)
+    static func signForAndroid(for param: [String: Any]) -> [String: Any] {
+        var newParam = param
+        newParam["appkey"] = androidAppkey
+        newParam["ts"] = "\(Int(Date().timeIntervalSince1970))"
+        return signWithSecret(params: newParam, appsec: androidAppsec)
+    }
+
+    /// 通用签名计算方法
+    /// - Parameters:
+    ///   - params: 请求参数 (必须已包含 appkey)
+    ///   - appsec: 对应的 appsec 密钥
+    /// - Returns: 添加了 sign 参数的新字典
+    private static func signWithSecret(params: [String: Any], appsec: String) -> [String: Any] {
+        var newParam = params
         var rawParam = newParam
             .sorted(by: { $0.0 < $1.0 })
             .map({ "\($0.key)=\($0.value)" })

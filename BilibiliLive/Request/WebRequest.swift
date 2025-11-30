@@ -6,7 +6,6 @@
 //
 
 import Alamofire
-import CryptoKit
 import Foundation
 import SwiftProtobuf
 import SwiftyJSON
@@ -508,12 +507,6 @@ extension WebRequest {
             Logger.warn("[AreaLimit] 未找到access_key")
         }
 
-        // 使用 Android 客户端的 appkey/appsec (代理服务器需要)
-        // 参考: https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/APPKey.md
-        let androidAppkey = "1d8b6e7d45233436"
-        let androidAppsec = "560c52ccd288fed045859ed18bffd973"
-        parameters["appkey"] = androidAppkey
-
         // 添加 buvid (设备标识)
         let buvid = CookieHandler.shared.buvid3()
         if !buvid.isEmpty {
@@ -521,28 +514,8 @@ extension WebRequest {
             Logger.debug("[AreaLimit] 已添加buvid: \(buvid)")
         }
 
-        // 添加时间戳
-        parameters["ts"] = "\(Int(Date().timeIntervalSince1970))"
-
-        // 计算并添加签名 (按照B站APP API签名规则)
-        // 1. 按key排序所有参数
-        // 2. 拼接成 key=value&key=value 格式
-        // 3. 末尾追加 appsec
-        // 4. 计算MD5
-        let sortedParams = parameters
-            .sorted(by: { $0.0 < $1.0 })
-            .map({ "\($0.key)=\($0.value)" })
-            .joined(separator: "&")
-        let signString = sortedParams + androidAppsec
-        if let signData = signString.data(using: .utf8) {
-            let md5Hash = Insecure.MD5
-                .hash(data: signData)
-                .map { String(format: "%02hhx", $0) }
-                .joined()
-            parameters["sign"] = md5Hash
-            Logger.debug("[AreaLimit] 已添加签名: \(md5Hash)")
-        }
-
+        // 使用 Android 客户端签名 (代理服务器需要 Android appkey)
+        parameters = ApiRequest.signForAndroid(for: parameters)
         Logger.debug("[AreaLimit] 请求参数: \(parameters)")
 
         // 添加 BiliRoaming 标识头，代理服务器可能需要这个来识别请求来源
