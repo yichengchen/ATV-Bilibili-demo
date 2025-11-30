@@ -19,6 +19,31 @@ enum FeedDisplayStyle: Codable, CaseIterable {
     }
 }
 
+enum AreaLimitServer: String, Codable, CaseIterable {
+    case nepnep = "bili.nepnep.moe"
+    case atri = "atri.ink"
+    case melusine = "melusine.moe"
+    case custom
+
+    var title: String {
+        switch self {
+        case .nepnep: return "bili.nepnep.moe (推荐)"
+        case .atri: return "atri.ink"
+        case .melusine: return "melusine.moe"
+        case .custom: return "自定义服务器"
+        }
+    }
+
+    var serverURL: String {
+        switch self {
+        case .custom:
+            return Settings.areaLimitCustomServerURL
+        default:
+            return rawValue
+        }
+    }
+}
+
 class Defaults {
     static let shared = Defaults()
     private init() {}
@@ -99,8 +124,15 @@ enum Settings {
     @UserDefault("Settings.arealimit.unlock", defaultValue: false)
     static var areaLimitUnlock: Bool
 
-    @UserDefault("Settings.arealimit.customServer", defaultValue: "")
-    static var areaLimitCustomServer: String
+    @UserDefaultCodable("Settings.arealimit.server", defaultValue: .nepnep)
+    static var areaLimitServer: AreaLimitServer
+
+    @UserDefault("Settings.arealimit.customServerURL", defaultValue: "")
+    static var areaLimitCustomServerURL: String
+
+    static var areaLimitCustomServer: String {
+        return areaLimitServer.serverURL
+    }
 
     @UserDefault("Settings.ui.sideMenuAutoSelectChange", defaultValue: false)
     static var sideMenuAutoSelectChange: Bool

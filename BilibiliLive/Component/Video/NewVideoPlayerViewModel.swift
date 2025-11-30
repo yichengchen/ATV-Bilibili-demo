@@ -84,14 +84,27 @@ class VideoPlayerViewModel {
             var clipInfos: [VideoPlayURLInfo.ClipInfo]?
 
             if playInfo.isBangumi {
+                Logger.info("[Bangumi] 开始播放番剧: aid=\(aid), cid=\(cid), epid=\(String(describing: playInfo.epid))")
                 do {
                     playData = try await WebRequest.requestPcgPlayUrl(aid: aid, cid: cid)
+                    Logger.info("[Bangumi] 番剧播放URL获取成功")
                 } catch let err as RequestError {
-                    if case let .statusFail(code, _) = err,
-                       code == -404 || code == -10403,
-                       let data = try await fetchAreaLimitPcgVideoData()
-                    {
-                        playData = data
+                    Logger.warn("[Bangumi] 番剧播放URL获取失败: \(err)")
+                    if case let .statusFail(code, message) = err {
+                        Logger.info("[Bangumi] 错误码: \(code), 消息: \(message)")
+                        // 区域限制常见错误码: -404, -10403, 6002105
+                        if code == -404 || code == -10403 || code == 6002105 {
+                            Logger.info("[Bangumi] 检测到区域限制，尝试港澳台解锁")
+                            if let data = try await fetchAreaLimitPcgVideoData() {
+                                playData = data
+                                Logger.info("[Bangumi] 港澳台解锁成功")
+                            } else {
+                                Logger.warn("[Bangumi] 港澳台解锁返回nil")
+                                throw err
+                            }
+                        } else {
+                            throw err
+                        }
                     } else {
                         throw err
                     }
@@ -319,28 +332,50 @@ class VideoPlayerViewModel {
 // 港澳台解锁
 extension VideoPlayerViewModel {
     private func fetchAreaLimitPcgVideoData() async throws -> VideoPlayURLInfo? {
-        guard Settings.areaLimitUnlock else { return nil }
-        guard let epid = playInfo.epid, epid > 0 else { return nil }
+        Logger.info("[AreaLimit] 检查港澳台解锁状态: \(Settings.areaLimitUnlock)")
+        guard Settings.areaLimitUnlock else {
+            Logger.debug("[AreaLimit] 港澳台解锁未启用")
+            return nil
+        }
+        guard let epid = playInfo.epid, epid > 0 else {
+            Logger.debug("[AreaLimit] 无有效epid: \(String(describing: playInfo.epid))")
+            return nil
+        }
 
+        Logger.info("[AreaLimit] 获取番剧信息: epid=\(epid)")
         let season = try await WebRequest.requestBangumiSeasonView(epid: epid)
         let checkTitle = season.title.contains("僅") ? season.title : season.series_title
+        Logger.info("[AreaLimit] 番剧标题: \(checkTitle)")
         let checkAreaList = parseAreaByTitle(title: checkTitle)
-        guard !checkAreaList.isEmpty else { return nil }
+        Logger.info("[AreaLimit] 解析区域列表: \(checkAreaList)")
+        guard !checkAreaList.isEmpty else {
+            Logger.debug("[AreaLimit] 无需解锁区域")
+            return nil
+        }
 
-        guard let cid = playInfo.cid else { return nil }
+        guard let cid = playInfo.cid else {
+            Logger.warn("[AreaLimit] 无有效cid")
+            return nil
+        }
+        Logger.info("[AreaLimit] 开始请求: epid=\(epid), cid=\(cid), areas=\(checkAreaList)")
         let playData = try await requestAreaLimitPcgPlayUrl(epid: epid, cid: cid, areaList: checkAreaList)
         return playData
     }
 
     private func requestAreaLimitPcgPlayUrl(epid: Int, cid: Int, areaList: [String]) async throws -> VideoPlayURLInfo? {
         for area in areaList {
+            Logger.info("[AreaLimit] 尝试区域: \(area)")
             do {
-                return try await WebRequest.requestAreaLimitPcgPlayUrl(epid: epid, cid: cid, area: area)
+                let result = try await WebRequest.requestAreaLimitPcgPlayUrl(epid: epid, cid: cid, area: area)
+                Logger.info("[AreaLimit] 区域 \(area) 请求成功")
+                return result
             } catch let err {
+                Logger.warn("[AreaLimit] 区域 \(area) 请求失败: \(err)")
                 if area == areaList.last {
+                    Logger.warn("[AreaLimit] 所有区域尝试失败，抛出最后错误")
                     throw err
                 } else {
-                    Logger.debug("Area limit request failed for \(area): \(err.localizedDescription)")
+                    Logger.debug("[AreaLimit] 继续尝试下一个区域...")
                 }
             }
         }

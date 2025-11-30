@@ -248,8 +248,22 @@ class SettingsViewController: UIViewController {
 
             SectionModel(title: "港澳台解锁") {
                 Toggle(title: "解锁港澳台番剧限制", setting: Settings.areaLimitUnlock, onChange: Settings.areaLimitUnlock.toggle())
-                TextField(title: "设置港澳台解析服务器", message: "为了安全考虑建议自建服务器，公共服务器可用性难保证，请多尝试几个。\n公共服务器请参考：http://985.so/mjq9u", current: Settings.areaLimitCustomServer, placeholder: "api.example.com") {
-                    Settings.areaLimitCustomServer = $0 ?? ""
+                Actions(title: "选择解析服务器",
+                        message: "选择港澳台解析服务器\n公共服务器由志愿者维护，如不可用请切换其他服务器",
+                        current: Settings.areaLimitServer.title,
+                        options: AreaLimitServer.allCases,
+                        optionString: AreaLimitServer.allCases.map { $0.title })
+                { value in
+                    Settings.areaLimitServer = value
+                }
+                if Settings.areaLimitServer == .custom {
+                    TextField(title: "自定义服务器地址",
+                              message: "输入自建服务器地址\n为了安全考虑建议自建服务器",
+                              current: Settings.areaLimitCustomServerURL,
+                              placeholder: "api.example.com")
+                    {
+                        Settings.areaLimitCustomServerURL = $0 ?? ""
+                    }
                 }
             }
         }

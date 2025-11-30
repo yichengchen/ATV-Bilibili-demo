@@ -126,16 +126,20 @@ enum WebRequest {
             case let .success(data):
                 let json = JSON(data)
                 let errorCode = json["code"].intValue
+                let message = json["message"].stringValue
+                Logger.debug("[WebRequest] URL: \(url), code: \(errorCode), message: \(message)")
                 if errorCode != 0 {
-                    let message = json["message"].stringValue
-                    Logger.warn("WebRequest API error: \(errorCode), \(message)")
+                    Logger.warn("[WebRequest] API error: code=\(errorCode), message=\(message)")
                     complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }
                 let dataj = json[dataObj]
-                Logger.debug("\(url) response: \(json)")
+                if dataj.isEmpty {
+                    Logger.warn("[WebRequest] dataObj '\(dataObj)' is empty, full response: \(json)")
+                }
                 complete?(.success(dataj))
             case let .failure(err):
+                Logger.warn("[WebRequest] Network failure: \(err)")
                 complete?(.failure(err))
             }
         }
@@ -469,17 +473,29 @@ extension WebRequest {
     static func requestAreaLimitPcgPlayUrl(epid: Int, cid: Int, area: String) async throws -> VideoPlayURLInfo {
         let quality = Settings.mediaQuality
         let customServer = Settings.areaLimitCustomServer
-        guard !customServer.isEmpty else { throw ValidationError.argumentInvalid(message: "未设置解析服务器") }
+        Logger.info("[AreaLimit] 开始请求港澳台解锁: epid=\(epid), cid=\(cid), area=\(area), server=\(customServer)")
+
+        guard !customServer.isEmpty else {
+            Logger.warn("[AreaLimit] 解析服务器未设置")
+            throw ValidationError.argumentInvalid(message: "未设置解析服务器")
+        }
 
         // 解析服务器必须使用ep_id参数，不能使用avid参数，解析服务器一般有缓存，area和ep_id必须保持一致，要不然会被缓存拦截
         let url = EndPoint.pcgPlayUrl.replacingOccurrences(of: "api.bilibili.com", with: customServer)
+        Logger.info("[AreaLimit] 请求URL: \(url)")
+
         var parameters: [String: Any] = ["ep_id": epid, "cid": cid, "qn": quality.qn, "support_multi_audio": 1, "fnver": 0, "fnval": quality.fnval, "fourk": 1, "area": area]
         if let access_key = ApiRequest.getToken()?.accessToken {
             parameters["access_key"] = access_key
+            Logger.debug("[AreaLimit] 已添加access_key")
+        } else {
+            Logger.warn("[AreaLimit] 未找到access_key")
         }
         parameters["appkey"] = ApiRequest.appkey
         parameters["local_id"] = 0
         parameters["mobi_app"] = "android"
+
+        Logger.debug("[AreaLimit] 请求参数: \(parameters)")
 
         // 同步b站cookie给代理域
 //        var headers: [String: String] = [:]
@@ -487,9 +503,16 @@ extension WebRequest {
 //            headers = HTTPCookie.requestHeaderFields(with: cookies)
 //        }
 
-        return try await request(url: url,
-                                 parameters: parameters,
-                                 dataObj: "result")
+        do {
+            let result: VideoPlayURLInfo = try await request(url: url,
+                                                             parameters: parameters,
+                                                             dataObj: "result")
+            Logger.info("[AreaLimit] 请求成功")
+            return result
+        } catch {
+            Logger.warn("[AreaLimit] 请求失败: \(error)")
+            throw error
+        }
     }
 
     static func requestReplys(aid: Int, complete: ((Replys) -> Void)?) {

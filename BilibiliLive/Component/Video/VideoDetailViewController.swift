@@ -74,6 +74,8 @@ class VideoDetailViewController: UIViewController {
     private var allUgcEpisodes = [VideoDetail.Info.UgcSeason.UgcVideoInfo]()
 
     private var subscriptions = [AnyCancellable]()
+    private var pendingAutoPlay = false
+    private var dataLoaded = false
 
     static func create(aid: Int, cid: Int?, epid: Int? = nil) -> VideoDetailViewController {
         guard let vc = UIStoryboard(name: "Main", bundle: .main).instantiateViewController(identifier: String(describing: self)) as? VideoDetailViewController else {
@@ -160,18 +162,17 @@ class VideoDetailViewController: UIViewController {
         if !direatlyEnterVideo {
             vc.present(self, animated: true)
         } else {
-            vc.present(self, animated: false) { [weak self] in
-                guard let self else { return }
-                let player = VideoPlayerViewController(playInfo: PlayInfo(aid: self.aid, cid: self.cid, epid: self.epid, isBangumi: self.isBangumi))
-                // 设置推荐视频作为播放序列（如果有的话）
-                if let related = self.data?.Related, related.count > 0 {
-                    var seq = [PlayInfo(aid: self.aid, cid: self.cid, epid: self.epid, isBangumi: self.isBangumi)]
-                    seq.append(contentsOf: related.map({ PlayInfo(aid: $0.aid, cid: $0.cid) }))
-                    player.nextProvider = VideoNextProvider(seq: seq)
-                }
-                self.present(player, animated: true)
-            }
+            // 标记需要自动播放，等数据加载完成后触发
+            pendingAutoPlay = true
+            vc.present(self, animated: true)
         }
+    }
+
+    private func triggerAutoPlayIfNeeded() {
+        guard pendingAutoPlay, dataLoaded else { return }
+        pendingAutoPlay = false
+        Logger.info("[VideoDetail] 自动播放: aid=\(aid), cid=\(cid), epid=\(epid), isBangumi=\(isBangumi)")
+        actionPlay(self)
     }
 
     private func exit(with error: Error) {
@@ -191,9 +192,11 @@ class VideoDetailViewController: UIViewController {
         setupLoading()
         pageView.isHidden = true
         ugcView.isHidden = true
+        Logger.info("[VideoDetail] fetchData: aid=\(aid), cid=\(cid), epid=\(epid), seasonId=\(seasonId)")
         do {
             if seasonId > 0 {
                 isBangumi = true
+                Logger.info("[VideoDetail] 检测到seasonId，设置isBangumi=true")
                 let info = try await WebRequest.requestBangumiInfo(seasonID: seasonId)
                 if let epi = info.main_section.episodes.first ?? info.section.first?.episodes.first {
                     aid = epi.aid
@@ -222,6 +225,8 @@ class VideoDetailViewController: UIViewController {
                 pages = info.episodes.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.id, from: "", part: $0.title + " " + $0.long_title) })
             }
             update(with: data)
+            dataLoaded = true
+            triggerAutoPlayIfNeeded()
         } catch let err {
             if case let .statusFail(code, _) = err as? RequestError, code == -404 {
                 // 解锁港澳台番剧处理
@@ -283,6 +288,8 @@ class VideoDetailViewController: UIViewController {
 
                 self.data = data
                 update(with: data)
+                dataLoaded = true
+                triggerAutoPlayIfNeeded()
                 return true
             }
 
@@ -375,6 +382,7 @@ class VideoDetailViewController: UIViewController {
     }
 
     @IBAction func actionPlay(_ sender: Any) {
+        Logger.info("[VideoDetail] actionPlay: aid=\(aid), cid=\(cid), epid=\(epid), isBangumi=\(isBangumi)")
         let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, isBangumi: isBangumi))
         player.data = data
 
