@@ -6,6 +6,7 @@
 //
 
 import Alamofire
+import CryptoKit
 import Foundation
 import SwiftProtobuf
 import SwiftyJSON
@@ -42,7 +43,7 @@ enum WebRequest {
         static let playerInfo = "https://api.bilibili.com/x/player/wbi/v2"
         static let playUrl = "https://api.bilibili.com/x/player/wbi/playurl"
         static let pcgPlayUrl = "https://api.bilibili.com/pgc/player/web/playurl"
-        static let bangumiSeason = "https://bangumi.bilibili.com/view/web_api/season"
+        static let bangumiSeason = "https://api.bilibili.com/pgc/view/web/season"
         static let userEpisodeInfo = "https://api.bilibili.com/pgc/season/episode/web/info"
         static let danmuWebView = "https://api.bilibili.com/x/v2/dm/web/view"
         static let danmuList = "https://api.bilibili.com/x/v2/dm/list/seg.so"
@@ -484,28 +485,87 @@ extension WebRequest {
         let url = EndPoint.pcgPlayUrl.replacingOccurrences(of: "api.bilibili.com", with: customServer)
         Logger.info("[AreaLimit] 请求URL: \(url)")
 
-        var parameters: [String: Any] = ["ep_id": epid, "cid": cid, "qn": quality.qn, "support_multi_audio": 1, "fnver": 0, "fnval": quality.fnval, "fourk": 1, "area": area]
+        var parameters: [String: Any] = [
+            "ep_id": epid,
+            "cid": cid,
+            "qn": quality.qn,
+            "support_multi_audio": 1,
+            "fnver": 0,
+            "fnval": quality.fnval,
+            "fourk": 1,
+            "area": area,
+            "platform": "android",
+            "device": "android",
+            "build": 7430300,
+            "mobi_app": "android",
+        ]
+
+        // 添加 access_key
         if let access_key = ApiRequest.getToken()?.accessToken {
             parameters["access_key"] = access_key
             Logger.debug("[AreaLimit] 已添加access_key")
         } else {
             Logger.warn("[AreaLimit] 未找到access_key")
         }
-        parameters["appkey"] = ApiRequest.appkey
-        parameters["local_id"] = 0
-        parameters["mobi_app"] = "android"
+
+        // 使用 Android 客户端的 appkey/appsec (代理服务器需要)
+        // 参考: https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/APPKey.md
+        let androidAppkey = "1d8b6e7d45233436"
+        let androidAppsec = "560c52ccd288fed045859ed18bffd973"
+        parameters["appkey"] = androidAppkey
+
+        // 添加 buvid (设备标识)
+        let buvid = CookieHandler.shared.buvid3()
+        if !buvid.isEmpty {
+            parameters["buvid"] = buvid
+            Logger.debug("[AreaLimit] 已添加buvid: \(buvid)")
+        }
+
+        // 添加时间戳
+        parameters["ts"] = "\(Int(Date().timeIntervalSince1970))"
+
+        // 计算并添加签名 (按照B站APP API签名规则)
+        // 1. 按key排序所有参数
+        // 2. 拼接成 key=value&key=value 格式
+        // 3. 末尾追加 appsec
+        // 4. 计算MD5
+        let sortedParams = parameters
+            .sorted(by: { $0.0 < $1.0 })
+            .map({ "\($0.key)=\($0.value)" })
+            .joined(separator: "&")
+        let signString = sortedParams + androidAppsec
+        if let signData = signString.data(using: .utf8) {
+            let md5Hash = Insecure.MD5
+                .hash(data: signData)
+                .map { String(format: "%02hhx", $0) }
+                .joined()
+            parameters["sign"] = md5Hash
+            Logger.debug("[AreaLimit] 已添加签名: \(md5Hash)")
+        }
 
         Logger.debug("[AreaLimit] 请求参数: \(parameters)")
 
+        // 添加 BiliRoaming 标识头，代理服务器可能需要这个来识别请求来源
+        var headers: [String: String] = [
+            "x-from-biliroaming": "1.6.12",
+            "Build": "7430300",
+        ]
+
         // 同步b站cookie给代理域
-//        var headers: [String: String] = [:]
-//        if let cookies = Session.default.sessionConfiguration.httpCookieStorage?.cookies(for: URL(string: "https://api.bilibili.com")!) {
-//            headers = HTTPCookie.requestHeaderFields(with: cookies)
-//        }
+        if let cookies = Session.default.sessionConfiguration.httpCookieStorage?.cookies(for: URL(string: "https://api.bilibili.com")!) {
+            let cookieHeader = HTTPCookie.requestHeaderFields(with: cookies)
+            for (key, value) in cookieHeader {
+                headers[key] = value
+            }
+            Logger.debug("[AreaLimit] 已同步Cookie到请求头")
+        }
+
+        Logger.debug("[AreaLimit] 请求头: \(headers)")
 
         do {
             let result: VideoPlayURLInfo = try await request(url: url,
                                                              parameters: parameters,
+                                                             headers: headers,
                                                              dataObj: "result")
             Logger.info("[AreaLimit] 请求成功")
             return result
@@ -912,28 +972,63 @@ struct BangumiInfo: Codable, Hashable {
 
 struct BangumiSeasonView: Codable, Hashable {
     struct Episode: Codable, Hashable {
-        let ep_id: Int
+        // Internal storage - use 'id' from new API or 'ep_id' from old API
+        private let id: Int?
+        private let ep_id_raw: Int?
         let aid: Int
         let cid: Int
         let bvid: String?
-        let duration: Int
+        let duration: Int?
         let cover: URL
         let index_title: String?
-        let index: String
-        let pub_real_time: String
-        let section_type: Int
+        let index: String?
+        let title: String?
+        let long_title: String?
+        let pub_real_time: String?
+        let pub_time: Int?
+        let section_type: Int?
+
+        enum CodingKeys: String, CodingKey {
+            case id
+            case ep_id_raw = "ep_id"
+            case aid, cid, bvid, duration, cover
+            case index_title, index, title, long_title
+            case pub_real_time, pub_time
+            case section_type
+        }
+
+        // Computed property that returns ep_id from either field
+        var ep_id: Int {
+            return id ?? ep_id_raw ?? 0
+        }
 
         var pubdate: Int? {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-            if let date = dateFormatter.date(from: pub_real_time) {
-                return Int(date.timeIntervalSince1970)
+            if let pub_time = pub_time {
+                return pub_time
+            }
+            if let pub_real_time = pub_real_time {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+                if let date = dateFormatter.date(from: pub_real_time) {
+                    return Int(date.timeIntervalSince1970)
+                }
             }
             return nil
         }
 
         var durationSeconds: Int {
-            return Int(duration / 1000)
+            guard let duration = duration else { return 0 }
+            // New API returns duration in milliseconds, convert to seconds
+            return duration > 10000 ? Int(duration / 1000) : duration
+        }
+
+        // Helper to get display title
+        var displayIndex: String {
+            return index ?? title ?? ""
+        }
+
+        var displayIndexTitle: String? {
+            return index_title ?? long_title
         }
     }
 
@@ -944,11 +1039,21 @@ struct BangumiSeasonView: Codable, Hashable {
         let follower: Int?
     }
 
-    let up_info: UpInfo
+    let up_info: UpInfo?
     let episodes: [Episode]
     let title: String
-    let series_title: String
-    let evaluate: String
+    let series_title: String?
+    let season_title: String?
+    let evaluate: String?
+
+    // Computed property for backward compatibility
+    var effectiveSeriesTitle: String {
+        return series_title ?? season_title ?? title
+    }
+
+    var effectiveEvaluate: String {
+        return evaluate ?? ""
+    }
 }
 
 struct UserEpisodeInfo: Codable, Hashable {

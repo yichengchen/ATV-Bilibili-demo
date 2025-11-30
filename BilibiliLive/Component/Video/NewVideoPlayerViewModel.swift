@@ -344,7 +344,7 @@ extension VideoPlayerViewModel {
 
         Logger.info("[AreaLimit] 获取番剧信息: epid=\(epid)")
         let season = try await WebRequest.requestBangumiSeasonView(epid: epid)
-        let checkTitle = season.title.contains("僅") ? season.title : season.series_title
+        let checkTitle = season.title.contains("僅") ? season.title : season.effectiveSeriesTitle
         Logger.info("[AreaLimit] 番剧标题: \(checkTitle)")
         let checkAreaList = parseAreaByTitle(title: checkTitle)
         Logger.info("[AreaLimit] 解析区域列表: \(checkAreaList)")

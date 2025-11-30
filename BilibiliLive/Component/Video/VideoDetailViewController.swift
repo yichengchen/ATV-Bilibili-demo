@@ -280,11 +280,17 @@ class VideoDetailViewController: UIViewController {
             if let epi = season.episodes.first(where: { $0.ep_id == epid }) ?? season.episodes.first {
                 aid = epi.aid
                 cid = epi.cid
-                pages = season.episodes.filter { $0.section_type == 0 }.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.ep_id, from: "", part: $0.index + " " + ($0.index_title ?? "")) })
+                pages = season.episodes.filter { $0.section_type == nil || $0.section_type == 0 }.map({ VideoPage(cid: $0.cid, page: $0.aid, epid: $0.ep_id, from: "", part: $0.displayIndex + " " + ($0.displayIndexTitle ?? "")) })
 
                 let userEpisodeInfo = try await WebRequest.requestUserEpisodeInfo(epid: epi.ep_id)
 
-                let data = VideoDetail(View: VideoDetail.Info(aid: aid, cid: cid, title: info.title, videos: nil, pic: epi.cover, desc: info.evaluate, owner: VideoOwner(mid: season.up_info.mid, name: season.up_info.uname, face: season.up_info.avatar), pages: nil, dynamic: nil, bvid: epi.bvid, duration: epi.durationSeconds, pubdate: epi.pubdate, ugc_season: nil, redirect_url: nil, stat: VideoDetail.Info.Stat(favorite: info.stat.favorites, coin: info.stat.coins, like: info.stat.likes, share: info.stat.share, danmaku: info.stat.danmakus, view: info.stat.views)), Related: [], Card: VideoDetail.Owner(following: userEpisodeInfo.related_up.first?.is_follow == 1, follower: season.up_info.follower))
+                // Handle optional up_info - use default values if not available
+                let ownerMid = season.up_info?.mid ?? 0
+                let ownerName = season.up_info?.uname ?? info.title
+                let ownerFace = season.up_info?.avatar ?? ""
+                let ownerFollower = season.up_info?.follower
+
+                let data = VideoDetail(View: VideoDetail.Info(aid: aid, cid: cid, title: info.title, videos: nil, pic: epi.cover, desc: info.evaluate, owner: VideoOwner(mid: ownerMid, name: ownerName, face: ownerFace), pages: nil, dynamic: nil, bvid: epi.bvid, duration: epi.durationSeconds, pubdate: epi.pubdate, ugc_season: nil, redirect_url: nil, stat: VideoDetail.Info.Stat(favorite: info.stat.favorites, coin: info.stat.coins, like: info.stat.likes, share: info.stat.share, danmaku: info.stat.danmakus, view: info.stat.views)), Related: [], Card: VideoDetail.Owner(following: userEpisodeInfo.related_up.first?.is_follow == 1, follower: ownerFollower))
 
                 self.data = data
                 update(with: data)
