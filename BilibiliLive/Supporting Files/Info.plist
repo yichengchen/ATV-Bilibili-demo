@@ -25,6 +25,14 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>用于投屏功能，发现并连接局域网内的设备</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_ssdp._udp</string>
+		<string>_upnp._tcp</string>
+		<string>_http._tcp</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

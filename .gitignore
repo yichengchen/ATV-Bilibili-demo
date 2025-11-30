@@ -88,3 +88,8 @@ iOSInjectionProject/
 
 # End of https://www.toptal.com/developers/gitignore/api/swift
 fastlane/README.md
+# 避免错误提交.md文档, 后续.md文件都忽略,如需提交请手动添加
+*.md
+# 忽略包含敏感信息的配置文件
+Config/Dev/Config.plist
+

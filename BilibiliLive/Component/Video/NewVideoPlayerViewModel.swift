@@ -35,6 +35,7 @@ class VideoPlayerViewModel {
     private var cancellable = Set<AnyCancellable>()
     private var playPlugin: BVideoPlayPlugin?
     private var infoPlugin: BVideoInfoPlugin?
+    private var qualityPlugin: QualitySelectionPlugin?
 
     init(playInfo: PlayInfo) {
         self.playInfo = playInfo
@@ -126,9 +127,14 @@ class VideoPlayerViewModel {
     private func playNext(newPlayInfo: PlayInfo) {
         playInfo = newPlayInfo
 
+        // 移除旧的播放和清晰度插件
         if let playPlugin {
             Logger.debug("playNext: remove previous playPlugin: \(playPlugin)")
             onPluginRemove.send(playPlugin)
+        }
+        if let qualityPlugin {
+            Logger.debug("playNext: remove previous qualityPlugin")
+            onPluginRemove.send(qualityPlugin)
         }
 
         Task {
@@ -141,9 +147,82 @@ class VideoPlayerViewModel {
                 let player = BVideoPlayPlugin(detailData: data)
                 // 保存新播放器引用以便后续删除
                 playPlugin = player
-                // 呈现新播放器
-                onPluginReady.send([player])
+
+                // 初始化清晰度选择插件
+                let quality = QualitySelectionPlugin(playURLInfo: data.videoPlayURLInfo)
+                quality.onQualityChange = { [weak self] newQn in
+                    guard let self else { return }
+                    Logger.info("[VideoPlayer] Quality change requested: \(newQn)")
+                    self.reloadCurrentVideo()
+                }
+                qualityPlugin = quality
+
+                // 呈现新插件
+                onPluginReady.send([player, quality])
             } catch let err {
+                onPluginReady.send(completion: .failure(err.localizedDescription))
+            }
+        }
+    }
+
+    /// 重新加载当前视频（用于清晰度切换）
+    private func reloadCurrentVideo() {
+        // 移除旧的播放和清晰度插件
+        if let playPlugin {
+            Logger.debug("reloadCurrentVideo: remove previous playPlugin for quality change")
+            onPluginRemove.send(playPlugin)
+        }
+        if let qualityPlugin {
+            Logger.debug("reloadCurrentVideo: remove previous qualityPlugin")
+            onPluginRemove.send(qualityPlugin)
+        }
+
+        Task {
+            do {
+                // 重新获取视频播放信息（会使用新的清晰度设置）
+                let playData: VideoPlayURLInfo
+                guard let cid = playInfo.cid else {
+                    throw "Video cid is missing"
+                }
+
+                if playInfo.isBangumi {
+                    playData = try await WebRequest.requestPcgPlayUrl(aid: playInfo.aid, cid: cid)
+                } else {
+                    playData = try await WebRequest.requestPlayUrl(aid: playInfo.aid, cid: cid)
+                }
+
+                // 构建新的播放数据
+                var newData = PlayerDetailData(
+                    aid: playInfo.aid,
+                    cid: cid,
+                    epid: playInfo.epid,
+                    seasonId: playInfo.seasonId,
+                    isBangumi: playInfo.isBangumi,
+                    detail: videoDetail,
+                    clips: nil,
+                    playerInfo: nil,
+                    videoPlayURLInfo: playData
+                )
+                // 不设置起始位置，让播放器从当前位置继续（如果可能）
+                newData.playerStartPos = nil
+
+                // 初始化新播放器组件
+                let player = BVideoPlayPlugin(detailData: newData)
+                playPlugin = player
+
+                // 初始化新的清晰度选择插件
+                let quality = QualitySelectionPlugin(playURLInfo: playData)
+                quality.onQualityChange = { [weak self] newQn in
+                    guard let self else { return }
+                    Logger.info("[VideoPlayer] Quality change requested: \(newQn)")
+                    self.reloadCurrentVideo()
+                }
+                qualityPlugin = quality
+
+                onPluginReady.send([player, quality])
+                Logger.info("[VideoPlayer] Reloaded video with new quality: \(playData.quality)")
+            } catch let err {
+                Logger.warn("[VideoPlayer] Failed to reload video: \(err.localizedDescription)")
                 onPluginReady.send(completion: .failure(err.localizedDescription))
             }
         }
@@ -192,7 +271,17 @@ class VideoPlayerViewModel {
 
         playPlugin = player
 
-        var plugins: [CommonPlayerPlugin] = [player, danmu, playSpeed, upnp, debug, playlist]
+        // 清晰度选择插件
+        let quality = QualitySelectionPlugin(playURLInfo: data.videoPlayURLInfo)
+        quality.onQualityChange = { [weak self] newQn in
+            guard let self else { return }
+            Logger.info("[VideoPlayer] Quality change requested: \(newQn)")
+            // 重新加载当前视频以应用新清晰度
+            self.reloadCurrentVideo()
+        }
+        qualityPlugin = quality
+
+        var plugins: [CommonPlayerPlugin] = [player, danmu, playSpeed, upnp, debug, playlist, quality]
 
         if let clips = data.clips {
             let clip = BVideoClipsPlugin(clipInfos: clips)
