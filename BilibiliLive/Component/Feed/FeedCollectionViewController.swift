@@ -42,14 +42,21 @@ struct AnyDispplayData: Hashable {
 struct DisplayOverlay {
     var leftItems: [DisplayOverlayItem]
     var rightItems: [DisplayOverlayItem]
+    var badge: DisplayOverlayBadge?
 
-    init(leftItems: [DisplayOverlayItem], rightItems: [DisplayOverlayItem] = []) {
+    init(leftItems: [DisplayOverlayItem], rightItems: [DisplayOverlayItem] = [], badge: DisplayOverlayBadge? = nil) {
         self.leftItems = leftItems
         self.rightItems = rightItems
+        self.badge = badge
     }
 
     struct DisplayOverlayItem {
         var icon: String?
+        var text: String
+    }
+
+    struct DisplayOverlayBadge {
+        var color: UIColor?
         var text: String
     }
 }
