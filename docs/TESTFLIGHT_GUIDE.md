@@ -108,7 +108,7 @@ xcodebuild -exportArchive \
 # 上传到 App Store Connect
 xcrun altool --upload-app \
              -f ./build/BilibiliLive.ipa \
-             -t tvos \
+             -t appletvos \
              -u "your_apple_id@example.com" \
              -p "app-specific-password"
 ```

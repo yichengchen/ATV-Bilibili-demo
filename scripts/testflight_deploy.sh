@@ -195,9 +195,9 @@ create_export_options() {
 <plist version="1.0">
 <dict>
     <key>method</key>
-    <string>app-store-connect</string>
+    <string>app-store</string>
     <key>destination</key>
-    <string>upload</string>
+    <string>export</string>
     <key>signingStyle</key>
     <string>automatic</string>
     <key>uploadSymbols</key>
