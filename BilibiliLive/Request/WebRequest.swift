@@ -595,6 +595,18 @@ struct HistoryData: DisplayData, Codable {
         let cid: Int
     }
 
+    let pic: URL?
+
+    let owner: VideoOwner
+    let cid: Int?
+    let aid: Int
+    let progress: Int
+    let duration: Int
+    let view_at: Int
+    let stat: Stat?
+    //    let bangumi: BangumiData?
+
+    // displayData
     let title: String
     var ownerName: String { owner.name }
     var avatar: URL? {
@@ -604,24 +616,14 @@ struct HistoryData: DisplayData, Codable {
         return nil
     }
 
-    let pic: URL?
-
-    let owner: VideoOwner
-    let cid: Int?
-    let aid: Int
-    let progress: Int
-    let duration: Int
-    let stat: Stat?
-    //    let bangumi: BangumiData?
+    var date: String? {
+        DateFormatter.relativeTimeStringFor(timestamp: view_at)
+    }
 
     var overlay: DisplayOverlay? {
         var leftItems = [DisplayOverlay.DisplayOverlayItem]()
         var rightItems = [DisplayOverlay.DisplayOverlayItem]()
-        if let stat {
-            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: stat.view == 0 ? "-" : stat.view.numberString()))
-            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "list.bullet.rectangle", text: stat.danmaku == 0 ? "-" : stat.danmaku.numberString()))
-        }
-        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: TimeInterval(duration).timeString()))
+        rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: "\(TimeInterval(progress).timeString())/\(TimeInterval(duration).timeString())"))
         return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
     }
 
