@@ -14,11 +14,17 @@ struct PlayInfo {
     var cid: Int? = 0
     var epid: Int? = 0 // 港澳台解锁需要
     var seasonId: Int? = 0 // 番剧 season_id
-    var isBangumi: Bool = false
     var ctime: Int? = 0
+    var subType: Int? = nil // 0: 普通视频 1：番剧 2：电影 3：纪录片 4：国创 5：电视剧 7：综艺
+    var lastPlayCid: Int?
+    var playTimeInSecond: Int?
 
     var isCidVaild: Bool {
         return cid ?? 0 > 0
+    }
+
+    var isBangumi: Bool {
+        return epid ?? 0 > 0 || seasonId ?? 0 > 0
     }
 }
 

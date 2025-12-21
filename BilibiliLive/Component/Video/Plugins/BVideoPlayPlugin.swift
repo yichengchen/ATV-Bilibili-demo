@@ -33,7 +33,7 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
 
     func playerDidDismiss(playerVC: AVPlayerViewController) {
         guard let currentTime = playerVC.player?.currentTime().seconds, currentTime > 0 else { return }
-        WebRequest.reportWatchHistory(aid: playData.aid, cid: playData.cid, currentTime: Int(currentTime), epid: playData.epid, seasonId: playData.seasonId, isBangumi: playData.isBangumi)
+        WebRequest.reportWatchHistory(aid: playData.aid, cid: playData.cid, currentTime: Int(currentTime), epid: playData.epid, seasonId: playData.seasonId, subType: playData.subType)
     }
 
     @MainActor

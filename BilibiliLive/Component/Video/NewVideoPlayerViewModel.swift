@@ -13,13 +13,17 @@ struct PlayerDetailData {
     let cid: Int
     let epid: Int? // 港澳台解锁需要
     let seasonId: Int? // 番剧 season_id
-    let isBangumi: Bool
+    let subType: Int? // 0: 普通视频 1：番剧 2：电影 3：纪录片 4：国创 5：电视剧 7：综艺
 
     var playerStartPos: Int?
     var detail: VideoDetail?
     var clips: [VideoPlayURLInfo.ClipInfo]?
     var playerInfo: PlayerInfo?
     var videoPlayURLInfo: VideoPlayURLInfo
+
+    var isBangumi: Bool {
+        return epid ?? 0 > 0 || seasonId ?? 0 > 0
+    }
 }
 
 class VideoPlayerViewModel {
@@ -102,10 +106,12 @@ class VideoPlayerViewModel {
             let info = await infoReq
             _ = await detailUpdate
 
-            var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, seasonId: playInfo.seasonId, isBangumi: playInfo.isBangumi, detail: videoDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
+            var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, seasonId: playInfo.seasonId, subType: playInfo.subType, detail: videoDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
 
-            if let info, info.last_play_cid == cid, playData.dash.duration - info.playTimeInSecond > 5, Settings.continuePlay {
-                detail.playerStartPos = info.playTimeInSecond
+            let last_play_cid = playInfo.lastPlayCid ?? info?.last_play_cid ?? 0
+            let playTimeInSecond = playInfo.playTimeInSecond ?? info?.playTimeInSecond ?? 0
+            if last_play_cid == cid, playData.dash.duration - playTimeInSecond > 5, Settings.continuePlay {
+                detail.playerStartPos = playTimeInSecond
             }
 
             return detail
