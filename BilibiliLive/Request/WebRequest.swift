@@ -129,6 +129,13 @@ enum WebRequest {
                 if errorCode != 0 {
                     let message = json["message"].stringValue
                     print(errorCode, message)
+
+                    // Handle captcha validation error (-352)
+                    if errorCode == -352 {
+                        Logger.warn("WbiSign error (code=-352), clearing cache. URL: \(url)")
+                        WbiKeysCache.shared.clear()
+                    }
+
                     complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }
