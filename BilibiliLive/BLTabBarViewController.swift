@@ -59,6 +59,14 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         uploads.tabBarItem.title = "投稿"
         vcs.append(uploads)
 
+        // 搜索Tab
+        let searchResultVC = SearchResultViewController()
+        let searchController = UISearchController(searchResultsController: searchResultVC)
+        searchController.searchResultsUpdater = searchResultVC
+        let searchContainerVC = UISearchContainerViewController(searchController: searchController)
+        searchContainerVC.tabBarItem.title = "搜索"
+        vcs.append(searchContainerVC)
+
         let persionVC = PersonalViewController.create()
         persionVC.extendedLayoutIncludesOpaqueBars = true
         persionVC.tabBarItem.title = "我的"
