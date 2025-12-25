@@ -157,6 +157,16 @@ enum Settings {
 
     @UserDefaultCodable("Search.histories", defaultValue: [])
     static var searchHistories: [String]
+
+    // 热搜缓存 (30分钟有效期)
+    @UserDefaultCodable("Search.hotKeywordsCache", defaultValue: [])
+    static var cachedHotKeywords: [HotSearchResult.HotWord]
+
+    @UserDefault("Search.hotKeywordsUpdateTime", defaultValue: 0)
+    static var hotKeywordsUpdateTime: TimeInterval
+
+    /// 热搜缓存有效期 (30分钟)
+    static let hotKeywordsCacheTimeout: TimeInterval = 30 * 60
 }
 
 extension Settings {
@@ -183,6 +193,37 @@ extension Settings {
 
     static func clearHistory() {
         Settings.searchHistories = []
+    }
+
+    // MARK: - Hot Search Cache
+
+    /// 检查热搜缓存是否有效
+    static var isHotKeywordsCacheValid: Bool {
+        let now = Date().timeIntervalSince1970
+        return now - hotKeywordsUpdateTime < hotKeywordsCacheTimeout && !cachedHotKeywords.isEmpty
+    }
+
+    /// 更新热搜缓存
+    static func updateHotKeywordsCache(_ keywords: [HotSearchResult.HotWord]) {
+        cachedHotKeywords = keywords
+        hotKeywordsUpdateTime = Date().timeIntervalSince1970
+    }
+
+    /// 获取热搜 (优先使用缓存)
+    static func getHotKeywords() async -> [HotSearchResult.HotWord] {
+        if isHotKeywordsCacheValid {
+            return cachedHotKeywords
+        }
+
+        do {
+            let keywords = try await WebRequest.requestHotSearch()
+            updateHotKeywordsCache(keywords)
+            return keywords
+        } catch {
+            Logger.warn("Failed to fetch hot search: \(error)")
+            // 缓存过期也返回旧数据
+            return cachedHotKeywords
+        }
     }
 }
 
