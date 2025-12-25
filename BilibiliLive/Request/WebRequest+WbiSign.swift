@@ -47,11 +47,12 @@ extension WebRequest {
         // WebId Cache
         class WebIdCache {
             var webId: String?
+
             static let shared = WebIdCache()
         }
 
-        func getWebId(completion: @escaping (String?) -> Void) {
-            if let cached = WebIdCache.shared.webId {
+        func getWebId(needRefresh: Bool = false, completion: @escaping (String?) -> Void) {
+            if let cached = WebIdCache.shared.webId, needRefresh {
                 completion(cached)
                 return
             }
@@ -96,9 +97,7 @@ extension WebRequest {
                         completion(accessId)
                         return
                     }
-                } catch {
-                    Logger.debug("WebId regex error: \(error.localizedDescription)")
-                }
+                } catch {}
 
                 completion(nil)
             }
@@ -137,22 +136,14 @@ extension WebRequest {
             return params
         }
 
-        func getWbiKeys(completion: @escaping (Result<(imgKey: String, subKey: String), Error>) -> Void) {
-            class Cache {
-                var imgKey: String?
-                var subKey: String?
-                var lastUpdate: Date?
-
-                static let shared = Cache()
-            }
-
-            if let imgKey = Cache.shared.imgKey,
-               let subKey = Cache.shared.subKey,
-               let lastUpdate = Cache.shared.lastUpdate,
-               Date().timeIntervalSince(lastUpdate) < 60 * 60 * 12,
+        func getWbiKeys(completion: @escaping (Result<(imgKey: String, subKey: String, refresh: Bool), Error>) -> Void) {
+            if let imgKey = WbiKeysCache.shared.imgKey,
+               let subKey = WbiKeysCache.shared.subKey,
+               let lastUpdate = WbiKeysCache.shared.lastUpdate,
+               Date().timeIntervalSince(lastUpdate) < 60 * 60 * 2,
                Calendar.current.isDate(Date(), inSameDayAs: lastUpdate)
             {
-                completion(.success((imgKey, subKey)))
+                completion(.success((imgKey, subKey, false)))
                 return
             }
 
@@ -169,10 +160,10 @@ extension WebRequest {
                     let subURL = json["data"]["wbi_img"]["sub_url"].string ?? ""
                     let imgKey = imgURL.components(separatedBy: "/").last?.components(separatedBy: ".").first ?? ""
                     let subKey = subURL.components(separatedBy: "/").last?.components(separatedBy: ".").first ?? ""
-                    Cache.shared.imgKey = imgKey
-                    Cache.shared.subKey = subKey
-                    Cache.shared.lastUpdate = Date()
-                    completion(.success((imgKey, subKey)))
+                    WbiKeysCache.shared.imgKey = imgKey
+                    WbiKeysCache.shared.subKey = subKey
+                    WbiKeysCache.shared.lastUpdate = Date()
+                    completion(.success((imgKey, subKey, true)))
                 case let .failure(error):
                     completion(.failure(error))
                 }
@@ -192,7 +183,7 @@ extension WebRequest {
         getWbiKeys { result in
             switch result {
             case let .success(keys):
-                getWebId { webId in
+                getWebId(needRefresh: keys.refresh) { webId in
                     let spdParam = param.components(separatedBy: "&")
                     var spdDicParam = [String: String]()
                     for pair in spdParam {
@@ -232,6 +223,24 @@ extension WebRequest {
                 Logger.warn("Error getting WBI keys: \(error)")
                 completion(nil)
             }
+        }
+    }
+
+    // MARK: - WbiKeys Cache
+
+    class WbiKeysCache {
+        var imgKey: String?
+        var subKey: String?
+        var lastUpdate: Date?
+
+        static let shared = WbiKeysCache()
+
+        private init() {}
+
+        func clear() {
+            imgKey = nil
+            subKey = nil
+            lastUpdate = nil
         }
     }
 }

@@ -130,6 +130,11 @@ enum WebRequest {
                 Logger.debug("[WebRequest] URL: \(url), code: \(errorCode), message: \(message)")
                 if errorCode != 0 {
                     Logger.warn("[WebRequest] API error: code=\(errorCode), message=\(message)")
+                    // Handle captcha validation error (-352)
+                    if errorCode == -352 {
+                        Logger.warn("WbiSign error (code=-352), clearing cache. URL: \(url)")
+                        WbiKeysCache.shared.clear()
+                    }
                     complete?(.failure(.statusFail(code: errorCode, message: message)))
                     return
                 }

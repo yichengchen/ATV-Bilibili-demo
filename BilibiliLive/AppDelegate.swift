@@ -7,6 +7,7 @@
 
 import AVFoundation
 import CocoaLumberjackSwift
+import Kingfisher
 import UIKit
 
 @main
@@ -15,6 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         Logger.setup()
+        ImageCache.default.diskStorage.config.sizeLimit = 500 * 1024 * 1024
         AVInfoPanelCollectionViewThumbnailCellHook.start()
         AccountManager.shared.bootstrap()
         BiliBiliUpnpDMR.shared.start()
