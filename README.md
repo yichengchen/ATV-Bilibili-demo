@@ -1,50 +1,68 @@
-# BiliBili tvOS 客户端 Demo
+# BiliBili tvOS 客户端
 
-### 本项目没有任何授权的 Testflight 发放以及任何收费版本，请注意辨别和考虑安全性问题。
+> 在 Apple TV 上享受完整的 B站体验
 
- **BiliBili tvOS 客户端 Demo 从未在任何平台上架和收费（包括AppStore与Testflight）**
+**本项目没有任何授权的 Testflight 发放以及任何收费版本，请注意辨别安全性。**
 
- 如果您在任何平台上看到有人以收费方式提供本项目的服务或应用，请注意这是**未经授权的**行为，并且与我们的原始意图不符。我们强烈谴责将本项目用于商业盈利的行为，由此引发的任何安全风险与此项目无关。
+---
 
+## 功能特性
 
-### 支持功能
-- 二维码登录
-- 云视听小电视投屏协议
-- 直播与弹幕
-- 推荐Feed
-- 热门
-- 排行榜
-- 搜索
-- 关注列表
-- 历史播放
-- 稍后再看
-- 系统播放器播放视频
-- 视频弹幕
-- 热门评论
-- 弹幕防挡
-- 云视听投屏
-- HDR播放
-- 字幕
+### 核心功能
+| 功能 | 说明 |
+|------|------|
+| 直播 | 实时弹幕、清晰度切换 |
+| 视频 | 推荐/热门/排行榜、弹幕防挡、HDR/杜比视界 |
+| 搜索 | 热搜榜、历史记录、分页加载 |
+| 个人 | 历史记录、稍后再看、关注、收藏、投稿 |
+| 投屏 | 云视听小电视协议支持 |
 
- ![](imgs/1.jpg)
- ![](imgs/2.jpg)
- ![](imgs/3.png)
+### 增强特性 (Fork 新增)
+- **智能搜索** - B站热搜榜 + 搜索历史 + 无限滚动分页
+- **区域解锁** - 支持代理服务器播放区域限制内容
+- **播放增强** - 循环模式、跳过片头片尾 (SponsorBlock)
+- **稳定性优化** - 安全模式防崩溃、错误处理增强
 
+---
 
+## 截图
 
-### Telegram Group
- - https://t.me/appletvbilibilidemo
+<p align="center">
+  <img src="imgs/1.jpg" width="45%" />
+  <img src="imgs/2.jpg" width="45%" />
+</p>
+<p align="center">
+  <img src="imgs/3.png" width="90%" />
+</p>
 
-### 未签名iPA文件
+---
 
-从 https://github.com/yichengchen/ATV-Bilibili-demo/releases/tag/nightly 获取基于最新代码构建的
+## 安装
 
-### Links
+### 未签名 IPA
+从 [Releases](https://github.com/yichengchen/ATV-Bilibili-demo/releases/tag/nightly) 下载，使用 Sideloadly 或 AltStore 安装。
 
-- App Icon [【22娘×33娘】亲爱的UP主，你怎么还在咕咕咕？](https://www.bilibili.com/video/BV1AB4y1k7em)
+### 源码编译
+```bash
+# 克隆仓库
+git clone https://github.com/yichengchen/ATV-Bilibili-demo.git
+cd ATV-Bilibili-demo
+
+# 使用 Fastlane 构建
+fastlane build_unsign_ipa
+```
+
+---
+
+## 社区
+
+- Telegram: https://t.me/appletvbilibilidemo
+
+---
+
+## 致谢
 
 - [thmatuza/MPEGDASHAVPlayerDemo](https://github.com/thmatuza/MPEGDASHAVPlayerDemo)
-
 - [dreamCodeMan/B-webmask](https://github.com/dreamCodeMan/B-webmask)
-
-- [分析Bilibili客户端的“哔哩必连”协议](https://xfangfang.github.io/028)
+- [分析Bilibili客户端的"哔哩必连"协议](https://xfangfang.github.io/028)
+- App Icon: [【22娘×33娘】亲爱的UP主，你怎么还在咕咕咕？](https://www.bilibili.com/video/BV1AB4y1k7em)
