@@ -51,7 +51,7 @@ extension WebRequest {
         }
 
         func getWebId(needRefresh: Bool = false, completion: @escaping (String?) -> Void) {
-            if let cached = WebIdCache.shared.webId, needRefresh {
+            if let cached = WebIdCache.shared.webId, !needRefresh {
                 completion(cached)
                 return
             }
