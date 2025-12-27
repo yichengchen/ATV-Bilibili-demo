@@ -18,6 +18,7 @@ struct PlayInfo {
     var subType: Int? = nil // 0: 普通视频 1：番剧 2：电影 3：纪录片 4：国创 5：电视剧 7：综艺
     var lastPlayCid: Int?
     var playTimeInSecond: Int?
+    var title: String?
 
     var isCidVaild: Bool {
         return cid ?? 0 > 0
@@ -35,6 +36,10 @@ class VideoNextProvider {
 
     private var index = 0
     private let playSeq: [PlayInfo]
+    var count: Int {
+        return playSeq.count
+    }
+
     func reset() {
         index = 0
     }
@@ -43,6 +48,14 @@ class VideoNextProvider {
         index += 1
         if index < playSeq.count {
             return playSeq[index]
+        }
+        return nil
+    }
+
+    func peekNext() -> PlayInfo? {
+        let nextIndex = index + 1
+        if nextIndex < playSeq.count {
+            return playSeq[nextIndex]
         }
         return nil
     }
