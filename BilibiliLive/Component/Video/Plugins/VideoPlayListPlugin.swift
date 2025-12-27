@@ -8,6 +8,8 @@
 import AVKit
 
 class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
+    private let playNextActionIdentifierPrefix = "play.next"
+    private weak var playerVC: AVPlayerViewController?
     var onPlayEnd: (() -> Void)?
     var onPlayNextWithInfo: ((PlayInfo) -> Void)?
 
@@ -15,6 +17,32 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
 
     init(nextProvider: VideoNextProvider?) {
         self.nextProvider = nextProvider
+    }
+
+    func playerDidLoad(playerVC: AVPlayerViewController) {
+        self.playerVC = playerVC
+    }
+
+    func playerWillStart(player: AVPlayer) {
+        guard let playerVC, let nextProvider, nextProvider.count > 1 else { return }
+
+        // 仅当最后一项是我们之前添加的 "next" action 时才移除，避免误删其他自定义 action
+        if let last = playerVC.infoViewActions.last,
+           last.identifier.rawValue.hasPrefix(playNextActionIdentifierPrefix)
+        {
+            playerVC.infoViewActions.removeLast()
+        }
+
+        if let next = nextProvider.peekNext() {
+            let title = next.title ?? "下一集"
+            let nextAction = UIAction(title: title,
+                                      image: UIImage(systemName: "forward.end.fill"),
+                                      identifier: .init(rawValue: "\(playNextActionIdentifierPrefix).\(next.aid).\(next.cid ?? 0)"))
+            { [weak self] _ in
+                _ = self?.playNext()
+            }
+            playerVC.infoViewActions.append(nextAction)
+        }
     }
 
     func addMenuItems(current: inout [UIMenuElement]) -> [UIMenuElement] {

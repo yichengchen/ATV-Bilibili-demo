@@ -69,7 +69,7 @@ class VideoPlayerViewModel {
     }
 
     private func updateVideoDetailIfNeeded() async {
-        if videoDetail == nil {
+        if videoDetail == nil || videoDetail?.View.aid != playInfo.aid {
             videoDetail = try? await WebRequest.requestDetailVideo(aid: playInfo.aid)
         }
     }
