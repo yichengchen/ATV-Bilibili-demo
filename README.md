@@ -26,12 +26,21 @@
 
 ## 截图
 
+**QR码登录** - 扫码快速登录
 <p align="center">
-  <img src="imgs/1.jpg" width="45%" />
-  <img src="imgs/2.jpg" width="45%" />
+  <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/atv_bilibili_screenshot_1.png" width="60%" />
 </p>
+
+**内容浏览** - 直播、推荐、热门、排行榜
 <p align="center">
-  <img src="imgs/3.png" width="90%" />
+  <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/simulator_screenshot_apple_tv_4k_3rd_gen_20260109_224442.jpg" width="45%" />
+  <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/atv_bilibili_screenshot_2.png" width="45%" />
+</p>
+
+**番剧影视** & **播放设置**
+<p align="center">
+  <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/simulator_screenshot_apple_tv_4k_3rd_gen_20260109_225658.png" width="45%" />
+  <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/simulator_screenshot_apple_tv_4k_3rd_gen_20260109_225450.jpg" width="45%" />
 </p>
 
 ---
