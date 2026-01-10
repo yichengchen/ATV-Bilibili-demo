@@ -31,16 +31,21 @@
   <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/atv_bilibili_screenshot_1.png" width="60%" />
 </p>
 
-**内容浏览** - 直播、推荐、热门、排行榜
+**主导航 & 智能搜索** - 9个标签页 + 热搜榜
 <p align="center">
-  <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/simulator_screenshot_apple_tv_4k_3rd_gen_20260109_224442.jpg" width="45%" />
   <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/atv_bilibili_screenshot_2.png" width="45%" />
+  <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/atv_bilibili_screenshot_4.png" width="45%" />
 </p>
 
-**番剧影视** & **播放设置**
+**番剧影视** & **播放增强**
 <p align="center">
   <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/simulator_screenshot_apple_tv_4k_3rd_gen_20260109_225658.png" width="45%" />
   <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/simulator_screenshot_apple_tv_4k_3rd_gen_20260109_225450.jpg" width="45%" />
+</p>
+
+**通用设置** - 投屏、画质、音视频选项
+<p align="center">
+  <img src="https://dissidia.oss-cn-beijing.aliyuncs.com/test/20260109/simulator_screenshot_apple_tv_4k_3rd_gen_20260109_224405.jpg" width="60%" />
 </p>
 
 ---
