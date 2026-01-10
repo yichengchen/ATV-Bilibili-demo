@@ -33,7 +33,7 @@ class BangumiListViewController: StandardVideoCollectionViewController<FollowBan
     override func setupCollectionView() {
         super.setupCollectionView()
         collectionVC.styleOverride = .normal
-        collectionVC.pageSize = 24
+        collectionVC.pageSize = 30
         collectionVC.loadViewIfNeeded()
         collectionVC.collectionView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 40, right: 0)
     }
@@ -54,13 +54,15 @@ extension WebRequest.EndPoint {
 }
 
 extension WebRequest {
-    static func requestFollowBangumiList(type: Int, page: Int = 1) async throws -> FollowBangumiListData? {
+    static func requestFollowBangumiList(type: Int, page: Int = 1, pageSize: Int = 30) async throws -> FollowBangumiListData? {
         guard let mid = ApiRequest.getToken()?.mid else { return nil }
-        return try await request(url: EndPoint.followBangumiList, parameters: ["vmid": mid, "type": type, "pn": page, "ps": "24"])
+        return try await request(url: EndPoint.followBangumiList, parameters: ["vmid": mid, "type": type, "pn": page, "ps": "\(pageSize)"])
     }
 }
 
 struct FollowBangumiListData: Codable, Hashable {
+    let list: [Bangumi]
+
     struct Bangumi: Codable, Hashable, DisplayData {
         let season_id: Int
         let media_id: Int
@@ -93,8 +95,6 @@ struct FollowBangumiListData: Codable, Hashable {
             return DisplayOverlay(leftItems: leftItems, badge: badge)
         }
     }
-
-    let list: [Bangumi]
 }
 
 extension FollowBangumiListData.Bangumi: PlayableData {
