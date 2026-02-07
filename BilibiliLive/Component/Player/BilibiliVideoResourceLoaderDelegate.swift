@@ -57,11 +57,14 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         return "video codecs: \(videoCodec), audio: \(audioCodec)"
     }
 
-    let videoCodecBlackList = ["avc1.640034"] // high 5.2 is not supported
+    // 黑名单：不支持的编码
+    // 注：经过测试，avc1.640034 (H.264 High 5.2) 在现代设备上是支持的，已移除
+    let videoCodecBlackList: [String] = []
 
     private func reset() {
         playlists.removeAll()
         audioRenditionIndex = 0
+        hasAudioInMasterListAdded = false
         masterPlaylist = """
         #EXTM3U
         #EXT-X-VERSION:6
@@ -72,7 +75,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     }
 
     private func addVideoPlayBackInfo(info: VideoPlayURLInfo.DashInfo.DashMediaInfo, url: String, duration: Int) {
-        guard !videoCodecBlackList.contains(info.codecs) else { return }
+        // 黑名单已经在 setBilibili 中过滤了，这里不需要再检查
         let subtitlePlaceHolder = hasSubtitle ? ",SUBTITLES=\"subs\"" : ""
         let isDolby = info.id == MediaQualityEnum.quality_hdr_dolby.qn
         let isHDR10 = info.id == 125
@@ -176,30 +179,42 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private func addAudioPlayBackInfo(info: VideoPlayURLInfo.DashInfo.DashMediaInfo, url: String, duration: Int) {
         guard !videoCodecBlackList.contains(info.codecs) else { return }
         let isFirst = !hasAudioInMasterListAdded
-        hasAudioInMasterListAdded = true
         let defaultStr = isFirst ? "YES" : "NO"
-        audioRenditionIndex += 1
-        let name = isFirst ? "Main" : "Main \(audioRenditionIndex)"
+
+        // 构建音轨名称
+        let bitrateKbps = info.bandwidth / 1000
+        let name = "音轨 (\(bitrateKbps)kbps)"
+
         let content = """
-        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),GROUP-ID="audio",NAME="\(name)",URI="\(URLs.customDashPrefix)\(videoInfo.count)"
+        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),AUTOSELECT=YES,GROUP-ID="audio",LANGUAGE="zh",NAME="\(name)",URI="\(URLs.customDashPrefix)\(videoInfo.count)"
 
         """
 
         masterPlaylist.append(content)
+
+        // 只有在真正添加音轨时才更新状态
+        hasAudioInMasterListAdded = true
+        audioRenditionIndex += 1
         videoInfo.append(PlaybackInfo(info: info, url: url, duration: duration))
     }
 
     private func addAudioPlayBackInfo(codec: String, bandwidth: Int, duration: Int, url: String) {
         let isFirst = !hasAudioInMasterListAdded
-        hasAudioInMasterListAdded = true
         let defaultStr = isFirst ? "YES" : "NO"
-        audioRenditionIndex += 1
-        let name = isFirst ? "Main" : "Main \(audioRenditionIndex)"
+
+        // 构建音轨名称
+        let bitrateKbps = bandwidth / 1000
+        let name = "音轨 (\(bitrateKbps)kbps)"
+
         let content = """
-        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),GROUP-ID="audio",NAME="\(name)",URI="\(URLs.customPrefix)\(playlists.count)"
+        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),AUTOSELECT=YES,GROUP-ID="audio",LANGUAGE="zh",NAME="\(name)",URI="\(URLs.customPrefix)\(playlists.count)"
 
         """
         masterPlaylist.append(content)
+
+        // 只有在真正添加音轨时才更新状态
+        hasAudioInMasterListAdded = true
+        audioRenditionIndex += 1
 
         let playList = """
         #EXTM3U
@@ -248,7 +263,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         playlists.append(playList)
     }
 
-    func setBilibili(info: VideoPlayURLInfo, subtitles: [SubtitleData], aid: Int) {
+    func setBilibili(info: VideoPlayURLInfo, subtitles: [SubtitleData], aid: Int, maxQuality: Int? = nil, streamIndex: Int? = nil) {
         playInfo = info
         self.aid = aid
         reset()
@@ -263,6 +278,53 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             }
         }
 
+        // 先过滤黑名单编码（避免后续强制模式选择了被黑名单的流）
+        videos = videos.filter { !videoCodecBlackList.contains($0.codecs) }
+
+        // 智能画质模式：
+        // 1. 如果用户手动选择了具体的流（streamIndex 不为 nil），只使用该流
+        // 2. 如果用户手动选择了画质（maxQuality 不为 nil），只保留该画质的流（强制模式）
+        // 3. 如果是默认模式，使用设置限制并保留多级画质作为后备（自适应模式）
+        if let streamIndex = streamIndex, streamIndex < info.dash.video.count {
+            // 用户选择了具体的流，直接使用该流
+            videos = [info.dash.video[streamIndex]]
+        } else if let maxQuality = maxQuality {
+            // 用户选择了画质，保留该画质的最高码率流
+            let matchingStreams = videos.filter { $0.id == maxQuality }
+            if let highestBandwidthStream = matchingStreams.max(by: { $0.bandwidth < $1.bandwidth }) {
+                videos = [highestBandwidthStream]
+            } else {
+                videos = matchingStreams
+            }
+        } else {
+            // 默认模式：自适应模式
+            // 使用设置中的画质限制
+            let qualityLimit = Settings.mediaQuality.qn
+            videos = videos.filter { $0.id <= qualityLimit }
+
+            // 保留最高画质 + 中等画质（1080P）+ 低画质（720P 及以下）作为后备
+            // 这样 AVPlayer 可以根据网络状况自动降级
+            let highestQuality = videos.map { $0.id }.max() ?? qualityLimit
+
+            // 保留最高画质的所有编码
+            let highQualityVideos = videos.filter { $0.id == highestQuality }
+
+            // 保留中等画质作为后备（1080P 及以下，但不包括最高画质）
+            let fallbackVideos = videos.filter { $0.id < highestQuality && $0.id >= 80 }
+
+            // 保留低画质作为紧急后备（720P 及以下）
+            let emergencyVideos = videos.filter { $0.id < 80 && $0.id >= 64 }
+
+            // 合并：最高画质 + 中等画质 + 低画质
+            videos = highQualityVideos + fallbackVideos + emergencyVideos
+        }
+
+        // 按 bandwidth 降序排序（码率最高的优先，让 AVPlayer 优先选择）
+        // 这样可以确保在同一画质等级下，AVPlayer 会选择码率最高的流
+        videos.sort { $0.bandwidth > $1.bandwidth }
+
+        // 添加所有 CDN 节点的 URL，让 AVPlayer 自动选择最快的
+        // 这样可以解决单个 CDN 节点速度慢的问题
         for video in videos {
             for url in video.playableURLs {
                 addVideoPlayBackInfo(info: video, url: url, duration: info.dash.duration)
@@ -271,22 +333,25 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
         if Settings.losslessAudio {
             if let audios = info.dash.dolby?.audio {
-                for audio in audios {
-                    for url in BVideoUrlUtils.sortUrls(base: audio.base_url, backup: audio.backup_url) {
-                        addAudioPlayBackInfo(info: audio, url: url, duration: info.dash.duration)
-                    }
+                // 只添加第一个杜比音频流的第一个 URL
+                if let firstAudio = audios.first,
+                   let firstUrl = BVideoUrlUtils.sortUrls(base: firstAudio.base_url, backup: firstAudio.backup_url).first
+                {
+                    addAudioPlayBackInfo(info: firstAudio, url: firstUrl, duration: info.dash.duration)
                 }
-            } else if let audio = info.dash.flac?.audio {
-                for url in audio.playableURLs {
-                    addAudioPlayBackInfo(info: audio, url: url, duration: info.dash.duration)
-                }
+            } else if let audio = info.dash.flac?.audio,
+                      let firstUrl = audio.playableURLs.first
+            {
+                // 只添加第一个 FLAC 音频 URL
+                addAudioPlayBackInfo(info: audio, url: firstUrl, duration: info.dash.duration)
             }
         }
 
-        for audio in info.dash.audio ?? [] {
-            for url in audio.playableURLs {
-                addAudioPlayBackInfo(info: audio, url: url, duration: info.dash.duration)
-            }
+        // 只添加第一个普通音频流的第一个 URL
+        if let firstAudio = info.dash.audio?.first,
+           let firstUrl = firstAudio.playableURLs.first
+        {
+            addAudioPlayBackInfo(info: firstAudio, url: firstUrl, duration: info.dash.duration)
         }
 
         if hasSubtitle {
