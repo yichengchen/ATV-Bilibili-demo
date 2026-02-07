@@ -36,19 +36,29 @@ enum SidxParseUtil {
         var typeString = ""
         var sidx: Sidx?
         while offset < data.count - 8 {
-            print("offset:", offset)
             var size = UInt64(data.getUint32(offset: &offset))
             let typeArr = data.getUint32(offset: &offset).toUInt8s
             typeString = String(bytes: typeArr, encoding: .utf8)!
-            print(size, typeString)
             switch typeString {
             case "sidx":
                 if size == 1 {
                     size = data.getValue(type: UInt64.self, offset: &offset)
                 }
-                sidx = processSIDX(data: Data(data[Data.Index(offset)..<Int(size)]))
+                // size includes the 8-byte header (4 size + 4 type)
+                let boxDataSize = Int(size) - 8
+                let endIndex = Int(offset) + boxDataSize
+                
+                guard endIndex <= data.count else {
+                    return nil
+                }
+                
+                sidx = processSIDX(data: Data(data[Int(offset)..<endIndex]))
+                offset += UInt64(boxDataSize)
+            default:
+                if size == 1 {
+                    size = data.getValue(type: UInt64.self, offset: &offset)
+                }
                 offset += (size - 8)
-            default: break
             }
         }
         return sidx
@@ -56,14 +66,24 @@ enum SidxParseUtil {
 
     private static func processSIDX(data: Data) -> Sidx {
         var offset: UInt64 = 0
-        _ = data.getUint8(offset: &offset) // version
+        let version = data.getUint8(offset: &offset)
         _ = data.getUint8(offset: &offset) // none
         _ = data.getUint8(offset: &offset) // none
         _ = data.getUint8(offset: &offset) // none
         _ = data.getUint32(offset: &offset) // refID
         let timescale = data.getUint32(offset: &offset)
-        let earliest_presentation_time = data.getUint32(offset: &offset)
-        let first_offset = data.getUint32(offset: &offset)
+        
+        // version 0: 32-bit, version 1: 64-bit
+        let earliest_presentation_time: UInt64
+        let first_offset: UInt64
+        if version == 0 {
+            earliest_presentation_time = UInt64(data.getUint32(offset: &offset))
+            first_offset = UInt64(data.getUint32(offset: &offset))
+        } else {
+            earliest_presentation_time = data.getValue(type: UInt64.self, offset: &offset).bigEndian
+            first_offset = data.getValue(type: UInt64.self, offset: &offset).bigEndian
+        }
+        
         _ = data.getValue(type: UInt16.self, offset: &offset).bigEndian // reversed
         let reference_count = data.getValue(type: UInt16.self, offset: &offset).bigEndian
 
