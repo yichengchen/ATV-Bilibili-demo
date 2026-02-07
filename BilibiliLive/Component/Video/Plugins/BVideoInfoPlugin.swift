@@ -16,7 +16,9 @@ class BVideoInfoPlugin: NSObject, CommonPlayerPlugin {
     var viewPoints: [PlayerInfo.ViewPoint]?
 
     func playerWillStart(player: AVPlayer) {
-        Task {
+        Task { @MainActor in
+            // Defer metadata setting to avoid Auto Layout conflicts
+            await Task.yield()
             async let info: () = AVPlayerMetaUtils.setPlayerInfo(title: title, subTitle: subTitle, desp: desp, pic: pic, player: player)
             if let viewPoints {
                 async let vp: () = updatePlayerCharpter(viewPoints: viewPoints, player: player)
