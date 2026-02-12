@@ -47,11 +47,11 @@ enum SidxParseUtil {
                 // size includes the 8-byte header (4 size + 4 type)
                 let boxDataSize = Int(size) - 8
                 let endIndex = Int(offset) + boxDataSize
-                
+
                 guard endIndex <= data.count else {
                     return nil
                 }
-                
+
                 sidx = processSIDX(data: Data(data[Int(offset)..<endIndex]))
                 offset += UInt64(boxDataSize)
             default:
@@ -72,7 +72,7 @@ enum SidxParseUtil {
         _ = data.getUint8(offset: &offset) // none
         _ = data.getUint32(offset: &offset) // refID
         let timescale = data.getUint32(offset: &offset)
-        
+
         // version 0: 32-bit, version 1: 64-bit
         let earliest_presentation_time: UInt64
         let first_offset: UInt64
@@ -83,7 +83,7 @@ enum SidxParseUtil {
             earliest_presentation_time = data.getValue(type: UInt64.self, offset: &offset).bigEndian
             first_offset = data.getValue(type: UInt64.self, offset: &offset).bigEndian
         }
-        
+
         _ = data.getValue(type: UInt16.self, offset: &offset).bigEndian // reversed
         let reference_count = data.getValue(type: UInt16.self, offset: &offset).bigEndian
 

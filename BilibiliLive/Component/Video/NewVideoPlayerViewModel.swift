@@ -196,7 +196,14 @@ class VideoPlayerViewModel {
 
         playPlugin = player
 
-        var plugins: [CommonPlayerPlugin] = [player, danmu, playSpeed, upnp, debug, playlist]
+        // 添加画质选择器插件
+        let qualitySelector = BVideoQualityPlugin(detailData: data) { [weak player] qualityId, streamIndex in
+            Task { @MainActor in
+                await player?.switchQuality(to: qualityId, streamIndex: streamIndex)
+            }
+        }
+
+        var plugins: [CommonPlayerPlugin] = [player, danmu, playSpeed, upnp, debug, playlist, qualitySelector]
 
         if let clips = data.clips {
             let clip = BVideoClipsPlugin(clipInfos: clips)
