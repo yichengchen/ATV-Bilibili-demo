@@ -25,7 +25,7 @@ class CommonPlayerViewController: UIViewController {
         playerVC.allowsPictureInPicturePlayback = true
         playerVC.delegate = self
 
-        let playerObservation = playerVC.observe(\.player) { [weak self] vc, obs in
+        let playerObservation = playerVC.observe(\.player, options: [.old, .new]) { [weak self] vc, obs in
             if let oldPlayer = obs.oldValue, let oldPlayer {
                 self?.activePlugins.forEach { $0.playerDidCleanUp(player: oldPlayer) }
             }
