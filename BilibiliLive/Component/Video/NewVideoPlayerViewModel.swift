@@ -66,7 +66,7 @@ class VideoPlayerViewModel {
     }
 
     private func updateVideoDetailIfNeeded() async {
-        if videoDetail == nil {
+        if videoDetail == nil || videoDetail?.View.aid != playInfo.aid {
             videoDetail = try? await WebRequest.requestDetailVideo(aid: playInfo.aid)
         }
     }
@@ -140,7 +140,7 @@ class VideoPlayerViewModel {
     private func playNext(newPlayInfo: PlayInfo) {
         playInfo = newPlayInfo
 
-        // 移除旧的播放和清晰度插件
+        // 移除旧的播放、清晰度和信息插件，确保插件不会累积
         if let playPlugin {
             Logger.debug("playNext: remove previous playPlugin: \(playPlugin)")
             onPluginRemove.send(playPlugin)
@@ -149,16 +149,18 @@ class VideoPlayerViewModel {
             Logger.debug("playNext: remove previous qualityPlugin")
             onPluginRemove.send(qualityPlugin)
         }
+        if let infoPlugin {
+            Logger.debug("playNext: remove previous infoPlugin")
+            onPluginRemove.send(infoPlugin)
+        }
 
         Task {
             do {
                 // 加载下一个视频数据
                 let data = try await loadVideoInfo()
-                // 更新视频标题、副标题等显示组件
-                updateInfoPlugin(data)
+
                 // 初始化下一个视频播放器组件
                 let player = BVideoPlayPlugin(detailData: data)
-                // 保存新播放器引用以便后续删除
                 playPlugin = player
 
                 // 初始化清晰度选择插件
@@ -170,8 +172,28 @@ class VideoPlayerViewModel {
                 }
                 qualityPlugin = quality
 
-                // 呈现新插件
-                onPluginReady.send([player, quality])
+                // 创建新的信息插件
+                let info = BVideoInfoPlugin()
+                infoPlugin = info
+                if let detail = data.detail {
+                    var title = detail.title
+                    var subTitle = detail.ownerName
+                    let pages = detail.View.pages ?? []
+                    if pages.count > 1, let index = pages.firstIndex(where: { $0.cid == playInfo.cid }) {
+                        let page = pages[index]
+                        title = page.part
+                        subTitle += "·\(detail.title)"
+                    }
+                    info.title = title
+                    info.subTitle = subTitle
+                    info.desp = detail.View.desc
+                    info.pic = detail.pic
+                    info.viewPoints = data.playerInfo?.view_points
+                    Logger.debug("playNext: setup infoPlugin - title: \(title), subTitle: \(subTitle)")
+                }
+
+                // 呈现新插件（包括 infoPlugin）
+                onPluginReady.send([player, quality, info])
             } catch let err {
                 onPluginReady.send(completion: .failure(err.localizedDescription))
             }

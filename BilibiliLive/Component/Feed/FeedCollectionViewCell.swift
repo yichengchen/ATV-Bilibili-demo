@@ -110,8 +110,9 @@ class FeedCollectionViewCell: BLMotionCollectionViewCell {
             imageView.kf.setImage(with: pic, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 360, height: 202))), .cacheOriginalImage])
         }
         if let avatar = data.avatar {
+            let resizedAvatar = avatar.deletingLastPathComponent().appending(component: avatar.lastPathComponent + "@240w_240h.jpg")
             avatarView.isHidden = false
-            avatarView.kf.setImage(with: avatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
+            avatarView.kf.setImage(with: resizedAvatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
         } else {
             avatarView.isHidden = true
         }

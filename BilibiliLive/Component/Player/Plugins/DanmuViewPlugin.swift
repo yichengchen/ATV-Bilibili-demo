@@ -37,6 +37,7 @@ class DanmuViewPlugin: NSObject {
 
     private let danmuProvider: DanmuProviderProtocol
     private var timeObserver: Any?
+    private weak var currentPlayer: AVPlayer?
     private var cancellable = Set<AnyCancellable>()
 
     private func shoot(_ model: DanmakuCellModel) {
@@ -54,12 +55,29 @@ class DanmuViewPlugin: NSObject {
 }
 
 extension DanmuViewPlugin: CommonPlayerPlugin {
+    func playerDidChange(player: AVPlayer) {
+        // Clean up old observer using the saved player reference
+        if let timeObserver, let currentPlayer {
+            currentPlayer.removeTimeObserver(timeObserver)
+            self.timeObserver = nil
+        }
+        currentPlayer = player
+        danMuView.clean()
+    }
+
     func playerWillStart(player: AVPlayer) {
         guard danmuProvider.observerPlayerTime else {
             return
         }
-        player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1),
-                                       queue: DispatchQueue.global())
+
+        // Clean up old observer if any
+        if let timeObserver, let currentPlayer {
+            currentPlayer.removeTimeObserver(timeObserver)
+        }
+        currentPlayer = player
+
+        timeObserver = player.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1),
+                                                      queue: DispatchQueue.global())
         { [weak self] time in
             guard let self else { return }
             if !Defaults.shared.showDanmu { return }
@@ -71,7 +89,9 @@ extension DanmuViewPlugin: CommonPlayerPlugin {
     func playerDidCleanUp(player: AVPlayer) {
         if let timeObserver {
             player.removeTimeObserver(timeObserver)
+            self.timeObserver = nil
         }
+        currentPlayer = nil
     }
 
     func addViewToPlayerOverlay(container: UIView) {
