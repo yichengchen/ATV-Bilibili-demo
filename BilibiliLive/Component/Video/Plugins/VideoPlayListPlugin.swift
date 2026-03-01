@@ -26,21 +26,24 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
     func playerWillStart(player: AVPlayer) {
         guard let playerVC, let nextProvider, nextProvider.count > 1 else { return }
 
-        // Remove previous "next" action if present
-        if let last = playerVC.infoViewActions.last,
-           last.identifier.rawValue.hasPrefix(playNextActionIdentifierPrefix)
-        {
-            playerVC.infoViewActions.removeLast()
-        }
-
-        if let next = nextProvider.peekNext() {
-            let nextAction = UIAction(title: "下一集",
-                                      image: UIImage(systemName: "forward.end.fill"),
-                                      identifier: .init(rawValue: "\(playNextActionIdentifierPrefix).\(next.aid).\(next.cid ?? 0)"))
-            { [weak self] _ in
-                _ = self?.playNext()
+        MainActor.callSafely { [weak self] in
+            guard let self = self else { return }
+            // Remove previous "next" action if present
+            if let last = playerVC.infoViewActions.last,
+               last.identifier.rawValue.hasPrefix(self.playNextActionIdentifierPrefix)
+            {
+                playerVC.infoViewActions.removeLast()
             }
-            playerVC.infoViewActions.append(nextAction)
+
+            if let next = nextProvider.peekNext() {
+                let nextAction = UIAction(title: "下一集",
+                                          image: UIImage(systemName: "forward.end.fill"),
+                                          identifier: .init(rawValue: "\(self.playNextActionIdentifierPrefix).\(next.aid).\(next.cid ?? 0)"))
+                { [weak self] _ in
+                    _ = self?.playNext()
+                }
+                playerVC.infoViewActions.append(nextAction)
+            }
         }
     }
 

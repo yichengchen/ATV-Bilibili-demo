@@ -195,7 +195,7 @@ class VideoPlayerViewModel {
                 // 呈现新插件（包括 infoPlugin）
                 onPluginReady.send([player, quality, info])
             } catch let err {
-                onPluginReady.send(completion: .failure(err.localizedDescription))
+                Logger.warn("[VideoPlayer] playNext failed: \(err.localizedDescription)")
             }
         }
     }
@@ -258,7 +258,6 @@ class VideoPlayerViewModel {
                 Logger.info("[VideoPlayer] Reloaded video with new quality: \(playData.quality)")
             } catch let err {
                 Logger.warn("[VideoPlayer] Failed to reload video: \(err.localizedDescription)")
-                onPluginReady.send(completion: .failure(err.localizedDescription))
             }
         }
     }
