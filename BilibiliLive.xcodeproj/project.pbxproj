@@ -462,8 +462,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cbpowell/MarqueeLabel";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.3;
 			};
 		};
 		49508E0D2943420100D26812 /* XCRemoteSwiftPackageReference "CocoaLumberjack" */ = {
@@ -519,7 +519,7 @@
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 6.2.1;
+				minimumVersion = 8.0.0;
 			};
 		};
 		F9B5736C260F652C00771ED5 /* XCRemoteSwiftPackageReference "Alamofire" */ = {

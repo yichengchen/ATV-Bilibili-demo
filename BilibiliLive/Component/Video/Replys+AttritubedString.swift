@@ -9,7 +9,7 @@ import Kingfisher
 import UIKit
 
 extension Replys.Reply {
-    func createAttributedString(displayView: UIView) -> NSAttributedString? {
+    @MainActor func createAttributedString(displayView: UIView) -> NSAttributedString? {
         guard let emote = content.emote, !emote.isEmpty else {
             return nil
         }
