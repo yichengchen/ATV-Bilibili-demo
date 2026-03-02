@@ -64,6 +64,12 @@ class CookieHandler {
         cookies.compactMap { $0.makeHTTPCookie() }.forEach { cookieStorage.setCookie($0) }
     }
 
+    func cookieHeader(from storedCookies: [StoredCookie]) -> String? {
+        let cookiePairs = storedCookies.map { "\($0.name)=\($0.value)" }
+        guard !cookiePairs.isEmpty else { return nil }
+        return cookiePairs.joined(separator: "; ")
+    }
+
     func backupCookies() {
         AccountManager.shared.syncActiveAccountCookies()
     }

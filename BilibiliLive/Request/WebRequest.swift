@@ -95,7 +95,9 @@ enum WebRequest {
             }
         }
 
-        addWbiSign(method: method, url: url, parameters: parameters) { wbiSign in
+        let cookieHeader = afheaders.first { $0.name.caseInsensitiveCompare("Cookie") == .orderedSame }?.value
+
+        addWbiSign(method: method, url: url, parameters: parameters, cookieHeader: cookieHeader) { wbiSign in
             if let wbiSign {
                 session.request(wbiSign,
                                 method: method,
@@ -464,8 +466,19 @@ extension WebRequest {
     static func requestPlayUrl(aid: Int, cid: Int) async throws -> VideoPlayURLInfo {
         // 始终请求最高画质 (fnval=976 支持杜比视界和8K, qn=127 请求8K)
         // 这样可以获取所有可用的画质流，由播放器或用户选择
-        return try await request(url: EndPoint.playUrl,
-                                 parameters: ["avid": aid, "cid": cid, "qn": 127, "type": "", "fnver": 0, "fnval": 976, "otype": "json"])
+        let parameters: Parameters = ["avid": aid, "cid": cid, "qn": 127, "type": "", "fnver": 0, "fnval": 976, "otype": "json"]
+
+        if let vipAccount = AccountManager.shared.getOtherVipAccount(),
+           let cookieHeader = CookieHandler.shared.cookieHeader(from: vipAccount.cookies)
+        {
+            Logger.debug("requestPlayUrl use vip account mid=\(vipAccount.profile.mid)")
+            return try await request(url: EndPoint.playUrl,
+                                     parameters: parameters,
+                                     headers: ["Cookie": cookieHeader],
+                                     noCookie: true)
+        }
+
+        return try await request(url: EndPoint.playUrl, parameters: parameters)
     }
 
     static func requestPcgPlayUrl(aid: Int, cid: Int) async throws -> VideoPlayURLInfo {

@@ -14,6 +14,7 @@ extension WebRequest {
     static func addWbiSign(method: HTTPMethod = .get,
                            url: URLConvertible,
                            parameters: Parameters = [:],
+                           cookieHeader: String? = nil,
                            onComplete: @escaping (String?) -> Void)
     {
         do {
@@ -23,7 +24,7 @@ extension WebRequest {
                 request.method = .get
                 request = try URLEncoding.queryString.encode(request, with: parameters)
                 if let query = request.url?.query(percentEncoded: true) {
-                    biliWbiSign(param: query) { res in
+                    biliWbiSign(param: query, cookieHeader: cookieHeader) { res in
                         if let res {
                             let urlString = urlObj.absoluteString + "?" + res
                             onComplete(urlString)
@@ -42,16 +43,46 @@ extension WebRequest {
     }
 
     // https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/wbi.md#Swift
-    private static func biliWbiSign(param: String, completion: @escaping (String?) -> Void) {
+    private static func biliWbiSign(param: String, cookieHeader: String? = nil, completion: @escaping (String?) -> Void) {
         // WebId Cache
         class WebIdCache {
-            var webId: String?
+            var webIdByCacheKey: [String: String] = [:]
 
             static let shared = WebIdCache()
         }
 
-        func getWebId(needRefresh: Bool = false, completion: @escaping (String?) -> Void) {
-            if let cached = WebIdCache.shared.webId, !needRefresh {
+        func cookieValue(name: String, in header: String) -> String? {
+            for segment in header.split(separator: ";") {
+                let pair = segment.trimmingCharacters(in: .whitespaces)
+                let components = pair.split(separator: "=", maxSplits: 1).map(String.init)
+                if components.count == 2, components[0] == name {
+                    return components[1]
+                }
+            }
+            return nil
+        }
+
+        func webIdCacheKey(cookieHeader: String?) -> String {
+            if let cookieHeader {
+                if let userID = cookieValue(name: "DedeUserID", in: cookieHeader), !userID.isEmpty {
+                    return "uid:\(userID)"
+                }
+                return "cookie:\(cookieHeader)"
+            }
+
+            guard let url = URL(string: "https://api.bilibili.com"),
+                  let cookies = HTTPCookieStorage.shared.cookies(for: url),
+                  let userID = cookies.first(where: { $0.name == "DedeUserID" })?.value,
+                  !userID.isEmpty
+            else {
+                return "__default__"
+            }
+
+            return "uid:\(userID)"
+        }
+
+        func getWebId(cacheKey: String, needRefresh: Bool = false, completion: @escaping (String?) -> Void) {
+            if let cached = WebIdCache.shared.webIdByCacheKey[cacheKey], !needRefresh {
                 completion(cached)
                 return
             }
@@ -69,10 +100,12 @@ extension WebRequest {
             request.setValue(Keys.userAgent, forHTTPHeaderField: "User-Agent")
             request.setValue(Keys.liveReferer, forHTTPHeaderField: "Referer")
 
-            if let cookies = HTTPCookieStorage.shared.cookies(for: url) {
-                let cookieHeaders = HTTPCookie.requestHeaderFields(with: cookies)
-                for (key, value) in cookieHeaders {
-                    request.setValue(value, forHTTPHeaderField: key)
+            if let cookieHeader {
+                request.setValue(cookieHeader, forHTTPHeaderField: "Cookie")
+            } else if let cookies = HTTPCookieStorage.shared.cookies(for: url) {
+                let headers = HTTPCookie.requestHeaderFields(with: cookies)
+                if let header = headers["Cookie"] {
+                    request.setValue(header, forHTTPHeaderField: "Cookie")
                 }
             }
 
@@ -92,7 +125,7 @@ extension WebRequest {
                        let range = Range(match.range(at: 1), in: html)
                     {
                         let accessId = String(html[range])
-                        WebIdCache.shared.webId = accessId
+                        WebIdCache.shared.webIdByCacheKey[cacheKey] = accessId
                         completion(accessId)
                         return
                     }
@@ -179,7 +212,7 @@ extension WebRequest {
         getWbiKeys { result in
             switch result {
             case let .success(keys):
-                getWebId(needRefresh: keys.refresh) { webId in
+                getWebId(cacheKey: webIdCacheKey(cookieHeader: cookieHeader), needRefresh: keys.refresh) { webId in
                     let spdParam = param.components(separatedBy: "&")
                     var spdDicParam = [String: String]()
                     for pair in spdParam {
