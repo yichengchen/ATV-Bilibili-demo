@@ -17,7 +17,7 @@ final class AccountSwitcherViewController: UIViewController {
         layout.minimumLineSpacing = 40
         layout.minimumInteritemSpacing = 30
         layout.sectionInset = UIEdgeInsets(top: 40, left: 60, bottom: 40, right: 60)
-        layout.itemSize = CGSize(width: 300, height: 320)
+        layout.itemSize = CGSize(width: 300, height: 340)
         let collection = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collection.backgroundColor = .clear
         collection.remembersLastFocusedIndexPath = true
@@ -186,6 +186,8 @@ extension AccountSwitcherViewController: UICollectionViewDelegate {
     }
 }
 
+private let themeColor = UIColor(red: 252.0 / 255, green: 139.0 / 255, blue: 171.0 / 255, alpha: 255)
+
 private final class AccountSwitcherCell: UICollectionViewCell {
     static let reuseIdentifier = "AccountSwitcherCell"
 
@@ -193,6 +195,7 @@ private final class AccountSwitcherCell: UICollectionViewCell {
     private let nameLabel = UILabel()
     private let badgeLabel = UILabel()
     private let background = UIView()
+    private let vipView = UIImageView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -212,6 +215,7 @@ private final class AccountSwitcherCell: UICollectionViewCell {
         avatarView.tintColor = nil
         background.layer.borderWidth = 0
         background.transform = .identity
+        vipView.isHidden = true
     }
 
     private func configure() {
@@ -237,15 +241,19 @@ private final class AccountSwitcherCell: UICollectionViewCell {
         badgeLabel.text = "当前使用"
         badgeLabel.font = UIFont.systemFont(ofSize: 22, weight: .semibold)
         badgeLabel.textColor = .white
-        badgeLabel.backgroundColor = UIColor.systemBlue
+        badgeLabel.backgroundColor = themeColor
         badgeLabel.layer.cornerRadius = 16
         badgeLabel.clipsToBounds = true
         badgeLabel.textAlignment = .center
         badgeLabel.isHidden = true
 
+        vipView.translatesAutoresizingMaskIntoConstraints = false
+        vipView.image = UIImage(resource: .bigVip)
+
         background.addSubview(avatarView)
         background.addSubview(nameLabel)
         background.addSubview(badgeLabel)
+        background.addSubview(vipView)
 
         NSLayoutConstraint.activate([
             background.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -266,6 +274,11 @@ private final class AccountSwitcherCell: UICollectionViewCell {
             badgeLabel.centerXAnchor.constraint(equalTo: background.centerXAnchor),
             badgeLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 140),
             badgeLabel.heightAnchor.constraint(equalToConstant: 44),
+
+            vipView.bottomAnchor.constraint(equalTo: avatarView.bottomAnchor),
+            vipView.rightAnchor.constraint(equalTo: avatarView.rightAnchor),
+            vipView.heightAnchor.constraint(equalToConstant: 30),
+            vipView.widthAnchor.constraint(equalToConstant: 30),
         ])
     }
 
@@ -274,7 +287,7 @@ private final class AccountSwitcherCell: UICollectionViewCell {
         let isFocused = (context.nextFocusedView == self)
         coordinator.addCoordinatedAnimations {
             self.background.layer.borderWidth = isFocused ? 4 : 0
-            self.background.layer.borderColor = isFocused ? UIColor.systemBlue.cgColor : UIColor.clear.cgColor
+            self.background.layer.borderColor = isFocused ? themeColor.cgColor : UIColor.clear.cgColor
             self.background.transform = isFocused ? CGAffineTransform(scaleX: 1.06, y: 1.06) : .identity
         }
     }
@@ -325,7 +338,7 @@ private final class AccountSwitcherAddCell: UICollectionViewCell {
         iconView.translatesAutoresizingMaskIntoConstraints = false
         iconView.contentMode = .scaleAspectFit
         iconView.image = UIImage(systemName: "plus.circle.fill")
-        iconView.tintColor = .systemBlue
+        iconView.tintColor = themeColor
 
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.text = "添加账号"
@@ -358,7 +371,7 @@ private final class AccountSwitcherAddCell: UICollectionViewCell {
         let isFocused = (context.nextFocusedView == self)
         coordinator.addCoordinatedAnimations {
             self.background.layer.borderWidth = isFocused ? 4 : 0
-            self.background.layer.borderColor = isFocused ? UIColor.systemBlue.cgColor : UIColor.clear.cgColor
+            self.background.layer.borderColor = isFocused ? themeColor.cgColor : UIColor.clear.cgColor
             self.background.transform = isFocused ? CGAffineTransform(scaleX: 1.06, y: 1.06) : .identity
         }
     }

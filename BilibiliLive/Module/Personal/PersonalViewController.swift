@@ -26,6 +26,8 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     @IBOutlet var avatarImageView: UIImageView!
     @IBOutlet var usernameLabel: UILabel!
     @IBOutlet var leftCollectionView: UICollectionView!
+    private let vipLogo = UIImageView(image: UIImage(resource: .bigVip))
+
     weak var currentViewController: UIViewController?
 
     var cellModels = [CellModel]()
@@ -34,6 +36,16 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         setupData()
         leftCollectionView.reloadData()
         avatarImageView.layer.cornerRadius = avatarImageView.frame.size.width / 2
+
+        view.addSubview(vipLogo)
+        vipLogo.contentMode = .scaleAspectFit
+        vipLogo.snp.makeConstraints { make in
+            make.left.equalTo(usernameLabel.snp.right).offset(16)
+            make.centerY.equalTo(usernameLabel)
+            make.height.equalTo(40)
+        }
+        vipLogo.isHidden = true
+
         leftCollectionView.register(BLSettingLineCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         leftCollectionView.selectItem(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .top)
         collectionView(leftCollectionView, didSelectItemAt: IndexPath(row: 0, section: 0))
@@ -130,6 +142,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
         } else {
             avatarImageView.image = UIImage(systemName: "person.crop.circle.fill")
         }
+        vipLogo.isHidden = account.profile.isVip != true
     }
 }
 

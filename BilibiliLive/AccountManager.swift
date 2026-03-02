@@ -6,6 +6,7 @@ final class AccountManager {
         let mid: Int
         var username: String
         var avatar: String
+        var isVip: Bool?
     }
 
     struct Account: Codable, Equatable {
@@ -50,6 +51,13 @@ final class AccountManager {
         applyActiveAccountCookies()
     }
 
+    func getOtherVipAccount() -> Account? {
+        if activeAccount?.profile.isVip == true {
+            return nil
+        }
+        return storedAccounts.filter({ $0.profile.isVip == true }).shuffled().first
+    }
+
     func registerAccount(token: LoginToken, cookies: [HTTPCookie], completion: @escaping (Account) -> Void) {
         let storedCookies = cookies.map(StoredCookie.init)
         fetchProfile(using: token) { [weak self] result in
@@ -60,7 +68,8 @@ final class AccountManager {
                 case let .success(json):
                     profile = Profile(mid: json["mid"].intValue,
                                       username: json["uname"].stringValue,
-                                      avatar: json["face"].stringValue)
+                                      avatar: json["face"].stringValue,
+                                      isVip: json["vipStatus"].intValue == 1)
                 case .failure:
                     profile = Profile(mid: token.mid,
                                       username: "UID \(token.mid)",
@@ -118,11 +127,12 @@ final class AccountManager {
         notifyChange()
     }
 
-    func updateActiveProfile(username: String, avatar: String) {
+    func updateActiveProfile(username: String, avatar: String, isVip: Bool) {
         guard let mid = activeAccount?.profile.mid else { return }
         updateAccount(mid: mid) { account in
             account.profile.username = username
             account.profile.avatar = avatar
+            account.profile.isVip = isVip
         }
         persistAll()
         notifyChange()
@@ -135,7 +145,8 @@ final class AccountManager {
                 switch result {
                 case let .success(json):
                     self.updateActiveProfile(username: json["uname"].stringValue,
-                                             avatar: json["face"].stringValue)
+                                             avatar: json["face"].stringValue,
+                                             isVip: json["vipStatus"].intValue == 1)
                 case .failure:
                     break
                 }
