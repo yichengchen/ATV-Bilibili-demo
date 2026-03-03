@@ -184,7 +184,3 @@ public class NVASession: Hashable, Equatable {
         hasher.combine(socket)
     }
 }
-
-public func == (webSocketSession1: WebSocketSession, webSocketSession2: WebSocketSession) -> Bool {
-    return webSocketSession1.socket == webSocketSession2.socket
-}

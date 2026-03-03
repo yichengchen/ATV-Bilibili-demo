@@ -15,6 +15,13 @@ import UIKit
 class BiliBiliUpnpDMR: NSObject {
     static let shared = BiliBiliUpnpDMR()
 
+    private let ssdpHost = "239.255.255.250"
+    private let ssdpPort: UInt16 = 1900
+    private let httpPort: in_port_t = 9958
+    private let mockServerName = "Linux/3.0.0, UPnP/1.0, Platinum/1.0.5.13"
+
+    private let udpQueue = DispatchQueue(label: "com.bilibili.upnp.udp")
+
     weak var currentPlugin: BUpnpPlugin?
 
     private var udp: GCDAsyncUdpSocket!
@@ -66,7 +73,7 @@ class BiliBiliUpnpDMR: NSObject {
             return HttpResponse.ok(.text(self?.serverInfo ?? ""))
         }
 
-        httpServer["projection"] = nvasocket(uuid: bUuid, didConnect: { [weak self] session in
+        httpServer["/projection"] = nvasocket(uuid: bUuid, didConnect: { [weak self] session in
             Logger.info("session connected \(session)")
             DispatchQueue.main.async {
                 self?.sessions.insert(session)
@@ -103,7 +110,7 @@ class BiliBiliUpnpDMR: NSObject {
             return HttpResponse.ok(.text(str))
         }
 
-        httpServer["AVTransport/event"] = {
+        httpServer["/AVTransport/event"] = {
             req in
             return HttpResponse.internalServerError(nil)
         }
@@ -111,16 +118,6 @@ class BiliBiliUpnpDMR: NSObject {
         httpServer["/debug/log"] = {
             req in
             if let path = Logger.latestLogPath(),
-               let str = try? String(contentsOf: URL(fileURLWithPath: path))
-            {
-                return HttpResponse.ok(.text(str))
-            }
-            return HttpResponse.internalServerError(nil)
-        }
-
-        httpServer["/debug/old"] = {
-            req in
-            if let path = Logger.oldestLogPath(),
                let str = try? String(contentsOf: URL(fileURLWithPath: path))
             {
                 return HttpResponse.ok(.text(str))
@@ -152,27 +149,32 @@ class BiliBiliUpnpDMR: NSObject {
         stop()
         guard Settings.enableDLNA else { return }
         ip = getIPAddress()
-        if !started {
-            do {
-                udp = GCDAsyncUdpSocket(delegate: self, delegateQueue: DispatchQueue.main)
-                try udp.enableBroadcast(true)
-                try udp.bind(toPort: 1900)
-                try udp.joinMulticastGroup("239.255.255.250")
-                try udp.beginReceiving()
-                try httpServer.start(9958)
-                started = true
-                Logger.info("dmr started")
-            } catch let err {
-                started = false
-                Logger.warn("dmr start fail: \(err.localizedDescription)")
-            }
+        do {
+            udp = GCDAsyncUdpSocket(delegate: self, delegateQueue: udpQueue)
+            try? udp.enableBroadcast(true)
+            try? udp.enableReusePort(true)
+            try? udp.bind(toPort: ssdpPort)
+            try? udp.joinMulticastGroup(ssdpHost)
+            try? udp.beginReceiving()
+            try httpServer.start(httpPort)
+            started = true
+            Logger.info("dmr started, http: \(httpPort), ssdp: \(ssdpPort)")
+        } catch let err {
+            started = false
+            udp?.close()
+            udp = nil
+            httpServer.stop()
+            Logger.warn("dmr start fail: \(err.localizedDescription).")
+            return
         }
         boardcastTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) {
             [weak self] _ in
             guard let self else { return }
-            if let data = getSSDPNotify().data(using: .utf8) {
-                udp.send(data, toHost: "239.255.255.250", port: 1900, withTimeout: 1, tag: 0)
-            }
+            guard started else { return }
+            guard let notify = getSSDPNotify(),
+                  let data = notify.data(using: .utf8)
+            else { return }
+            udp.send(data, toHost: ssdpHost, port: ssdpPort, withTimeout: 1, tag: 0)
         }
     }
 
@@ -207,41 +209,47 @@ class BiliBiliUpnpDMR: NSObject {
             Logger.debug("no ip")
             return ""
         }
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "E, d MMM yyyy HH:mm:ss"
+
         return """
         HTTP/1.1 200 OK
-        LOCATION: http://\(ip):9958/description.xml
+        LOCATION: http://\(ip):\(httpPort)/description.xml
         CACHE-CONTROL: max-age=30
-        SERVER: Linux/3.0.0, UPnP/1.0, Platinum/1.0.5.13
+        SERVER: \(mockServerName)
         EXT:
         BOOTID.UPNP.ORG: 1669443520
         CONFIGID.UPNP.ORG: 10177363
         USN: uuid:atvbilibili&\(bUuid)::upnp:rootdevice
         ST: upnp:rootdevice
-        DATE: \(formatter.string(from: Date())) GMT
+        DATE: \(ssdpDateString())
 
         """
     }
 
-    private func getSSDPNotify() -> String {
+    private func getSSDPNotify() -> String? {
         guard let ip = ip ?? getIPAddress() else {
             Logger.debug("no ip")
-            return ""
+            return nil
         }
         let text = """
         NOTIFY * HTTP/1.1
-        Host: 239.255.255.250:1900
+        Host: \(ssdpHost):\(ssdpPort)
         Location: http://\(ip):9958/description.xml
         Cache-Control: max-age=30
-        Server: Linux/3.0.0, UPnP/1.0, Platinum/1.0.5.13
+        Server: \(mockServerName)
         NTS: ssdp:alive
         USN: uuid:\(bUuid)::urn:schemas-upnp-org:device:MediaRenderer:1
         NT: urn:schemas-upnp-org:device:MediaRenderer:1
 
         """
         return text
+    }
+
+    private func ssdpDateString() -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(abbreviation: "GMT")
+        formatter.dateFormat = "E, dd MMM yyyy HH:mm:ss 'GMT'"
+        return formatter.string(from: Date())
     }
 
     func handleEvent(frame: NVASession.NVAFrame, session: NVASession) {
@@ -369,7 +377,7 @@ extension BiliBiliUpnpDMR: GCDAsyncUdpSocketDelegate {
         address.withUnsafeBytes { (pointer: UnsafeRawBufferPointer) in
             let sockaddrPtr = pointer.bindMemory(to: sockaddr.self)
             guard let unsafePtr = sockaddrPtr.baseAddress else { return }
-            guard getnameinfo(unsafePtr, socklen_t(data.count), &hostname, socklen_t(hostname.count), nil, 0, NI_NUMERICHOST) == 0 else {
+            guard getnameinfo(unsafePtr, socklen_t(address.count), &hostname, socklen_t(hostname.count), nil, 0, NI_NUMERICHOST) == 0 else {
                 return
             }
         }
