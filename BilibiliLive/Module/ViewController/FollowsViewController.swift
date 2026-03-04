@@ -28,7 +28,7 @@ class FollowsViewController: StandardVideoCollectionViewController<DynamicFeedDa
     }
 
     override func goDetail(with feed: DynamicFeedData) {
-        let epid = feed.modules.module_dynamic.major?.pgc?.epid.flatMap { Int($0) }
+        let epid = feed.modules.module_dynamic.major?.pgc?.epid
         let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid, epid: epid)
         detailVC.present(from: self)
     }
@@ -150,10 +150,28 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
                 }
 
                 struct Pgc: Codable, Hashable {
-                    let epid: String
+                    let epid: Int?
                     let title: String?
                     let cover: URL?
                     let jump_url: URL?
+
+                    enum CodingKeys: String, CodingKey {
+                        case epid, title, cover, jump_url
+                    }
+
+                    init(from decoder: Decoder) throws {
+                        let container = try decoder.container(keyedBy: CodingKeys.self)
+                        if let intVal = try? container.decodeIfPresent(Int.self, forKey: .epid) {
+                            epid = intVal
+                        } else if let strVal = try? container.decodeIfPresent(String.self, forKey: .epid) {
+                            epid = Int(strVal)
+                        } else {
+                            epid = nil
+                        }
+                        title = try container.decodeIfPresent(String.self, forKey: .title)
+                        cover = try container.decodeIfPresent(URL.self, forKey: .cover)
+                        jump_url = try container.decodeIfPresent(URL.self, forKey: .jump_url)
+                    }
                 }
             }
         }
