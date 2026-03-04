@@ -28,7 +28,7 @@ class FollowsViewController: StandardVideoCollectionViewController<DynamicFeedDa
     }
 
     override func goDetail(with feed: DynamicFeedData) {
-        let epid = feed.modules.module_dynamic.major?.pgc?.epid
+        let epid = feed.modules.module_dynamic.major?.pgc?.epid.flatMap { Int($0) }
         let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid, epid: epid)
         detailVC.present(from: self)
     }
@@ -150,7 +150,7 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
                 }
 
                 struct Pgc: Codable, Hashable {
-                    let epid: Int
+                    let epid: String
                     let title: String?
                     let cover: URL?
                     let jump_url: URL?
