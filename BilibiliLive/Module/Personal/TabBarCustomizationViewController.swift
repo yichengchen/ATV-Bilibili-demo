@@ -19,12 +19,16 @@ class TabBarCustomizationViewController: UIViewController {
 
     private var originalPlacements = [Settings.TabBarPagePlacement]()
 
+    override var preferredFocusEnvironments: [any UIFocusEnvironment] {
+        return [collectionView]
+    }
+
     // MARK: - Views
 
     private let hintLabel: UILabel = {
         let label = UILabel()
         label.font = .preferredFont(forTextStyle: .footnote)
-        label.textColor = .secondaryLabel
+        label.textColor = UIColor.white
         return label
     }()
 
@@ -38,7 +42,6 @@ class TabBarCustomizationViewController: UIViewController {
 
     private lazy var collectionView: UICollectionView = {
         let cv = UICollectionView(frame: .zero, collectionViewLayout: makeLayout())
-        cv.backgroundColor = .clear
         cv.remembersLastFocusedIndexPath = false
         cv.dataSource = self
         cv.delegate = self
@@ -122,16 +125,14 @@ class TabBarCustomizationViewController: UIViewController {
         else { return }
         editingPage = p.page
         updateHintLabel()
-        collectionView.reconfigureItems(at: [ip])
+        collectionView.reconfigureItems(at: collectionView.indexPathsForVisibleItems)
     }
 
     private func stopEditing() {
         editingPage = nil
         updateHintLabel()
         commitIfNeeded()
-        if let ip = focusedIndexPath {
-            collectionView.reconfigureItems(at: [ip])
-        }
+        collectionView.reconfigureItems(at: collectionView.indexPathsForVisibleItems)
     }
 
     // MARK: - Move
@@ -202,6 +203,16 @@ class TabBarCustomizationViewController: UIViewController {
             make.trailing.lessThanOrEqualTo(restoreDefaultButton.snp.leading).offset(-24)
         }
 
+        let focusGuide = UIFocusGuide()
+        view.addLayoutGuide(focusGuide)
+        NSLayoutConstraint.activate([
+            focusGuide.topAnchor.constraint(equalTo: view.topAnchor),
+            focusGuide.leftAnchor.constraint(equalTo: view.leftAnchor),
+            focusGuide.rightAnchor.constraint(equalTo: view.rightAnchor),
+            focusGuide.bottomAnchor.constraint(equalTo: collectionView.topAnchor),
+        ])
+        focusGuide.preferredFocusEnvironments = [restoreDefaultButton]
+
         restoreDefaultButton.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(4)
             make.trailing.equalToSuperview().offset(-80)
@@ -248,6 +259,8 @@ class TabBarCustomizationViewController: UIViewController {
         tabbarPlacements = placements.filter { $0.section == .tabBar }
         minePlacements = placements.filter { $0.section == .personal }
         updateHintLabel()
+        collectionView.reloadData()
+        commitIfNeeded()
     }
 
     // MARK: - Data helpers
@@ -289,7 +302,6 @@ extension TabBarCustomizationViewController: UICollectionViewDataSource {
         if let placement = placement(at: indexPath) {
             let page = placement.page
             cell.configure(title: page.title,
-                           lockText: page.isFixedInTabBar ? "导航栏" : nil,
                            isBeingEdited: page == editingPage)
         }
         return cell
@@ -354,7 +366,7 @@ extension TabBarCustomizationViewController: UICollectionViewDelegate {
 
 // MARK: - Tile Cell
 
-class TabBarTileCell: UICollectionViewCell {
+class TabBarTileCell: BLMotionCollectionViewCell {
     static let reuseID = String(describing: TabBarTileCell.self)
     private var isBeingEdited = false
 
@@ -368,14 +380,6 @@ class TabBarTileCell: UICollectionViewCell {
         return l
     }()
 
-    private let lockBadge: UILabel = {
-        let l = UILabel()
-        l.font = .systemFont(ofSize: 18)
-        l.textColor = .secondaryLabel
-        l.textAlignment = .center
-        return l
-    }()
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
@@ -386,26 +390,11 @@ class TabBarTileCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    func configure(title: String, lockText: String?, isBeingEdited: Bool) {
+    func configure(title: String, isBeingEdited: Bool) {
         titleLabel.text = title
-        lockBadge.text = lockText
-        lockBadge.isHidden = lockText == nil
         self.isBeingEdited = isBeingEdited
         setShaking(isBeingEdited)
         updateAppearance()
-    }
-
-    // MARK: - Focus
-
-    override var canBecomeFocused: Bool { true }
-
-    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
-        coordinator.addCoordinatedAnimations {
-            self.updateAppearance()
-            self.transform = self.isFocused
-                ? CGAffineTransform(scaleX: 1.08, y: 1.08)
-                : .identity
-        }
     }
 
     override func prepareForReuse() {
@@ -441,32 +430,30 @@ class TabBarTileCell: UICollectionViewCell {
         layer.shadowOpacity = 0
 
         contentView.addSubview(titleLabel)
-        contentView.addSubview(lockBadge)
 
         titleLabel.snp.makeConstraints { make in
             make.center.equalToSuperview()
             make.leading.greaterThanOrEqualToSuperview().offset(12)
             make.trailing.lessThanOrEqualToSuperview().offset(-12)
         }
-
-        lockBadge.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().offset(-10)
-            make.top.equalToSuperview().offset(8)
-        }
-
         updateAppearance()
+    }
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        coordinator.addCoordinatedAnimations {
+            self.updateAppearance()
+        }
     }
 
     private func updateAppearance() {
         if isFocused {
             contentView.backgroundColor = .white
             titleLabel.textColor = .black
-            lockBadge.textColor = .darkGray
             layer.shadowOpacity = 0.3
         } else {
             contentView.backgroundColor = UIColor(white: 0.15, alpha: 1)
             titleLabel.textColor = .white
-            lockBadge.textColor = .secondaryLabel
             layer.shadowOpacity = 0
         }
     }

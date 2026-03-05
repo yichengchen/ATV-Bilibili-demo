@@ -123,6 +123,12 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
 
     private func makeCellModel(for page: TabBarPage) -> CellModel? {
         let vc = TabBarPageVCFactory.createVC(for: page)
+        if page.requirePresentInPersonalPage {
+            return CellModel(title: page.title) { [weak self] in
+                self?.present(vc, animated: true)
+            }
+        }
+
         return CellModel(title: page.title, contentVC: vc)
     }
 
