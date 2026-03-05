@@ -31,7 +31,7 @@ class BVideoClipsPlugin: NSObject, CommonPlayerPlugin {
                     clip.skipped = true
                     player?.seek(to: CMTime(seconds: Double(clip.end), preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
                 }
-                if clip.skipped == true, Settings.autoSkip {
+                if clip.skipped != true, Settings.autoSkip {
                     action()
                 } else {
                     let action = UIAction(title: clip.customText) { _ in action() }
@@ -52,5 +52,6 @@ class BVideoClipsPlugin: NSObject, CommonPlayerPlugin {
         for observer in observers {
             player.removeTimeObserver(observer)
         }
+        observers.removeAll()
     }
 }

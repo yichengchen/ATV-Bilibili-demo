@@ -16,6 +16,10 @@ class CommonPlayerViewController: UIViewController {
     private var statusObserver: NSKeyValueObservation?
     private var isEnd = false
 
+    deinit {
+        removeAllPlugins()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         addChild(playerVC)
@@ -26,6 +30,7 @@ class CommonPlayerViewController: UIViewController {
         playerVC.delegate = self
 
         let playerObservation = playerVC.observe(\.player, options: [.old, .new]) { [weak self] vc, obs in
+            Logger.debug("player changed: \(String(describing: obs.oldValue)) -> \(String(describing: obs.newValue))")
             if let oldPlayer = obs.oldValue, let oldPlayer {
                 self?.activePlugins.forEach { $0.playerDidCleanUp(player: oldPlayer) }
             }
@@ -57,7 +62,18 @@ class CommonPlayerViewController: UIViewController {
     }
 
     func removePlugin(plugin: CommonPlayerPlugin) {
+        if let player = playerVC.player {
+            activePlugins.filter { $0 == plugin }.forEach { $0.playerDidCleanUp(player: player) }
+        }
         activePlugins.removeAll { $0 == plugin }
+    }
+
+    func removeAllPlugins() {
+        if let player = playerVC.player {
+            Logger.debug("removeAllPlugins: clean up player: \(player)")
+            activePlugins.forEach { $0.playerDidCleanUp(player: player) }
+        }
+        activePlugins.removeAll()
     }
 
     func playerDidEnd(player: AVPlayer) {}

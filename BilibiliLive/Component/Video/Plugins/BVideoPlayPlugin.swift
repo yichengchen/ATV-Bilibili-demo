@@ -101,6 +101,7 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
         playerItem.preferredPeakBitRate = 0
 
         let player = AVPlayer(playerItem: playerItem)
+        playerVC?.player = nil
         playerVC?.player = player
     }
 }

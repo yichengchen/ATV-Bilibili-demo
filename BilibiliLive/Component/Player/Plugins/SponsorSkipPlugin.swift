@@ -108,5 +108,6 @@ class SponsorSkipPlugin: NSObject, CommonPlayerPlugin {
         for observer in observers {
             player.removeTimeObserver(observer)
         }
+        observers.removeAll()
     }
 }

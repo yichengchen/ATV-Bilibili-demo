@@ -68,6 +68,7 @@ class BUpnpPlugin: NSObject, CommonPlayerPlugin {
         if let observar {
             player.removeTimeObserver(observar)
         }
+        observar = nil
         DispatchQueue.main.async {
             BiliBiliUpnpDMR.shared.sendStatus(status: .stop)
         }

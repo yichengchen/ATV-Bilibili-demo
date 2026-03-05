@@ -39,6 +39,7 @@ class MaskViewPugin: NSObject, CommonPlayerPlugin {
         if let observer {
             player.removeTimeObserver(observer)
         }
+        observer = nil
     }
 
     private func setUpOutput(player: AVPlayer) {
