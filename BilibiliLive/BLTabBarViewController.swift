@@ -56,6 +56,13 @@ class BLTabBarViewController: UITabBarController, UITabBarControllerDelegate {
         persionVC.tabBarItem.title = "我的"
         vcs.append(persionVC)
 
+        let resultVC = SearchResultViewController()
+        let searchVC = UISearchController(searchResultsController: resultVC)
+        searchVC.searchResultsUpdater = resultVC
+        let searchContainerVC = UISearchContainerViewController(searchController: searchVC)
+        searchContainerVC.tabBarItem.image = UIImage(systemName: "magnifyingglass")
+        vcs.append(searchContainerVC)
+
         setViewControllers(vcs, animated: false)
         selectedIndex = UserDefaults.standard.integer(forKey: selectedIndexKey)
     }

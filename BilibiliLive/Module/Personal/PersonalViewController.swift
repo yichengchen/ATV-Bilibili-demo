@@ -101,13 +101,7 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
             controller.modalPresentationStyle = .overFullScreen
             self?.present(controller, animated: true)
         }))
-        cellModels.append(CellModel(title: "搜索", autoSelect: false, action: {
-            [weak self] in
-            let resultVC = SearchResultViewController()
-            let searchVC = UISearchController(searchResultsController: resultVC)
-            searchVC.searchResultsUpdater = resultVC
-            self?.present(UISearchContainerViewController(searchController: searchVC), animated: true)
-        }))
+
         cellModels.append(CellModel(title: "追番追剧", autoSelect: false, action: { [weak self] in
             let controller = FollowBangumiViewController()
             self?.present(controller, animated: true)
