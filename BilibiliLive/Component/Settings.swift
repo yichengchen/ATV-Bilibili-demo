@@ -128,7 +128,7 @@ enum Settings {
 }
 
 extension Settings {
-    static func addHistory(_ query: String, limitSize: Int = 10) {
+    static func addHistory(_ query: String, limitSize: Int = 6) {
         if query.isEmpty {
             return
         }

@@ -13,16 +13,24 @@ import Foundation
 class DelayWork {
     private var task: Task<Void, Never>?
     private let delay: TimeInterval
+    private let noDelayForFirstTask: Bool
 
     /// 初始化延迟任务执行器
     /// - Parameter delay: 延迟时间 (秒)，默认 1 秒
-    init(delay: TimeInterval = 1.0) {
+    init(delay: TimeInterval = 1.0, noDelayForFirstTask: Bool = false) {
         self.delay = delay
+        self.noDelayForFirstTask = noDelayForFirstTask
     }
 
     /// 提交一个延迟任务
     /// - Parameter work: 要执行的异步任务
     func submit(_ work: @escaping @MainActor () async throws -> Void) {
+        if task == nil, noDelayForFirstTask {
+            Task { @MainActor in
+                try? await work()
+            }
+            return
+        }
         // 取消前一个未完成的任务
         task?.cancel()
 
