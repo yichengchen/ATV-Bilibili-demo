@@ -13,7 +13,6 @@ class HistoryViewController: UIViewController {
     let collectionVC = FeedCollectionViewController()
     override func viewDidLoad() {
         super.viewDidLoad()
-        collectionVC.styleOverride = .sideBar
         collectionVC.show(in: self)
         collectionVC.didSelect = {
             [weak self] in
