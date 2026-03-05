@@ -73,7 +73,6 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        BLTabBarViewController.clearSelected()
     }
 
     override func viewDidAppear(_ animated: Bool) {

@@ -122,28 +122,12 @@ class SettingsViewController: UIViewController {
                 Toggle(title: "热门个性化推荐", setting: Settings.requestHotWithoutCookie, onChange: Settings.requestHotWithoutCookie.toggle())
             }
 
-            SectionModel(title: "音视频") {
-                Actions(title: "最高画质", message: "4k以上需要大会员",
-                        current: Settings.mediaQuality.desp,
-                        options: MediaQualityEnum.allCases,
-                        optionString: MediaQualityEnum.allCases.map({ $0.desp }))
-                {
-                    Settings.mediaQuality = $0
-                }
-                Actions(title: "默认播放速度", message: "默认设置为1.0",
-                        current: Settings.mediaPlayerSpeed.name,
-                        options: PlaySpeed.blDefaults,
-                        optionString: PlaySpeed.blDefaults.map({ $0.name }))
-                {
-                    Settings.mediaPlayerSpeed = $0
-                }
-                Toggle(title: "Avc优先(卡顿尝试开启)", setting: Settings.preferAvc, onChange: Settings.preferAvc.toggle())
-                Toggle(title: "无损音频和杜比全景声", setting: Settings.losslessAudio, onChange: Settings.losslessAudio.toggle())
-                Toggle(title: "匹配视频内容", setting: Settings.contentMatch, onChange: Settings.contentMatch.toggle())
-                Toggle(title: "仅在HDR视频匹配视频内容", setting: Settings.contentMatchOnlyInHDR, onChange: Settings.contentMatchOnlyInHDR.toggle())
-            }
-
             SectionModel(title: "界面") {
+                Navigation(title: "自定义Tab栏", desp: "") { [weak self] in
+                    let controller = TabBarCustomizationViewController()
+                    self?.present(controller, animated: true)
+                }
+
                 Actions(title: "视频每行显示个数", message: "重启app生效",
                         current: Settings.displayStyle.desp,
                         options: FeedDisplayStyle.allCases.filter({ !$0.hideInSetting }),
@@ -164,6 +148,27 @@ class SettingsViewController: UIViewController {
                 {
                     Settings.showRelatedVideoInCurrentVC = $0
                 }
+            }
+
+            SectionModel(title: "音视频") {
+                Actions(title: "最高画质", message: "4k以上需要大会员",
+                        current: Settings.mediaQuality.desp,
+                        options: MediaQualityEnum.allCases,
+                        optionString: MediaQualityEnum.allCases.map({ $0.desp }))
+                {
+                    Settings.mediaQuality = $0
+                }
+                Actions(title: "默认播放速度", message: "默认设置为1.0",
+                        current: Settings.mediaPlayerSpeed.name,
+                        options: PlaySpeed.blDefaults,
+                        optionString: PlaySpeed.blDefaults.map({ $0.name }))
+                {
+                    Settings.mediaPlayerSpeed = $0
+                }
+                Toggle(title: "Avc优先(卡顿尝试开启)", setting: Settings.preferAvc, onChange: Settings.preferAvc.toggle())
+                Toggle(title: "无损音频和杜比全景声", setting: Settings.losslessAudio, onChange: Settings.losslessAudio.toggle())
+                Toggle(title: "匹配视频内容", setting: Settings.contentMatch, onChange: Settings.contentMatch.toggle())
+                Toggle(title: "仅在HDR视频匹配视频内容", setting: Settings.contentMatchOnlyInHDR, onChange: Settings.contentMatchOnlyInHDR.toggle())
             }
 
             SectionModel(title: "进度控制") {
@@ -304,6 +309,16 @@ extension SettingsViewController {
             let cancelAction = UIAlertAction(title: nil, style: .cancel)
             alert.addAction(cancelAction)
             self?.present(alert, animated: true)
+        }
+    }
+
+    func Navigation(title: String,
+                    desp: @autoclosure @escaping () -> String,
+                    onSelect: (() -> Void)? = nil) -> CellModel
+    {
+        return CellModel(title: title, desp: desp()) { update in
+            onSelect?()
+            update()
         }
     }
 }
