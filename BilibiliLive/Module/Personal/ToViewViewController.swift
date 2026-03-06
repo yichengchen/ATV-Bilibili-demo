@@ -12,7 +12,6 @@ import UIKit
 class ToViewViewController: StandardVideoCollectionViewController<ToViewData> {
     override func setupCollectionView() {
         super.setupCollectionView()
-        collectionVC.styleOverride = .sideBar
         collectionVC.didSelect = { [weak self] record in
             guard let self,
                   let record = record as? ToViewData

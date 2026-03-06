@@ -13,7 +13,6 @@ class WeeklyWatchViewController: StandardVideoCollectionViewController<VideoDeta
     override func setupCollectionView() {
         super.setupCollectionView()
         collectionVC.showHeader = true
-        collectionVC.styleOverride = .sideBar
     }
 
     override func supportPullToLoad() -> Bool {

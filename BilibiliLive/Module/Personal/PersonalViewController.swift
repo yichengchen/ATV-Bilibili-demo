@@ -85,6 +85,10 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
                                                selector: #selector(handleAccountUpdate),
                                                name: AccountManager.didUpdateNotification,
                                                object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleTabBarPagesDidChange),
+                                               name: .tabBarPagesDidChange,
+                                               object: nil)
         updateAccountInfo()
         AccountManager.shared.refreshActiveAccountProfile()
     }
@@ -94,6 +98,8 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
     }
 
     func setupData() {
+        cellModels.removeAll()
+
         let setting = CellModel(title: "设置", contentVC: SettingsViewController())
         cellModels.append(setting)
         cellModels.append(CellModel(title: "账号切换", autoSelect: false, action: { [weak self] in
@@ -102,20 +108,28 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
             self?.present(controller, animated: true)
         }))
 
-        cellModels.append(CellModel(title: "追番追剧", autoSelect: false, action: { [weak self] in
-            let controller = FollowBangumiViewController()
-            self?.present(controller, animated: true)
-        }))
-        cellModels.append(CellModel(title: "关注UP", contentVC: FollowUpsViewController()))
-        cellModels.append(CellModel(title: "稍后再看", contentVC: ToViewViewController()))
-        cellModels.append(CellModel(title: "历史记录", contentVC: HistoryViewController()))
-        cellModels.append(CellModel(title: "每周必看", contentVC: WeeklyWatchViewController()))
+        for page in Settings.personalPages {
+            if let model = makeCellModel(for: page) {
+                cellModels.append(model)
+            }
+        }
 
         let logout = CellModel(title: "登出", autoSelect: false) {
             [weak self] in
             self?.actionLogout()
         }
         cellModels.append(logout)
+    }
+
+    private func makeCellModel(for page: TabBarPage) -> CellModel? {
+        let vc = TabBarPageVCFactory.createVC(for: page)
+        if page.requirePresentInPersonalPage {
+            return CellModel(title: page.title) { [weak self] in
+                self?.present(vc, animated: true)
+            }
+        }
+
+        return CellModel(title: page.title, contentVC: vc)
     }
 
     func setViewController(vc: UIViewController) {
@@ -154,6 +168,14 @@ class PersonalViewController: UIViewController, BLTabBarContentVCProtocol {
 
     @objc private func handleAccountUpdate() {
         updateAccountInfo()
+    }
+
+    @objc private func handleTabBarPagesDidChange() {
+        setupData()
+        leftCollectionView.reloadData()
+        let firstIndexPath = IndexPath(item: 0, section: 0)
+        leftCollectionView.selectItem(at: firstIndexPath, animated: false, scrollPosition: .top)
+        collectionView(leftCollectionView, didSelectItemAt: firstIndexPath)
     }
 
     private func updateAccountInfo() {
