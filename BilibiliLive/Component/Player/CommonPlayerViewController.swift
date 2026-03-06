@@ -15,9 +15,10 @@ class CommonPlayerViewController: UIViewController {
     private var rateObserver: NSKeyValueObservation?
     private var statusObserver: NSKeyValueObservation?
     private var isEnd = false
+    private var isRestoringFromPip = false
 
     deinit {
-        removeAllPlugins()
+        cleanUpPlayerOnExit(force: true)
     }
 
     override func viewDidLoad() {
@@ -43,6 +44,7 @@ class CommonPlayerViewController: UIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         activePlugins.forEach { $0.playerDidDismiss(playerVC: playerVC) }
+        cleanUpPlayerOnExit()
     }
 
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
@@ -96,6 +98,25 @@ class CommonPlayerViewController: UIViewController {
         }
         playerVC.transportBarCustomMenuItems = menus
     }
+
+    private func cleanUpPlayerOnExit(force: Bool = false) {
+        let isPictureInPictureRunning = PipRecorder.shared.playingPipViewController.contains { $0.playerVC == playerVC }
+        let shouldCleanUp = force || ((isBeingDismissed || isMovingFromParent || navigationController?.isBeingDismissed == true) && !isPictureInPictureRunning)
+        guard shouldCleanUp else { return }
+
+        rateObserver = nil
+        statusObserver = nil
+        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
+
+        if let player = playerVC.player {
+            player.pause()
+            removeAllPlugins()
+            player.replaceCurrentItem(with: nil)
+            playerVC.player = nil
+        } else {
+            activePlugins.removeAll()
+        }
+    }
 }
 
 extension CommonPlayerViewController {
@@ -114,6 +135,8 @@ extension CommonPlayerViewController {
             updateMenus()
         } else {
             rateObserver = nil
+            statusObserver = nil
+            NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
         }
     }
 
@@ -168,16 +191,23 @@ extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
     }
 
     func playerViewControllerWillStartPictureInPicture(_ playerViewController: AVPlayerViewController) {
+        isRestoringFromPip = false
         PipRecorder.shared.playingPipViewController.append(self)
     }
 
     func playerViewControllerDidStopPictureInPicture(_ playerViewController: AVPlayerViewController) {
         PipRecorder.shared.playingPipViewController.removeAll { $0.playerVC == playerViewController }
+        if !isRestoringFromPip {
+            // 用户点 ✕ 关闭 PiP，清理资源
+            cleanUpPlayerOnExit(force: true)
+        }
+        isRestoringFromPip = false
     }
 
     @objc func playerViewController(_ playerViewController: AVPlayerViewController,
                                     restoreUserInterfaceForPictureInPictureStopWithCompletionHandler completionHandler: @escaping (Bool) -> Void)
     {
+        isRestoringFromPip = true
         let presentedViewController = UIViewController.topMostViewController()
         guard let containerPlayer = PipRecorder.shared.playingPipViewController.first(where: { $0.playerVC == playerViewController }) else {
             completionHandler(false)
