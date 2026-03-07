@@ -19,6 +19,11 @@ jobs:
       - name: Build
         run: |
           fastlane build_unsign_ipa
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BilbiliAtvDemo.ipa
+          path: BilbiliAtvDemo.ipa
 
       # - name: List, filter and delete artifacts
       #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
