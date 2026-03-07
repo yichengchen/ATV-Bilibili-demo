@@ -14,6 +14,7 @@ class CommonPlayerViewController: UIViewController {
     private var observations = Set<NSKeyValueObservation>()
     private var rateObserver: NSKeyValueObservation?
     private var statusObserver: NSKeyValueObservation?
+    private var playToEndObserver: Any?
     private var isEnd = false
     private var isRestoringFromPip = false
 
@@ -104,9 +105,7 @@ class CommonPlayerViewController: UIViewController {
         let shouldCleanUp = force || ((isBeingDismissed || isMovingFromParent || navigationController?.isBeingDismissed == true) && !isPictureInPictureRunning)
         guard shouldCleanUp else { return }
 
-        rateObserver = nil
-        statusObserver = nil
-        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
+        cleanUpObserver()
 
         if let player = playerVC.player {
             player.pause()
@@ -116,6 +115,15 @@ class CommonPlayerViewController: UIViewController {
         } else {
             activePlugins.removeAll()
         }
+    }
+
+    private func cleanUpObserver() {
+        rateObserver = nil
+        statusObserver = nil
+        if let playToEndObserver {
+            NotificationCenter.default.removeObserver(playToEndObserver)
+        }
+        playToEndObserver = nil
     }
 }
 
@@ -134,9 +142,7 @@ extension CommonPlayerViewController {
             }
             updateMenus()
         } else {
-            rateObserver = nil
-            statusObserver = nil
-            NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
+            cleanUpObserver()
         }
     }
 
@@ -165,8 +171,10 @@ extension CommonPlayerViewController {
                 break
             }
         }
-        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerItem, queue: .main) { [weak self] note in
+        if let playToEndObserver {
+            NotificationCenter.default.removeObserver(playToEndObserver)
+        }
+        playToEndObserver = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerItem, queue: .main) { [weak self] note in
             guard let self, let player = playerVC.player else { return }
             isEnd = true
             activePlugins.forEach { $0.playerDidEnd(player: player) }
