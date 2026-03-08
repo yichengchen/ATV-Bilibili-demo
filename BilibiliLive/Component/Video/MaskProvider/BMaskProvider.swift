@@ -15,16 +15,24 @@ import UIKit
 class BMaskProvider: MaskProvider {
     let info: PlayerInfo.MaskInfo
     let videoSize: CGSize
-    private var maskFrames = [(time: UInt32, mask: UIBezierPath)]()
+    private var maskFrames = [MaskFrame]()
+    private let maskFramesLock = NSLock()
     private lazy var shapeLayer = CAShapeLayer()
 
     private var lastTime: TimeInterval = 0
+    private var downloadTask: Task<Void, Never>?
+
     init(info: PlayerInfo.MaskInfo, videoSize: CGSize) {
         self.info = info
         self.videoSize = videoSize
-        Task.detached {
+        downloadTask = Task(priority: .utility) { [weak self] in
+            guard let self else { return }
             try? await self.download()
         }
+    }
+
+    deinit {
+        downloadTask?.cancel()
     }
 
     private func download() async throws {
@@ -64,6 +72,7 @@ class BMaskProvider: MaskProvider {
         }
 
         for i in 0..<num {
+            if Task.isCancelled { return }
             let seg = segmentsData[i]
             if i < num - 1 {
                 length = segmentsData[i + 1].offset - seg.offset
@@ -74,6 +83,7 @@ class BMaskProvider: MaskProvider {
             var buffer2 = buffer.subdata(in: 0..<Data.Index(length))
             buffer = buffer.subdata(in: Int(length)..<buffer.count)
             buffer2 = try! buffer2.gunzipped()
+            var segmentFrames = [MaskFrame]()
             autoreleasepool {
                 while buffer2.count > 0 {
                     let offset = buffer2[0..<4].withUnsafeBytes({ $0.load(as: UInt32.self) }).bigEndian
@@ -103,14 +113,17 @@ class BMaskProvider: MaskProvider {
                     let finalTransform = coordTransform.scaledBy(x: 1, y: -1).translatedBy(x: 0, y: 0 - mergedPath.bounds.height - mergedPath.bounds.origin.y)
                     mergedPath.apply(finalTransform)
                     paddingPaths.forEach { mergedPath.append($0) }
-                    maskFrames.append((time, mergedPath.reversing()))
+                    let reversedPath = mergedPath.reversing()
+                    let cgPath = reversedPath.cgPath.copy() ?? reversedPath.cgPath
+                    segmentFrames.append(MaskFrame(time: time, path: cgPath))
                 }
             }
+            appendMaskFrames(segmentFrames)
 
             SVGBezierPath.resetCache()
         }
         // the frames are mostly already sorted, and this is just in case.
-        maskFrames.sort(by: { $0.time < $1.time })
+        sortMaskFrames()
     }
 
     func getMask(for time: CMTime, frame: CGRect, onGet: (CALayer) -> Void) {
@@ -120,7 +133,7 @@ class BMaskProvider: MaskProvider {
         if time < 0 { return }
         let path = getLatestMaskFrame(byMiliSeconds: UInt32(time * Double(1000)))
         if path != nil {
-            shapeLayer.path = path!.cgPath
+            shapeLayer.path = path
             shapeLayer.fillColor = UIColor.white.cgColor
             shapeLayer.backgroundColor = UIColor.white.cgColor
             shapeLayer.strokeColor = UIColor.white.cgColor
@@ -130,7 +143,10 @@ class BMaskProvider: MaskProvider {
         }
     }
 
-    private func getLatestMaskFrame(byMiliSeconds time: UInt32) -> UIBezierPath? {
+    private func getLatestMaskFrame(byMiliSeconds time: UInt32) -> CGPath? {
+        maskFramesLock.lock()
+        defer { maskFramesLock.unlock() }
+        guard !maskFrames.isEmpty else { return nil }
         // using bisect to find the latest. The methods returns an index to the maskFrames array
         // where every frame in the array with a smaller index will have a smaller timestamp.
         func bisectLeft(_ target: UInt32, _ min: Int = 0, _ max: Int? = nil) -> Int {
@@ -149,10 +165,23 @@ class BMaskProvider: MaskProvider {
         // This is because we are using the mask frames while they are still being generated,
         // and if the video starts playing from the middle, we need to wait for the processing to catch up
         if idx >= 0 && time - maskFrames[idx].time < 1000 {
-            return maskFrames[idx].mask
+            return maskFrames[idx].path
         } else {
             return nil
         }
+    }
+
+    private func appendMaskFrames(_ frames: [MaskFrame]) {
+        guard !frames.isEmpty else { return }
+        maskFramesLock.lock()
+        maskFrames.append(contentsOf: frames)
+        maskFramesLock.unlock()
+    }
+
+    private func sortMaskFrames() {
+        maskFramesLock.lock()
+        maskFrames.sort(by: { $0.time < $1.time })
+        maskFramesLock.unlock()
     }
 
     func needVideoOutput() -> Bool {
@@ -166,6 +195,11 @@ class BMaskProvider: MaskProvider {
 }
 
 extension BMaskProvider {
+    struct MaskFrame {
+        let time: UInt32
+        let path: CGPath
+    }
+
     struct SegmentData {
         let time: UInt32
         let offset: UInt32
