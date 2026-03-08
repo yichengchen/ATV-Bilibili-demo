@@ -39,7 +39,13 @@ class BVideoInfoPlugin: NSObject, CommonPlayerPlugin {
             for viewPoint in viewPoints {
                 group.addTask {
                     if let pic = viewPoint.imgUrl?.addSchemeIfNeed(),
-                       let result = try? await KingfisherManager.shared.retrieveImage(with: Kingfisher.ImageResource(downloadURL: pic)),
+                       let result = try? await KingfisherManager.shared.retrieveImage(
+                           with: Kingfisher.ImageResource(downloadURL: pic),
+                           options: [
+                               .onlyLoadFirstFrame,
+                               .processor(DownsamplingImageProcessor(size: CGSize(width: 320, height: 180))),
+                           ]
+                       ),
                        let data = result.image.pngData()
                     {
                         viewPoint.imageData = data
