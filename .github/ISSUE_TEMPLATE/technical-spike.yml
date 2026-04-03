@@ -1,0 +1,54 @@
+name: Technical spike / ADR
+description: Capture a cross-cutting technical question before implementation or major refactoring.
+title: "[Spike]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when we need a design decision, not just a code change.
+  - type: input
+    id: decision
+    attributes:
+      label: Decision to make
+      placeholder: "Example: Should the new player control be a plugin or be embedded in VideoPlayerViewController?"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What change, constraint, or incident makes this decision necessary now?
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options considered
+      description: List the realistic approaches under consideration.
+      placeholder: |
+        - Option A
+        - Option B
+        - Option C
+    validations:
+      required: true
+  - type: textarea
+    id: recommendation
+    attributes:
+      label: Recommended direction
+      description: If you already have a preferred option, explain why.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impacted areas
+      description: Which modules, APIs, or workflows are affected?
+      placeholder: Player, Request signing, Settings, build pipeline, etc.
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation plan
+      description: How will we prove the decision is safe and correct?
+  - type: textarea
+    id: open_questions
+    attributes:
+      label: Open questions
+      description: What still needs research or product input?

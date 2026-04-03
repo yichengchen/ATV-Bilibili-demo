@@ -1,0 +1,87 @@
+name: Feature spec
+description: Propose a feature or meaningful behavior change using an SDD-friendly structure.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for user-facing features, workflow changes, or substantial refactors that should start from a spec.
+  - type: input
+    id: slug
+    attributes:
+      label: Proposed spec slug
+      description: Example `player-debug-overlay` or `tabbar-custom-order`
+      placeholder: short-ascii-slug
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What user or system problem are we solving?
+      placeholder: Describe the current pain point and why it matters.
+    validations:
+      required: true
+  - type: textarea
+    id: goals
+    attributes:
+      label: Goals
+      description: What outcomes should this change achieve?
+      placeholder: |
+        - Goal 1
+        - Goal 2
+    validations:
+      required: true
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals
+      description: What is explicitly out of scope?
+      placeholder: |
+        - Not part of this work
+        - Follow-up work for later
+  - type: dropdown
+    id: area
+    attributes:
+      label: Primary area
+      options:
+        - Tabbar / navigation
+        - Feed / discovery
+        - Player / playback
+        - Danmaku
+        - Personal / account
+        - Live
+        - Request / API
+        - DLNA / casting
+        - Build / release / CI
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: interaction
+    attributes:
+      label: tvOS interaction notes
+      description: Describe focus behavior, remote actions, and entry or exit paths.
+      placeholder: Include initial focus, directional navigation, primary action, and Back/Menu behavior.
+  - type: textarea
+    id: data_api
+    attributes:
+      label: Data and API considerations
+      description: List any request, auth, signing, caching, or pagination implications.
+      placeholder: Mention affected endpoints, token refresh, request signing, or state persistence.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: What must be true for this work to be considered done?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Manual validation
+      description: How should this be verified in simulator or on device?
+      placeholder: Include build steps and the main manual walkthrough.
