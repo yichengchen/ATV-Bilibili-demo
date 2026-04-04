@@ -13,13 +13,19 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     private let playData: PlayerDetailData
     private let reportWatchHistory: Bool
     private let minimizeStalling: Bool
+    private let isMuted: Bool
     private var currentQualityId: Int?
     private var currentPlaybackTime: Double = 0
 
-    init(detailData: PlayerDetailData, reportWatchHistory: Bool = true, minimizeStalling: Bool = true) {
+    init(detailData: PlayerDetailData,
+         reportWatchHistory: Bool = true,
+         minimizeStalling: Bool = true,
+         isMuted: Bool = false)
+    {
         playData = detailData
         self.reportWatchHistory = reportWatchHistory
         self.minimizeStalling = minimizeStalling
+        self.isMuted = isMuted
         currentQualityId = playData.videoPlayURLInfo.quality
     }
 
@@ -108,6 +114,7 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
 
         let player = AVPlayer(playerItem: playerItem)
         player.automaticallyWaitsToMinimizeStalling = minimizeStalling
+        player.isMuted = isMuted
         playerVC?.player = nil
         playerVC?.player = player
     }

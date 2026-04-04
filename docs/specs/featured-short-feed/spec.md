@@ -37,17 +37,18 @@
 1. 用户进入头部导航中的 `精选`。
 2. 页面连续拉取推荐源数据，并按时长阈值过滤出短视频列表。
 3. 初始焦点落在左侧第一项，右侧在停留约 400ms 后开始静音预览。
-4. 用户按确认键，从当前左侧项进入正式短视频流。
-5. 在正式播放态中，用户用遥控器 `上 / 下` 在过滤后列表里切换上一条 / 下一条。
-6. 用户按 `Menu / Back` 退出播放，回到 `精选`，保持当前索引和滚动位置。
+4. 用户按确认键，从当前左侧项进入正式短视频流，同时销毁浏览态预览，避免后台继续出声。
+5. 在正式播放态中，用户按下键调出系统信息面板，并从面板中选择“从头开始 / 下一条 / 上一条”等动作。
+6. 用户按 `Menu / Back` 退出播放，回到 `精选`，保持当前索引和滚动位置，并只恢复当前项的静音预览。
 
 ## tvOS Interaction
 
 - Initial focus: `精选` 首屏焦点落在左侧列表第一项。
-- Directional navigation: 浏览态中 `上 / 下` 在左侧列表中移动；播放态中 `上 / 下` 切换上一条 / 下一条。
+- Directional navigation: 浏览态中 `上 / 下` 在左侧列表中移动；播放态保持系统播放器默认方向键行为。
+- Info panel actions: 播放态下滑出的系统动作面板优先展示“下一条”，其后才是“上一条”，并显式带上方向前缀，和 `下 / 上` 切换方向保持一致。
 - Primary action: 浏览态的确认键进入正式短视频流；播放态的确认键保留给系统播放器控制层。
 - Back / Menu behavior: 播放态退出回 `精选` 浏览页；浏览态遵循 TabBar 正常返回行为。
-- Play / Pause behavior: 沿用系统播放器默认行为。
+- Play / Pause behavior: 浏览态预览始终静音；正式播放态沿用系统播放器默认行为。
 - Long press or context menu behavior: v1 不新增长按交互。
 - Accessibility or readability notes: 右侧预览区保留标题、UP 主、提示文案，确保远距阅读。
 
@@ -56,7 +57,7 @@
 - Loading: 首屏加载和预览切换期间显示 loading，占位图持续可见。
 - Empty: 多页过滤后仍无足够短视频时显示“当前精选短视频较少”。
 - Error: 推荐加载失败时展示错误文案；预览失败仅回退到封面和提示，不阻塞进入播放。
-- Success: 左侧列表、右侧预览、正式播放和上下切换均正常工作。
+- Success: 左侧列表、右侧预览、正式播放和上下切换均正常工作，退出正式播放后不会残留后台声音。
 
 ## Data and API Considerations
 
@@ -114,8 +115,10 @@
 - [x] 左侧列表仅包含符合当前时长阈值的短视频。
 - [x] 设置页修改“精选视频时长上限”后，返回 `精选` 会按新阈值重建列表。
 - [x] 浏览态焦点停留约 400ms 后启动静音预览。
-- [x] 播放态遥控器 `上 / 下` 能切换上一条 / 下一条。
-- [x] 播放态上下切换序列只在过滤后列表内移动。
+- [x] 进入正式播放或离开 `精选` 时，会停止并销毁当前预览播放器，不保留后台声音。
+- [x] 播放态按下键会打开系统信息面板，并保留系统默认的“从头开始”入口。
+- [x] 播放态系统动作面板中的“下一条 / 上一条”顺序和文案与 `下 / 上` 切换方向一致。
+- [x] 播放态通过系统动作面板切换序列时，只在过滤后列表内移动。
 - [x] 当前视频开始播放后，会后台预热上一条 / 下一条。
 - [x] 播放卡住或加载失败时，会自动重试一次；仍失败再给出重试 / 下一条。
 - [x] 现有详情页、旧推荐页和其他导航页不回归。
@@ -126,5 +129,8 @@
 - [x] `xcodebuild -project BilibiliLive.xcodeproj -scheme BilibiliLive -configuration Debug -destination 'generic/platform=tvOS Simulator' build`
 - [ ] Validate in tvOS Simulator or on device
 - [ ] Exercise loading, success, empty, and error states
-- [ ] Verify focus movement, back navigation, preview behavior, and player up/down switching
+- [ ] Verify focus movement, back navigation, preview behavior, preview mute, and player info panel behavior
+- [ ] Verify the playback info panel lists `下一条` before `上一条` and uses the correct direction labels
+- [ ] Verify `下键` in featured playback first opens the system info panel and still shows `从头开始`
+- [ ] Verify exiting featured playback never leaves background audio running
 - [ ] Verify old `推荐` page,详情页,分 P / 合集播放 do not regress

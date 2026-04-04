@@ -34,6 +34,47 @@
 - Validation:
   - `xcodebuild ... build` 通过。
 
+## Task 4: Featured preview audio cleanup
+
+- Status: Done
+- Goal: 修复 `精选` 从正式播放退出后仍有后台声音的问题，并确保浏览态预览始终静音。
+- Files likely to change:
+  - `BilibiliLive/Module/ViewController/FeaturedBrowserViewController.swift`
+  - `BilibiliLive/Component/Player/CommonPlayerViewController.swift`
+  - `BilibiliLive/Component/Video/VideoPlayerViewModel.swift`
+  - `BilibiliLive/Component/Video/Plugins/BVideoPlayPlugin.swift`
+  - `docs/specs/featured-short-feed/spec.md`
+- Risks or dependencies:
+  - 预览播放器是子控制器，移除时必须主动清理 `AVPlayer`，否则可能继续在后台持有音频。
+  - 不能影响详情页和普通点播的有声播放行为。
+- Definition of done:
+  - 浏览态预览始终静音。
+  - 进入正式播放前会停掉并销毁预览播放器。
+  - 从正式播放返回 `精选` 后，不会残留后台声音。
+  - 返回浏览态时仍能恢复当前项预览。
+- Validation:
+  - `xcodebuild -project BilibiliLive.xcodeproj -scheme BilibiliLive -configuration Debug -destination 'generic/platform=tvOS Simulator' build` 通过。
+  - 本地未安装 `fastlane`，未执行 `fastlane build_simulator`。
+
+## Task 5: Feed-flow action ordering and labels
+
+- Status: Done
+- Goal: 保持精选播放态沿用系统信息面板交互，同时修复面板中“上一条 / 下一条”顺序与方向认知不一致的问题，并让按钮文案显式表达方向。
+- Files likely to change:
+  - `BilibiliLive/Component/Video/Plugins/VideoPlayListPlugin.swift`
+  - `docs/specs/featured-short-feed/spec.md`
+  - `docs/specs/featured-short-feed/tasks.md`
+- Risks or dependencies:
+  - 需要保持精选短视频流和详情页/合集复用同一插件时的行为一致。
+  - 不能把 `playerDidEnd()` 的自动下一条语义改反。
+- Definition of done:
+  - 系统信息面板仍保留“从头开始”默认入口。
+  - 系统动作面板优先展示“下一条”，其次才是“上一条”。
+  - 按钮标题显式带有方向前缀，不再只显示视频名。
+  - 面板动作与用户对“下一条 / 上一条”的方向认知保持一致。
+- Validation:
+  - `xcodebuild -project BilibiliLive.xcodeproj -scheme BilibiliLive -configuration Debug -destination 'generic/platform=tvOS Simulator' build` 通过。
+
 ## Task 2: Featured browser and short-video filtering
 
 - Status: Done

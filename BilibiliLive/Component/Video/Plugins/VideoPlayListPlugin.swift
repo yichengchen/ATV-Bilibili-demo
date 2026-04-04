@@ -41,18 +41,8 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
                 $0.identifier.rawValue.hasPrefix(nextActionIdentifierPrefix)
         }
 
-        if let previous {
-            let previousAction = UIAction(title: previous.title ?? "上一条",
-                                          image: UIImage(systemName: "backward.end.fill"),
-                                          identifier: .init(rawValue: "\(previousActionIdentifierPrefix).\(previous.sequenceKey)"))
-            { [weak self] _ in
-                self?.playPrevious()
-            }
-            playerVC.infoViewActions.append(previousAction)
-        }
-
         if let next {
-            let title = next.title ?? "下一条"
+            let title = actionTitle(prefix: "下一条", playInfo: next)
             let nextAction = UIAction(title: title,
                                       image: UIImage(systemName: "forward.end.fill"),
                                       identifier: .init(rawValue: "\(nextActionIdentifierPrefix).\(next.sequenceKey)"))
@@ -62,6 +52,16 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
                 }
             }
             playerVC.infoViewActions.append(nextAction)
+        }
+
+        if let previous {
+            let previousAction = UIAction(title: actionTitle(prefix: "上一条", playInfo: previous),
+                                          image: UIImage(systemName: "backward.end.fill"),
+                                          identifier: .init(rawValue: "\(previousActionIdentifierPrefix).\(previous.sequenceKey)"))
+            { [weak self] _ in
+                self?.playPrevious()
+            }
+            playerVC.infoViewActions.append(previousAction)
         }
     }
 
@@ -122,6 +122,15 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
         if let previous {
             onPlayPreviousWithInfo?(previous)
         }
+    }
+
+    private func actionTitle(prefix: String, playInfo: PlayInfo) -> String {
+        guard let title = playInfo.title?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !title.isEmpty
+        else {
+            return prefix
+        }
+        return "\(prefix) · \(title)"
     }
 
     @discardableResult

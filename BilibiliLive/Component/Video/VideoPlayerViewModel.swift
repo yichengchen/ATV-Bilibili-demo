@@ -195,7 +195,8 @@ class VideoPlayerViewModel {
     @MainActor private func generatePlayerPlugin(_ data: PlayerDetailData) async -> [CommonPlayerPlugin] {
         let playplugin = BVideoPlayPlugin(detailData: data,
                                           reportWatchHistory: playMode != .preview,
-                                          minimizeStalling: true)
+                                          minimizeStalling: true,
+                                          isMuted: playMode == .preview)
 
         if playMode == .preview {
             return [playplugin]

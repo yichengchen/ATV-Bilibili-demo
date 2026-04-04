@@ -176,16 +176,20 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         }
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        suspendPreview()
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         syncSelectionFromSequenceProvider()
+        resumePreviewIfNeeded()
     }
 
     func reloadData() {
         activeDurationLimit = Settings.featuredDurationLimit
-        previewTask?.cancel()
-        previewTask = nil
-        removePreviewController()
+        suspendPreview()
         items = []
         focusedIndex = 0
         lastSourceIdx = nil
@@ -345,6 +349,11 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
             await playContextCache.trim(keeping: neighboringItems)
             guard !Task.isCancelled else { return }
             await MainActor.run {
+                guard !Task.isCancelled,
+                      self.presentedViewController == nil,
+                      self.isViewLoaded,
+                      self.view.window != nil
+                else { return }
                 guard self.items.indices.contains(self.focusedIndex),
                       self.items[self.focusedIndex] == item
                 else { return }
@@ -374,10 +383,17 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
     }
 
     private func removePreviewController() {
+        previewController?.stopPlayback()
         previewController?.willMove(toParent: nil)
         previewController?.view.removeFromSuperview()
         previewController?.removeFromParent()
         previewController = nil
+    }
+
+    private func suspendPreview() {
+        previewTask?.cancel()
+        previewTask = nil
+        removePreviewController()
     }
 
     private func updatePreviewTexts(with item: RecommendedVideoItem) {
@@ -412,10 +428,23 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         updateFocusIfNeeded()
     }
 
+    private func resumePreviewIfNeeded() {
+        guard previewController == nil,
+              previewTask == nil,
+              presentedViewController == nil,
+              isViewLoaded,
+              view.window != nil,
+              !items.isEmpty
+        else { return }
+        let targetIndex = min(focusedIndex, items.count - 1)
+        schedulePreview(for: items[targetIndex])
+    }
+
     private func enterFlow(at index: Int) {
         guard items.indices.contains(index) else { return }
         focusedIndex = index
         sequenceProvider.setCurrentIndex(index)
+        suspendPreview()
         let player = VideoPlayerViewController(playInfo: items[index].playInfo,
                                                playMode: .feedFlow,
                                                playContextCache: playContextCache)

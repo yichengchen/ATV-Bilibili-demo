@@ -106,6 +106,10 @@ class CommonPlayerViewController: UIViewController {
         playerVC.transportBarCustomMenuItems = menus
     }
 
+    func stopPlayback() {
+        cleanUpPlayerOnExit(force: true)
+    }
+
     private func cleanUpPlayerOnExit(force: Bool = false) {
         let isPictureInPictureRunning = PipRecorder.shared.playingPipViewController.contains { $0.playerVC == playerVC }
         let shouldCleanUp = force || ((isBeingDismissed || isMovingFromParent || navigationController?.isBeingDismissed == true) && !isPictureInPictureRunning)
