@@ -15,8 +15,11 @@ class CommonPlayerViewController: UIViewController {
     private var rateObserver: NSKeyValueObservation?
     private var statusObserver: NSKeyValueObservation?
     private var playToEndObserver: Any?
+    private var playbackStalledObserver: Any?
     private var isEnd = false
     private var isRestoringFromPip = false
+    var showsPlaybackControls = true
+    var allowsPictureInPicturePlayback = true
 
     deinit {
         cleanUpPlayerOnExit(force: true)
@@ -28,7 +31,8 @@ class CommonPlayerViewController: UIViewController {
         view.addSubview(playerVC.view)
         playerVC.didMove(toParent: self)
         playerVC.view.snp.makeConstraints { $0.edges.equalToSuperview() }
-        playerVC.allowsPictureInPicturePlayback = true
+        playerVC.showsPlaybackControls = showsPlaybackControls
+        playerVC.allowsPictureInPicturePlayback = allowsPictureInPicturePlayback
         playerVC.delegate = self
 
         let playerObservation = playerVC.observe(\.player, options: [.old, .new]) { [weak self] vc, obs in
@@ -80,6 +84,8 @@ class CommonPlayerViewController: UIViewController {
     }
 
     func playerDidEnd(player: AVPlayer) {}
+    func playerDidStall(player: AVPlayer) {}
+    func playerDidFail(player: AVPlayer) {}
 
     func showErrorAlertAndExit(title: String = "播放失败", message: String = "未知错误") {
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -124,6 +130,10 @@ class CommonPlayerViewController: UIViewController {
             NotificationCenter.default.removeObserver(playToEndObserver)
         }
         playToEndObserver = nil
+        if let playbackStalledObserver {
+            NotificationCenter.default.removeObserver(playbackStalledObserver)
+        }
+        playbackStalledObserver = nil
     }
 }
 
@@ -167,6 +177,7 @@ extension CommonPlayerViewController {
                 player.play()
             case .failed:
                 activePlugins.forEach { $0.playerDidFail(player: player) }
+                playerDidFail(player: player)
             default:
                 break
             }
@@ -179,6 +190,11 @@ extension CommonPlayerViewController {
             isEnd = true
             activePlugins.forEach { $0.playerDidEnd(player: player) }
             playerDidEnd(player: player)
+        }
+        playbackStalledObserver = NotificationCenter.default.addObserver(forName: .AVPlayerItemPlaybackStalled, object: playerItem, queue: .main) { [weak self] _ in
+            guard let self, let player = playerVC.player else { return }
+            activePlugins.forEach { $0.playerDidStall(player: player) }
+            playerDidStall(player: player)
         }
     }
 }

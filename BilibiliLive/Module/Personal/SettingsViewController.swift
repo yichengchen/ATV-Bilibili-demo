@@ -150,6 +150,16 @@ class SettingsViewController: UIViewController {
                 }
             }
 
+            SectionModel(title: "精选") {
+                Actions(title: "精选视频时长上限", message: "用于筛选精选页中的短视频",
+                        current: Settings.featuredDurationLimit.title,
+                        options: FeaturedDurationLimit.allCases,
+                        optionString: FeaturedDurationLimit.allCases.map { $0.title })
+                {
+                    Settings.featuredDurationLimit = $0
+                }
+            }
+
             SectionModel(title: "音视频") {
                 Actions(title: "最高画质", message: "4k以上需要大会员",
                         current: Settings.mediaQuality.desp,

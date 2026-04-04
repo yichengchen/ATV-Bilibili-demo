@@ -105,6 +105,9 @@ enum Settings {
     @UserDefault("Settings.ui.sideMenuAutoSelectChange", defaultValue: false)
     static var sideMenuAutoSelectChange: Bool
 
+    @UserDefaultCodable("Settings.featuredDurationLimit", defaultValue: .minutes10)
+    static var featuredDurationLimit: FeaturedDurationLimit
+
     @UserDefaultCodable("Settings.SponsorBlockType", defaultValue: SponsorBlockType.none)
     static var enableSponsorBlock: SponsorBlockType
 
@@ -282,6 +285,46 @@ extension DanmuArea {
             return 0.25
         case .style_0:
             return 1
+        }
+    }
+}
+
+enum FeaturedDurationLimit: Codable, CaseIterable, Equatable {
+    case minutes3
+    case minutes5
+    case minutes10
+    case minutes15
+    case unlimited
+}
+
+extension FeaturedDurationLimit {
+    var title: String {
+        switch self {
+        case .minutes3:
+            return "3 分钟"
+        case .minutes5:
+            return "5 分钟"
+        case .minutes10:
+            return "10 分钟"
+        case .minutes15:
+            return "15 分钟"
+        case .unlimited:
+            return "不限"
+        }
+    }
+
+    var maxDuration: Int? {
+        switch self {
+        case .minutes3:
+            return 3 * 60
+        case .minutes5:
+            return 5 * 60
+        case .minutes10:
+            return 10 * 60
+        case .minutes15:
+            return 15 * 60
+        case .unlimited:
+            return nil
         }
     }
 }

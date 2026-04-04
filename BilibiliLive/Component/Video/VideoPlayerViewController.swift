@@ -9,7 +9,7 @@ import AVKit
 import Combine
 import UIKit
 
-struct PlayInfo {
+struct PlayInfo: Hashable {
     let aid: Int
     var cid: Int? = 0
     var epid: Int? = 0 // 港澳台解锁需要
@@ -19,6 +19,9 @@ struct PlayInfo {
     var lastPlayCid: Int?
     var playTimeInSecond: Int?
     var title: String?
+    var ownerName: String?
+    var coverURL: URL?
+    var duration: Int?
 
     var isCidVaild: Bool {
         return cid ?? 0 > 0
@@ -27,47 +30,132 @@ struct PlayInfo {
     var isBangumi: Bool {
         return epid ?? 0 > 0 || seasonId ?? 0 > 0
     }
-}
 
-class VideoNextProvider {
-    init(seq: [PlayInfo]) {
-        playSeq = seq
+    var sequenceKey: String {
+        "\(aid)-\(cid ?? 0)-\(epid ?? 0)-\(seasonId ?? 0)"
     }
 
-    private var index = 0
-    private let playSeq: [PlayInfo]
+    var contextKey: PlayContextKey {
+        PlayContextKey(aid: aid,
+                       cid: cid ?? 0,
+                       epid: epid ?? 0,
+                       seasonId: seasonId ?? 0)
+    }
+}
+
+enum VideoPlayerMode {
+    case regular
+    case preview
+    case feedFlow
+}
+
+@MainActor
+final class VideoSequenceProvider {
+    private(set) var playSeq: [PlayInfo]
+    private(set) var currentIndex: Int
+    private let preloadThreshold: Int
+    var onNeedMore: (() async -> Void)?
+
+    init(seq: [PlayInfo], currentIndex: Int = 0, preloadThreshold: Int = 8) {
+        playSeq = seq.uniqued()
+        self.currentIndex = max(0, min(currentIndex, max(playSeq.count - 1, 0)))
+        self.preloadThreshold = preloadThreshold
+    }
+
     var count: Int {
-        return playSeq.count
+        playSeq.count
+    }
+
+    var hasPrevious: Bool {
+        currentIndex > 0
+    }
+
+    var hasNext: Bool {
+        currentIndex + 1 < playSeq.count
+    }
+
+    func current() -> PlayInfo? {
+        guard playSeq.indices.contains(currentIndex) else { return nil }
+        return playSeq[currentIndex]
+    }
+
+    func setCurrentIndex(_ index: Int) {
+        guard playSeq.indices.contains(index) else { return }
+        currentIndex = index
     }
 
     func reset() {
-        index = 0
+        currentIndex = 0
     }
 
-    func getNext() -> PlayInfo? {
-        index += 1
-        if index < playSeq.count {
-            return playSeq[index]
-        }
-        return nil
+    func append(_ seq: [PlayInfo]) {
+        let existing = Set(playSeq.map(\.sequenceKey))
+        let newItems = seq.filter { !existing.contains($0.sequenceKey) }
+        playSeq.append(contentsOf: newItems)
+    }
+
+    func peekPrevious() -> PlayInfo? {
+        guard hasPrevious else { return nil }
+        return playSeq[currentIndex - 1]
     }
 
     func peekNext() -> PlayInfo? {
-        let nextIndex = index + 1
-        if nextIndex < playSeq.count {
-            return playSeq[nextIndex]
-        }
-        return nil
+        guard hasNext else { return nil }
+        return playSeq[currentIndex + 1]
+    }
+
+    func neighborItems(radius: Int) -> [PlayInfo] {
+        guard !playSeq.isEmpty else { return [] }
+        let lower = max(0, currentIndex - radius)
+        let upper = min(playSeq.count - 1, currentIndex + radius)
+        return Array(playSeq[lower...upper])
+    }
+
+    func movePrevious() -> PlayInfo? {
+        guard hasPrevious else { return nil }
+        currentIndex -= 1
+        return playSeq[currentIndex]
+    }
+
+    func moveNext() async -> PlayInfo? {
+        await prefetchMoreIfNeeded()
+        guard hasNext else { return nil }
+        currentIndex += 1
+        await prefetchMoreIfNeeded()
+        return playSeq[currentIndex]
+    }
+
+    func prefetchMoreIfNeeded() async {
+        guard count - currentIndex - 1 < preloadThreshold else { return }
+        await onNeedMore?()
     }
 }
 
 class VideoPlayerViewController: CommonPlayerViewController {
     var data: VideoDetail?
-    var nextProvider: VideoNextProvider?
+    var sequenceProvider: VideoSequenceProvider?
+    var onLoadFailure: ((String) -> Void)?
 
-    init(playInfo: PlayInfo) {
-        viewModel = VideoPlayerViewModel(playInfo: playInfo)
+    private let playMode: VideoPlayerMode
+    private let playContextCache: PlayContextCache?
+    private let viewModel: VideoPlayerViewModel
+    private var cancelable = Set<AnyCancellable>()
+    private var currentRetryKey: String
+    private var hasRetriedCurrentItem = false
+
+    init(playInfo: PlayInfo,
+         playMode: VideoPlayerMode = .regular,
+         playContextCache: PlayContextCache? = nil)
+    {
+        self.playMode = playMode
+        self.playContextCache = playContextCache
+        viewModel = VideoPlayerViewModel(playInfo: playInfo, playMode: playMode, playContextCache: playContextCache)
+        currentRetryKey = playInfo.sequenceKey
         super.init(nibName: nil, bundle: nil)
+        if playMode == .preview {
+            showsPlaybackControls = false
+            allowsPictureInPicturePlayback = false
+        }
     }
 
     @available(*, unavailable)
@@ -75,29 +163,125 @@ class VideoPlayerViewController: CommonPlayerViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private let viewModel: VideoPlayerViewModel
-    private var cancelable = Set<AnyCancellable>()
-
     override func viewDidLoad() {
         super.viewDidLoad()
-        viewModel.nextProvider = nextProvider
+        viewModel.sequenceProvider = sequenceProvider
+        viewModel.onPlayInfoChanged = { [weak self] info in
+            self?.handlePlayInfoChanged(info)
+        }
+        viewModel.onShowDetail = { [weak self] info in
+            self?.showDetail(for: info)
+        }
         viewModel.onPluginReady.receive(on: DispatchQueue.main).sink { [weak self] completion in
             switch completion {
             case let .failure(err):
-                self?.showErrorAlertAndExit(message: err)
+                self?.handleLoadFailure(message: err)
             default:
                 break
             }
         } receiveValue: { [weak self] plugins in
             self?.removeAllPlugins()
             plugins.forEach { self?.addPlugin(plugin: $0) }
+            Task { [weak self] in
+                await self?.viewModel.preloadNeighborsIfNeeded()
+            }
         }.store(in: &cancelable)
 
-        viewModel.onExit = { [weak self] in
-            self?.dismiss(animated: true)
+        if playMode == .regular {
+            viewModel.onExit = { [weak self] in
+                self?.dismiss(animated: true)
+            }
         }
+
         Task {
             await viewModel.load()
         }
+    }
+
+    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+        guard playMode == .feedFlow, let buttonPress = presses.first?.type else {
+            super.pressesEnded(presses, with: event)
+            return
+        }
+
+        switch buttonPress {
+        case .upArrow:
+            Task { [weak self] in
+                _ = await self?.viewModel.playPreviousFromSequence()
+            }
+        case .downArrow:
+            Task { [weak self] in
+                _ = await self?.viewModel.playNextFromSequence()
+            }
+        default:
+            super.pressesEnded(presses, with: event)
+        }
+    }
+
+    override func playerDidStall(player: AVPlayer) {
+        guard playMode == .feedFlow else { return }
+        attemptRetryOrShowRecovery(message: "播放卡住了，请选择重试或切换下一条。")
+    }
+
+    override func playerDidFail(player: AVPlayer) {
+        guard playMode == .feedFlow else {
+            super.playerDidFail(player: player)
+            return
+        }
+        attemptRetryOrShowRecovery(message: "当前视频加载失败，请选择重试或切换下一条。")
+    }
+
+    private func handlePlayInfoChanged(_ info: PlayInfo) {
+        if currentRetryKey != info.sequenceKey {
+            currentRetryKey = info.sequenceKey
+            hasRetriedCurrentItem = false
+        }
+    }
+
+    private func handleLoadFailure(message: String) {
+        switch playMode {
+        case .preview:
+            onLoadFailure?(message)
+        case .feedFlow:
+            attemptRetryOrShowRecovery(message: message)
+        case .regular:
+            showErrorAlertAndExit(message: message)
+        }
+    }
+
+    private func attemptRetryOrShowRecovery(message: String) {
+        guard !hasRetriedCurrentItem else {
+            showFeedFlowRecoveryAlert(message: message)
+            return
+        }
+        hasRetriedCurrentItem = true
+        Task { [weak self] in
+            await self?.viewModel.retryCurrent()
+        }
+    }
+
+    private func showFeedFlowRecoveryAlert(message: String) {
+        let alert = UIAlertController(title: "播放异常", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "重试", style: .default) { [weak self] _ in
+            self?.hasRetriedCurrentItem = true
+            Task { [weak self] in
+                await self?.viewModel.retryCurrent()
+            }
+        })
+        alert.addAction(UIAlertAction(title: "下一条", style: .default) { [weak self] _ in
+            Task { [weak self] in
+                if await self?.viewModel.playNextFromSequence() == false {
+                    self?.dismiss(animated: true)
+                }
+            }
+        })
+        alert.addAction(UIAlertAction(title: "关闭", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private func showDetail(for info: PlayInfo) {
+        guard playMode != .preview else { return }
+        let detailVC = VideoDetailViewController.create(aid: info.aid, cid: info.cid)
+        detailVC.present(from: self, direatlyEnterVideo: false)
     }
 }

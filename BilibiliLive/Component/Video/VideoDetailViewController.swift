@@ -412,17 +412,15 @@ class VideoDetailViewController: UIViewController {
         let player = VideoPlayerViewController(playInfo: PlayInfo(aid: aid, cid: cid, epid: epid, seasonId: seasonId, subType: subType, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond, title: data?.title))
         player.data = data
         if pages.count > 0, let index = pages.firstIndex(where: { $0.cid == cid }) {
-            let seq = pages.dropFirst(index).map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
+            let seq = pages.map({ PlayInfo(aid: aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
             if seq.count > 0 {
-                let nextProvider = VideoNextProvider(seq: seq)
-                player.nextProvider = nextProvider
+                player.sequenceProvider = VideoSequenceProvider(seq: seq, currentIndex: index)
             }
         }
         if allUgcEpisodes.count > 0, let index = allUgcEpisodes.firstIndex(where: { $0.cid == cid }) {
-            let seq = allUgcEpisodes.dropFirst(index).map({ PlayInfo(aid: $0.aid, cid: $0.cid, title: $0.title) })
+            let seq = allUgcEpisodes.map({ PlayInfo(aid: $0.aid, cid: $0.cid, title: $0.title) })
             if seq.count > 0 {
-                let nextProvider = VideoNextProvider(seq: seq)
-                player.nextProvider = nextProvider
+                player.sequenceProvider = VideoSequenceProvider(seq: seq, currentIndex: index)
             }
         }
         present(player, animated: true, completion: nil)
@@ -516,10 +514,9 @@ extension VideoDetailViewController: UICollectionViewDelegate {
             let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: seasonId, subType: subType, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond, title: page.part))
             player.data = isBangumi ? nil : data
 
-            let seq = pages.dropFirst(indexPath.item).map({ PlayInfo(aid: isBangumi ? $0.page : aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
+            let seq = pages.map({ PlayInfo(aid: isBangumi ? $0.page : aid, cid: $0.cid, epid: $0.epid, seasonId: seasonId, subType: subType, title: $0.part) })
             if seq.count > 0 {
-                let nextProvider = VideoNextProvider(seq: seq)
-                player.nextProvider = nextProvider
+                player.sequenceProvider = VideoSequenceProvider(seq: seq, currentIndex: indexPath.item)
             }
             present(player, animated: true, completion: nil)
         case replysCollectionView:

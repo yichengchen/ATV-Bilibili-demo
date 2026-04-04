@@ -160,8 +160,8 @@ class TabBarCustomizationViewController: UIViewController {
         editItem.section = toSection
         switch toSection {
         case .tabBar:
-            if tabBarCount >= 8 {
-                let alert = UIAlertController(title: "导航栏最多保留 8 个页面", message: nil, preferredStyle: .alert)
+            if tabBarCount >= Settings.maxTabBarPageCount {
+                let alert = UIAlertController(title: "导航栏最多保留 \(Settings.maxTabBarPageCount) 个页面", message: nil, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "知道了", style: .cancel))
                 present(alert, animated: true)
                 return false
@@ -177,8 +177,8 @@ class TabBarCustomizationViewController: UIViewController {
                 present(alert, animated: true)
                 return false
             }
-            if tabBarCount <= 3 {
-                let alert = UIAlertController(title: "导航栏至少保留 3 个页面", message: nil, preferredStyle: .alert)
+            if tabBarCount <= Settings.minTabBarPageCount {
+                let alert = UIAlertController(title: "导航栏至少保留 \(Settings.minTabBarPageCount) 个页面", message: nil, preferredStyle: .alert)
                 alert.addAction(UIAlertAction(title: "知道了", style: .cancel))
                 present(alert, animated: true)
                 return false

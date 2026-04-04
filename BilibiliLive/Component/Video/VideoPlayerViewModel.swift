@@ -29,16 +29,26 @@ struct PlayerDetailData {
 class VideoPlayerViewModel {
     var onPluginReady = PassthroughSubject<[CommonPlayerPlugin], String>()
     var onExit: (() -> Void)?
-    var nextProvider: VideoNextProvider?
+    var onPlayInfoChanged: ((PlayInfo) -> Void)?
+    var onShowDetail: ((PlayInfo) -> Void)?
+    var sequenceProvider: VideoSequenceProvider?
 
     private var playInfo: PlayInfo
+    private let playMode: VideoPlayerMode
+    private let playContextCache: PlayContextCache?
     private let danmuProvider = VideoDanmuProvider(enableDanmuFilter: Settings.enableDanmuFilter,
                                                    enableDanmuRemoveDup: Settings.enableDanmuRemoveDup)
     private var videoDetail: VideoDetail?
     private var cancellable = Set<AnyCancellable>()
 
-    init(playInfo: PlayInfo) {
+    init(playInfo: PlayInfo, playMode: VideoPlayerMode = .regular, playContextCache: PlayContextCache? = nil) {
         self.playInfo = playInfo
+        self.playMode = playMode
+        self.playContextCache = playContextCache
+    }
+
+    var currentPlayInfo: PlayInfo {
+        playInfo
     }
 
     func load() async {
@@ -73,6 +83,31 @@ class VideoPlayerViewModel {
 
     private func fetchVideoData() async throws -> PlayerDetailData {
         assert(playInfo.isCidVaild)
+        if !playInfo.isBangumi, let playContextCache {
+            let cached = try await playContextCache.context(for: playInfo, includeDetail: playMode != .preview)
+            videoDetail = cached.detail ?? videoDetail
+
+            var detail = PlayerDetailData(aid: playInfo.aid,
+                                          cid: cached.cid,
+                                          epid: playInfo.epid,
+                                          seasonId: playInfo.seasonId,
+                                          subType: playInfo.subType,
+                                          detail: cached.detail ?? videoDetail,
+                                          clips: nil,
+                                          playerInfo: cached.playerInfo,
+                                          videoPlayURLInfo: cached.videoPlayURLInfo)
+
+            let lastPlayCid = playInfo.lastPlayCid ?? cached.playerInfo?.last_play_cid ?? 0
+            let playTimeInSecond = playInfo.playTimeInSecond ?? cached.playerInfo?.playTimeInSecond ?? 0
+            if lastPlayCid == cached.cid,
+               cached.videoPlayURLInfo.dash.duration - playTimeInSecond > 5,
+               Settings.continuePlay
+            {
+                detail.playerStartPos = playTimeInSecond
+            }
+            return detail
+        }
+
         let aid = playInfo.aid
         let cid = playInfo.cid!
         async let infoReq = try? WebRequest.requestPlayerInfo(aid: aid, cid: cid)
@@ -124,15 +159,48 @@ class VideoPlayerViewModel {
         }
     }
 
-    private func playNext(newPlayInfo: PlayInfo) {
+    private func updatePlayInfo(_ newPlayInfo: PlayInfo) {
         playInfo = newPlayInfo
+        onPlayInfoChanged?(newPlayInfo)
         Task {
             await load()
         }
     }
 
+    func retryCurrent() async {
+        await load()
+    }
+
+    func playNextFromSequence() async -> Bool {
+        guard let next = await sequenceProvider?.moveNext() else { return false }
+        updatePlayInfo(next)
+        return true
+    }
+
+    func playPreviousFromSequence() async -> Bool {
+        guard let previous = await sequenceProvider?.movePrevious() else { return false }
+        updatePlayInfo(previous)
+        return true
+    }
+
+    func preloadNeighborsIfNeeded() async {
+        guard playMode == .feedFlow, let playContextCache, let sequenceProvider else { return }
+        let neighbors = await sequenceProvider.neighborItems(radius: 1)
+        for info in neighbors {
+            await playContextCache.preload(playInfo: info, includeDetail: false)
+        }
+        await playContextCache.trim(keeping: neighbors)
+    }
+
     @MainActor private func generatePlayerPlugin(_ data: PlayerDetailData) async -> [CommonPlayerPlugin] {
-        let playplugin = BVideoPlayPlugin(detailData: data)
+        let playplugin = BVideoPlayPlugin(detailData: data,
+                                          reportWatchHistory: playMode != .preview,
+                                          minimizeStalling: true)
+
+        if playMode == .preview {
+            return [playplugin]
+        }
+
         let danmu = DanmuViewPlugin(provider: danmuProvider)
         let upnp = BUpnpPlugin(duration: data.detail?.View.duration)
         let debug = DebugPlugin()
@@ -141,14 +209,21 @@ class VideoPlayerViewModel {
             danmu?.danMuView.playingSpeed = speed.value
         }.store(in: &cancellable)
 
-        let playlist = VideoPlayListPlugin(nextProvider: nextProvider)
+        let playlist = VideoPlayListPlugin(sequenceProvider: sequenceProvider)
         playlist.onPlayEnd = { [weak self] in
+            guard self?.playMode == .regular else { return }
             self?.onExit?()
+        }
+        playlist.onPlayPreviousWithInfo = { [weak self] info in
+            self?.updatePlayInfo(info)
         }
         playlist.onPlayNextWithInfo = {
             [weak self] info in
             guard let self else { return }
-            playNext(newPlayInfo: info)
+            updatePlayInfo(info)
+        }
+        playlist.onShowCurrentDetail = { [weak self] info in
+            self?.onShowDetail?(info)
         }
 
         // 添加画质选择器插件

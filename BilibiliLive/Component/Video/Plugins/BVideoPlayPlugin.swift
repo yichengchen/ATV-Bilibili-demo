@@ -11,11 +11,15 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     private weak var playerVC: AVPlayerViewController?
     private var playerDelegate: BilibiliVideoResourceLoaderDelegate?
     private let playData: PlayerDetailData
+    private let reportWatchHistory: Bool
+    private let minimizeStalling: Bool
     private var currentQualityId: Int?
     private var currentPlaybackTime: Double = 0
 
-    init(detailData: PlayerDetailData) {
+    init(detailData: PlayerDetailData, reportWatchHistory: Bool = true, minimizeStalling: Bool = true) {
         playData = detailData
+        self.reportWatchHistory = reportWatchHistory
+        self.minimizeStalling = minimizeStalling
         currentQualityId = playData.videoPlayURLInfo.quality
     }
 
@@ -35,6 +39,7 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     }
 
     func playerDidDismiss(playerVC: AVPlayerViewController) {
+        guard reportWatchHistory else { return }
         guard let currentTime = playerVC.player?.currentTime().seconds, currentTime > 0 else { return }
         WebRequest.reportWatchHistory(aid: playData.aid, cid: playData.cid, currentTime: Int(currentTime), epid: playData.epid, seasonId: playData.seasonId, subType: playData.subType)
     }
@@ -101,6 +106,7 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
         playerItem.preferredPeakBitRate = 0
 
         let player = AVPlayer(playerItem: playerItem)
+        player.automaticallyWaitsToMinimizeStalling = minimizeStalling
         playerVC?.player = nil
         playerVC?.player = player
     }
