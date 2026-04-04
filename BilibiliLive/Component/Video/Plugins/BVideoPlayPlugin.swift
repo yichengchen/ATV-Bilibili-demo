@@ -26,7 +26,6 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     func playerDidLoad(playerVC: AVPlayerViewController) {
         self.playerVC = playerVC
         playerVC.player = nil
-        playerVC.appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
         Task {
             try? await playmedia(urlInfo: playData.videoPlayURLInfo, playerInfo: playData.playerInfo)
         }
@@ -55,13 +54,9 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
         playerDelegate = BilibiliVideoResourceLoaderDelegate()
         playerDelegate?.setBilibili(info: urlInfo, subtitles: playerInfo?.subtitle?.subtitles ?? [], aid: playData.aid, maxQuality: maxQuality, streamIndex: streamIndex)
 
-        // 只在初次加载时设置 appliesPreferredDisplayCriteriaAutomatically，切换画质时跳过
+        // AVKit 不允许在同一场全屏播放里反复切换该属性，因此只在首次装配资源时计算一次。
         if !isQualitySwitch {
-            if Settings.contentMatchOnlyInHDR {
-                if playerDelegate?.isHDR != true {
-                    playerVC?.appliesPreferredDisplayCriteriaAutomatically = false
-                }
-            }
+            playerVC?.appliesPreferredDisplayCriteriaAutomatically = shouldApplyContentMatch()
         }
 
         asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
@@ -95,6 +90,12 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
         } catch {
             Logger.warn("[quality] Failed to switch quality: \(error)")
         }
+    }
+
+    private func shouldApplyContentMatch() -> Bool {
+        guard Settings.contentMatch else { return false }
+        guard Settings.contentMatchOnlyInHDR else { return true }
+        return playerDelegate?.isHDR == true
     }
 
     @MainActor
