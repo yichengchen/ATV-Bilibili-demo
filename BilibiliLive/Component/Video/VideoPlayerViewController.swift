@@ -135,21 +135,36 @@ class VideoPlayerViewController: CommonPlayerViewController {
     var data: VideoDetail?
     var sequenceProvider: VideoSequenceProvider?
     var onLoadFailure: ((String) -> Void)?
+    var onPlaybackStarted: (() -> Void)?
+    var onPlayInfoChanged: ((PlayInfo) -> Void)?
+    var onDismissWithPlayInfo: ((PlayInfo) -> Void)?
 
     private let playMode: VideoPlayerMode
     private let playContextCache: PlayContextCache?
+    private let mediaWarmupManager: PlayerMediaWarmupManager?
+    private let previewMuted: Bool
     private let viewModel: VideoPlayerViewModel
     private var cancelable = Set<AnyCancellable>()
+    private var loadTask: Task<Void, Never>?
     private var currentRetryKey: String
     private var hasRetriedCurrentItem = false
+    private var isStopping = false
 
     init(playInfo: PlayInfo,
          playMode: VideoPlayerMode = .regular,
-         playContextCache: PlayContextCache? = nil)
+         playContextCache: PlayContextCache? = nil,
+         mediaWarmupManager: PlayerMediaWarmupManager? = nil,
+         previewMuted: Bool = true)
     {
         self.playMode = playMode
         self.playContextCache = playContextCache
-        viewModel = VideoPlayerViewModel(playInfo: playInfo, playMode: playMode, playContextCache: playContextCache)
+        self.mediaWarmupManager = mediaWarmupManager
+        self.previewMuted = previewMuted
+        viewModel = VideoPlayerViewModel(playInfo: playInfo,
+                                         playMode: playMode,
+                                         playContextCache: playContextCache,
+                                         mediaWarmupManager: mediaWarmupManager,
+                                         previewMuted: previewMuted)
         currentRetryKey = playInfo.sequenceKey
         super.init(nibName: nil, bundle: nil)
         if playMode == .preview {
@@ -193,9 +208,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
             }
         }
 
-        Task {
-            await viewModel.load()
-        }
+        startLoad()
     }
 
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
@@ -218,6 +231,26 @@ class VideoPlayerViewController: CommonPlayerViewController {
         }
     }
 
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        let isExiting = isBeingDismissed || isMovingFromParent || navigationController?.isBeingDismissed == true
+        guard isExiting else { return }
+        if playMode == .feedFlow {
+            onDismissWithPlayInfo?(viewModel.currentPlayInfo)
+        }
+        stopAsyncWork()
+    }
+
+    override func stopPlayback() {
+        stopAsyncWork()
+        super.stopPlayback()
+    }
+
+    override func playerDidStart(player: AVPlayer) {
+        guard playMode == .preview else { return }
+        onPlaybackStarted?()
+    }
+
     override func playerDidStall(player: AVPlayer) {
         guard playMode == .feedFlow else { return }
         attemptRetryOrShowRecovery(message: "播放卡住了，请选择重试或切换下一条。")
@@ -235,6 +268,26 @@ class VideoPlayerViewController: CommonPlayerViewController {
         if currentRetryKey != info.sequenceKey {
             currentRetryKey = info.sequenceKey
             hasRetriedCurrentItem = false
+        }
+        onPlayInfoChanged?(info)
+    }
+
+    private func startLoad() {
+        loadTask?.cancel()
+        guard !isStopping else { return }
+        loadTask = Task { [weak self] in
+            await self?.viewModel.load()
+        }
+    }
+
+    private func stopAsyncWork() {
+        guard !isStopping else { return }
+        isStopping = true
+        loadTask?.cancel()
+        loadTask = nil
+        cancelable.removeAll()
+        Task { [mediaWarmupManager] in
+            await mediaWarmupManager?.cancelAll()
         }
     }
 

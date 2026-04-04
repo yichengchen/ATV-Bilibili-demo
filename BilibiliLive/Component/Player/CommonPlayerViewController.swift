@@ -69,13 +69,17 @@ class CommonPlayerViewController: UIViewController {
     }
 
     func removePlugin(plugin: CommonPlayerPlugin) {
+        let removingPlugins = activePlugins.filter { $0 == plugin }
+        removingPlugins.forEach { $0.playerWillCleanUp(playerVC: playerVC) }
         if let player = playerVC.player {
-            activePlugins.filter { $0 == plugin }.forEach { $0.playerDidCleanUp(player: player) }
+            removingPlugins.forEach { $0.playerDidCleanUp(player: player) }
         }
         activePlugins.removeAll { $0 == plugin }
     }
 
     func removeAllPlugins() {
+        guard !activePlugins.isEmpty else { return }
+        activePlugins.forEach { $0.playerWillCleanUp(playerVC: playerVC) }
         if let player = playerVC.player {
             Logger.debug("removeAllPlugins: clean up player: \(player)")
             activePlugins.forEach { $0.playerDidCleanUp(player: player) }
@@ -83,6 +87,8 @@ class CommonPlayerViewController: UIViewController {
         activePlugins.removeAll()
     }
 
+    func playerWillStart(player: AVPlayer) {}
+    func playerDidStart(player: AVPlayer) {}
     func playerDidEnd(player: AVPlayer) {}
     func playerDidStall(player: AVPlayer) {}
     func playerDidFail(player: AVPlayer) {}
@@ -163,6 +169,7 @@ extension CommonPlayerViewController {
     private func playerRateDidChange(player: AVPlayer) {
         if player.rate > 0 {
             activePlugins.forEach { $0.playerDidStart(player: player) }
+            playerDidStart(player: player)
         } else if player.rate == 0 {
             if !isEnd {
                 activePlugins.forEach { $0.playerDidPause(player: player) }
@@ -178,6 +185,7 @@ extension CommonPlayerViewController {
             case .readyToPlay:
                 isEnd = false
                 activePlugins.forEach { $0.playerWillStart(player: player) }
+                playerWillStart(player: player)
                 player.play()
             case .failed:
                 activePlugins.forEach { $0.playerDidFail(player: player) }

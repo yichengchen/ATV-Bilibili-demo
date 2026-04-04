@@ -36,15 +36,24 @@ class VideoPlayerViewModel {
     private var playInfo: PlayInfo
     private let playMode: VideoPlayerMode
     private let playContextCache: PlayContextCache?
+    private let mediaWarmupManager: PlayerMediaWarmupManager?
+    private let previewMuted: Bool
     private let danmuProvider = VideoDanmuProvider(enableDanmuFilter: Settings.enableDanmuFilter,
                                                    enableDanmuRemoveDup: Settings.enableDanmuRemoveDup)
     private var videoDetail: VideoDetail?
     private var cancellable = Set<AnyCancellable>()
 
-    init(playInfo: PlayInfo, playMode: VideoPlayerMode = .regular, playContextCache: PlayContextCache? = nil) {
+    init(playInfo: PlayInfo,
+         playMode: VideoPlayerMode = .regular,
+         playContextCache: PlayContextCache? = nil,
+         mediaWarmupManager: PlayerMediaWarmupManager? = nil,
+         previewMuted: Bool = true)
+    {
         self.playInfo = playInfo
         self.playMode = playMode
         self.playContextCache = playContextCache
+        self.mediaWarmupManager = mediaWarmupManager
+        self.previewMuted = previewMuted
     }
 
     var currentPlayInfo: PlayInfo {
@@ -54,9 +63,14 @@ class VideoPlayerViewModel {
     func load() async {
         do {
             let data = try await loadVideoInfo()
+            guard !Task.isCancelled else { return }
             let plugin = await generatePlayerPlugin(data)
+            guard !Task.isCancelled else { return }
             onPluginReady.send(plugin)
+        } catch is CancellationError {
+            return
         } catch let err {
+            guard !Task.isCancelled else { return }
             onPluginReady.send(completion: .failure(err.localizedDescription))
         }
     }
@@ -84,7 +98,7 @@ class VideoPlayerViewModel {
     private func fetchVideoData() async throws -> PlayerDetailData {
         assert(playInfo.isCidVaild)
         if !playInfo.isBangumi, let playContextCache {
-            let cached = try await playContextCache.context(for: playInfo, includeDetail: playMode != .preview)
+            let cached = try await playContextCache.context(for: playInfo, mode: playContextMode)
             videoDetail = cached.detail ?? videoDetail
 
             var detail = PlayerDetailData(aid: playInfo.aid,
@@ -118,7 +132,7 @@ class VideoPlayerViewModel {
 
             if playInfo.isBangumi {
                 do {
-                    playData = try await WebRequest.requestPcgPlayUrl(aid: aid, cid: cid)
+                    playData = try await WebRequest.requestPcgPlayUrl(aid: aid, cid: cid, options: playContextMode.requestOptions)
                 } catch let err as RequestError {
                     if case let .statusFail(code, _) = err,
                        code == -404 || code == -10403,
@@ -132,7 +146,7 @@ class VideoPlayerViewModel {
 
                 clipInfos = playData.clip_info_list
             } else {
-                playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid)
+                playData = try await WebRequest.requestPlayUrl(aid: aid, cid: cid, options: playContextMode.requestOptions)
             }
 
             let info = await infoReq
@@ -185,18 +199,27 @@ class VideoPlayerViewModel {
 
     func preloadNeighborsIfNeeded() async {
         guard playMode == .feedFlow, let playContextCache, let sequenceProvider else { return }
-        let neighbors = await sequenceProvider.neighborItems(radius: 1)
-        for info in neighbors {
-            await playContextCache.preload(playInfo: info, includeDetail: false)
+        let current = await sequenceProvider.current() ?? currentPlayInfo
+        let priority = [current,
+                        await sequenceProvider.peekNext(),
+                        await sequenceProvider.peekPrevious()].compactMap { $0 }.uniqued()
+        for info in priority {
+            await playContextCache.preload(playInfo: info, mode: .regular)
         }
-        await playContextCache.trim(keeping: neighbors)
+        await playContextCache.trim(keeping: priority)
+        await mediaWarmupManager?.retain(playInfos: priority)
+        for info in priority {
+            await mediaWarmupManager?.preload(playInfo: info)
+        }
     }
 
     @MainActor private func generatePlayerPlugin(_ data: PlayerDetailData) async -> [CommonPlayerPlugin] {
-        let playplugin = BVideoPlayPlugin(detailData: data,
+        let playplugin = BVideoPlayPlugin(playInfo: playInfo,
+                                          detailData: data,
                                           reportWatchHistory: playMode != .preview,
                                           minimizeStalling: true,
-                                          isMuted: playMode == .preview)
+                                          isMuted: playMode == .preview && previewMuted,
+                                          mediaWarmupManager: playMode == .feedFlow ? mediaWarmupManager : nil)
 
         if playMode == .preview {
             return [playplugin]
@@ -277,6 +300,15 @@ class VideoPlayerViewModel {
 
         return plugins
     }
+
+    private var playContextMode: PlayContextMode {
+        switch playMode {
+        case .preview:
+            return .preview
+        case .regular, .feedFlow:
+            return .regular
+        }
+    }
 }
 
 // 港澳台解锁
@@ -297,7 +329,10 @@ extension VideoPlayerViewModel {
     private func requestAreaLimitPcgPlayUrl(epid: Int, cid: Int, areaList: [String]) async throws -> VideoPlayURLInfo? {
         for area in areaList {
             do {
-                return try await WebRequest.requestAreaLimitPcgPlayUrl(epid: epid, cid: cid, area: area)
+                return try await WebRequest.requestAreaLimitPcgPlayUrl(epid: epid,
+                                                                       cid: cid,
+                                                                       area: area,
+                                                                       options: playContextMode.requestOptions)
             } catch let err {
                 if area == areaList.last {
                     throw err

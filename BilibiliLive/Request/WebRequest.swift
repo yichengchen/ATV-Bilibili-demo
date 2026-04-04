@@ -20,6 +20,22 @@ enum ValidationError: Error {
     case argumentInvalid(message: String)
 }
 
+struct PlayURLRequestOptions: Hashable {
+    let qn: Int
+    let fnval: Int
+    let enableFourK: Bool
+    let supportMultiAudio: Bool
+
+    static let regular = PlayURLRequestOptions(qn: 127,
+                                               fnval: 976,
+                                               enableFourK: true,
+                                               supportMultiAudio: true)
+    static let featuredPreview = PlayURLRequestOptions(qn: 64,
+                                                       fnval: 16,
+                                                       enableFourK: false,
+                                                       supportMultiAudio: false)
+}
+
 enum NoCookieSession {
     static let session = Session(configuration: URLSessionConfiguration.ephemeral)
 }
@@ -461,29 +477,56 @@ extension WebRequest {
         }
     }
 
-    static func requestPlayUrl(aid: Int, cid: Int) async throws -> VideoPlayURLInfo {
-        // 始终请求最高画质 (fnval=976 支持杜比视界和8K, qn=127 请求8K)
-        // 这样可以获取所有可用的画质流，由播放器或用户选择
+    static func requestPlayUrl(aid: Int, cid: Int, options: PlayURLRequestOptions = .regular) async throws -> VideoPlayURLInfo {
         return try await request(url: EndPoint.playUrl,
-                                 parameters: ["avid": aid, "cid": cid, "qn": 127, "type": "", "fnver": 0, "fnval": 976, "otype": "json"])
+                                 parameters: ["avid": aid,
+                                              "cid": cid,
+                                              "qn": options.qn,
+                                              "type": "",
+                                              "fnver": 0,
+                                              "fnval": options.fnval,
+                                              "otype": "json"])
     }
 
-    static func requestPcgPlayUrl(aid: Int, cid: Int) async throws -> VideoPlayURLInfo {
-        // 始终请求最高画质 (fnval=976 支持杜比视界和8K, qn=127 请求8K)
-        // 这样可以获取所有可用的画质流，由播放器或用户选择
+    static func requestPcgPlayUrl(aid: Int, cid: Int, options: PlayURLRequestOptions = .regular) async throws -> VideoPlayURLInfo {
+        var parameters: [String: Any] = ["avid": aid,
+                                         "cid": cid,
+                                         "qn": options.qn,
+                                         "fnver": 0,
+                                         "fnval": options.fnval]
+        if options.supportMultiAudio {
+            parameters["support_multi_audio"] = true
+        }
+        if options.enableFourK {
+            parameters["fourk"] = 1
+        }
         return try await request(url: EndPoint.pcgPlayUrl,
-                                 parameters: ["avid": aid, "cid": cid, "qn": 127, "support_multi_audio": true, "fnver": 0, "fnval": 976, "fourk": 1],
+                                 parameters: parameters,
                                  dataObj: "result")
     }
 
-    static func requestAreaLimitPcgPlayUrl(epid: Int, cid: Int, area: String) async throws -> VideoPlayURLInfo {
+    static func requestAreaLimitPcgPlayUrl(epid: Int,
+                                           cid: Int,
+                                           area: String,
+                                           options: PlayURLRequestOptions = .regular) async throws -> VideoPlayURLInfo
+    {
         let customServer = Settings.areaLimitCustomServer
         guard !customServer.isEmpty else { throw ValidationError.argumentInvalid(message: "未设置解析服务器") }
 
         // 解析服务器必须使用ep_id参数，不能使用avid参数，解析服务器一般有缓存，area和ep_id必须保持一致，要不然会被缓存拦截
         let url = EndPoint.pcgPlayUrl.replacingOccurrences(of: "api.bilibili.com", with: customServer)
-        // 始终请求最高画质 (fnval=976 支持杜比视界和8K, qn=127 请求8K)
-        var parameters: [String: Any] = ["ep_id": epid, "cid": cid, "qn": 127, "support_multi_audio": 1, "fnver": 0, "fnval": 976, "fourk": 1, "area": area]
+        var parameters: [String: Any] = ["ep_id": epid,
+                                         "cid": cid,
+                                         "qn": options.qn,
+                                         "fnver": 0,
+                                         "fnval": options.fnval,
+                                         "area": area]
+        if options.supportMultiAudio {
+            parameters["support_multi_audio"] = 1
+        }
+        if options.enableFourK {
+            parameters["fourk"] = 1
+        }
         if let access_key = ApiRequest.getToken()?.accessToken {
             parameters["access_key"] = access_key
         }

@@ -21,44 +21,81 @@ struct PlayContextSnapshot {
     var detail: VideoDetail?
 }
 
-actor PlayContextCache {
-    private var entries = [PlayContextKey: PlayContextSnapshot]()
-    private var inFlightTasks = [PlayContextKey: Task<PlayContextSnapshot, Error>]()
+enum PlayContextMode: String, Hashable {
+    case preview
+    case regular
 
-    func preload(playInfo: PlayInfo, includeDetail: Bool = false) async {
-        _ = try? await context(for: playInfo, includeDetail: includeDetail)
+    var includeDetail: Bool {
+        switch self {
+        case .preview:
+            return false
+        case .regular:
+            return true
+        }
     }
 
-    func context(for playInfo: PlayInfo, includeDetail: Bool = false) async throws -> PlayContextSnapshot {
-        let resolvedPlayInfo = try await resolvePlayInfo(playInfo)
-        let key = resolvedPlayInfo.contextKey
+    var requestOptions: PlayURLRequestOptions {
+        switch self {
+        case .preview:
+            return .featuredPreview
+        case .regular:
+            return .regular
+        }
+    }
+}
 
-        if var cached = entries[key] {
-            if includeDetail, cached.detail == nil {
+private struct PlayContextEntryKey: Hashable {
+    let contextKey: PlayContextKey
+    let mode: PlayContextMode
+}
+
+actor PlayContextCache {
+    private let maxEntries = 12
+    private let recentEntriesToKeep = 4
+    private var entries = [PlayContextEntryKey: PlayContextSnapshot]()
+    private var inFlightTasks = [PlayContextEntryKey: Task<PlayContextSnapshot, Error>]()
+    private var accessOrder = [PlayContextEntryKey]()
+
+    func preload(playInfo: PlayInfo, mode: PlayContextMode) async {
+        _ = try? await context(for: playInfo, mode: mode)
+    }
+
+    func context(for playInfo: PlayInfo, mode: PlayContextMode) async throws -> PlayContextSnapshot {
+        let resolvedPlayInfo = try await resolvePlayInfo(playInfo)
+        let entryKey = PlayContextEntryKey(contextKey: resolvedPlayInfo.contextKey, mode: mode)
+
+        if var cached = entries[entryKey] {
+            touch(entryKey)
+            if mode.includeDetail, cached.detail == nil {
                 cached.detail = try? await WebRequest.requestDetailVideo(aid: resolvedPlayInfo.aid)
-                entries[key] = cached
+                entries[entryKey] = cached
             }
             return cached
         }
 
-        if let task = inFlightTasks[key] {
+        if let task = inFlightTasks[entryKey] {
             var snapshot = try await task.value
-            if includeDetail, snapshot.detail == nil {
+            touch(entryKey)
+            if mode.includeDetail, snapshot.detail == nil {
                 snapshot.detail = try? await WebRequest.requestDetailVideo(aid: resolvedPlayInfo.aid)
-                entries[key] = snapshot
+                entries[entryKey] = snapshot
             }
             return snapshot
         }
 
         let task = Task<PlayContextSnapshot, Error> {
             async let playerInfoReq = try? WebRequest.requestPlayerInfo(aid: resolvedPlayInfo.aid, cid: resolvedPlayInfo.cid ?? 0)
-            async let detailReq = includeDetail ? (try? WebRequest.requestDetailVideo(aid: resolvedPlayInfo.aid)) : nil
+            async let detailReq = mode.includeDetail ? (try? WebRequest.requestDetailVideo(aid: resolvedPlayInfo.aid)) : nil
 
             let playURLInfo: VideoPlayURLInfo
             if resolvedPlayInfo.isBangumi {
-                playURLInfo = try await WebRequest.requestPcgPlayUrl(aid: resolvedPlayInfo.aid, cid: resolvedPlayInfo.cid ?? 0)
+                playURLInfo = try await WebRequest.requestPcgPlayUrl(aid: resolvedPlayInfo.aid,
+                                                                     cid: resolvedPlayInfo.cid ?? 0,
+                                                                     options: mode.requestOptions)
             } else {
-                playURLInfo = try await WebRequest.requestPlayUrl(aid: resolvedPlayInfo.aid, cid: resolvedPlayInfo.cid ?? 0)
+                playURLInfo = try await WebRequest.requestPlayUrl(aid: resolvedPlayInfo.aid,
+                                                                  cid: resolvedPlayInfo.cid ?? 0,
+                                                                  options: mode.requestOptions)
             }
 
             return PlayContextSnapshot(cid: resolvedPlayInfo.cid ?? 0,
@@ -67,25 +104,45 @@ actor PlayContextCache {
                                        detail: await detailReq)
         }
 
-        inFlightTasks[key] = task
+        inFlightTasks[entryKey] = task
         defer {
-            inFlightTasks[key] = nil
+            inFlightTasks[entryKey] = nil
         }
 
         let snapshot = try await task.value
-        entries[key] = snapshot
+        entries[entryKey] = snapshot
+        touch(entryKey)
+        trimToMaxEntryCount()
         return snapshot
     }
 
     func trim(keeping playInfos: [PlayInfo]) {
-        let keysToKeep = Set(playInfos.compactMap { info -> PlayContextKey? in
+        let baseKeysToKeep = Set(playInfos.compactMap { info -> PlayContextKey? in
             guard let cid = info.cid, cid > 0 else { return nil }
             return PlayContextKey(aid: info.aid,
                                   cid: cid,
                                   epid: info.epid ?? 0,
                                   seasonId: info.seasonId ?? 0)
         })
-        entries = entries.filter { keysToKeep.contains($0.key) }
+        let recentKeys = Array(accessOrder.reversed().prefix(recentEntriesToKeep))
+        let entryKeysToKeep = Set(entries.keys.filter { baseKeysToKeep.contains($0.contextKey) } + recentKeys)
+        entries = entries.filter { entryKeysToKeep.contains($0.key) }
+        accessOrder.removeAll { !entryKeysToKeep.contains($0) }
+    }
+
+    private func touch(_ key: PlayContextEntryKey) {
+        accessOrder.removeAll { $0 == key }
+        accessOrder.append(key)
+    }
+
+    private func trimToMaxEntryCount() {
+        guard entries.count > maxEntries else { return }
+        var removableKeys = accessOrder
+        while entries.count > maxEntries, let key = removableKeys.first {
+            removableKeys.removeFirst()
+            accessOrder.removeAll { $0 == key }
+            entries[key] = nil
+        }
     }
 
     private func resolvePlayInfo(_ playInfo: PlayInfo) async throws -> PlayInfo {

@@ -33,6 +33,10 @@ struct RecommendedVideoItem: Hashable {
     var metaText: String {
         [ownerName, durationText].filter { !$0.isEmpty }.joined(separator: " · ")
     }
+
+    var listMetaText: String {
+        ownerName.isEmpty ? durationText : ownerName
+    }
 }
 
 extension ApiRequest.FeedResp.Items {
@@ -59,7 +63,7 @@ extension ApiRequest.FeedResp.Items {
 }
 
 class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol {
-    private let preloadDelayNs: UInt64 = 400_000_000
+    private let preloadDelayNs: UInt64 = 1_000_000_000
     private let initialFilteredTargetCount = 12
     private let initialMaxSourcePages = 5
     private let trailingPrefetchTargetCount = 8
@@ -71,8 +75,14 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
     private var isLoading = false
     private var activeDurationLimit = Settings.featuredDurationLimit
     private var previewTask: Task<Void, Never>?
+    private var dataLoadTask: Task<Void, Never>?
     private let playContextCache = PlayContextCache()
+    private let featuredFeedCache = FeaturedFeedCache.shared
+    private lazy var mediaWarmupManager = PlayerMediaWarmupManager(playContextCache: playContextCache)
     private lazy var sequenceProvider = VideoSequenceProvider(seq: [])
+    private var lastPlayedSequenceKey: String?
+    private var hasUserInteractedSinceReload = false
+    private var isPresentingFeedFlow = false
 
     private var previewController: VideoPlayerViewController?
 
@@ -106,18 +116,42 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         return label
     }()
 
-    private let previewCardView: UIView = {
+    private let previewHostView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor(white: 0.08, alpha: 1)
-        view.layer.cornerRadius = 28
-        view.layer.cornerCurve = .continuous
+        view.backgroundColor = .black
         view.clipsToBounds = true
         return view
     }()
 
-    private let previewHostView = UIView()
-    private let previewPlaceholderView = UIImageView()
+    private let previewPlaceholderView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        return iv
+    }()
+
     private let previewLoadingView = UIActivityIndicatorView(style: .large)
+
+    /// 左侧从左到右的渐变 scrim，保证列表在动态视频背景上的可读性
+    private let leftGradientScrimView: UIView = {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }()
+
+    /// 底部从下到上的渐变 scrim，保证右下信息浮层的可读性
+    private let bottomGradientScrimView: UIView = {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }()
+
+    /// 右下角信息浮层容器
+    private let infoOverlayView: UIView = {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }()
 
     private let previewTitleLabel: UILabel = {
         let label = UILabel()
@@ -140,7 +174,7 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         label.font = .systemFont(ofSize: 24, weight: .medium)
         label.textColor = UIColor.white.withAlphaComponent(0.72)
         label.numberOfLines = 2
-        label.text = "左侧停留后静音预览，按确认键进入短视频流"
+        label.text = "停留后自动预览，按确认键进入短视频流"
         return label
     }()
 
@@ -160,6 +194,7 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        restoresFocusAfterTransition = false
         view.backgroundColor = UIColor.black
         setupUI()
         sequenceProvider.onNeedMore = { [weak self] in
@@ -178,49 +213,45 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        suspendPreview()
+        suspendPreview(cancelWarmups: !isPresentingFeedFlow)
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        isPresentingFeedFlow = false
         syncSelectionFromSequenceProvider()
         resumePreviewIfNeeded()
     }
 
     func reloadData() {
+        dataLoadTask?.cancel()
         activeDurationLimit = Settings.featuredDurationLimit
-        suspendPreview()
+        suspendPreview(cancelWarmups: true)
         items = []
         focusedIndex = 0
         lastSourceIdx = nil
-        sequenceProvider = VideoSequenceProvider(seq: [])
-        sequenceProvider.onNeedMore = { [weak self] in
-            await self?.loadMoreShortVideosIfNeeded(targetCount: self?.trailingPrefetchTargetCount ?? 8,
-                                                    maxSourcePages: self?.trailingMaxSourcePages ?? 3)
-        }
+        lastPlayedSequenceKey = nil
+        hasUserInteractedSinceReload = false
+        configureSequenceProvider(with: [])
         listCollectionView.reloadData()
         emptyStateLabel.isHidden = true
+        if let cachedSnapshot = featuredFeedCache.load(durationLimit: activeDurationLimit),
+           !cachedSnapshot.items.isEmpty
+        {
+            applyCachedSnapshot(cachedSnapshot)
+            dataLoadTask = Task { [weak self] in
+                await self?.refreshFeaturedFeedFromStart(replaceVisibleContentIfIdle: true, showLoading: false)
+            }
+            return
+        }
         previewHintLabel.text = "正在加载精选短视频..."
         previewLoadingView.startAnimating()
-        Task {
-            await loadMoreShortVideosIfNeeded(targetCount: initialFilteredTargetCount, maxSourcePages: initialMaxSourcePages)
-            await MainActor.run {
-                if self.items.isEmpty {
-                    self.previewLoadingView.stopAnimating()
-                    self.emptyStateLabel.text = "当前精选短视频较少，请稍后重试"
-                    self.emptyStateLabel.isHidden = false
-                    self.previewHintLabel.text = "可以在设置里调整精选视频时长上限"
-                    return
-                }
-                self.listCollectionView.reloadData()
-                self.listCollectionView.selectItem(at: IndexPath(item: self.focusedIndex, section: 0), animated: false, scrollPosition: .centeredVertically)
-                self.schedulePreview(for: self.items[self.focusedIndex])
-                self.setNeedsFocusUpdate()
-                self.updateFocusIfNeeded()
-            }
+        dataLoadTask = Task { [weak self] in
+            await self?.refreshFeaturedFeedFromStart(replaceVisibleContentIfIdle: true, showLoading: true)
         }
     }
 
+    @MainActor
     private func loadMoreShortVideosIfNeeded(targetCount: Int, maxSourcePages: Int) async {
         guard !isLoading else { return }
         let activeIndex = max(focusedIndex, sequenceProvider.currentIndex)
@@ -248,8 +279,7 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
                 let existing = Set(items.map { "\($0.aid)-\($0.cid)" })
                 let appended = newItems.filter { !existing.contains("\($0.aid)-\($0.cid)") }
                 guard !appended.isEmpty else { continue }
-                items.append(contentsOf: appended)
-                sequenceProvider.append(appended.map(\.playInfo))
+                appendLoadedItems(appended)
                 acceptedCount += appended.count
                 await playContextCache.trim(keeping: sequenceProvider.neighborItems(radius: 2))
             } catch {
@@ -264,10 +294,155 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         }
     }
 
+    private func configureSequenceProvider(with items: [RecommendedVideoItem]) {
+        sequenceProvider = VideoSequenceProvider(seq: items.map(\.playInfo))
+        sequenceProvider.onNeedMore = { [weak self] in
+            await self?.loadMoreShortVideosIfNeeded(targetCount: self?.trailingPrefetchTargetCount ?? 8,
+                                                    maxSourcePages: self?.trailingMaxSourcePages ?? 3)
+        }
+    }
+
+    @MainActor
+    private func refreshFeaturedFeedFromStart(replaceVisibleContentIfIdle: Bool, showLoading: Bool) async {
+        do {
+            let snapshot = try await buildFreshSnapshot(targetCount: initialFilteredTargetCount, maxSourcePages: initialMaxSourcePages)
+            guard !Task.isCancelled else { return }
+            featuredFeedCache.save(items: snapshot.items.map(RecommendedVideoItem.init(cached:)),
+                                   lastSourceIdx: snapshot.lastSourceIdx,
+                                   durationLimit: snapshot.durationLimit)
+            if snapshot.items.isEmpty {
+                guard items.isEmpty else { return }
+                restoreEmptyState()
+                return
+            }
+            if items.isEmpty || replaceVisibleContentIfIdle && !hasUserInteractedSinceReload {
+                applyFreshSnapshot(snapshot)
+            } else {
+                previewLoadingView.stopAnimating()
+            }
+        } catch {
+            guard !Task.isCancelled else { return }
+            if items.isEmpty {
+                previewLoadingView.stopAnimating()
+                emptyStateLabel.text = "精选加载失败，请稍后重试"
+                emptyStateLabel.isHidden = false
+                previewHintLabel.text = "\(error)"
+            } else if showLoading == false {
+                previewHintLabel.text = "已展示缓存内容，后台刷新失败"
+            }
+        }
+    }
+
+    private func buildFreshSnapshot(targetCount: Int, maxSourcePages: Int) async throws -> FeaturedFeedCacheSnapshot {
+        var loadedItems = [RecommendedVideoItem]()
+        var nextSourceIdx: Int?
+        var pagesScanned = 0
+        while loadedItems.count < targetCount && pagesScanned < maxSourcePages {
+            let sourceItems: [ApiRequest.FeedResp.Items]
+            if let nextSourceIdx {
+                sourceItems = try await ApiRequest.getFeeds(lastIdx: nextSourceIdx)
+            } else {
+                sourceItems = try await ApiRequest.getFeeds()
+            }
+            pagesScanned += 1
+            nextSourceIdx = sourceItems.last?.idx
+            let filtered = sourceItems.compactMap { $0.toRecommendedVideoItem(durationLimit: activeDurationLimit) }
+            guard !filtered.isEmpty else { continue }
+            let existing = Set(loadedItems.map { "\($0.aid)-\($0.cid)" })
+            loadedItems.append(contentsOf: filtered.filter { !existing.contains("\($0.aid)-\($0.cid)") })
+        }
+        return FeaturedFeedCacheSnapshot(savedAt: Date(),
+                                         durationLimit: activeDurationLimit,
+                                         lastSourceIdx: nextSourceIdx,
+                                         items: loadedItems.map(\.cachedValue))
+    }
+
+    @MainActor
+    private func applyCachedSnapshot(_ snapshot: FeaturedFeedCacheSnapshot) {
+        items = snapshot.items.map(RecommendedVideoItem.init(cached:))
+        lastSourceIdx = snapshot.lastSourceIdx
+        configureSequenceProvider(with: items)
+        previewLoadingView.stopAnimating()
+        guard !items.isEmpty else {
+            restoreEmptyState()
+            return
+        }
+        listCollectionView.reloadData()
+        syncSelectionFromSequenceProvider()
+    }
+
+    @MainActor
+    private func applyFreshSnapshot(_ snapshot: FeaturedFeedCacheSnapshot) {
+        items = snapshot.items.map(RecommendedVideoItem.init(cached:))
+        lastSourceIdx = snapshot.lastSourceIdx
+        configureSequenceProvider(with: items)
+        previewLoadingView.stopAnimating()
+        emptyStateLabel.isHidden = true
+        listCollectionView.reloadData()
+        syncSelectionFromSequenceProvider()
+    }
+
+    @MainActor
+    private func restoreEmptyState() {
+        previewLoadingView.stopAnimating()
+        emptyStateLabel.text = "当前精选短视频较少，请稍后重试"
+        emptyStateLabel.isHidden = false
+        previewHintLabel.text = "可以在设置里调整精选视频时长上限"
+    }
+
+    @MainActor
+    private func appendLoadedItems(_ appended: [RecommendedVideoItem]) {
+        guard !appended.isEmpty else { return }
+        let start = items.count
+        items.append(contentsOf: appended)
+        sequenceProvider.append(appended.map(\.playInfo))
+        featuredFeedCache.save(items: items, lastSourceIdx: lastSourceIdx, durationLimit: activeDurationLimit)
+        let indexPaths = (start..<(start + appended.count)).map { IndexPath(item: $0, section: 0) }
+        guard listCollectionView.numberOfItems(inSection: 0) == start else {
+            listCollectionView.reloadData()
+            return
+        }
+        listCollectionView.performBatchUpdates {
+            listCollectionView.insertItems(at: indexPaths)
+        }
+    }
+
     private func setupUI() {
+        // 1. 全屏背景层（最底层）
+        view.addSubview(previewHostView)
+        previewHostView.addSubview(previewPlaceholderView)
+        view.addSubview(previewLoadingView)
+
+        previewHostView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        previewPlaceholderView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        previewLoadingView.hidesWhenStopped = true
+        previewLoadingView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+
+        // 2. 渐变 scrim 层
+        view.addSubview(leftGradientScrimView)
+        view.addSubview(bottomGradientScrimView)
+
+        leftGradientScrimView.snp.makeConstraints { make in
+            make.top.leading.bottom.equalToSuperview()
+            make.width.equalToSuperview().multipliedBy(0.5)
+        }
+
+        bottomGradientScrimView.snp.makeConstraints { make in
+            make.leading.trailing.bottom.equalToSuperview()
+            make.height.equalToSuperview().multipliedBy(0.35)
+        }
+
+        // 3. 左侧列表层（在 scrim 之上）
         view.addSubview(listTitleLabel)
         view.addSubview(listCollectionView)
-        view.addSubview(previewCardView)
 
         listTitleLabel.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
@@ -281,59 +456,100 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
             make.width.equalTo(470)
         }
 
-        previewCardView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(28)
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-28)
-            make.leading.equalTo(listCollectionView.snp.trailing).offset(24)
-            make.trailing.equalToSuperview().offset(-36)
-        }
+        // 4. 右下角信息浮层
+        view.addSubview(infoOverlayView)
+        infoOverlayView.addSubview(previewTitleLabel)
+        infoOverlayView.addSubview(previewMetaLabel)
+        infoOverlayView.addSubview(previewHintLabel)
 
-        previewCardView.addSubview(previewHostView)
-        previewCardView.addSubview(previewPlaceholderView)
-        previewCardView.addSubview(previewLoadingView)
-        previewCardView.addSubview(previewTitleLabel)
-        previewCardView.addSubview(previewMetaLabel)
-        previewCardView.addSubview(previewHintLabel)
-        previewCardView.addSubview(emptyStateLabel)
-
-        previewHostView.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(previewHostView.snp.width).multipliedBy(9.0 / 16.0)
-        }
-
-        previewPlaceholderView.snp.makeConstraints { make in
-            make.edges.equalTo(previewHostView)
-        }
-        previewPlaceholderView.contentMode = .scaleAspectFill
-        previewPlaceholderView.clipsToBounds = true
-
-        previewLoadingView.snp.makeConstraints { make in
-            make.center.equalTo(previewHostView)
+        infoOverlayView.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-60)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-40)
+            make.width.equalTo(500)
         }
 
         previewTitleLabel.snp.makeConstraints { make in
-            make.top.equalTo(previewHostView.snp.bottom).offset(28)
-            make.leading.trailing.equalToSuperview().inset(28)
+            make.top.leading.trailing.equalToSuperview()
         }
 
         previewMetaLabel.snp.makeConstraints { make in
-            make.top.equalTo(previewTitleLabel.snp.bottom).offset(14)
-            make.leading.trailing.equalToSuperview().inset(28)
+            make.top.equalTo(previewTitleLabel.snp.bottom).offset(10)
+            make.leading.trailing.equalToSuperview()
         }
 
         previewHintLabel.snp.makeConstraints { make in
-            make.top.equalTo(previewMetaLabel.snp.bottom).offset(16)
-            make.leading.trailing.equalToSuperview().inset(28)
+            make.top.equalTo(previewMetaLabel.snp.bottom).offset(8)
+            make.leading.trailing.bottom.equalToSuperview()
         }
 
+        // 5. Empty state（居中在全屏上）
+        view.addSubview(emptyStateLabel)
         emptyStateLabel.snp.makeConstraints { make in
-            make.center.equalTo(previewHostView)
-            make.leading.trailing.equalToSuperview().inset(36)
+            make.center.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(60)
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        installGradientLayers()
+    }
+
+    private func installGradientLayers() {
+        // 左侧渐变 scrim
+        if leftGradientScrimView.layer.sublayers?.first(where: { $0 is CAGradientLayer }) == nil {
+            let leftGradient = CAGradientLayer()
+            leftGradient.colors = [UIColor.black.withAlphaComponent(0.35).cgColor,
+                                   UIColor.black.withAlphaComponent(0.0).cgColor]
+            leftGradient.startPoint = CGPoint(x: 0, y: 0.5)
+            leftGradient.endPoint = CGPoint(x: 1, y: 0.5)
+            leftGradientScrimView.layer.insertSublayer(leftGradient, at: 0)
+        }
+        if let leftGradient = leftGradientScrimView.layer.sublayers?.first as? CAGradientLayer {
+            leftGradient.frame = leftGradientScrimView.bounds
+        }
+
+        // 底部渐变 scrim
+        if bottomGradientScrimView.layer.sublayers?.first(where: { $0 is CAGradientLayer }) == nil {
+            let bottomGradient = CAGradientLayer()
+            bottomGradient.colors = [UIColor.black.withAlphaComponent(0.0).cgColor,
+                                     UIColor.black.withAlphaComponent(0.55).cgColor]
+            bottomGradient.startPoint = CGPoint(x: 0.5, y: 0)
+            bottomGradient.endPoint = CGPoint(x: 0.5, y: 1)
+            bottomGradientScrimView.layer.insertSublayer(bottomGradient, at: 0)
+        }
+        if let bottomGradient = bottomGradientScrimView.layer.sublayers?.first as? CAGradientLayer {
+            bottomGradient.frame = bottomGradientScrimView.bounds
+        }
+    }
+
+    private func restorePreviewPlaceholder(animated: Bool) {
+        let animations = {
+            self.previewPlaceholderView.alpha = 1
+            self.previewController?.view.alpha = 0
+        }
+        if animated {
+            UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut, animations: animations)
+        } else {
+            animations()
+        }
+    }
+
+    private func revealPreviewPlaybackStarted(controller: VideoPlayerViewController) {
+        previewLoadingView.stopAnimating()
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+            controller.view.alpha = 1
+            self.previewPlaceholderView.alpha = 0
         }
     }
 
     private func schedulePreview(for item: RecommendedVideoItem) {
         previewTask?.cancel()
+        Task { [mediaWarmupManager] in
+            await mediaWarmupManager.cancelAll()
+        }
+        removePreviewController() // 立即销毁旧预览，杜绝串音
+        restorePreviewPlaceholder(animated: false)
         updatePreviewTexts(with: item)
         previewLoadingView.startAnimating()
         emptyStateLabel.isHidden = true
@@ -341,10 +557,10 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
             guard let self else { return }
             try? await Task.sleep(nanoseconds: preloadDelayNs)
             guard !Task.isCancelled else { return }
-            await playContextCache.preload(playInfo: item.playInfo, includeDetail: false)
+            await playContextCache.preload(playInfo: item.playInfo, mode: .preview)
             let neighboringItems = self.neighborPlayInfos(around: self.focusedIndex)
             for neighbor in neighboringItems {
-                await playContextCache.preload(playInfo: neighbor, includeDetail: false)
+                await playContextCache.preload(playInfo: neighbor, mode: .preview)
             }
             await playContextCache.trim(keeping: neighboringItems)
             guard !Task.isCancelled else { return }
@@ -366,12 +582,23 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         removePreviewController()
         let controller = VideoPlayerViewController(playInfo: item.playInfo,
                                                    playMode: .preview,
-                                                   playContextCache: playContextCache)
-        controller.onLoadFailure = { [weak self] _ in
-            self?.previewLoadingView.stopAnimating()
-            self?.previewHintLabel.text = "预览加载失败，按确认键可直接进入播放"
+                                                   playContextCache: playContextCache,
+                                                   previewMuted: false)
+        controller.onLoadFailure = { [weak self, weak controller] _ in
+            guard let self, let controller, self.previewController === controller else { return }
+            self.previewLoadingView.stopAnimating()
+            self.previewHintLabel.text = "预览加载失败，按确认键可直接进入播放"
+            self.restorePreviewPlaceholder(animated: false)
+        }
+        controller.onPlaybackStarted = { [weak self, weak controller] in
+            guard let self, let controller, self.previewController === controller else { return }
+            self.revealPreviewPlaybackStarted(controller: controller)
+            Task { [weak self] in
+                await self?.warmupPlaybackMedia(for: item)
+            }
         }
         addChild(controller)
+        controller.view.alpha = 0
         previewHostView.addSubview(controller.view)
         controller.view.snp.makeConstraints { make in
             make.edges.equalToSuperview()
@@ -379,10 +606,11 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         controller.didMove(toParent: self)
         controller.view.isUserInteractionEnabled = false
         previewController = controller
-        previewLoadingView.stopAnimating()
     }
 
     private func removePreviewController() {
+        previewController?.onPlaybackStarted = nil
+        previewController?.onLoadFailure = nil
         previewController?.stopPlayback()
         previewController?.willMove(toParent: nil)
         previewController?.view.removeFromSuperview()
@@ -390,10 +618,17 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         previewController = nil
     }
 
-    private func suspendPreview() {
+    private func suspendPreview(cancelWarmups: Bool = true) {
         previewTask?.cancel()
         previewTask = nil
+        previewLoadingView.stopAnimating()
         removePreviewController()
+        restorePreviewPlaceholder(animated: false)
+        if cancelWarmups {
+            Task { [mediaWarmupManager] in
+                await mediaWarmupManager.cancelAll()
+            }
+        }
     }
 
     private func updatePreviewTexts(with item: RecommendedVideoItem) {
@@ -401,11 +636,16 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         previewMetaLabel.text = item.metaText
         previewHintLabel.text = item.reasonText?.isEmpty == false
             ? "\(item.reasonText ?? "") · 按确认键进入短视频流"
-            : "左侧停留后静音预览，按确认键进入短视频流"
+            : "停留后自动预览，按确认键进入短视频流"
+        // 封面切换 crossfade
         if let coverURL = item.coverURL {
-            previewPlaceholderView.kf.setImage(with: coverURL)
+            UIView.transition(with: previewPlaceholderView, duration: 0.25, options: .transitionCrossDissolve) {
+                self.previewPlaceholderView.kf.setImage(with: coverURL)
+            }
         } else {
-            previewPlaceholderView.image = nil
+            UIView.transition(with: previewPlaceholderView, duration: 0.25, options: .transitionCrossDissolve) {
+                self.previewPlaceholderView.image = nil
+            }
         }
     }
 
@@ -416,13 +656,77 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         return Array(items[lower...upper]).map(\.playInfo)
     }
 
+    private func prioritizedPlaybackWarmupInfos(for item: RecommendedVideoItem) -> [PlayInfo] {
+        guard let index = items.firstIndex(of: item) else { return [item.playInfo] }
+        var warmupInfos = [PlayInfo]()
+        warmupInfos.append(items[index].playInfo)
+        if items.indices.contains(index + 1) {
+            warmupInfos.append(items[index + 1].playInfo)
+        }
+        if items.indices.contains(index - 1) {
+            warmupInfos.append(items[index - 1].playInfo)
+        }
+        return warmupInfos.uniqued()
+    }
+
+    private func warmupPlaybackMedia(for item: RecommendedVideoItem) async {
+        let warmupInfos = prioritizedPlaybackWarmupInfos(for: item)
+        await playContextCache.trim(keeping: warmupInfos)
+        await mediaWarmupManager.retain(playInfos: warmupInfos)
+        for info in warmupInfos {
+            await playContextCache.preload(playInfo: info, mode: .regular)
+            await mediaWarmupManager.preload(playInfo: info)
+        }
+    }
+
+    private func resolvedSelectionIndex() -> Int? {
+        guard !items.isEmpty else { return nil }
+        if let lastPlayedSequenceKey,
+           let matchedIndex = items.firstIndex(where: { $0.playInfo.sequenceKey == lastPlayedSequenceKey })
+        {
+            return matchedIndex
+        }
+        return min(sequenceProvider.currentIndex, items.count - 1)
+    }
+
+    private func ensureListCollectionViewIsSynced() {
+        guard listCollectionView.numberOfItems(inSection: 0) != items.count else { return }
+        listCollectionView.reloadData()
+        listCollectionView.layoutIfNeeded()
+    }
+
+    private func refreshVisibleListCells() {
+        listCollectionView.visibleCells.compactMap { $0 as? FeaturedVideoListCell }.forEach { cell in
+            guard let indexPath = listCollectionView.indexPath(for: cell),
+                  items.indices.contains(indexPath.item)
+            else { return }
+            cell.configure(with: items[indexPath.item], isCurrent: indexPath.item == focusedIndex)
+        }
+    }
+
+    private func updateSelectionFromPlayInfo(_ playInfo: PlayInfo) {
+        lastPlayedSequenceKey = playInfo.sequenceKey
+        guard let matchedIndex = items.firstIndex(where: { $0.playInfo.sequenceKey == playInfo.sequenceKey }) else { return }
+        focusedIndex = matchedIndex
+        sequenceProvider.setCurrentIndex(matchedIndex)
+    }
+
+    private func applyReturnedPlaybackSelection(_ playInfo: PlayInfo) {
+        updateSelectionFromPlayInfo(playInfo)
+        guard isViewLoaded, view.window != nil, presentedViewController == nil else { return }
+        syncSelectionFromSequenceProvider()
+    }
+
     private func syncSelectionFromSequenceProvider() {
-        guard !items.isEmpty else { return }
-        let targetIndex = min(sequenceProvider.currentIndex, items.count - 1)
-        guard targetIndex != focusedIndex else { return }
+        guard let targetIndex = resolvedSelectionIndex() else { return }
+        ensureListCollectionViewIsSynced()
+        guard listCollectionView.numberOfItems(inSection: 0) > targetIndex else { return }
         focusedIndex = targetIndex
-        listCollectionView.selectItem(at: IndexPath(item: targetIndex, section: 0), animated: false, scrollPosition: .centeredVertically)
-        listCollectionView.scrollToItem(at: IndexPath(item: targetIndex, section: 0), at: .centeredVertically, animated: false)
+        sequenceProvider.setCurrentIndex(targetIndex)
+        let targetIndexPath = IndexPath(item: targetIndex, section: 0)
+        listCollectionView.selectItem(at: targetIndexPath, animated: false, scrollPosition: .centeredVertically)
+        listCollectionView.scrollToItem(at: targetIndexPath, at: .centeredVertically, animated: false)
+        refreshVisibleListCells()
         schedulePreview(for: items[targetIndex])
         setNeedsFocusUpdate()
         updateFocusIfNeeded()
@@ -442,13 +746,27 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
 
     private func enterFlow(at index: Int) {
         guard items.indices.contains(index) else { return }
+        hasUserInteractedSinceReload = true
+        isPresentingFeedFlow = true
         focusedIndex = index
         sequenceProvider.setCurrentIndex(index)
-        suspendPreview()
+        lastPlayedSequenceKey = items[index].playInfo.sequenceKey
+        suspendPreview(cancelWarmups: false)
         let player = VideoPlayerViewController(playInfo: items[index].playInfo,
                                                playMode: .feedFlow,
-                                               playContextCache: playContextCache)
+                                               playContextCache: playContextCache,
+                                               mediaWarmupManager: mediaWarmupManager)
         player.sequenceProvider = sequenceProvider
+        player.onPlayInfoChanged = { [weak self] info in
+            MainActor.callSafely {
+                self?.updateSelectionFromPlayInfo(info)
+            }
+        }
+        player.onDismissWithPlayInfo = { [weak self] info in
+            MainActor.callSafely {
+                self?.applyReturnedPlaybackSelection(info)
+            }
+        }
         present(player, animated: true)
     }
 }
@@ -465,13 +783,14 @@ extension FeaturedBrowserViewController: UICollectionViewDataSource {
     }
 
     func indexPathForPreferredFocusedView(in collectionView: UICollectionView) -> IndexPath? {
-        guard !items.isEmpty else { return nil }
-        return IndexPath(item: min(focusedIndex, items.count - 1), section: 0)
+        guard let targetIndex = resolvedSelectionIndex() else { return nil }
+        return IndexPath(item: targetIndex, section: 0)
     }
 }
 
 extension FeaturedBrowserViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        hasUserInteractedSinceReload = true
         enterFlow(at: indexPath.item)
     }
 
@@ -482,21 +801,15 @@ extension FeaturedBrowserViewController: UICollectionViewDelegate {
         guard let nextIndexPath = context.nextFocusedIndexPath,
               items.indices.contains(nextIndexPath.item)
         else { return }
+        hasUserInteractedSinceReload = true
         focusedIndex = nextIndexPath.item
         collectionView.selectItem(at: nextIndexPath, animated: true, scrollPosition: .centeredVertically)
         sequenceProvider.setCurrentIndex(focusedIndex)
         schedulePreview(for: items[focusedIndex])
-        collectionView.visibleCells.compactMap { $0 as? FeaturedVideoListCell }.forEach { cell in
-            if let indexPath = collectionView.indexPath(for: cell), items.indices.contains(indexPath.item) {
-                cell.configure(with: items[indexPath.item], isCurrent: indexPath.item == focusedIndex)
-            }
-        }
+        refreshVisibleListCells()
         if items.count - focusedIndex - 1 < trailingPrefetchTargetCount {
             Task {
                 await loadMoreShortVideosIfNeeded(targetCount: trailingPrefetchTargetCount, maxSourcePages: trailingMaxSourcePages)
-                await MainActor.run {
-                    collectionView.reloadData()
-                }
             }
         }
     }
@@ -505,9 +818,6 @@ extension FeaturedBrowserViewController: UICollectionViewDelegate {
         guard indexPath.item >= items.count - 4 else { return }
         Task {
             await loadMoreShortVideosIfNeeded(targetCount: trailingPrefetchTargetCount, maxSourcePages: trailingMaxSourcePages)
-            await MainActor.run {
-                collectionView.reloadData()
-            }
         }
     }
 }
@@ -519,7 +829,8 @@ final class FeaturedVideoListCell: BLMotionCollectionViewCell {
     private let imageView = UIImageView()
     private let titleLabel = UILabel()
     private let metaLabel = UILabel()
-    private let currentBadgeLabel = UILabel()
+    private let durationBadgeView = UIView()
+    private let durationLabel = UILabel()
     private var isCurrent = false
 
     override func setup() {
@@ -544,9 +855,25 @@ final class FeaturedVideoListCell: BLMotionCollectionViewCell {
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
 
+        imageView.addSubview(durationBadgeView)
+        durationBadgeView.snp.makeConstraints { make in
+            make.leading.bottom.equalToSuperview().inset(10)
+        }
+        durationBadgeView.backgroundColor = UIColor.black.withAlphaComponent(0.74)
+        durationBadgeView.layer.cornerRadius = 8
+        durationBadgeView.layer.cornerCurve = .continuous
+        durationBadgeView.clipsToBounds = true
+
+        durationBadgeView.addSubview(durationLabel)
+        durationLabel.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8))
+        }
+        durationLabel.font = .systemFont(ofSize: 18, weight: .semibold)
+        durationLabel.textColor = .white
+        durationLabel.textAlignment = .center
+
         blurBackgroundView.contentView.addSubview(titleLabel)
         blurBackgroundView.contentView.addSubview(metaLabel)
-        blurBackgroundView.contentView.addSubview(currentBadgeLabel)
 
         titleLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(18)
@@ -565,25 +892,13 @@ final class FeaturedVideoListCell: BLMotionCollectionViewCell {
         metaLabel.font = .systemFont(ofSize: 22, weight: .medium)
         metaLabel.textColor = UIColor.white.withAlphaComponent(0.78)
         metaLabel.numberOfLines = 1
-
-        currentBadgeLabel.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().offset(-18)
-            make.bottom.equalToSuperview().offset(-18)
-        }
-        currentBadgeLabel.font = .systemFont(ofSize: 20, weight: .bold)
-        currentBadgeLabel.textColor = .black
-        currentBadgeLabel.backgroundColor = UIColor.white
-        currentBadgeLabel.layer.cornerRadius = 10
-        currentBadgeLabel.layer.cornerCurve = .continuous
-        currentBadgeLabel.clipsToBounds = true
-        currentBadgeLabel.textAlignment = .center
-        currentBadgeLabel.text = "当前"
     }
 
     func configure(with item: RecommendedVideoItem, isCurrent: Bool) {
         titleLabel.text = item.title
-        metaLabel.text = item.metaText
-        currentBadgeLabel.isHidden = !isCurrent
+        metaLabel.text = item.listMetaText
+        durationLabel.text = item.durationText
+        durationBadgeView.isHidden = item.durationText.isEmpty
         self.isCurrent = isCurrent
         if let coverURL = item.coverURL {
             imageView.kf.setImage(with: coverURL)
