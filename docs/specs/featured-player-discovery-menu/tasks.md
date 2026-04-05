@@ -48,3 +48,12 @@
 - Risks or dependencies: The fix must preserve existing `精选` main-screen up/down switching while removing the input bleed inside `播放速度` and custom discovery lists.
 - Definition of done: Pressing `上 / 下` inside `播放速度` or `博主 / 推荐` items only moves menu focus; pressing `上 / 下` on the main player surface still switches featured videos.
 - Validation: `fastlane build_simulator` passed on 2026-04-05; manual tvOS menu-navigation verification still pending.
+
+## Task 5: Remove direct player up/down switching and auto-trigger info actions
+
+- Status: Done
+- Goal: Delete the old player-surface `上 / 下` switching path and make `简介` panel `上一条 / 下一条` actions switch immediately when focused.
+- Files likely to change: `BilibiliLive/Component/Video/VideoPlayerViewController.swift`, `BilibiliLive/Component/Player/CommonPlayerViewController.swift`, `BilibiliLive/Extensions/AVInfoPanelCollectionViewThumbnailCell+Hook.swift`
+- Risks or dependencies: Must only auto-trigger `上一条 / 下一条`, avoid duplicate firing during focus reload, and keep `从头开始` as an explicit manual action.
+- Definition of done: Direct `上 / 下` on the player surface no longer switches featured videos; focusing `上一条 / 下一条` triggers exactly one corresponding sequence switch.
+- Validation: `fastlane build_simulator` plus manual tvOS focus validation.

@@ -20,7 +20,6 @@ class CommonPlayerViewController: UIViewController {
     private var isRestoringFromPip = false
     var showsPlaybackControls = true
     var allowsPictureInPicturePlayback = true
-    private(set) var isTransportBarVisible = false
 
     deinit {
         cleanUpPlayerOnExit(force: true)
@@ -127,33 +126,6 @@ class CommonPlayerViewController: UIViewController {
         return Int(seconds.rounded(.down))
     }
 
-    func isSystemPlayerChromeActive() -> Bool {
-        isTransportBarVisible
-    }
-
-    func shouldHandlePlayerDirectionalPress() -> Bool {
-        guard let focusedItem = view.window?.windowScene?.focusSystem?.focusedItem else {
-            return !isTransportBarVisible
-        }
-        guard let focusedView = focusedItem as? UIView else {
-            return false
-        }
-
-        if focusedView === view || focusedView === playerVC.view || focusedView === playerVC.contentOverlayView {
-            return true
-        }
-
-        if focusedView.isDescendant(of: playerVC.view) == false {
-            return false
-        }
-
-        if focusedView.focusAncestorContainsInteractiveChrome {
-            return false
-        }
-
-        return !isTransportBarVisible
-    }
-
     private func cleanUpPlayerOnExit(force: Bool = false) {
         let isPictureInPictureRunning = PipRecorder.shared.playingPipViewController.contains { $0.playerVC == playerVC }
         let shouldCleanUp = force || ((isBeingDismissed || isMovingFromParent || navigationController?.isBeingDismissed == true) && !isPictureInPictureRunning)
@@ -182,21 +154,6 @@ class CommonPlayerViewController: UIViewController {
             NotificationCenter.default.removeObserver(playbackStalledObserver)
         }
         playbackStalledObserver = nil
-    }
-}
-
-private extension UIView {
-    var focusAncestorContainsInteractiveChrome: Bool {
-        sequence(first: self, next: \.superview).contains { candidate in
-            if candidate is UIControl || candidate is UICollectionViewCell || candidate is UITableViewCell {
-                return true
-            }
-            let className = NSStringFromClass(type(of: candidate))
-            return className.contains("AVInfoPanel") ||
-                className.contains("Transport") ||
-                className.contains("Chromeless") ||
-                className.contains("PlaybackControls")
-        }
     }
 }
 
@@ -265,13 +222,6 @@ extension CommonPlayerViewController {
 }
 
 extension CommonPlayerViewController: AVPlayerViewControllerDelegate {
-    func playerViewController(_ playerViewController: AVPlayerViewController,
-                              willTransitionToVisibilityOfTransportBar visible: Bool,
-                              with coordinator: AVPlayerViewControllerAnimationCoordinator)
-    {
-        isTransportBarVisible = visible
-    }
-
     @objc func playerViewControllerShouldDismiss(_ playerViewController: AVPlayerViewController) -> Bool {
         if let presentedViewController = UIViewController.topMostViewController() as? CommonPlayerViewController,
            presentedViewController.playerVC == playerViewController

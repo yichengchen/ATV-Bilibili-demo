@@ -217,6 +217,9 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
         // 0 表示无限制，让 AVPlayer 根据网络条件自动选择最高可用码率
         playerItem.preferredPeakBitRate = 0
 
+        // 激进缓冲策略：要求底层播放器尽可能多地缓存后面 30 秒的视频数据，避免弱网波动引起频繁 stall 卡顿
+        playerItem.preferredForwardBufferDuration = 30.0
+
         let player = AVPlayer(playerItem: playerItem)
         player.automaticallyWaitsToMinimizeStalling = minimizeStalling
         player.isMuted = isMuted

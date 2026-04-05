@@ -32,13 +32,9 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
             guard sequenceProvider.count > 0 else { return (nil, nil) }
             return (sequenceProvider.peekPrevious(), sequenceProvider.peekNext())
         }
-        let previous = menuState.0
         let next = menuState.1
-        guard previous != nil || next != nil else { return }
-
-        playerVC.infoViewActions.removeAll {
-            $0.identifier.rawValue.hasPrefix(previousActionIdentifierPrefix) ||
-                $0.identifier.rawValue.hasPrefix(nextActionIdentifierPrefix)
+        var actions = playerVC.infoViewActions.filter {
+            !$0.identifier.rawValue.hasPrefix(nextActionIdentifierPrefix)
         }
 
         if let next {
@@ -51,18 +47,10 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
                     _ = await self?.playNext()
                 }
             }
-            playerVC.infoViewActions.append(nextAction)
+            actions.append(nextAction)
         }
 
-        if let previous {
-            let previousAction = UIAction(title: actionTitle(prefix: "上一条", playInfo: previous),
-                                          image: UIImage(systemName: "backward.end.fill"),
-                                          identifier: .init(rawValue: "\(previousActionIdentifierPrefix).\(previous.sequenceKey)"))
-            { [weak self] _ in
-                self?.playPrevious()
-            }
-            playerVC.infoViewActions.append(previousAction)
-        }
+        playerVC.infoViewActions = actions
     }
 
     func addMenuItems(current: inout [UIMenuElement]) -> [UIMenuElement] {
@@ -110,7 +98,9 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
                     }
                     return
                 }
-                onPlayEnd?()
+                await MainActor.run { [weak self] in
+                    self?.onPlayEnd?()
+                }
             }
         }
     }
@@ -120,23 +110,24 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
             MainActor.assumeIsolated { provider.movePrevious() }
         } ?? nil
         if let previous {
-            onPlayPreviousWithInfo?(previous)
+            Task { @MainActor in
+                self.onPlayPreviousWithInfo?(previous)
+            }
         }
     }
 
     private func actionTitle(prefix: String, playInfo: PlayInfo) -> String {
-        guard let title = playInfo.title?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !title.isEmpty
-        else {
-            return prefix
-        }
-        return "\(prefix) · \(title)"
+        // 由于 tvOS 系统信息面板容量有限，标题过长会导致部分按钮被截断丢弃。
+        // 所以我们现在只返回简短的前缀，例如 "上一条" / "下一条"
+        return prefix
     }
 
     @discardableResult
     private func playNext() async -> Bool {
         if let next = await sequenceProvider?.moveNext() {
-            onPlayNextWithInfo?(next)
+            await MainActor.run { [weak self] in
+                self?.onPlayNextWithInfo?(next)
+            }
             return true
         }
         return false

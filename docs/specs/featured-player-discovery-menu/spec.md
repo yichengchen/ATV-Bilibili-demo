@@ -11,7 +11,7 @@
 ## Summary
 
 在 `精选` 播放态的系统信息面板中，新增两个独立发现页签：`博主视频` 与 `推荐视频`。每个页签最多展示 6 个横向视频卡片，选中后不改写原始精选短视频队列，而是把选中的视频作为当前槽位的临时覆盖项播放；用户通过 `上 / 下`、自动播完或直接退出播放器时，仍以原始精选队列为准恢复前后关系和浏览态落点。
-同时，当焦点进入系统 info panel 内的 `博主视频`、`推荐视频` 等自定义内容时，`上 / 下` 必须只用于页签内导航，不能继续透传为精选序列的上一条 / 下一条切换。
+同时，`精选` 播放态不再依赖播放器表层直接拦截 `上 / 下` 键切视频；切换入口收敛到 `简介` 中的 `上一条 / 下一条` 动作，焦点到达即触发，而 `博主视频`、`推荐视频` 等自定义内容内的方向键只用于页签导航。
 
 ## Problem Statement
 
@@ -43,8 +43,8 @@
 ## tvOS Interaction
 
 - Initial focus: 不改变 `精选` 浏览态和播放态默认焦点。
-- Directional navigation: 临时视频播放期间，`上 / 下` 仍沿用原始精选队列，不遍历临时链。
-- Directional navigation in info panel: 当系统 transport bar / info panel 可见且焦点已进入其自定义页签内容时，`上 / 下` 仅驱动当前页签焦点移动，不触发精选序列切换。
+- Directional navigation: 播放器主画面的 `上 / 下` 不再作为切视频主路径；临时视频播放期间，`简介` 中的 `上一条 / 下一条` 仍沿用原始精选队列，不遍历临时链。
+- Directional navigation in info panel: 当焦点进入 `简介` 中的 `上一条 / 下一条` 动作时立即切换视频；当焦点进入自定义发现页签内容时，方向键仅驱动当前页签焦点移动，不触发精选序列切换。
 - Primary action: 在 `博主视频` 或 `推荐视频` 页签里选中某条视频后立即播放该视频。
 - Back / Menu behavior: 从临时视频退出播放器后，浏览态回原始精选项。
 - App background behavior: 沿用现有 `精选` 播放态行为，不新增后台播放语义。
@@ -94,7 +94,7 @@
 
 - 博主视频入口依赖额外异步请求；如果用户很快打开菜单，可能先看到推荐项，随后再刷新出博主项。
 - 临时视频不在精选列表中时，需要始终回退到原始 `currentIndex`，避免浏览态错误对齐到不存在的项。
-- `精选` 播放态自身也使用 `上 / 下` 做序列切换；实现上必须区分“播放器主画面正在接收方向键”和“系统 info panel 正在消费方向键”，否则会再次出现菜单导航和序列切换同时发生的回归。
+- `简介` 的 action cell 需要稳定区分 `上一条 / 下一条` 与 `从头开始`，否则焦点即触发会误伤系统默认动作。
 
 ## Acceptance Criteria
 
@@ -107,6 +107,8 @@
 - [x] 博主视频请求失败或候选不足时不会阻塞播放，也不会显示占位假数据。
 - [x] 发现页签内容按横向卡片布局展示，视觉尺寸与系统 `简介 / 章节` 内容区保持接近。
 - [x] 当焦点位于发现页签卡片内时，方向键只移动页签内焦点，不会同时切换底层精选视频。
+- [x] `简介` 中的 `上一条 / 下一条` 在焦点到达时立即切换视频，不需要再次点击。
+- [x] `从头开始` 保持系统默认行为，不会因为焦点移动被自动触发。
 - [x] 原有 `查看详情`、`上一条 / 下一条`、倍速、画质、弹幕菜单不回归。
 
 ## Manual Validation
@@ -117,8 +119,10 @@
 - [ ] Verify each discovery tab shows up to 6 horizontal cards sized close to system content tabs
 - [ ] Select a discovery card and verify immediate playback without changing featured queue order
 - [ ] From a temporary video, reopen the discovery tabs and verify entries refresh based on the current video
-- [ ] Verify `上 / 下` from a temporary video goes to the original featured previous / next item
+- [ ] Verify focusing `简介` 里的 `上一条 / 下一条` from a temporary video goes to the original featured previous / next item
 - [ ] Verify when focus is inside a discovery tab card, `上 / 下` does not switch the underlying featured video
+- [ ] Verify direct `上 / 下` on the player surface no longer switches featured videos
+- [ ] Verify focusing `简介` 的 `从头开始` does not auto-trigger playback restart
 - [ ] Verify playback end on a temporary video advances to the original featured next item
 - [ ] Verify dismissing from a temporary video returns focus to the original featured list item
 - [ ] Verify uploader request failure still keeps the `推荐视频` tab available and lets `博主视频` show an empty state

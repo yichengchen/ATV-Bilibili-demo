@@ -148,6 +148,22 @@ final class VideoSequenceProvider {
 }
 
 class VideoPlayerViewController: CommonPlayerViewController {
+    enum AutoTriggeredInfoAction: String {
+        case previous
+        case next
+
+        init?(title: String) {
+            let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmedTitle.contains("上一条") {
+                self = .previous
+            } else if trimmedTitle.contains("下一条") {
+                self = .next
+            } else {
+                return nil
+            }
+        }
+    }
+
     var data: VideoDetail?
     var sequenceProvider: VideoSequenceProvider?
     var onLoadFailure: ((String) -> Void)?
@@ -167,6 +183,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
     private var hasRetriedCurrentItem = false
     private var isStopping = false
     private var activeWatchSignalPlayInfo: PlayInfo?
+    private var pendingAutoTriggeredInfoActionKey: String?
 
     init(playInfo: PlayInfo,
          playMode: VideoPlayerMode = .regular,
@@ -232,30 +249,31 @@ class VideoPlayerViewController: CommonPlayerViewController {
             }
         }
 
+        if playMode == .feedFlow {
+            // 添加双击上方向键切回上一条视频的全局手势拦截 (作为面板“上一条”被折叠的补偿方案)
+            let doubleUpTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleUpTap))
+            doubleUpTap.allowedPressTypes = [NSNumber(value: UIPress.PressType.upArrow.rawValue)]
+            doubleUpTap.numberOfTapsRequired = 2
+            view.addGestureRecognizer(doubleUpTap)
+
+            let doubleDownTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleDownTap))
+            doubleDownTap.allowedPressTypes = [NSNumber(value: UIPress.PressType.downArrow.rawValue)]
+            doubleDownTap.numberOfTapsRequired = 2
+            view.addGestureRecognizer(doubleDownTap)
+
+            NotificationCenter.default.addObserver(self,
+                                                   selector: #selector(handleInfoActionFocusedNotification(_:)),
+                                                   name: UICollectionViewCell.infoActionFocusedNotification,
+                                                   object: nil)
+            if #available(tvOS 11.0, *) {
+                NotificationCenter.default.addObserver(self,
+                                                       selector: #selector(handleSystemFocusUpdate(_:)),
+                                                       name: UIFocusSystem.didUpdateNotification,
+                                                       object: nil)
+            }
+        }
+
         startLoad()
-    }
-
-    override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        guard playMode == .feedFlow,
-              shouldHandlePlayerDirectionalPress(),
-              let buttonPress = presses.first?.type
-        else {
-            super.pressesEnded(presses, with: event)
-            return
-        }
-
-        switch buttonPress {
-        case .upArrow:
-            Task { [weak self] in
-                _ = await self?.viewModel.playPreviousFromSequence()
-            }
-        case .downArrow:
-            Task { [weak self] in
-                _ = await self?.viewModel.playNextFromSequence()
-            }
-        default:
-            super.pressesEnded(presses, with: event)
-        }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -314,6 +332,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
             currentRetryKey = info.sequenceKey
             hasRetriedCurrentItem = false
         }
+        pendingAutoTriggeredInfoActionKey = nil
         onPlayInfoChanged?(info)
     }
 
@@ -392,5 +411,124 @@ class VideoPlayerViewController: CommonPlayerViewController {
         guard playMode != .preview else { return }
         let detailVC = VideoDetailViewController.create(aid: info.aid, cid: info.cid)
         detailVC.present(from: self, direatlyEnterVideo: false)
+    }
+
+    @objc private func handleDoubleUpTap() {
+        guard playMode == .feedFlow else { return }
+        Logger.debug("[FeedFlow] 捕获双击上键，准备切换至上一条")
+        Task { [weak self] in
+            guard let self else { return }
+            _ = await self.viewModel.playPreviousFromSequence()
+        }
+    }
+
+    @objc private func handleDoubleDownTap() {
+        guard playMode == .feedFlow else { return }
+        Logger.debug("[FeedFlow] 捕获双击下键，准备切换至下一条")
+        Task { [weak self] in
+            guard let self else { return }
+            _ = await self.viewModel.playNextFromSequence()
+        }
+    }
+
+    @available(tvOS 11.0, *)
+    @objc private func handleSystemFocusUpdate(_ note: Notification) {
+        guard playMode == .feedFlow,
+              let context = note.userInfo?[UIFocusSystem.focusUpdateContextUserInfoKey] as? UIFocusUpdateContext,
+              let nextView = context.nextFocusedView
+        else { return }
+
+        Logger.debug("[FocusDiag] 焦点落在了类: \(type(of: nextView))")
+        let dumpResult = dumpViewHierarchy(nextView, depth: 0)
+        Logger.debug("[FocusDiag] 子视图结构:\n\(dumpResult)")
+
+        if let title = extractMatchingActionTitle(from: nextView) {
+            handleFocusedInfoAction(title: title)
+        }
+    }
+
+    private func dumpViewHierarchy(_ view: UIView, depth: Int) -> String {
+        guard depth < 6 else { return "" }
+        let indent = String(repeating: "  ", count: depth)
+        var result = "\(indent)- \(type(of: view))"
+        if let label = view as? UILabel {
+            result += " text: '\(label.text ?? "")' attr: '\(label.attributedText?.string ?? "")'"
+        } else if let btn = view as? UIButton {
+            result += " title: '\(btn.title(for: .normal) ?? "")'"
+        }
+        result += "\n"
+        for subview in view.subviews {
+            result += dumpViewHierarchy(subview, depth: depth + 1)
+        }
+        return result
+    }
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        guard playMode == .feedFlow,
+              let nextView = context.nextFocusedView
+        else { return }
+
+        // 从 focused view 的子视图树中查找匹配的 action 标题
+        if let title = extractMatchingActionTitle(from: nextView) {
+            Logger.debug("[FeedFlow] didUpdateFocus matched action: \(title)")
+            handleFocusedInfoAction(title: title)
+        }
+    }
+
+    private func extractMatchingActionTitle(from view: UIView) -> String? {
+        if let accessLabel = view.accessibilityLabel, AutoTriggeredInfoAction(title: accessLabel) != nil {
+            return accessLabel
+        }
+        for label in collectLabels(in: view, maxDepth: 4) {
+            if let text = label.text, AutoTriggeredInfoAction(title: text) != nil {
+                return text
+            }
+            if let attrText = label.attributedText?.string, AutoTriggeredInfoAction(title: attrText) != nil {
+                return attrText
+            }
+        }
+        return nil
+    }
+
+    private func collectLabels(in view: UIView, maxDepth: Int) -> [UILabel] {
+        guard maxDepth > 0 else { return [] }
+        var result = [UILabel]()
+        for subview in view.subviews {
+            if let label = subview as? UILabel {
+                result.append(label)
+            }
+            result.append(contentsOf: collectLabels(in: subview, maxDepth: maxDepth - 1))
+        }
+        return result
+    }
+
+    @objc private func handleInfoActionFocusedNotification(_ note: Notification) {
+        guard let title = note.userInfo?["title"] as? String else { return }
+        handleFocusedInfoAction(title: title)
+    }
+
+    private func handleFocusedInfoAction(title: String) {
+        guard playMode == .feedFlow,
+              let action = AutoTriggeredInfoAction(title: title)
+        else { return }
+
+        let actionKey = "\(currentPlayInfo.sequenceKey)::\(action.rawValue)"
+        guard pendingAutoTriggeredInfoActionKey != actionKey else { return }
+        pendingAutoTriggeredInfoActionKey = actionKey
+
+        Task { [weak self] in
+            guard let self else { return }
+            let didTrigger: Bool
+            switch action {
+            case .previous:
+                didTrigger = await self.viewModel.playPreviousFromSequence()
+            case .next:
+                didTrigger = await self.viewModel.playNextFromSequence()
+            }
+            if !didTrigger, self.pendingAutoTriggeredInfoActionKey == actionKey {
+                self.pendingAutoTriggeredInfoActionKey = nil
+            }
+        }
     }
 }

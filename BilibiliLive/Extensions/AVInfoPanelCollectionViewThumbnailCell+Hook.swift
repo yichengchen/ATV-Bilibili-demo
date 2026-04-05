@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ObjectiveC
 import UIKit
 
 class AVInfoPanelCollectionViewThumbnailCellHook {
@@ -14,7 +15,13 @@ class AVInfoPanelCollectionViewThumbnailCellHook {
     }
 }
 
+extension UICollectionViewCell {
+    static let infoActionFocusedNotification = Notification.Name("AVInfoPanelActionFocused")
+}
+
 private extension UICollectionViewCell {
+    private static var avInfoPanelActionTitleKey: UInt8 = 0
+
     static func swizzAVInfoPanelCollectionViewThumbnailCell() {
         let swizzledClass: AnyClass = NSClassFromString("AVInfoPanelCollectionViewThumbnailCell")!
         let originalSelector = NSSelectorFromString("setTitle:")
@@ -35,11 +42,25 @@ private extension UICollectionViewCell {
 
     @objc func swizz_setTitle(_ title: String) {
         swizz_setTitle(title)
+        avInfoPanelActionTitle = title
         contentView.subviews.compactMap { $0 as? UILabel }.forEach { $0.textColor = .white }
     }
 
     @objc func swizz_didUpdateFocusInContext(_ selected: Any, withAnimationCoordinator: Any) {
         swizz_didUpdateFocusInContext(selected, withAnimationCoordinator: withAnimationCoordinator)
         contentView.subviews.compactMap { $0 as? UILabel }.forEach { $0.textColor = .white }
+        guard isFocused, let title = avInfoPanelActionTitle else { return }
+        NotificationCenter.default.post(name: Self.infoActionFocusedNotification,
+                                        object: nil,
+                                        userInfo: ["title": title])
+    }
+
+    var avInfoPanelActionTitle: String? {
+        get {
+            objc_getAssociatedObject(self, &Self.avInfoPanelActionTitleKey) as? String
+        }
+        set {
+            objc_setAssociatedObject(self, &Self.avInfoPanelActionTitleKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
+        }
     }
 }

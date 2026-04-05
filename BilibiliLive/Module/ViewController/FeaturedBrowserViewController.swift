@@ -19,6 +19,8 @@ struct RecommendedVideoItem: Hashable {
     let avatarURL: URL?
     let duration: Int
     let durationText: String
+    let viewCountText: String
+    let danmakuCountText: String
     let reasonText: String?
 
     var playInfo: PlayInfo {
@@ -58,6 +60,8 @@ extension ApiRequest.FeedResp.Items {
                                     avatarURL: avatar,
                                     duration: durationValue,
                                     durationText: cover_right_text ?? TimeInterval(durationValue).timeString(),
+                                    viewCountText: cover_left_text_1 ?? "",
+                                    danmakuCountText: cover_left_text_2 ?? "",
                                     reasonText: top_rcmd_reason ?? bottom_rcmd_reason)
     }
 }
@@ -977,8 +981,7 @@ final class FeaturedVideoListCell: BLMotionCollectionViewCell {
     private let imageView = UIImageView()
     private let titleLabel = UILabel()
     private let metaLabel = UILabel()
-    private let durationBadgeView = UIView()
-    private let durationLabel = UILabel()
+    private let overlayView = BLOverlayView()
     private var isCurrent = false
 
     override func setup() {
@@ -1003,22 +1006,11 @@ final class FeaturedVideoListCell: BLMotionCollectionViewCell {
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
 
-        imageView.addSubview(durationBadgeView)
-        durationBadgeView.snp.makeConstraints { make in
-            make.leading.bottom.equalToSuperview().inset(10)
+        imageView.addSubview(overlayView)
+        overlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
-        durationBadgeView.backgroundColor = UIColor.black.withAlphaComponent(0.74)
-        durationBadgeView.layer.cornerRadius = 8
-        durationBadgeView.layer.cornerCurve = .continuous
-        durationBadgeView.clipsToBounds = true
-
-        durationBadgeView.addSubview(durationLabel)
-        durationLabel.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8))
-        }
-        durationLabel.font = .systemFont(ofSize: 18, weight: .semibold)
-        durationLabel.textColor = .white
-        durationLabel.textAlignment = .center
+        overlayView.fontSize = 14
 
         blurBackgroundView.contentView.addSubview(titleLabel)
         blurBackgroundView.contentView.addSubview(metaLabel)
@@ -1045,14 +1037,31 @@ final class FeaturedVideoListCell: BLMotionCollectionViewCell {
     func configure(with item: RecommendedVideoItem, isCurrent: Bool) {
         titleLabel.text = item.title
         metaLabel.text = item.listMetaText
-        durationLabel.text = item.durationText
-        durationBadgeView.isHidden = item.durationText.isEmpty
+
         self.isCurrent = isCurrent
         if let coverURL = item.coverURL {
             imageView.kf.setImage(with: coverURL)
         } else {
             imageView.image = nil
         }
+
+        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+
+        if !item.viewCountText.isEmpty && !item.viewCountText.contains(":") {
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: item.viewCountText.replacingOccurrences(of: "观看", with: "")))
+        } else if !item.danmakuCountText.isEmpty && !item.danmakuCountText.contains(":") {
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle", text: item.danmakuCountText.replacingOccurrences(of: "观看", with: "")))
+        }
+
+        if !item.durationText.isEmpty {
+            rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: item.durationText))
+        }
+
+        let overlay = DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+        overlayView.configure(overlay)
+        overlayView.isHidden = leftItems.isEmpty && rightItems.isEmpty
+
         updateAppearance()
     }
 

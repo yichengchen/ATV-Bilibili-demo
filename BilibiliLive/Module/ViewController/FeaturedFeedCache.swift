@@ -17,6 +17,8 @@ struct CachedRecommendedVideoItem: Codable {
     let avatarURL: String?
     let duration: Int
     let durationText: String
+    let viewCountText: String?
+    let danmakuCountText: String?
     let reasonText: String?
 }
 
@@ -70,6 +72,8 @@ extension RecommendedVideoItem {
         avatarURL = item.avatarURL.flatMap(URL.init(string:))
         duration = item.duration
         durationText = item.durationText
+        viewCountText = item.viewCountText ?? ""
+        danmakuCountText = item.danmakuCountText ?? ""
         reasonText = item.reasonText
     }
 
@@ -83,6 +87,8 @@ extension RecommendedVideoItem {
                                    avatarURL: avatarURL?.absoluteString,
                                    duration: duration,
                                    durationText: durationText,
+                                   viewCountText: viewCountText,
+                                   danmakuCountText: danmakuCountText,
                                    reasonText: reasonText)
     }
 }
