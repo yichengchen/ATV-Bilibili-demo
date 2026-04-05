@@ -221,6 +221,16 @@ class VideoPlayerViewModel {
         return true
     }
 
+    func playTemporaryOverride(_ temporaryPlayInfo: PlayInfo) {
+        guard temporaryPlayInfo.sequenceKey != currentPlayInfo.sequenceKey else { return }
+        sequenceProvider.map { provider in
+            MainActor.assumeIsolated {
+                provider.pushTemporary(temporaryPlayInfo)
+            }
+        }
+        updatePlayInfo(temporaryPlayInfo)
+    }
+
     func preloadNeighborsIfNeeded() async {
         guard playMode == .feedFlow, let playContextCache, let sequenceProvider else { return }
         let current = await sequenceProvider.current() ?? currentPlayInfo
@@ -274,6 +284,18 @@ class VideoPlayerViewModel {
             self?.onShowDetail?(info)
         }
 
+        var plugins: [CommonPlayerPlugin] = [playplugin, danmu, playSpeed, upnp, debug, playlist]
+
+        if playMode == .feedFlow {
+            let discovery = FeaturedVideoDiscoveryPlugin(detail: data.detail,
+                                                         currentPlayInfo: playInfo,
+                                                         sequenceProvider: sequenceProvider)
+            discovery.onPlayTemporary = { [weak self] info in
+                self?.playTemporaryOverride(info)
+            }
+            plugins.append(discovery)
+        }
+
         // 添加画质选择器插件
         let qualitySelector = BVideoQualityPlugin(detailData: data) { [weak playplugin] qualityId, streamIndex in
             Task { @MainActor in
@@ -281,7 +303,7 @@ class VideoPlayerViewModel {
             }
         }
 
-        var plugins: [CommonPlayerPlugin] = [playplugin, danmu, playSpeed, upnp, debug, playlist, qualitySelector]
+        plugins.append(qualitySelector)
 
         if let clips = data.clips {
             let clip = BVideoClipsPlugin(clipInfos: clips)

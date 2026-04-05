@@ -53,6 +53,7 @@ enum VideoPlayerMode {
 final class VideoSequenceProvider {
     private(set) var playSeq: [PlayInfo]
     private(set) var currentIndex: Int
+    private(set) var temporaryOverrides = [PlayInfo]()
     private let preloadThreshold: Int
     var onNeedMore: (() async -> Void)?
 
@@ -75,16 +76,21 @@ final class VideoSequenceProvider {
     }
 
     func current() -> PlayInfo? {
+        if let temporary = temporaryOverrides.last {
+            return temporary
+        }
         guard playSeq.indices.contains(currentIndex) else { return nil }
         return playSeq[currentIndex]
     }
 
     func setCurrentIndex(_ index: Int) {
         guard playSeq.indices.contains(index) else { return }
+        clearTemporaryOverrides()
         currentIndex = index
     }
 
     func reset() {
+        clearTemporaryOverrides()
         currentIndex = 0
     }
 
@@ -105,14 +111,23 @@ final class VideoSequenceProvider {
     }
 
     func neighborItems(radius: Int) -> [PlayInfo] {
-        guard !playSeq.isEmpty else { return [] }
+        guard !playSeq.isEmpty else { return temporaryOverrides.uniqued() }
         let lower = max(0, currentIndex - radius)
         let upper = min(playSeq.count - 1, currentIndex + radius)
-        return Array(playSeq[lower...upper])
+        return ([current()].compactMap { $0 } + Array(playSeq[lower...upper])).uniqued()
+    }
+
+    func pushTemporary(_ playInfo: PlayInfo) {
+        temporaryOverrides.append(playInfo)
+    }
+
+    func clearTemporaryOverrides() {
+        temporaryOverrides.removeAll()
     }
 
     func movePrevious() -> PlayInfo? {
         guard hasPrevious else { return nil }
+        clearTemporaryOverrides()
         currentIndex -= 1
         return playSeq[currentIndex]
     }
@@ -120,6 +135,7 @@ final class VideoSequenceProvider {
     func moveNext() async -> PlayInfo? {
         await prefetchMoreIfNeeded()
         guard hasNext else { return nil }
+        clearTemporaryOverrides()
         currentIndex += 1
         await prefetchMoreIfNeeded()
         return playSeq[currentIndex]
@@ -218,7 +234,10 @@ class VideoPlayerViewController: CommonPlayerViewController {
     }
 
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-        guard playMode == .feedFlow, let buttonPress = presses.first?.type else {
+        guard playMode == .feedFlow,
+              shouldHandlePlayerDirectionalPress(),
+              let buttonPress = presses.first?.type
+        else {
             super.pressesEnded(presses, with: event)
             return
         }
