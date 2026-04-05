@@ -197,11 +197,23 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         restoresFocusAfterTransition = false
         view.backgroundColor = UIColor.black
         setupUI()
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleAppWillResignActive),
+                                               name: UIApplication.willResignActiveNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleAppDidBecomeActive),
+                                               name: UIApplication.didBecomeActiveNotification,
+                                               object: nil)
         sequenceProvider.onNeedMore = { [weak self] in
             await self?.loadMoreShortVideosIfNeeded(targetCount: self?.trailingPrefetchTargetCount ?? 8,
                                                     maxSourcePages: self?.trailingMaxSourcePages ?? 3)
         }
         reloadData()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -220,6 +232,16 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         super.viewDidAppear(animated)
         isPresentingFeedFlow = false
         syncSelectionFromSequenceProvider()
+        resumePreviewIfNeeded()
+    }
+
+    @objc private func handleAppWillResignActive() {
+        guard isViewLoaded, view.window != nil else { return }
+        suspendPreview(cancelWarmups: true)
+    }
+
+    @objc private func handleAppDidBecomeActive() {
+        guard isViewLoaded, view.window != nil else { return }
         resumePreviewIfNeeded()
     }
 
@@ -751,11 +773,13 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         focusedIndex = index
         sequenceProvider.setCurrentIndex(index)
         lastPlayedSequenceKey = items[index].playInfo.sequenceKey
+        let startTimeOverride = previewStartTimeForFlowEntry(at: index)
         suspendPreview(cancelWarmups: false)
         let player = VideoPlayerViewController(playInfo: items[index].playInfo,
                                                playMode: .feedFlow,
                                                playContextCache: playContextCache,
-                                               mediaWarmupManager: mediaWarmupManager)
+                                               mediaWarmupManager: mediaWarmupManager,
+                                               startTimeOverride: startTimeOverride)
         player.sequenceProvider = sequenceProvider
         player.onPlayInfoChanged = { [weak self] info in
             MainActor.callSafely {
@@ -768,6 +792,16 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
             }
         }
         present(player, animated: true)
+    }
+
+    private func previewStartTimeForFlowEntry(at index: Int) -> Int? {
+        guard let previewController,
+              items.indices.contains(index),
+              previewController.currentPlayInfo.sequenceKey == items[index].playInfo.sequenceKey
+        else {
+            return nil
+        }
+        return previewController.currentPlaybackTimeInSeconds()
     }
 }
 

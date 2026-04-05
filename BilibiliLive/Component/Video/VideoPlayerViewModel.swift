@@ -38,6 +38,8 @@ class VideoPlayerViewModel {
     private let playContextCache: PlayContextCache?
     private let mediaWarmupManager: PlayerMediaWarmupManager?
     private let previewMuted: Bool
+    private let startTimeOverride: Int?
+    private let startTimeOverrideSequenceKey: String
     private let danmuProvider = VideoDanmuProvider(enableDanmuFilter: Settings.enableDanmuFilter,
                                                    enableDanmuRemoveDup: Settings.enableDanmuRemoveDup)
     private var videoDetail: VideoDetail?
@@ -47,13 +49,16 @@ class VideoPlayerViewModel {
          playMode: VideoPlayerMode = .regular,
          playContextCache: PlayContextCache? = nil,
          mediaWarmupManager: PlayerMediaWarmupManager? = nil,
-         previewMuted: Bool = true)
+         previewMuted: Bool = true,
+         startTimeOverride: Int? = nil)
     {
         self.playInfo = playInfo
         self.playMode = playMode
         self.playContextCache = playContextCache
         self.mediaWarmupManager = mediaWarmupManager
         self.previewMuted = previewMuted
+        self.startTimeOverride = startTimeOverride
+        startTimeOverrideSequenceKey = playInfo.sequenceKey
     }
 
     var currentPlayInfo: PlayInfo {
@@ -113,12 +118,10 @@ class VideoPlayerViewModel {
 
             let lastPlayCid = playInfo.lastPlayCid ?? cached.playerInfo?.last_play_cid ?? 0
             let playTimeInSecond = playInfo.playTimeInSecond ?? cached.playerInfo?.playTimeInSecond ?? 0
-            if lastPlayCid == cached.cid,
-               cached.videoPlayURLInfo.dash.duration - playTimeInSecond > 5,
-               Settings.continuePlay
-            {
-                detail.playerStartPos = playTimeInSecond
-            }
+            detail.playerStartPos = resolvedPlayerStartPos(cid: cached.cid,
+                                                           duration: cached.videoPlayURLInfo.dash.duration,
+                                                           lastPlayCid: lastPlayCid,
+                                                           playTimeInSecond: playTimeInSecond)
             return detail
         }
 
@@ -156,9 +159,10 @@ class VideoPlayerViewModel {
 
             let last_play_cid = playInfo.lastPlayCid ?? info?.last_play_cid ?? 0
             let playTimeInSecond = playInfo.playTimeInSecond ?? info?.playTimeInSecond ?? 0
-            if last_play_cid == cid, playData.dash.duration - playTimeInSecond > 5, Settings.continuePlay {
-                detail.playerStartPos = playTimeInSecond
-            }
+            detail.playerStartPos = resolvedPlayerStartPos(cid: cid,
+                                                           duration: playData.dash.duration,
+                                                           lastPlayCid: last_play_cid,
+                                                           playTimeInSecond: playTimeInSecond)
 
             return detail
 
@@ -179,6 +183,26 @@ class VideoPlayerViewModel {
         Task {
             await load()
         }
+    }
+
+    private func resolvedPlayerStartPos(cid: Int,
+                                        duration: Int,
+                                        lastPlayCid: Int,
+                                        playTimeInSecond: Int) -> Int?
+    {
+        if let startTimeOverride,
+           startTimeOverrideSequenceKey == playInfo.sequenceKey,
+           duration - startTimeOverride > 5
+        {
+            return startTimeOverride
+        }
+        if lastPlayCid == cid,
+           duration - playTimeInSecond > 5,
+           Settings.continuePlay
+        {
+            return playTimeInSecond
+        }
+        return nil
     }
 
     func retryCurrent() async {

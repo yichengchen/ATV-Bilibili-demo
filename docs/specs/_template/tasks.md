@@ -11,6 +11,7 @@
 - Prefer one focused code change per task.
 - Update this file as tasks move from Todo to In progress to Done.
 - Record validation next to the task that introduced the change.
+- For playback or audio-related work, make teardown and lifecycle cleanup explicit in either a task goal, risk, or definition of done.
 
 ## Task 1: <small vertical slice>
 

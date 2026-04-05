@@ -154,7 +154,8 @@ class VideoPlayerViewController: CommonPlayerViewController {
          playMode: VideoPlayerMode = .regular,
          playContextCache: PlayContextCache? = nil,
          mediaWarmupManager: PlayerMediaWarmupManager? = nil,
-         previewMuted: Bool = true)
+         previewMuted: Bool = true,
+         startTimeOverride: Int? = nil)
     {
         self.playMode = playMode
         self.playContextCache = playContextCache
@@ -164,7 +165,8 @@ class VideoPlayerViewController: CommonPlayerViewController {
                                          playMode: playMode,
                                          playContextCache: playContextCache,
                                          mediaWarmupManager: mediaWarmupManager,
-                                         previewMuted: previewMuted)
+                                         previewMuted: previewMuted,
+                                         startTimeOverride: startTimeOverride)
         currentRetryKey = playInfo.sequenceKey
         super.init(nibName: nil, bundle: nil)
         if playMode == .preview {
@@ -176,6 +178,10 @@ class VideoPlayerViewController: CommonPlayerViewController {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    var currentPlayInfo: PlayInfo {
+        viewModel.currentPlayInfo
     }
 
     override func viewDidLoad() {

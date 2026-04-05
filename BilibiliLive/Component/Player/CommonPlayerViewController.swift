@@ -116,6 +116,16 @@ class CommonPlayerViewController: UIViewController {
         cleanUpPlayerOnExit(force: true)
     }
 
+    func currentPlaybackTimeInSeconds() -> Int? {
+        guard let seconds = playerVC.player?.currentTime().seconds,
+              seconds.isFinite,
+              seconds > 0
+        else {
+            return nil
+        }
+        return Int(seconds.rounded(.down))
+    }
+
     private func cleanUpPlayerOnExit(force: Bool = false) {
         let isPictureInPictureRunning = PipRecorder.shared.playingPipViewController.contains { $0.playerVC == playerVC }
         let shouldCleanUp = force || ((isBeingDismissed || isMovingFromParent || navigationController?.isBeingDismissed == true) && !isPictureInPictureRunning)

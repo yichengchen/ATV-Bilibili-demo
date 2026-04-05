@@ -237,3 +237,45 @@
   - 当前环境未安装 `fastlane`，因此未执行 `fastlane build_simulator`。
   - `xcodebuild -project BilibiliLive.xcodeproj -scheme BilibiliLive -configuration Debug -destination 'generic/platform=tvOS Simulator' build` 通过。
   - 手工验证未完成，需在 tvOS Simulator 或真机确认“缓存命中秒开、预览更快出首帧、切上下条更顺、快速切焦点不串音”。
+
+## Task 10: Featured preview-to-playback progress handoff
+
+- Status: Done
+- Goal: 修复 `精选` 当前项预览已开始播放后，按确认键进入正式播放仍从 0 秒开始的问题，让全屏播放从预览进度无缝接续。
+- Files changed:
+  - `BilibiliLive/Module/ViewController/FeaturedBrowserViewController.swift`
+  - `BilibiliLive/Component/Player/CommonPlayerViewController.swift`
+  - `BilibiliLive/Component/Video/VideoPlayerViewController.swift`
+  - `BilibiliLive/Component/Video/VideoPlayerViewModel.swift`
+  - `docs/specs/featured-short-feed/spec.md`
+  - `docs/specs/featured-short-feed/tasks.md`
+- Risks or dependencies:
+  - 只应把当前预览项的进度交给正式播放，不能把旧预览或其他条目的时间错传给新视频。
+  - 预览到正式播放的同会话 handoff 不能被“从上次退出的位置继续播放”设置误伤。
+- Definition of done:
+  - 当前项预览已开始播放时，按确认键进入正式播放会从预览秒数继续播放。
+  - 当前项预览尚未真正开始时，按确认键仍从 0 秒正常进入正式播放。
+  - 关闭“从上次退出的位置继续播放”后，预览到正式播放的 handoff 仍然生效。
+  - 不影响详情页、合集播放和已有的历史续播逻辑。
+- Validation:
+  - `xcodebuild -project BilibiliLive.xcodeproj -scheme BilibiliLive -configuration Debug -destination 'generic/platform=tvOS Simulator' build` 通过。
+  - 手工验证未完成，需在 tvOS Simulator 或真机确认“预览播 2-3 秒后进入全屏从同一位置继续播放”。
+
+## Task 11: Featured preview app-background cleanup
+
+- Status: Done
+- Goal: 修复 `精选` 浏览态预览在按 Home / 切后台离开 app 后仍继续出声的问题，并在回前台后保持现有 1 秒延迟预览行为。
+- Files changed:
+  - `BilibiliLive/Module/ViewController/FeaturedBrowserViewController.swift`
+  - `docs/specs/featured-short-feed/spec.md`
+  - `docs/specs/featured-short-feed/tasks.md`
+- Risks or dependencies:
+  - 只能在 `精选` 浏览态处理这个自动预览生命周期，不能误伤正式播放态或切换中的 present/dismiss 时序。
+  - 回前台后应恢复原有 1 秒延迟规则，不能直接无延迟出声。
+- Definition of done:
+  - `精选` 浏览态正在预览时按 Home / 切后台，音频会立即停止。
+  - 回到前台且仍停留在 `精选` 浏览态时，当前项会按 1 秒规则恢复预览。
+  - 进入正式播放或其他页面时，不会因为前后台通知把列表页预览错误恢复出来。
+- Validation:
+  - `xcodebuild -project BilibiliLive.xcodeproj -scheme BilibiliLive -configuration Debug -destination 'generic/platform=tvOS Simulator' build` 通过。
+  - 手工验证未完成，需在 tvOS Simulator 或真机确认“精选预览中按 Home 后立即静音，回前台 1 秒后才恢复当前项预览”。

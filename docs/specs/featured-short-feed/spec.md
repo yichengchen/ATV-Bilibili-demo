@@ -10,7 +10,7 @@
 
 ## Summary
 
-保留现有 `推荐` 网格页，同时在其后新增 `精选` Tab。`精选` 定位为短视频浏览和连续播放入口，全屏视频做背景、左侧列表悬浮在视频上方，焦点停留 1 秒后自动开始有声预览，进入播放后支持遥控器上下切换上一条 / 下一条，并在播放链路中补上预热和一次自动重试。
+保留现有 `推荐` 网格页，同时在其后新增 `精选` Tab。`精选` 定位为短视频浏览和连续播放入口，全屏视频做背景、左侧列表悬浮在视频上方，焦点停留 1 秒后自动开始有声预览，进入播放后支持遥控器上下切换上一条 / 下一条，并在播放链路中补上预热、预览到正式播放的进度续播，以及一次自动重试。
 
 ## Problem Statement
 
@@ -21,6 +21,7 @@
 - 保留现有 `推荐` 页，不破坏已有入口和导航习惯。
 - 新增 `精选` Tab，建立和 `推荐` 明确区分的短视频定位。
 - `精选` 浏览态采用左列表右预览，按确认键进入正式短视频流。
+- 已开始的 `精选` 预览在按确认键进入正式播放后，会从预览进度继续播放而不是重头开始。
 - 正式短视频流支持遥控器 `上 / 下` 切换上一条 / 下一条。
 - 上下切换序列严格使用过滤后的短视频列表，不混入长视频和详情相关推荐。
 - 增加预览预热、上一条 / 下一条预热，以及一次自动重试。
@@ -39,10 +40,11 @@
 2. 页面连续拉取推荐源数据，并按时长阈值过滤出短视频列表。
 3. 初始焦点落在左侧第一项，全屏显示封面，停留约 1 秒后开始有声预览，视频做全屏背景并带有 crossfade 过渡。
 4. 焦点切到新 item 时，立即停止旧预览并切换封面（crossfade），重新计时 1 秒后才开始新预览。快速切换时只看到封面切换、不会出声。
-5. 用户按确认键，从当前左侧项进入正式短视频流，同时销毁浏览态预览，避免后台继续出声。
+5. 用户按确认键，从当前左侧项进入正式短视频流；如果当前项预览已经开始播放，则正式播放从预览秒数继续播放，同时销毁浏览态预览，避免后台继续出声。
 6. 在正式播放态中，用户按下键调出系统信息面板，并从面板中选择“从头开始 / 下一条 / 上一条”等动作。
 7. 用户在正式播放态中通过 `上 / 下` 或系统信息面板切换到上一条 / 下一条后，当前播放项立即成为短视频流的新当前位置。
 8. 用户按 `Menu / Back` 退出播放，回到 `精选`，列表焦点、当前项视觉状态和滚动位置都对齐到最后播放的视频，并按 1 秒规则恢复该项的有声预览。
+9. 用户在 `精选` 浏览态按 Home/切后台离开 app 时，当前预览会立即停止；重新回到 app 且仍停留在 `精选` 浏览页时，当前项按 1 秒规则重新开始预览。
 
 ## tvOS Interaction
 
@@ -51,7 +53,8 @@
 - Info panel actions: 播放态下滑出的系统动作面板优先展示“下一条”，其后才是“上一条”，并显式带上方向前缀，和 `下 / 上` 切换方向保持一致。
 - Primary action: 浏览态的确认键进入正式短视频流；播放态的确认键保留给系统播放器控制层。
 - Back / Menu behavior: 播放态退出回 `精选` 浏览页；浏览态遵循 TabBar 正常返回行为。
-- Play / Pause behavior: 浏览态预览为有声自动播放（焦点停留 1 秒后触发）；正式播放态沿用系统播放器默认行为。
+- App background behavior: `精选` 浏览态进入后台时立即停止并销毁预览，避免后台继续出声；回到前台后若仍停留在浏览态，则按现有 1 秒规则恢复当前项预览。
+- Play / Pause behavior: 浏览态预览为有声自动播放（焦点停留 1 秒后触发）；对已开始的当前预览按确认键进入正式播放时，会沿用预览秒数继续播放，该 handoff 不依赖“从上次退出的位置继续播放”设置；正式播放态其余行为沿用系统播放器默认行为。
 - Long press or context menu behavior: v1 不新增长按交互。
 - Accessibility or readability notes: 全屏视频背景上叠加左侧渐变 scrim 和底部渐变 scrim，右下角保留标题、UP 主、提示文案，确保远距阅读。左侧列表 cell 保持 blur 背景，不再显示 `当前` 文案，时长固定展示在缩略图左下角。
 
@@ -60,7 +63,7 @@
 - Loading: 首屏加载和预览切换期间显示 loading，占位图持续可见，直到视频真正开始播放或失败回退。
 - Empty: 多页过滤后仍无足够短视频时显示“当前精选短视频较少”。
 - Error: 推荐加载失败时展示错误文案；预览失败仅回退到封面和提示，不阻塞进入播放。
-- Success: 左侧列表、右侧预览、正式播放和上下切换均正常工作，退出正式播放后不会残留后台声音，且浏览态能准确回到最后播放项；切回 `精选` 时不会因为异步补数和索引恢复的时序问题触发列表越界崩溃。
+- Success: 左侧列表、右侧预览、正式播放和上下切换均正常工作，预览进入正式播放时不会重头开始，退出正式播放或将 app 切到后台后不会残留后台声音，且浏览态能准确回到最后播放项；切回 `精选` 时不会因为异步补数和索引恢复的时序问题触发列表越界崩溃。
 
 ## Data and API Considerations
 
@@ -127,6 +130,8 @@
 - [x] 设置页修改“精选视频时长上限”后，返回 `精选` 会按新阈值重建列表。
 - [x] 浏览态焦点停留约 1 秒后启动有声预览，预览以全屏背景视频呈现并带有 crossfade 过渡。
 - [x] 焦点切到新 item 时立即停止旧预览（音频立即中断），封面以 crossfade 切换，重新计时。
+- [x] 当前项预览已开始播放时，按确认键进入正式播放会从预览进度继续播放，不会重头开始。
+- [x] `精选` 浏览态进入后台时会立即停止并销毁预览，不会残留后台声音；回到前台后仍按 1 秒规则恢复当前项预览。
 - [x] 预览播放请求默认使用低成本配置，不复用正式播放的最高画质请求。
 - [x] 进入正式播放或离开 `精选` 时，会停止并销毁当前预览播放器，不保留后台声音。
 - [x] 播放态按下键会打开系统信息面板，并保留系统默认的“从头开始”入口。
@@ -148,8 +153,10 @@
 - [ ] Exercise loading, success, empty, and error states
 - [ ] Verify cold-entering `精选` with cached data shows the old list immediately and refreshes in background without focus jumps
 - [ ] Verify focus movement, back navigation, immersive preview with audio after 1s dwell, no audio bleed on fast switching, and player info panel behavior
+- [ ] Verify leaving the app from featured browser preview stops audio immediately, and returning to foreground resumes the current-item preview after 1s
 - [ ] Verify preview uses a lower-cost stream while formal playback still exposes full quality options
 - [ ] Verify entering formal playback from the current featured item feels faster after a short dwell
+- [ ] Verify entering formal playback after preview has already started resumes from the preview position, including when `从上次退出的位置继续播放` is disabled
 - [ ] Verify the playback info panel lists `下一条` before `上一条` and uses the correct direction labels
 - [ ] Verify `下键` in featured playback first opens the system info panel and still shows `从头开始`
 - [ ] Verify exiting featured playback never leaves background audio running

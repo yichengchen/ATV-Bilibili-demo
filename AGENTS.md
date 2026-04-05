@@ -34,6 +34,7 @@ Each spec should stay short and executable. Include:
 - Goals and non-goals
 - Entry point and user flow
 - tvOS focus and remote behavior
+- Exit, dismiss, and app-background teardown behavior for playback or audio-related flows
 - Loading, empty, error, and success states
 - Data or API implications
 - Impacted modules
@@ -65,6 +66,7 @@ Create an ADR in `docs/adr/` for durable technical decisions, especially when ch
 - Use `fastlane build_simulator` for most feature work and UI changes.
 - Use `fastlane build_unsign_ipa` when packaging, CI, or release behavior changes.
 - Because there is no automated test suite, every spec and PR should include a manual validation checklist.
+- For playback, preview, danmaku, or other audio-producing changes, manual validation must cover dismiss / Back / Menu, switching away from the page, and Home / app backgrounding, and confirm there is no residual audio and no leaked player instance left running.
 - If build verification cannot be run, explain why and record the remaining risk.
 
 ## Architecture
@@ -160,6 +162,8 @@ playerVC.updateMenus()   // rebuilds AVPlayerViewController info panel menus fro
 | `playerDidCleanUp` | Player teardown |
 | `addViewToPlayerOverlay(container:)` | Add UI on top of video |
 | `addMenuItems(current:)` | Contribute items to info panel menu |
+
+Lifecycle rule: any player or preview flow that creates `AVPlayer`, observers, async tasks, delegates, or audio-producing plugins must define how those resources are torn down on dismiss, page exit, and app background unless explicit background playback is part of the feature.
 
 **Existing plugins** (all in `Component/Player/`):
 

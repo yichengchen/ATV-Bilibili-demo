@@ -38,6 +38,7 @@ What user or system problem are we solving? Why is the current behavior not good
 - Directional navigation:
 - Primary action:
 - Back / Menu behavior:
+- App background behavior:
 - Play / Pause behavior:
 - Long press or context menu behavior:
 - Accessibility or readability notes:
@@ -80,6 +81,7 @@ What user or system problem are we solving? Why is the current behavior not good
 - [ ] The user-facing goal is met
 - [ ] Focus behavior and remote navigation are correct
 - [ ] Loading, empty, error, and success states are handled
+- [ ] Dismiss, page exit, and app background behavior are defined and do not leave residual audio or active player instances when background playback is not intended
 - [ ] API requests remain correctly signed when applicable
 - [ ] Existing navigation and playback flows do not regress
 
@@ -89,4 +91,5 @@ What user or system problem are we solving? Why is the current behavior not good
 - [ ] Validate in tvOS Simulator or on device
 - [ ] Exercise loading, success, empty, and error states
 - [ ] Verify focus movement, back navigation, and player behavior when relevant
+- [ ] Verify dismiss / Back / Menu, switching away from the page, and Home / app background do not leave audio or player instances running unless the spec explicitly allows background playback
 - [ ] If auth or request code changed, verify login and token refresh paths
