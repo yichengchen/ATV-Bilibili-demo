@@ -8,48 +8,16 @@
 import AVKit
 import UIKit
 
-private final class FeaturedVideoDiscoveryHeaderView: UICollectionReusableView {
-    static let reuseIdentifier = "FeaturedVideoDiscoveryHeaderView"
-
-    let titleLabel = UILabel()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        titleLabel.font = .systemFont(ofSize: 30, weight: .bold)
-        titleLabel.textColor = .white
-        addSubview(titleLabel)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
-            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor),
-            titleLabel.topAnchor.constraint(equalTo: topAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
 private final class FeaturedVideoDiscoveryInfoViewController: UIViewController {
-    fileprivate enum Section: Int, CaseIterable {
-        case uploader
-        case related
-
-        var title: String {
-            switch self {
-            case .uploader:
-                return "博主视频"
-            case .related:
-                return "推荐视频"
-            }
-        }
+    private enum Layout {
+        static let cardWidth: CGFloat = 320
+        static let cardHeight: CGFloat = 248
+        static let sectionInsets = NSDirectionalEdgeInsets(top: 28, leading: 32, bottom: 28, trailing: 32)
+        static let interGroupSpacing: CGFloat = 28
+        static let preferredHeight: CGFloat = 360
     }
 
     fileprivate struct Entry: Hashable {
-        let section: Section
         let playInfo: PlayInfo
         let displayData: DiscoveryDisplayData
     }
@@ -62,26 +30,21 @@ private final class FeaturedVideoDiscoveryInfoViewController: UIViewController {
 
     var onSelect: ((PlayInfo) -> Void)?
 
-    private var uploaderEntries = [Entry]()
-    private var relatedEntries = [Entry]()
+    private let emptyText: String
+    private var entries = [Entry]()
 
     private lazy var collectionView: UICollectionView = {
-        let layout = UICollectionViewCompositionalLayout { sectionIndex, _ in
+        let layout = UICollectionViewCompositionalLayout { _, _ in
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                  heightDimension: .estimated(220))
+                                                  heightDimension: .fractionalHeight(1.0))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.3),
-                                                   heightDimension: .estimated(220))
+            let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(Layout.cardWidth),
+                                                   heightDimension: .absolute(Layout.cardHeight))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
             let section = NSCollectionLayoutSection(group: group)
-            section.interGroupSpacing = 24
-            section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 32, bottom: 24, trailing: 32)
-            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                    heightDimension: .absolute(44))
-            let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
-                                                                     elementKind: UICollectionView.elementKindSectionHeader,
-                                                                     alignment: .top)
-            section.boundarySupplementaryItems = [header]
+            section.contentInsets = Layout.sectionInsets
+            section.interGroupSpacing = Layout.interGroupSpacing
+            section.orthogonalScrollingBehavior = .continuousGroupLeadingBoundary
             return section
         }
 
@@ -90,10 +53,8 @@ private final class FeaturedVideoDiscoveryInfoViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.remembersLastFocusedIndexPath = true
+        collectionView.alwaysBounceVertical = false
         collectionView.register(RelatedVideoCell.self, forCellWithReuseIdentifier: String(describing: RelatedVideoCell.self))
-        collectionView.register(FeaturedVideoDiscoveryHeaderView.self,
-                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-                                withReuseIdentifier: FeaturedVideoDiscoveryHeaderView.reuseIdentifier)
         return collectionView
     }()
 
@@ -103,16 +64,26 @@ private final class FeaturedVideoDiscoveryInfoViewController: UIViewController {
         label.textColor = UIColor.white.withAlphaComponent(0.75)
         label.numberOfLines = 2
         label.textAlignment = .center
-        label.text = "当前没有可展示的推荐内容"
         label.isHidden = true
         return label
     }()
 
+    init(title: String, emptyText: String) {
+        self.emptyText = emptyText
+        super.init(nibName: nil, bundle: nil)
+        self.title = title
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "推荐"
-        preferredContentSize = CGSize(width: 0, height: 560)
+        preferredContentSize = CGSize(width: 0, height: Layout.preferredHeight)
         view.backgroundColor = .clear
+        emptyLabel.text = emptyText
 
         view.addSubview(collectionView)
         view.addSubview(emptyLabel)
@@ -132,29 +103,15 @@ private final class FeaturedVideoDiscoveryInfoViewController: UIViewController {
         updateEmptyState()
     }
 
-    fileprivate func update(uploaderEntries: [Entry], relatedEntries: [Entry]) {
-        self.uploaderEntries = uploaderEntries
-        self.relatedEntries = relatedEntries
+    fileprivate func update(entries: [Entry]) {
+        self.entries = entries
         guard isViewLoaded else { return }
         collectionView.reloadData()
         updateEmptyState()
     }
 
-    private func entries(for section: Section) -> [Entry] {
-        switch section {
-        case .uploader:
-            return uploaderEntries
-        case .related:
-            return relatedEntries
-        }
-    }
-
-    private func visibleSections() -> [Section] {
-        Section.allCases.filter { !entries(for: $0).isEmpty }
-    }
-
     private func updateEmptyState() {
-        let isEmpty = visibleSections().isEmpty
+        let isEmpty = entries.isEmpty
         emptyLabel.isHidden = !isEmpty
         collectionView.isHidden = isEmpty
     }
@@ -162,41 +119,23 @@ private final class FeaturedVideoDiscoveryInfoViewController: UIViewController {
 
 extension FeaturedVideoDiscoveryInfoViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        visibleSections().count
+        1
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let sections = visibleSections()
-        guard sections.indices.contains(section) else { return 0 }
-        return entries(for: sections[section]).count
+        entries.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let sections = visibleSections()
-        let section = sections[indexPath.section]
-        let entry = entries(for: section)[indexPath.item]
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self), for: indexPath) as! RelatedVideoCell
+        let entry = entries[indexPath.item]
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: RelatedVideoCell.self),
+                                                      for: indexPath) as! RelatedVideoCell
         cell.update(data: entry.displayData)
         return cell
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        viewForSupplementaryElementOfKind kind: String,
-                        at indexPath: IndexPath) -> UICollectionReusableView
-    {
-        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
-                                                                     withReuseIdentifier: FeaturedVideoDiscoveryHeaderView.reuseIdentifier,
-                                                                     for: indexPath) as! FeaturedVideoDiscoveryHeaderView
-        let sections = visibleSections()
-        header.titleLabel.text = sections[indexPath.section].title
-        return header
-    }
-
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let sections = visibleSections()
-        let section = sections[indexPath.section]
-        let entry = entries(for: section)[indexPath.item]
-        onSelect?(entry.playInfo)
+        onSelect?(entries[indexPath.item].playInfo)
     }
 }
 
@@ -205,18 +144,26 @@ final class FeaturedVideoDiscoveryPlugin: NSObject, CommonPlayerPlugin {
         case uploader
         case related
 
-        var section: FeaturedVideoDiscoveryInfoViewController.Section {
+        var tabTitle: String {
             switch self {
             case .uploader:
-                return .uploader
+                return "博主视频"
             case .related:
-                return .related
+                return "推荐视频"
+            }
+        }
+
+        var emptyText: String {
+            switch self {
+            case .uploader:
+                return "当前没有可展示的博主视频"
+            case .related:
+                return "当前没有可展示的推荐视频"
             }
         }
     }
 
     private struct DiscoveryEntry: Hashable {
-        let source: DiscoverySource
         let playInfo: PlayInfo
     }
 
@@ -225,7 +172,10 @@ final class FeaturedVideoDiscoveryPlugin: NSObject, CommonPlayerPlugin {
     private let detail: VideoDetail?
     private let currentPlayInfo: PlayInfo
     private let sequenceProvider: VideoSequenceProvider?
-    private let discoveryInfoViewController = FeaturedVideoDiscoveryInfoViewController()
+    private let uploaderInfoViewController = FeaturedVideoDiscoveryInfoViewController(title: DiscoverySource.uploader.tabTitle,
+                                                                                      emptyText: DiscoverySource.uploader.emptyText)
+    private let relatedInfoViewController = FeaturedVideoDiscoveryInfoViewController(title: DiscoverySource.related.tabTitle,
+                                                                                     emptyText: DiscoverySource.related.emptyText)
     private let relatedCandidates: [DiscoveryEntry]
     private var uploaderEntries = [DiscoveryEntry]()
     private var uploaderLoadTask: Task<Void, Never>?
@@ -237,7 +187,7 @@ final class FeaturedVideoDiscoveryPlugin: NSObject, CommonPlayerPlugin {
         self.sequenceProvider = sequenceProvider
         relatedCandidates = Self.makeRelatedEntries(detail: detail, currentPlayInfo: currentPlayInfo)
         super.init()
-        discoveryInfoViewController.onSelect = { [weak self] playInfo in
+        let onSelect: (PlayInfo) -> Void = { [weak self] playInfo in
             guard let self else { return }
             let currentSequenceKey = self.sequenceProvider.flatMap { provider in
                 MainActor.assumeIsolated {
@@ -247,7 +197,9 @@ final class FeaturedVideoDiscoveryPlugin: NSObject, CommonPlayerPlugin {
             guard currentSequenceKey != playInfo.sequenceKey else { return }
             self.onPlayTemporary?(playInfo)
         }
-        refreshDiscoveryTab()
+        uploaderInfoViewController.onSelect = onSelect
+        relatedInfoViewController.onSelect = onSelect
+        refreshDiscoveryTabs()
         loadUploaderEntriesIfNeeded()
     }
 
@@ -277,7 +229,7 @@ final class FeaturedVideoDiscoveryPlugin: NSObject, CommonPlayerPlugin {
         uploaderLoadTask = Task { [weak self] in
             guard let self else { return }
             do {
-                let records = try await ApiRequest.requestUpSpaceVideo(mid: mid, lastAid: nil, pageSize: 12)
+                let records = try await ApiRequest.requestUpSpaceVideo(mid: mid, lastAid: nil, pageSize: 18)
                 guard !Task.isCancelled else { return }
 
                 var seenAids = Set<Int>()
@@ -293,35 +245,29 @@ final class FeaturedVideoDiscoveryPlugin: NSObject, CommonPlayerPlugin {
                                             ownerName: record.ownerName,
                                             coverURL: record.pic,
                                             duration: record.duration)
-                    return DiscoveryEntry(source: .uploader, playInfo: playInfo)
+                    return DiscoveryEntry(playInfo: playInfo)
                 }
 
                 await MainActor.run {
-                    self.uploaderEntries = Array(entries.prefix(3))
-                    self.refreshDiscoveryTab()
+                    self.uploaderEntries = Array(entries.prefix(6))
+                    self.refreshDiscoveryTabs()
                 }
             } catch {
                 await MainActor.run {
                     self.uploaderEntries = []
-                    self.refreshDiscoveryTab()
+                    self.refreshDiscoveryTabs()
                 }
             }
         }
     }
 
-    private func refreshDiscoveryTab() {
-        let uploaderEntries = uploaderEntries.map(makeViewEntry(from:))
-        let uploaderAids = Set(uploaderEntries.map(\.playInfo.aid))
-        let relatedEntries = relatedCandidates
-            .filter { !uploaderAids.contains($0.playInfo.aid) }
-            .prefix(3)
-            .map(makeViewEntry(from:))
-        discoveryInfoViewController.update(uploaderEntries: uploaderEntries, relatedEntries: Array(relatedEntries))
+    private func refreshDiscoveryTabs() {
+        uploaderInfoViewController.update(entries: uploaderEntries.prefix(6).map(makeViewEntry(from:)))
+        relatedInfoViewController.update(entries: relatedCandidates.prefix(6).map(makeViewEntry(from:)))
     }
 
     private func makeViewEntry(from entry: DiscoveryEntry) -> FeaturedVideoDiscoveryInfoViewController.Entry {
-        FeaturedVideoDiscoveryInfoViewController.Entry(section: entry.source.section,
-                                                       playInfo: entry.playInfo,
+        FeaturedVideoDiscoveryInfoViewController.Entry(playInfo: entry.playInfo,
                                                        displayData: FeaturedVideoDiscoveryInfoViewController.DiscoveryDisplayData(title: entry.playInfo.title ?? "",
                                                                                                                                   ownerName: entry.playInfo.ownerName ?? "",
                                                                                                                                   pic: entry.playInfo.coverURL))
@@ -329,14 +275,19 @@ final class FeaturedVideoDiscoveryPlugin: NSObject, CommonPlayerPlugin {
 
     private func refreshCustomInfoViewControllers() {
         guard let playerVC else { return }
-        var controllers = playerVC.customInfoViewControllers.filter { $0 !== discoveryInfoViewController }
-        controllers.append(discoveryInfoViewController)
+        var controllers = playerVC.customInfoViewControllers.filter {
+            $0 !== uploaderInfoViewController && $0 !== relatedInfoViewController
+        }
+        controllers.append(uploaderInfoViewController)
+        controllers.append(relatedInfoViewController)
         playerVC.customInfoViewControllers = controllers
     }
 
     private func removeCustomInfoViewControllers() {
         guard let playerVC else { return }
-        playerVC.customInfoViewControllers.removeAll { $0 === discoveryInfoViewController }
+        playerVC.customInfoViewControllers.removeAll {
+            $0 === uploaderInfoViewController || $0 === relatedInfoViewController
+        }
     }
 
     private static func makeRelatedEntries(detail: VideoDetail?, currentPlayInfo: PlayInfo) -> [DiscoveryEntry] {
@@ -356,7 +307,7 @@ final class FeaturedVideoDiscoveryPlugin: NSObject, CommonPlayerPlugin {
                                     ownerName: info.ownerName,
                                     coverURL: info.pic,
                                     duration: info.duration)
-            return DiscoveryEntry(source: .related, playInfo: playInfo)
+            return DiscoveryEntry(playInfo: playInfo)
         }
     }
 }
