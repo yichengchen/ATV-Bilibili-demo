@@ -22,14 +22,11 @@ extension UICollectionViewCell {
 private extension UICollectionViewCell {
     private static var avInfoPanelActionTitleKey: UInt8 = 0
     private static let infoPanelClassNameMarker = "AVInfoPanel"
+    private static var swizzledMethodKeys = Set<String>()
 
     static func startAVInfoPanelSwizzle() {
-        _ = avInfoPanelSwizzleToken
-    }
-
-    static let avInfoPanelSwizzleToken: Void = {
         swizzAVInfoPanelCollectionViewThumbnailCell()
-    }()
+    }
 
     static func swizzAVInfoPanelCollectionViewThumbnailCell() {
         let didUpdateFocusSelector = #selector(didUpdateFocus(in:with:))
@@ -89,6 +86,8 @@ private extension UICollectionViewCell {
                                       originalSelector: Selector,
                                       swizzledSelector: Selector)
     {
+        let swizzleKey = "\(NSStringFromClass(targetClass))::\(NSStringFromSelector(originalSelector))"
+        guard !swizzledMethodKeys.contains(swizzleKey) else { return }
         guard let originalMethod = class_getInstanceMethod(targetClass, originalSelector),
               let baseSwizzledMethod = class_getInstanceMethod(UICollectionViewCell.self, swizzledSelector)
         else { return }
@@ -113,6 +112,8 @@ private extension UICollectionViewCell {
         } else {
             method_exchangeImplementations(originalMethod, targetSwizzledMethod)
         }
+
+        swizzledMethodKeys.insert(swizzleKey)
     }
 
     @objc func swizz_setTitle(_ title: String) {

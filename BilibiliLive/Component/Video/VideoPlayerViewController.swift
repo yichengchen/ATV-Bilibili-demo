@@ -438,6 +438,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
               let nextView = context.nextFocusedView
         else { return }
 
+        refreshAVInfoPanelHookIfNeeded(for: nextView)
         Logger.debug("[FocusDiag] 焦点落在了类: \(type(of: nextView))")
         let dumpResult = dumpViewHierarchy(nextView, depth: 0)
         Logger.debug("[FocusDiag] 子视图结构:\n\(dumpResult)")
@@ -469,6 +470,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
               let nextView = context.nextFocusedView
         else { return }
 
+        refreshAVInfoPanelHookIfNeeded(for: nextView)
         // 从 focused view 的子视图树中查找匹配的 action 标题
         if let title = extractMatchingActionTitle(from: nextView) {
             Logger.debug("[FeedFlow] didUpdateFocus matched action: \(title)")
@@ -477,8 +479,34 @@ class VideoPlayerViewController: CommonPlayerViewController {
     }
 
     private func extractMatchingActionTitle(from view: UIView) -> String? {
+        if let title = extractActionTitle(in: view) {
+            return title
+        }
+        for ancestor in candidateTitleContainers(for: view) {
+            if let title = extractActionTitle(in: ancestor) {
+                return title
+            }
+        }
+        return nil
+    }
+
+    private func extractActionTitle(in view: UIView) -> String? {
         if let accessLabel = view.accessibilityLabel, AutoTriggeredInfoAction(title: accessLabel) != nil {
             return accessLabel
+        }
+        if let label = view as? UILabel {
+            if let text = label.text, AutoTriggeredInfoAction(title: text) != nil {
+                return text
+            }
+            if let attrText = label.attributedText?.string, AutoTriggeredInfoAction(title: attrText) != nil {
+                return attrText
+            }
+        }
+        if let button = view as? UIButton {
+            let candidateTitles = [button.title(for: .focused), button.title(for: .normal)]
+            for title in candidateTitles.compactMap({ $0 }) where AutoTriggeredInfoAction(title: title) != nil {
+                return title
+            }
         }
         for label in collectLabels(in: view, maxDepth: 4) {
             if let text = label.text, AutoTriggeredInfoAction(title: text) != nil {
@@ -489,6 +517,49 @@ class VideoPlayerViewController: CommonPlayerViewController {
             }
         }
         return nil
+    }
+
+    private func candidateTitleContainers(for view: UIView) -> [UIView] {
+        var containers = [UIView]()
+        var seen = Set<ObjectIdentifier>()
+        var currentView = view.superview
+        var remainingDepth = 6
+
+        while let ancestorView = currentView, remainingDepth > 0 {
+            let isInfoPanelContainer = ancestorView is UICollectionViewCell ||
+                NSStringFromClass(type(of: ancestorView)).contains("AVInfoPanel")
+            if isInfoPanelContainer {
+                let identifier = ObjectIdentifier(ancestorView)
+                if !seen.contains(identifier) {
+                    seen.insert(identifier)
+                    containers.append(ancestorView)
+                }
+            }
+            remainingDepth -= 1
+            currentView = ancestorView.superview
+        }
+
+        return containers
+    }
+
+    private func refreshAVInfoPanelHookIfNeeded(for view: UIView) {
+        guard containsAVInfoPanelHierarchy(from: view) else { return }
+        AVInfoPanelCollectionViewThumbnailCellHook.start()
+    }
+
+    private func containsAVInfoPanelHierarchy(from view: UIView) -> Bool {
+        var currentView: UIView? = view
+        var remainingDepth = 8
+
+        while let ancestorView = currentView, remainingDepth > 0 {
+            if NSStringFromClass(type(of: ancestorView)).contains("AVInfoPanel") {
+                return true
+            }
+            remainingDepth -= 1
+            currentView = ancestorView.superview
+        }
+
+        return false
     }
 
     private func collectLabels(in view: UIView, maxDepth: Int) -> [UILabel] {

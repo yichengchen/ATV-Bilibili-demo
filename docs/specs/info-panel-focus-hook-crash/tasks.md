@@ -58,3 +58,23 @@
 - Validation:
   - `fastlane build_simulator` 在沙箱内失败，原因是无法访问 CoreSimulator 与 SwiftPM/clang 缓存目录。
   - `xcodebuild -project BilibiliLive.xcodeproj -scheme BilibiliLive -configuration Debug -destination 'generic/platform=tvOS Simulator' build` 通过。
+
+## Task 4: Support late-loaded AV info panel classes on device
+
+- Status: Done
+- Goal: 让 Hook 在真机上遇到 AVKit 私有类懒加载时仍能后补安装，并增强焦点标题提取以兼容更深的私有子视图层级。
+- Files likely to change:
+  - `BilibiliLive/Extensions/AVInfoPanelCollectionViewThumbnailCell+Hook.swift`
+  - `BilibiliLive/Component/Video/VideoPlayerViewController.swift`
+  - `docs/specs/info-panel-focus-hook-crash/spec.md`
+  - `docs/specs/info-panel-focus-hook-crash/tasks.md`
+- Risks or dependencies:
+  - 重复 swizzle 不能把实现交换回去。
+  - 祖先扫描不能误命中整个信息面板里其他 action 的文本。
+- Definition of done:
+  - Hook 支持重复调用并只对未处理类生效。
+  - 播放器在相关焦点更新时可触发一次延迟补装。
+  - 标题提取可从焦点视图向上回溯到合适的祖先 cell / 容器。
+- Validation:
+  - `fastlane build_simulator` 通过。
+  - 真机补充手测待验证。
