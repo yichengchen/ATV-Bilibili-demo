@@ -108,6 +108,9 @@ enum Settings {
     @UserDefaultCodable("Settings.featuredDurationLimit", defaultValue: .minutes10)
     static var featuredDurationLimit: FeaturedDurationLimit
 
+    @UserDefault("Settings.featuredPersonalizedRankingEnabled", defaultValue: false)
+    static var featuredPersonalizedRankingEnabled: Bool
+
     @UserDefaultCodable("Settings.SponsorBlockType", defaultValue: SponsorBlockType.none)
     static var enableSponsorBlock: SponsorBlockType
 

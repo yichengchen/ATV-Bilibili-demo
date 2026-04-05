@@ -154,6 +154,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
     var onPlaybackStarted: (() -> Void)?
     var onPlayInfoChanged: ((PlayInfo) -> Void)?
     var onDismissWithPlayInfo: ((PlayInfo) -> Void)?
+    var onItemWatched: ((PlayInfo, Int) -> Void)?
 
     private let playMode: VideoPlayerMode
     private let playContextCache: PlayContextCache?
@@ -165,6 +166,7 @@ class VideoPlayerViewController: CommonPlayerViewController {
     private var currentRetryKey: String
     private var hasRetriedCurrentItem = false
     private var isStopping = false
+    private var activeWatchSignalPlayInfo: PlayInfo?
 
     init(playInfo: PlayInfo,
          playMode: VideoPlayerMode = .regular,
@@ -257,11 +259,18 @@ class VideoPlayerViewController: CommonPlayerViewController {
     }
 
     override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
         let isExiting = isBeingDismissed || isMovingFromParent || navigationController?.isBeingDismissed == true
+        let exitWatchSignal = isExiting ? consumeCurrentPlaybackWatchSignal() : nil
+        let dismissPlayInfo = playMode == .feedFlow ? viewModel.currentPlayInfo : nil
+        super.viewDidDisappear(animated)
         guard isExiting else { return }
         if playMode == .feedFlow {
-            onDismissWithPlayInfo?(viewModel.currentPlayInfo)
+            if let exitWatchSignal {
+                onItemWatched?(exitWatchSignal.0, exitWatchSignal.1)
+            }
+            if let dismissPlayInfo {
+                onDismissWithPlayInfo?(dismissPlayInfo)
+            }
         }
         stopAsyncWork()
     }
@@ -272,8 +281,14 @@ class VideoPlayerViewController: CommonPlayerViewController {
     }
 
     override func playerDidStart(player: AVPlayer) {
-        guard playMode == .preview else { return }
-        onPlaybackStarted?()
+        switch playMode {
+        case .preview:
+            onPlaybackStarted?()
+        case .feedFlow:
+            activeWatchSignalPlayInfo = viewModel.currentPlayInfo
+        case .regular:
+            break
+        }
     }
 
     override func playerDidStall(player: AVPlayer) {
@@ -290,6 +305,11 @@ class VideoPlayerViewController: CommonPlayerViewController {
     }
 
     private func handlePlayInfoChanged(_ info: PlayInfo) {
+        if playMode == .feedFlow,
+           let watchSignal = consumeCurrentPlaybackWatchSignal()
+        {
+            onItemWatched?(watchSignal.0, watchSignal.1)
+        }
         if currentRetryKey != info.sequenceKey {
             currentRetryKey = info.sequenceKey
             hasRetriedCurrentItem = false
@@ -308,12 +328,23 @@ class VideoPlayerViewController: CommonPlayerViewController {
     private func stopAsyncWork() {
         guard !isStopping else { return }
         isStopping = true
+        activeWatchSignalPlayInfo = nil
         loadTask?.cancel()
         loadTask = nil
         cancelable.removeAll()
         Task { [mediaWarmupManager] in
             await mediaWarmupManager?.cancelAll()
         }
+    }
+
+    private func consumeCurrentPlaybackWatchSignal() -> (PlayInfo, Int)? {
+        defer { activeWatchSignalPlayInfo = nil }
+        guard let playInfo = activeWatchSignalPlayInfo,
+              let watchedSeconds = currentPlaybackTimeInSeconds()
+        else {
+            return nil
+        }
+        return (playInfo, watchedSeconds)
     }
 
     private func handleLoadFailure(message: String) {

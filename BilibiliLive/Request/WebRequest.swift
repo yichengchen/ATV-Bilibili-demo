@@ -313,6 +313,10 @@ extension WebRequest {
         }
     }
 
+    static func requestHistory() async throws -> [HistoryData] {
+        try await request(url: "https://api.bilibili.com/x/v2/history")
+    }
+
     static func requestPlayerInfo(aid: Int, cid: Int) async throws -> PlayerInfo {
         try await request(url: EndPoint.playerInfo, parameters: ["aid": aid, "cid": cid])
     }

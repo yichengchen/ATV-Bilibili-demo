@@ -74,6 +74,7 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
     private var lastSourceIdx: Int?
     private var isLoading = false
     private var activeDurationLimit = Settings.featuredDurationLimit
+    private var activePersonalizedEnabled = Settings.featuredPersonalizedRankingEnabled
     private var previewTask: Task<Void, Never>?
     private var dataLoadTask: Task<Void, Never>?
     private let playContextCache = PlayContextCache()
@@ -83,6 +84,10 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
     private var lastPlayedSequenceKey: String?
     private var hasUserInteractedSinceReload = false
     private var isPresentingFeedFlow = false
+
+    // 智能排序状态
+    private var currentInterestProfile: FeaturedInterestProfile?
+    private var sessionWatchSignals: [(PlayInfo, Int)] = []
 
     private var previewController: VideoPlayerViewController?
 
@@ -218,7 +223,9 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        if activeDurationLimit != Settings.featuredDurationLimit {
+        if activeDurationLimit != Settings.featuredDurationLimit
+            || activePersonalizedEnabled != Settings.featuredPersonalizedRankingEnabled
+        {
             reloadData()
         }
     }
@@ -248,18 +255,32 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
     func reloadData() {
         dataLoadTask?.cancel()
         activeDurationLimit = Settings.featuredDurationLimit
+        activePersonalizedEnabled = Settings.featuredPersonalizedRankingEnabled
         suspendPreview(cancelWarmups: true)
         items = []
         focusedIndex = 0
         lastSourceIdx = nil
         lastPlayedSequenceKey = nil
         hasUserInteractedSinceReload = false
+        sessionWatchSignals = []
+        currentInterestProfile = nil
         configureSequenceProvider(with: [])
         listCollectionView.reloadData()
         emptyStateLabel.isHidden = true
-        if let cachedSnapshot = featuredFeedCache.load(durationLimit: activeDurationLimit),
-           !cachedSnapshot.items.isEmpty
-        {
+
+        // 尝试从缓存加载画像
+        if activePersonalizedEnabled {
+            let mid = currentAccountMID
+            currentInterestProfile = FeaturedInterestProfileCache.shared.load(
+                mid: mid, rankVersion: FeaturedRanker.rankVersion
+            )
+        }
+
+        if let cachedSnapshot = featuredFeedCache.load(
+            durationLimit: activeDurationLimit,
+            accountMID: currentAccountMID,
+            personalizedEnabled: activePersonalizedEnabled
+        ), !cachedSnapshot.items.isEmpty {
             applyCachedSnapshot(cachedSnapshot)
             dataLoadTask = Task { [weak self] in
                 await self?.refreshFeaturedFeedFromStart(replaceVisibleContentIfIdle: true, showLoading: false)
@@ -326,12 +347,40 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
 
     @MainActor
     private func refreshFeaturedFeedFromStart(replaceVisibleContentIfIdle: Bool, showLoading: Bool) async {
+        // 智能排序开启时后台刷新画像
+        if activePersonalizedEnabled, currentInterestProfile == nil {
+            await refreshInterestProfileInBackground()
+        }
+
         do {
-            let snapshot = try await buildFreshSnapshot(targetCount: initialFilteredTargetCount, maxSourcePages: initialMaxSourcePages)
+            var snapshot = try await buildFreshSnapshot(targetCount: initialFilteredTargetCount, maxSourcePages: initialMaxSourcePages)
             guard !Task.isCancelled else { return }
+
+            // 智能排序
+            if activePersonalizedEnabled {
+                let profile = effectiveProfile()
+                if profile.sampleTier != .none {
+                    let rankedItems = FeaturedRanker.rank(
+                        snapshot.items.map(RecommendedVideoItem.init(cached:)),
+                        profile: profile
+                    )
+                    snapshot = FeaturedFeedCacheSnapshot(
+                        savedAt: snapshot.savedAt,
+                        durationLimit: snapshot.durationLimit,
+                        lastSourceIdx: snapshot.lastSourceIdx,
+                        items: rankedItems.map(\.cachedValue),
+                        accountMID: currentAccountMID,
+                        personalizedEnabled: true,
+                        rankVersion: FeaturedRanker.rankVersion
+                    )
+                }
+            }
+
             featuredFeedCache.save(items: snapshot.items.map(RecommendedVideoItem.init(cached:)),
                                    lastSourceIdx: snapshot.lastSourceIdx,
-                                   durationLimit: snapshot.durationLimit)
+                                   durationLimit: snapshot.durationLimit,
+                                   accountMID: currentAccountMID,
+                                   personalizedEnabled: activePersonalizedEnabled)
             if snapshot.items.isEmpty {
                 guard items.isEmpty else { return }
                 restoreEmptyState()
@@ -376,7 +425,10 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         return FeaturedFeedCacheSnapshot(savedAt: Date(),
                                          durationLimit: activeDurationLimit,
                                          lastSourceIdx: nextSourceIdx,
-                                         items: loadedItems.map(\.cachedValue))
+                                         items: loadedItems.map(\.cachedValue),
+                                         accountMID: currentAccountMID,
+                                         personalizedEnabled: activePersonalizedEnabled,
+                                         rankVersion: FeaturedRanker.rankVersion)
     }
 
     @MainActor
@@ -415,11 +467,22 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
     @MainActor
     private func appendLoadedItems(_ appended: [RecommendedVideoItem]) {
         guard !appended.isEmpty else { return }
+        // 智能排序：只排新 batch
+        let sorted: [RecommendedVideoItem]
+        if activePersonalizedEnabled {
+            let profile = effectiveProfile()
+            sorted = FeaturedRanker.rankBatch(appended, profile: profile)
+        } else {
+            sorted = appended
+        }
         let start = items.count
-        items.append(contentsOf: appended)
-        sequenceProvider.append(appended.map(\.playInfo))
-        featuredFeedCache.save(items: items, lastSourceIdx: lastSourceIdx, durationLimit: activeDurationLimit)
-        let indexPaths = (start..<(start + appended.count)).map { IndexPath(item: $0, section: 0) }
+        items.append(contentsOf: sorted)
+        sequenceProvider.append(sorted.map(\.playInfo))
+        featuredFeedCache.save(items: items, lastSourceIdx: lastSourceIdx,
+                               durationLimit: activeDurationLimit,
+                               accountMID: currentAccountMID,
+                               personalizedEnabled: activePersonalizedEnabled)
+        let indexPaths = (start..<(start + sorted.count)).map { IndexPath(item: $0, section: 0) }
         guard listCollectionView.numberOfItems(inSection: 0) == start else {
             listCollectionView.reloadData()
             return
@@ -791,6 +854,12 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
                 self?.applyReturnedPlaybackSelection(info)
             }
         }
+        // 智能排序：收集会话内正向观看信号
+        if activePersonalizedEnabled {
+            player.onItemWatched = { [weak self] playInfo, watchedSeconds in
+                self?.handleItemWatched(playInfo: playInfo, watchedSeconds: watchedSeconds)
+            }
+        }
         present(player, animated: true)
     }
 
@@ -802,6 +871,51 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
             return nil
         }
         return previewController.currentPlaybackTimeInSeconds()
+    }
+
+    // MARK: - 智能排序辅助
+
+    private var currentAccountMID: Int {
+        ApiRequest.getToken()?.mid ?? 0
+    }
+
+    /// 返回叠加了会话信号的有效画像
+    private func effectiveProfile() -> FeaturedInterestProfile {
+        let base = currentInterestProfile ?? .empty
+        return base.boosted(with: sessionWatchSignals)
+    }
+
+    /// 后台加载历史记录并构建兴趣画像
+    private func refreshInterestProfileInBackground() async {
+        let mid = currentAccountMID
+        let history: [HistoryData]
+        do {
+            history = try await WebRequest.requestHistory()
+        } catch {
+            Logger.warn("featured personalized ranking profile refresh failed: \(error)")
+            return
+        }
+        guard !Task.isCancelled else { return }
+
+        let profile = FeaturedInterestProfileBuilder.build(from: history)
+        currentInterestProfile = profile
+
+        if profile.sampleTier != .none {
+            FeaturedInterestProfileCache.shared.save(profile, mid: mid, rankVersion: FeaturedRanker.rankVersion)
+        }
+    }
+
+    /// 处理播放器回报的观看信号
+    private func handleItemWatched(playInfo: PlayInfo, watchedSeconds: Int) {
+        // 正向阈值: >= 8s 或 >= 25% duration
+        let duration = playInfo.duration ?? 0
+        let isPositive = watchedSeconds >= 8 || (duration > 0 && Double(watchedSeconds) >= Double(duration) * 0.25)
+        guard isPositive else { return }
+
+        // 检查是否已记录过相同 item
+        if sessionWatchSignals.contains(where: { $0.0.sequenceKey == playInfo.sequenceKey }) { return }
+
+        sessionWatchSignals.append((playInfo, watchedSeconds))
     }
 }
 

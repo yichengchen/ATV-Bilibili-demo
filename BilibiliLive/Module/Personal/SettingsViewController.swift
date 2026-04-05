@@ -158,6 +158,9 @@ class SettingsViewController: UIViewController {
                 {
                     Settings.featuredDurationLimit = $0
                 }
+                Toggle(title: "精选智能排序",
+                       setting: Settings.featuredPersonalizedRankingEnabled,
+                       onChange: Settings.featuredPersonalizedRankingEnabled.toggle())
             }
 
             SectionModel(title: "音视频") {
