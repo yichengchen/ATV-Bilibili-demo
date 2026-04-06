@@ -39,6 +39,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private var videoInfo = [PlaybackInfo]()
     private var segmentInfoCache = SidxDownloader()
     private var hasAudioInMasterListAdded = false
+    private var audioRenditionIndex = 0
     private(set) var playInfo: VideoPlayURLInfo?
     private var hasSubtitle = false
     private var hasPreferSubtitleAdded = false
@@ -60,6 +61,8 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
     private func reset() {
         playlists.removeAll()
+        audioRenditionIndex = 0
+        hasAudioInMasterListAdded = false
         masterPlaylist = """
         #EXTM3U
         #EXT-X-VERSION:6
@@ -173,9 +176,13 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
     private func addAudioPlayBackInfo(info: VideoPlayURLInfo.DashInfo.DashMediaInfo, url: String, duration: Int) {
         guard !videoCodecBlackList.contains(info.codecs) else { return }
-        let defaultStr = !hasAudioInMasterListAdded ? "YES" : "NO"
+        let isFirst = !hasAudioInMasterListAdded
+        hasAudioInMasterListAdded = true
+        let defaultStr = isFirst ? "YES" : "NO"
+        audioRenditionIndex += 1
+        let name = isFirst ? "Main" : "Main \(audioRenditionIndex)"
         let content = """
-        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),GROUP-ID="audio",NAME="Main",URI="\(URLs.customDashPrefix)\(videoInfo.count)"
+        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),GROUP-ID="audio",NAME="\(name)",URI="\(URLs.customDashPrefix)\(videoInfo.count)"
 
         """
 
@@ -184,10 +191,13 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     }
 
     private func addAudioPlayBackInfo(codec: String, bandwidth: Int, duration: Int, url: String) {
-        let defaultStr = !hasAudioInMasterListAdded ? "YES" : "NO"
+        let isFirst = !hasAudioInMasterListAdded
         hasAudioInMasterListAdded = true
+        let defaultStr = isFirst ? "YES" : "NO"
+        audioRenditionIndex += 1
+        let name = isFirst ? "Main" : "Main \(audioRenditionIndex)"
         let content = """
-        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),GROUP-ID="audio",NAME="Main",URI="\(URLs.customPrefix)\(playlists.count)"
+        #EXT-X-MEDIA:TYPE=AUDIO,DEFAULT=\(defaultStr),GROUP-ID="audio",NAME="\(name)",URI="\(URLs.customPrefix)\(playlists.count)"
 
         """
         masterPlaylist.append(content)

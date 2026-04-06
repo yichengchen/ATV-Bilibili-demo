@@ -29,6 +29,10 @@ class VideoNextProvider {
 
     private var index = 0
     private let playSeq: [PlayInfo]
+    var count: Int {
+        return playSeq.count
+    }
+
     func reset() {
         index = 0
     }
@@ -37,6 +41,14 @@ class VideoNextProvider {
         index += 1
         if index < playSeq.count {
             return playSeq[index]
+        }
+        return nil
+    }
+
+    func peekNext() -> PlayInfo? {
+        let nextIndex = index + 1
+        if nextIndex < playSeq.count {
+            return playSeq[nextIndex]
         }
         return nil
     }

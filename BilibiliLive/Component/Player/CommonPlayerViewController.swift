@@ -14,6 +14,7 @@ class CommonPlayerViewController: UIViewController {
     private var observations = Set<NSKeyValueObservation>()
     private var rateObserver: NSKeyValueObservation?
     private var statusObserver: NSKeyValueObservation?
+    private var endOfPlayObserver: NSObjectProtocol?
     private var isEnd = false
 
     override func viewDidLoad() {
@@ -38,6 +39,10 @@ class CommonPlayerViewController: UIViewController {
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         activePlugins.forEach { $0.playerDidDismiss(playerVC: playerVC) }
+        if let endOfPlayObserver {
+            NotificationCenter.default.removeObserver(endOfPlayObserver)
+            self.endOfPlayObserver = nil
+        }
     }
 
     override var preferredFocusEnvironments: [UIFocusEnvironment] {
@@ -127,8 +132,10 @@ extension CommonPlayerViewController {
                 break
             }
         }
-        NotificationCenter.default.removeObserver(self, name: .AVPlayerItemDidPlayToEndTime, object: nil)
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerItem, queue: .main) { [weak self] note in
+        if let endOfPlayObserver {
+            NotificationCenter.default.removeObserver(endOfPlayObserver)
+        }
+        endOfPlayObserver = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: playerItem, queue: .main) { [weak self] note in
             guard let self, let player = playerVC.player else { return }
             isEnd = true
             activePlugins.forEach { $0.playerDidEnd(player: player) }

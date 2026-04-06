@@ -8,6 +8,7 @@
 import AVKit
 
 class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
+    private let playNextActionIdentifierPrefix = "play.next"
     var onPlayEnd: (() -> Void)?
     var onPlayNextWithInfo: ((PlayInfo) -> Void)?
 
@@ -20,6 +21,30 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
 
     func playerDidLoad(playerVC: AVPlayerViewController) {
         self.playerVC = playerVC
+    }
+
+    func playerWillStart(player: AVPlayer) {
+        guard let playerVC, let nextProvider, nextProvider.count > 1 else { return }
+
+        MainActor.callSafely { [weak self] in
+            guard let self = self else { return }
+            // Remove previous "next" action if present
+            if let last = playerVC.infoViewActions.last,
+               last.identifier.rawValue.hasPrefix(self.playNextActionIdentifierPrefix)
+            {
+                playerVC.infoViewActions.removeLast()
+            }
+
+            if let next = nextProvider.peekNext() {
+                let nextAction = UIAction(title: "下一集",
+                                          image: UIImage(systemName: "forward.end.fill"),
+                                          identifier: .init(rawValue: "\(self.playNextActionIdentifierPrefix).\(next.aid).\(next.cid ?? 0)"))
+                { [weak self] _ in
+                    _ = self?.playNext()
+                }
+                playerVC.infoViewActions.append(nextAction)
+            }
+        }
     }
 
     func addMenuItems(current: inout [UIMenuElement]) -> [UIMenuElement] {

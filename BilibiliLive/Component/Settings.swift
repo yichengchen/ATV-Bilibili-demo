@@ -21,19 +21,19 @@ enum FeedDisplayStyle: Codable, CaseIterable {
 
 enum AreaLimitServer: String, Codable, CaseIterable {
     case nepnep = "bili.nepnep.moe"
-    case atri = "atri.ink"
     case suysker = "bilibili.suysker.xyz"
-    case xcnya = "bili.xcnya.cn"
-    case melusine = "melusine.moe"
+    case llix = "bili.lli.cx"
+    case kirara = "bstar.kirara-fantasia.moe"
+    case bili33 = "hk.biliroaming.bili33.top"
     case custom
 
     var title: String {
         switch self {
         case .nepnep: return "bili.nepnep.moe (推荐)"
-        case .atri: return "atri.ink"
         case .suysker: return "bilibili.suysker.xyz"
-        case .xcnya: return "bili.xcnya.cn"
-        case .melusine: return "melusine.moe (港澳台)"
+        case .llix: return "bili.lli.cx"
+        case .kirara: return "bstar.kirara-fantasia.moe"
+        case .bili33: return "hk.biliroaming.bili33.top (港澳)"
         case .custom: return "自定义服务器"
         }
     }
@@ -41,7 +41,7 @@ enum AreaLimitServer: String, Codable, CaseIterable {
     /// 服务器支持的区域
     var supportedRegions: String {
         switch self {
-        case .melusine: return "港澳台"
+        case .bili33: return "港澳"
         default: return "全区域"
         }
     }

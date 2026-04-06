@@ -504,12 +504,12 @@ extension WebRequest {
             "mobi_app": "android",
         ]
 
-        // 添加 access_key
+        // 添加 access_key (代理服务器要求登录)
         if let access_key = ApiRequest.getToken()?.accessToken {
             parameters["access_key"] = access_key
             Logger.debug("[AreaLimit] 已添加access_key")
         } else {
-            Logger.warn("[AreaLimit] 未找到access_key")
+            Logger.warn("[AreaLimit] 未找到access_key，代理服务器可能拒绝请求（需要登录B站账号）")
         }
 
         // 添加 buvid (设备标识)
@@ -547,6 +547,22 @@ extension WebRequest {
                                                              dataObj: "result")
             Logger.info("[AreaLimit] 请求成功")
             return result
+        } catch let error as RequestError {
+            if case let .statusFail(code, message) = error {
+                // 代理服务器常见错误码
+                if code == -101 || code == 401 {
+                    Logger.warn("[AreaLimit] 代理服务器要求登录: \(message)，请检查B站账号是否已登录或token是否过期")
+                } else if code == -3 {
+                    Logger.warn("[AreaLimit] 代理服务器API密钥错误: \(message)，可能需要切换服务器")
+                } else if code == -412 {
+                    Logger.warn("[AreaLimit] 代理服务器拒绝请求: \(message)")
+                } else {
+                    Logger.warn("[AreaLimit] 代理服务器返回错误: code=\(code), message=\(message)")
+                }
+            } else {
+                Logger.warn("[AreaLimit] 请求失败: \(error)")
+            }
+            throw error
         } catch {
             Logger.warn("[AreaLimit] 请求失败: \(error)")
             throw error
