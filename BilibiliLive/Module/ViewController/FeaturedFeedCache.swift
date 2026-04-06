@@ -7,15 +7,17 @@
 
 import Foundation
 
-struct CachedRecommendedVideoItem: Codable {
+struct CachedFeedFlowItem: Codable {
     let aid: Int
-    let cid: Int
-    let idx: Int
+    let cid: Int?
+    let epid: Int?
+    let seasonId: Int?
+    let subType: Int?
     let title: String
     let ownerName: String
     let coverURL: String?
     let avatarURL: String?
-    let duration: Int
+    let duration: Int?
     let durationText: String
     let viewCountText: String?
     let danmakuCountText: String?
@@ -26,15 +28,16 @@ struct FeaturedFeedCacheSnapshot: Codable {
     let savedAt: Date
     let durationLimit: FeaturedDurationLimit
     let lastSourceIdx: Int?
-    let items: [CachedRecommendedVideoItem]
+    let items: [CachedFeedFlowItem]
     let accountMID: Int
     let personalizedEnabled: Bool
     let rankVersion: Int
+    let contentFilterVersion: Int
 
     // 向后兼容：旧快照不含新字段时解码默认值
     enum CodingKeys: String, CodingKey {
         case savedAt, durationLimit, lastSourceIdx, items
-        case accountMID, personalizedEnabled, rankVersion
+        case accountMID, personalizedEnabled, rankVersion, contentFilterVersion
     }
 
     init(from decoder: Decoder) throws {
@@ -42,14 +45,16 @@ struct FeaturedFeedCacheSnapshot: Codable {
         savedAt = try container.decode(Date.self, forKey: .savedAt)
         durationLimit = try container.decode(FeaturedDurationLimit.self, forKey: .durationLimit)
         lastSourceIdx = try container.decodeIfPresent(Int.self, forKey: .lastSourceIdx)
-        items = try container.decode([CachedRecommendedVideoItem].self, forKey: .items)
+        items = try container.decode([CachedFeedFlowItem].self, forKey: .items)
         accountMID = try container.decodeIfPresent(Int.self, forKey: .accountMID) ?? 0
         personalizedEnabled = try container.decodeIfPresent(Bool.self, forKey: .personalizedEnabled) ?? false
         rankVersion = try container.decodeIfPresent(Int.self, forKey: .rankVersion) ?? 0
+        contentFilterVersion = try container.decodeIfPresent(Int.self, forKey: .contentFilterVersion) ?? 0
     }
 
     init(savedAt: Date, durationLimit: FeaturedDurationLimit, lastSourceIdx: Int?,
-         items: [CachedRecommendedVideoItem], accountMID: Int, personalizedEnabled: Bool, rankVersion: Int)
+         items: [CachedFeedFlowItem], accountMID: Int, personalizedEnabled: Bool,
+         rankVersion: Int, contentFilterVersion: Int)
     {
         self.savedAt = savedAt
         self.durationLimit = durationLimit
@@ -58,14 +63,17 @@ struct FeaturedFeedCacheSnapshot: Codable {
         self.accountMID = accountMID
         self.personalizedEnabled = personalizedEnabled
         self.rankVersion = rankVersion
+        self.contentFilterVersion = contentFilterVersion
     }
 }
 
-extension RecommendedVideoItem {
-    init(cached item: CachedRecommendedVideoItem) {
+extension FeedFlowItem {
+    init(cached item: CachedFeedFlowItem) {
         aid = item.aid
         cid = item.cid
-        idx = item.idx
+        epid = item.epid
+        seasonId = item.seasonId
+        subType = item.subType
         title = item.title
         ownerName = item.ownerName
         coverURL = item.coverURL.flatMap(URL.init(string:))
@@ -75,21 +83,26 @@ extension RecommendedVideoItem {
         viewCountText = item.viewCountText ?? ""
         danmakuCountText = item.danmakuCountText ?? ""
         reasonText = item.reasonText
+        identityKey = FeedFlowItem.makeIdentityKey(aid: item.aid,
+                                                   epid: item.epid,
+                                                   seasonId: item.seasonId)
     }
 
-    var cachedValue: CachedRecommendedVideoItem {
-        CachedRecommendedVideoItem(aid: aid,
-                                   cid: cid,
-                                   idx: idx,
-                                   title: title,
-                                   ownerName: ownerName,
-                                   coverURL: coverURL?.absoluteString,
-                                   avatarURL: avatarURL?.absoluteString,
-                                   duration: duration,
-                                   durationText: durationText,
-                                   viewCountText: viewCountText,
-                                   danmakuCountText: danmakuCountText,
-                                   reasonText: reasonText)
+    var cachedValue: CachedFeedFlowItem {
+        CachedFeedFlowItem(aid: aid,
+                           cid: cid,
+                           epid: epid,
+                           seasonId: seasonId,
+                           subType: subType,
+                           title: title,
+                           ownerName: ownerName,
+                           coverURL: coverURL?.absoluteString,
+                           avatarURL: avatarURL?.absoluteString,
+                           duration: duration,
+                           durationText: durationText,
+                           viewCountText: viewCountText,
+                           danmakuCountText: danmakuCountText,
+                           reasonText: reasonText)
     }
 }
 
@@ -110,7 +123,8 @@ final class FeaturedFeedCache {
         guard let data = UserDefaults.standard.data(forKey: storageKey),
               let snapshot = try? decoder.decode(FeaturedFeedCacheSnapshot.self, from: data),
               snapshot.durationLimit == durationLimit,
-              Date().timeIntervalSince(snapshot.savedAt) <= ttl
+              Date().timeIntervalSince(snapshot.savedAt) <= ttl,
+              snapshot.contentFilterVersion == FeaturedContentSafetyFilter.version
         else {
             return nil
         }
@@ -121,7 +135,7 @@ final class FeaturedFeedCache {
         return snapshot
     }
 
-    func save(items: [RecommendedVideoItem], lastSourceIdx: Int?,
+    func save(items: [FeedFlowItem], lastSourceIdx: Int?,
               durationLimit: FeaturedDurationLimit,
               accountMID: Int = 0, personalizedEnabled: Bool = false)
     {
@@ -131,7 +145,8 @@ final class FeaturedFeedCache {
                                                  items: items.map(\.cachedValue),
                                                  accountMID: accountMID,
                                                  personalizedEnabled: personalizedEnabled,
-                                                 rankVersion: FeaturedRanker.rankVersion)
+                                                 rankVersion: FeaturedRanker.rankVersion,
+                                                 contentFilterVersion: FeaturedContentSafetyFilter.version)
         guard let data = try? encoder.encode(snapshot) else { return }
         UserDefaults.standard.set(data, forKey: storageKey)
     }

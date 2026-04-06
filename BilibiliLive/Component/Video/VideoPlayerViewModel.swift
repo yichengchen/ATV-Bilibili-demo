@@ -37,6 +37,7 @@ class VideoPlayerViewModel {
     private let playMode: VideoPlayerMode
     private let playContextCache: PlayContextCache?
     private let mediaWarmupManager: PlayerMediaWarmupManager?
+    private let feedFlowConfiguration: FeedFlowPlayerConfiguration
     private let previewMuted: Bool
     private let startTimeOverride: Int?
     private let startTimeOverrideSequenceKey: String
@@ -50,12 +51,14 @@ class VideoPlayerViewModel {
          playContextCache: PlayContextCache? = nil,
          mediaWarmupManager: PlayerMediaWarmupManager? = nil,
          previewMuted: Bool = true,
-         startTimeOverride: Int? = nil)
+         startTimeOverride: Int? = nil,
+         feedFlowConfiguration: FeedFlowPlayerConfiguration = .empty)
     {
         self.playInfo = playInfo
         self.playMode = playMode
         self.playContextCache = playContextCache
         self.mediaWarmupManager = mediaWarmupManager
+        self.feedFlowConfiguration = feedFlowConfiguration
         self.previewMuted = previewMuted
         self.startTimeOverride = startTimeOverride
         startTimeOverrideSequenceKey = playInfo.sequenceKey
@@ -88,9 +91,7 @@ class VideoPlayerViewModel {
     }
 
     private func initPlayInfo() async throws {
-        if !playInfo.isCidVaild {
-            playInfo.cid = try await WebRequest.requestCid(aid: playInfo.aid)
-        }
+        playInfo = try await PlayInfoResolver.resolve(playInfo)
         BiliBiliUpnpDMR.shared.sendVideoSwitch(aid: playInfo.aid, cid: playInfo.cid ?? 0)
     }
 
@@ -287,13 +288,13 @@ class VideoPlayerViewModel {
         var plugins: [CommonPlayerPlugin] = [playplugin, danmu, playSpeed, upnp, debug, playlist]
 
         if playMode == .feedFlow {
-            let discovery = FeaturedVideoDiscoveryPlugin(detail: data.detail,
-                                                         currentPlayInfo: playInfo,
-                                                         sequenceProvider: sequenceProvider)
-            discovery.onPlayTemporary = { [weak self] info in
-                self?.playTemporaryOverride(info)
-            }
-            plugins.append(discovery)
+            let context = FeedFlowPluginContext(detail: data.detail,
+                                                currentPlayInfo: playInfo,
+                                                sequenceProvider: sequenceProvider,
+                                                playTemporaryOverride: { [weak self] info in
+                                                    self?.playTemporaryOverride(info)
+                                                })
+            plugins.append(contentsOf: feedFlowConfiguration.makeAdditionalPlugins(context))
         }
 
         // 添加画质选择器插件

@@ -146,9 +146,6 @@ actor PlayContextCache {
     }
 
     private func resolvePlayInfo(_ playInfo: PlayInfo) async throws -> PlayInfo {
-        guard !playInfo.isCidVaild else { return playInfo }
-        var resolved = playInfo
-        resolved.cid = try await WebRequest.requestCid(aid: playInfo.aid)
-        return resolved
+        try await PlayInfoResolver.resolve(playInfo)
     }
 }
