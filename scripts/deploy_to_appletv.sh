@@ -185,6 +185,20 @@ build_app() {
     local destination="generic/platform=tvOS"
     local derived_data_path="${BUILD_DIR}/DerivedData"
 
+    # 确保 tvOS 平台完整安装（SDK + runtime）
+    # Apple TV 自动更新 tvOS 后，Xcode 可能有 SDK 但缺少 runtime，导致找不到 destination
+    local tvos_destinations
+    tvos_destinations=$(xcodebuild -project "${PROJECT_NAME}.xcodeproj" -scheme "$SCHEME" -showdestinations 2>&1 | grep "platform:tvOS," | grep -v "error:" | head -1)
+    if [ -z "$tvos_destinations" ]; then
+        print_warning "tvOS 平台不完整，正在下载 SDK 和运行时..."
+        if ! xcodebuild -downloadPlatform tvOS; then
+            print_error "tvOS 平台下载失败"
+            print_info "请手动安装: Xcode > Settings > Components > tvOS"
+            return 1
+        fi
+        print_success "tvOS 平台下载完成"
+    fi
+
     print_info "开始构建..."
     echo ""
 

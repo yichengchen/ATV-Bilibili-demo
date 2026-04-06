@@ -43,16 +43,18 @@ if [[ "${FIX_PERMS}" == "1" && -n "${latest_dd}" ]]; then
   chmod -R u+rw "${latest_dd}/SourcePackages" || true
 fi
 
-# Ensure tvOS SDK is installed (Apple TV may auto-update to a newer tvOS
-# version that Xcode doesn't have the SDK for yet).
-if ! xcodebuild -showsdks 2>/dev/null | grep -q "appletvos"; then
-  echo "[2c] tvOS SDK not found. Downloading..."
+# Ensure tvOS platform is fully installed (SDK + runtime).
+# Apple TV auto-updates can leave Xcode with the SDK but missing the runtime,
+# causing "tvOS X.X is not installed" even though -showsdks lists it.
+tvos_dest=$(xcodebuild -project "${PROJECT}.xcodeproj" -scheme "${SCHEME}" -showdestinations 2>&1 | grep "platform:tvOS," | grep -v "error:" | head -1)
+if [[ -z "${tvos_dest}" ]]; then
+  echo "[2c] tvOS platform incomplete. Downloading SDK + runtime..."
   if ! xcodebuild -downloadPlatform tvOS; then
     echo "ERROR: Failed to download tvOS platform."
     echo "Try: open Xcode > Settings > Components and install tvOS manually."
     exit 1
   fi
-  echo "tvOS SDK downloaded successfully."
+  echo "tvOS platform downloaded successfully."
 fi
 
 echo "[3/4] Building ${SCHEME} for Apple TV..."
