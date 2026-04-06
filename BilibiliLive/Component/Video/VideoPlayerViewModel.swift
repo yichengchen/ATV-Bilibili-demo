@@ -287,6 +287,16 @@ class VideoPlayerViewModel {
 
         var plugins: [CommonPlayerPlugin] = [playplugin, danmu, playSpeed, upnp, debug, playlist]
 
+        if !data.isBangumi, let detail = data.detail {
+            let infoTabs = VideoPlayerInfoTabsPlugin(detail: detail,
+                                                     currentPlayInfo: playInfo,
+                                                     sequenceProvider: sequenceProvider)
+            infoTabs.onSelectDiscovery = { [weak self] info in
+                self?.playTemporaryOverride(info)
+            }
+            plugins.append(infoTabs)
+        }
+
         if playMode == .feedFlow {
             let context = FeedFlowPluginContext(detail: data.detail,
                                                 currentPlayInfo: playInfo,

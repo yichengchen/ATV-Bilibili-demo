@@ -59,15 +59,7 @@ final class FeaturedFeedFlowDataSource: FeedFlowDataSource {
         "\(currentAccountMID)-\(Settings.featuredDurationLimit.title)-\(Settings.featuredPersonalizedRankingEnabled)-\(FeaturedRanker.rankVersion)-\(FeaturedContentSafetyFilter.version)"
     }
 
-    var playerConfiguration: FeedFlowPlayerConfiguration {
-        FeedFlowPlayerConfiguration { context in
-            let discovery = FeaturedVideoDiscoveryPlugin(detail: context.detail,
-                                                         currentPlayInfo: context.currentPlayInfo,
-                                                         sequenceProvider: context.sequenceProvider)
-            discovery.onPlayTemporary = context.playTemporaryOverride
-            return [discovery]
-        }
-    }
+    var playerConfiguration: FeedFlowPlayerConfiguration { .empty }
 
     private let featuredFeedCache = FeaturedFeedCache.shared
 
