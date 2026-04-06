@@ -132,6 +132,7 @@ final class FollowsFeedFlowDataSource: FeedFlowDataSource {
     let emptyHintText = "可以在设置中关闭关注刷视频模式"
     let loadFailureText = "关注加载失败，请稍后重试"
     let refreshFailureHintText = "已展示现有关注内容，后台刷新失败"
+    let autoReloadInterval: TimeInterval? = 60 * 60
 
     var reloadToken: String {
         "\(ApiRequest.getToken()?.mid ?? 0)"

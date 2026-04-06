@@ -101,6 +101,7 @@ struct FeedFlowItem: Hashable {
 protocol FeedFlowDataSource: AnyObject {
     var title: String { get }
     var reloadToken: String { get }
+    var autoReloadInterval: TimeInterval? { get }
     var defaultPreviewHintText: String { get }
     var loadingHintText: String { get }
     var emptyStateText: String { get }
@@ -121,6 +122,7 @@ protocol FeedFlowDataSource: AnyObject {
 }
 
 extension FeedFlowDataSource {
+    var autoReloadInterval: TimeInterval? { nil }
     var defaultPreviewHintText: String { "停留后自动预览，按确认键进入视频流" }
     var loadingHintText: String { "正在加载视频..." }
     var emptyStateText: String { "当前视频较少，请稍后重试" }
@@ -153,6 +155,7 @@ class FeedFlowBrowserViewController: UIViewController, BLTabBarContentVCProtocol
     private var hasUserInteractedSinceReload = false
     private var isPresentingFeedFlow = false
     private var activeReloadToken = ""
+    private var lastReloadDate = Date.distantPast
 
     private var previewController: VideoPlayerViewController?
 
@@ -308,6 +311,7 @@ class FeedFlowBrowserViewController: UIViewController, BLTabBarContentVCProtocol
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         isPresentingFeedFlow = false
+        guard !autoReloadIfNeeded() else { return }
         syncSelectionFromSequenceProvider()
         resumePreviewIfNeeded()
     }
@@ -319,11 +323,13 @@ class FeedFlowBrowserViewController: UIViewController, BLTabBarContentVCProtocol
 
     @objc private func handleAppDidBecomeActive() {
         guard isViewLoaded, view.window != nil else { return }
+        guard !autoReloadIfNeeded() else { return }
         resumePreviewIfNeeded()
     }
 
     func reloadData() {
         dataLoadTask?.cancel()
+        lastReloadDate = Date()
         activeReloadToken = dataSource.reloadToken
         dataSource.reset()
         suspendPreview(cancelWarmups: true)
@@ -350,6 +356,14 @@ class FeedFlowBrowserViewController: UIViewController, BLTabBarContentVCProtocol
         dataLoadTask = Task { [weak self] in
             await self?.refreshFromStart(replaceVisibleContentIfIdle: true, showLoading: true)
         }
+    }
+
+    @discardableResult
+    private func autoReloadIfNeeded() -> Bool {
+        guard let reloadInterval = dataSource.autoReloadInterval else { return false }
+        guard Date().timeIntervalSince(lastReloadDate) > reloadInterval else { return false }
+        reloadData()
+        return true
     }
 
     @MainActor

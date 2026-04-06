@@ -411,7 +411,12 @@ class VideoPlayerViewController: CommonPlayerViewController {
 
     private func showDetail(for info: PlayInfo) {
         guard playMode != .preview else { return }
-        let detailVC = VideoDetailViewController.create(aid: info.aid, cid: info.cid)
+        let detailVC: VideoDetailViewController
+        if let seasonId = info.seasonId, seasonId > 0 {
+            detailVC = VideoDetailViewController.create(seasonId: seasonId)
+        } else {
+            detailVC = VideoDetailViewController.create(aid: info.aid, cid: info.cid, epid: info.epid)
+        }
         detailVC.present(from: self, direatlyEnterVideo: false)
     }
 
