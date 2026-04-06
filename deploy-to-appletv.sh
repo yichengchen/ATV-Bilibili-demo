@@ -43,6 +43,18 @@ if [[ "${FIX_PERMS}" == "1" && -n "${latest_dd}" ]]; then
   chmod -R u+rw "${latest_dd}/SourcePackages" || true
 fi
 
+# Ensure tvOS SDK is installed (Apple TV may auto-update to a newer tvOS
+# version that Xcode doesn't have the SDK for yet).
+if ! xcodebuild -showsdks 2>/dev/null | grep -q "appletvos"; then
+  echo "[2c] tvOS SDK not found. Downloading..."
+  if ! xcodebuild -downloadPlatform tvOS; then
+    echo "ERROR: Failed to download tvOS platform."
+    echo "Try: open Xcode > Settings > Components and install tvOS manually."
+    exit 1
+  fi
+  echo "tvOS SDK downloaded successfully."
+fi
+
 echo "[3/4] Building ${SCHEME} for Apple TV..."
 # Allow optional overrides for signing without editing the project.
 declare -a extra_flags=()
