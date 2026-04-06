@@ -111,6 +111,9 @@ enum Settings {
     @UserDefault("Settings.featuredPersonalizedRankingEnabled", defaultValue: false)
     static var featuredPersonalizedRankingEnabled: Bool
 
+    @UserDefault("Settings.followsFeedFlowEnabled", defaultValue: true)
+    static var followsFeedFlowEnabled: Bool
+
     @UserDefaultCodable("Settings.SponsorBlockType", defaultValue: SponsorBlockType.none)
     static var enableSponsorBlock: SponsorBlockType
 

@@ -31,8 +31,8 @@ enum FeaturedRanker {
     ///   - items: 经过过滤后的候选视频列表
     ///   - profile: 兴趣画像（已叠加会话信号）
     /// - Returns: 排序后的列表
-    static func rank(_ items: [RecommendedVideoItem],
-                     profile: FeaturedInterestProfile) -> [RecommendedVideoItem]
+    static func rank(_ items: [FeedFlowItem],
+                     profile: FeaturedInterestProfile) -> [FeedFlowItem]
     {
         guard profile.sampleTier != .none else { return items }
 
@@ -63,8 +63,8 @@ enum FeaturedRanker {
     }
 
     /// 对新追加的 batch 单独排序（不影响现有列表）
-    static func rankBatch(_ batch: [RecommendedVideoItem],
-                          profile: FeaturedInterestProfile) -> [RecommendedVideoItem]
+    static func rankBatch(_ batch: [FeedFlowItem],
+                          profile: FeaturedInterestProfile) -> [FeedFlowItem]
     {
         guard profile.sampleTier != .none, batch.count > 1 else { return batch }
         let scored = computeBaseScores(batch, profile: profile)
@@ -80,7 +80,7 @@ enum FeaturedRanker {
     // MARK: - Scoring
 
     private struct ScoredItem {
-        let item: RecommendedVideoItem
+        let item: FeedFlowItem
         let sourceIndex: Int
         var score: Double
         let ownerScore: Double
@@ -89,7 +89,7 @@ enum FeaturedRanker {
         let clusterKey: String
     }
 
-    private static func computeBaseScores(_ items: [RecommendedVideoItem],
+    private static func computeBaseScores(_ items: [FeedFlowItem],
                                           profile: FeaturedInterestProfile) -> [ScoredItem]
     {
         // 归一化辅助
@@ -106,7 +106,7 @@ enum FeaturedRanker {
             let ownerScore = maxOwnerWeight > 0 ? rawOwner / maxOwnerWeight : 0
 
             // duration bucket match
-            let bucket = DurationBucket.from(seconds: item.duration)
+            let bucket = DurationBucket.from(seconds: item.duration ?? 0)
             let rawDuration = profile.durationBucketWeights[bucket] ?? 0
             let durationScore = maxDurationWeight > 0 ? rawDuration / maxDurationWeight : 0
 

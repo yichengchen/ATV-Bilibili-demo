@@ -10,7 +10,7 @@ import Combine
 import UIKit
 
 struct PlayInfo: Hashable {
-    let aid: Int
+    var aid: Int
     var cid: Int? = 0
     var epid: Int? = 0 // 港澳台解锁需要
     var seasonId: Int? = 0 // 番剧 season_id
@@ -190,7 +190,8 @@ class VideoPlayerViewController: CommonPlayerViewController {
          playContextCache: PlayContextCache? = nil,
          mediaWarmupManager: PlayerMediaWarmupManager? = nil,
          previewMuted: Bool = true,
-         startTimeOverride: Int? = nil)
+         startTimeOverride: Int? = nil,
+         feedFlowConfiguration: FeedFlowPlayerConfiguration = .empty)
     {
         self.playMode = playMode
         self.playContextCache = playContextCache
@@ -201,7 +202,8 @@ class VideoPlayerViewController: CommonPlayerViewController {
                                          playContextCache: playContextCache,
                                          mediaWarmupManager: mediaWarmupManager,
                                          previewMuted: previewMuted,
-                                         startTimeOverride: startTimeOverride)
+                                         startTimeOverride: startTimeOverride,
+                                         feedFlowConfiguration: feedFlowConfiguration)
         currentRetryKey = playInfo.sequenceKey
         super.init(nibName: nil, bundle: nil)
         if playMode == .preview {

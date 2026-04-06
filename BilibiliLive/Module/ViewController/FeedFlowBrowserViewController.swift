@@ -1,0 +1,1002 @@
+//
+//  FeedFlowBrowserViewController.swift
+//  BilibiliLive
+//
+//  Created by OpenAI on 2026/4/6.
+//
+
+import Kingfisher
+import SnapKit
+import UIKit
+
+struct FeedFlowItem: Hashable {
+    let identityKey: String
+    let aid: Int
+    let cid: Int?
+    let epid: Int?
+    let seasonId: Int?
+    let subType: Int?
+    let title: String
+    let ownerName: String
+    let coverURL: URL?
+    let avatarURL: URL?
+    let duration: Int?
+    let durationText: String
+    let viewCountText: String
+    let danmakuCountText: String
+    let reasonText: String?
+
+    init(aid: Int,
+         cid: Int? = nil,
+         epid: Int? = nil,
+         seasonId: Int? = nil,
+         subType: Int? = nil,
+         title: String,
+         ownerName: String,
+         coverURL: URL?,
+         avatarURL: URL? = nil,
+         duration: Int? = nil,
+         durationText: String = "",
+         viewCountText: String = "",
+         danmakuCountText: String = "",
+         reasonText: String? = nil,
+         identityKey: String? = nil)
+    {
+        self.aid = aid
+        self.cid = cid
+        self.epid = epid
+        self.seasonId = seasonId
+        self.subType = subType
+        self.title = title
+        self.ownerName = ownerName
+        self.coverURL = coverURL
+        self.avatarURL = avatarURL
+        self.duration = duration
+        self.durationText = durationText
+        self.viewCountText = viewCountText
+        self.danmakuCountText = danmakuCountText
+        self.reasonText = reasonText
+        self.identityKey = identityKey ?? Self.makeIdentityKey(aid: aid, epid: epid, seasonId: seasonId)
+    }
+
+    var playInfo: PlayInfo {
+        PlayInfo(aid: aid,
+                 cid: cid,
+                 epid: epid,
+                 seasonId: seasonId,
+                 subType: subType,
+                 title: title,
+                 ownerName: ownerName,
+                 coverURL: coverURL,
+                 duration: duration)
+    }
+
+    var metaText: String {
+        [ownerName, durationText]
+            .filter { !$0.isEmpty }
+            .joined(separator: " · ")
+    }
+
+    var listMetaText: String {
+        ownerName.isEmpty ? durationText : ownerName
+    }
+
+    static func makeIdentityKey(aid: Int, epid: Int? = nil, seasonId: Int? = nil) -> String {
+        if let epid, epid > 0 {
+            return "epid-\(epid)"
+        }
+        if let seasonId, seasonId > 0 {
+            return "season-\(seasonId)"
+        }
+        return "aid-\(aid)"
+    }
+
+    static func identityKey(for playInfo: PlayInfo) -> String {
+        makeIdentityKey(aid: playInfo.aid,
+                        epid: playInfo.epid,
+                        seasonId: playInfo.seasonId)
+    }
+}
+
+protocol FeedFlowDataSource: AnyObject {
+    var title: String { get }
+    var reloadToken: String { get }
+    var defaultPreviewHintText: String { get }
+    var loadingHintText: String { get }
+    var emptyStateText: String { get }
+    var emptyHintText: String { get }
+    var loadFailureText: String { get }
+    var refreshFailureHintText: String { get }
+    var initialTargetCount: Int { get }
+    var initialMaxSourcePages: Int { get }
+    var trailingPrefetchTargetCount: Int { get }
+    var trailingMaxSourcePages: Int { get }
+    var playerConfiguration: FeedFlowPlayerConfiguration { get }
+
+    func reset()
+    func loadCachedItems() -> [FeedFlowItem]?
+    func refreshFromStart(targetCount: Int, maxSourcePages: Int) async throws -> [FeedFlowItem]
+    func loadMoreItems(targetCount: Int, maxSourcePages: Int) async throws -> [FeedFlowItem]
+    func didRecordPositiveWatchSignal(playInfo: PlayInfo, watchedSeconds: Int)
+}
+
+extension FeedFlowDataSource {
+    var defaultPreviewHintText: String { "停留后自动预览，按确认键进入视频流" }
+    var loadingHintText: String { "正在加载视频..." }
+    var emptyStateText: String { "当前视频较少，请稍后重试" }
+    var emptyHintText: String { "稍后再试" }
+    var loadFailureText: String { "加载失败，请稍后重试" }
+    var refreshFailureHintText: String { "已展示旧内容，后台刷新失败" }
+    var initialTargetCount: Int { 12 }
+    var initialMaxSourcePages: Int { 5 }
+    var trailingPrefetchTargetCount: Int { 8 }
+    var trailingMaxSourcePages: Int { 3 }
+    var playerConfiguration: FeedFlowPlayerConfiguration { .empty }
+
+    func loadCachedItems() -> [FeedFlowItem]? { nil }
+    func didRecordPositiveWatchSignal(playInfo: PlayInfo, watchedSeconds: Int) {}
+}
+
+class FeedFlowBrowserViewController: UIViewController, BLTabBarContentVCProtocol {
+    private let preloadDelayNs: UInt64 = 1_000_000_000
+    private let dataSource: FeedFlowDataSource
+
+    private var items = [FeedFlowItem]()
+    private var focusedIndex = 0
+    private var isLoading = false
+    private var previewTask: Task<Void, Never>?
+    private var dataLoadTask: Task<Void, Never>?
+    private let playContextCache = PlayContextCache()
+    private lazy var mediaWarmupManager = PlayerMediaWarmupManager(playContextCache: playContextCache)
+    private lazy var sequenceProvider = VideoSequenceProvider(seq: [])
+    private var lastPlayedItemIdentity: String?
+    private var hasUserInteractedSinceReload = false
+    private var isPresentingFeedFlow = false
+    private var activeReloadToken = ""
+
+    private var previewController: VideoPlayerViewController?
+
+    private lazy var listCollectionView: UICollectionView = {
+        let layout = UICollectionViewCompositionalLayout { _, _ in
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(132))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(132))
+            let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+            let section = NSCollectionLayoutSection(group: group)
+            section.interGroupSpacing = 16
+            section.contentInsets = NSDirectionalEdgeInsets(top: 24, leading: 0, bottom: 24, trailing: 20)
+            return section
+        }
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.remembersLastFocusedIndexPath = false
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.clipsToBounds = false
+        collectionView.allowsSelection = true
+        collectionView.register(FeedFlowListCell.self, forCellWithReuseIdentifier: FeedFlowListCell.reuseID)
+        return collectionView
+    }()
+
+    private let listTitleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 42, weight: .bold)
+        label.textColor = .white
+        return label
+    }()
+
+    private let previewHostView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .black
+        view.clipsToBounds = true
+        return view
+    }()
+
+    private let previewPlaceholderView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        return iv
+    }()
+
+    private let previewLoadingView = UIActivityIndicatorView(style: .large)
+
+    private let leftGradientScrimView: UIView = {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }()
+
+    private let bottomGradientScrimView: UIView = {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }()
+
+    private let infoOverlayView: UIView = {
+        let view = UIView()
+        view.isUserInteractionEnabled = false
+        return view
+    }()
+
+    private let previewTitleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 44, weight: .bold)
+        label.textColor = .white
+        label.numberOfLines = 2
+        return label
+    }()
+
+    private let previewMetaLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 28, weight: .medium)
+        label.textColor = UIColor.white.withAlphaComponent(0.85)
+        label.numberOfLines = 1
+        return label
+    }()
+
+    private let previewHintLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 24, weight: .medium)
+        label.textColor = UIColor.white.withAlphaComponent(0.72)
+        label.numberOfLines = 2
+        return label
+    }()
+
+    private let emptyStateLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 30, weight: .medium)
+        label.textColor = UIColor.white.withAlphaComponent(0.72)
+        label.numberOfLines = 2
+        label.textAlignment = .center
+        label.isHidden = true
+        return label
+    }()
+
+    init(dataSource: FeedFlowDataSource) {
+        self.dataSource = dataSource
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var preferredFocusEnvironments: [UIFocusEnvironment] {
+        [listCollectionView]
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        restoresFocusAfterTransition = false
+        view.backgroundColor = .black
+        setupUI()
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleAppWillResignActive),
+                                               name: UIApplication.willResignActiveNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleAppDidBecomeActive),
+                                               name: UIApplication.didBecomeActiveNotification,
+                                               object: nil)
+        sequenceProvider.onNeedMore = { [weak self] in
+            await self?.loadMoreItemsIfNeeded(targetCount: self?.dataSource.trailingPrefetchTargetCount ?? 8,
+                                              maxSourcePages: self?.dataSource.trailingMaxSourcePages ?? 3)
+        }
+        reloadData()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        previewTask?.cancel()
+        dataLoadTask?.cancel()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if activeReloadToken != dataSource.reloadToken {
+            reloadData()
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        suspendPreview(cancelWarmups: !isPresentingFeedFlow)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        isPresentingFeedFlow = false
+        syncSelectionFromSequenceProvider()
+        resumePreviewIfNeeded()
+    }
+
+    @objc private func handleAppWillResignActive() {
+        guard isViewLoaded, view.window != nil else { return }
+        suspendPreview(cancelWarmups: true)
+    }
+
+    @objc private func handleAppDidBecomeActive() {
+        guard isViewLoaded, view.window != nil else { return }
+        resumePreviewIfNeeded()
+    }
+
+    func reloadData() {
+        dataLoadTask?.cancel()
+        activeReloadToken = dataSource.reloadToken
+        dataSource.reset()
+        suspendPreview(cancelWarmups: true)
+        items = []
+        focusedIndex = 0
+        lastPlayedItemIdentity = nil
+        hasUserInteractedSinceReload = false
+        configureSequenceProvider(with: [])
+        listTitleLabel.text = dataSource.title
+        listCollectionView.reloadData()
+        emptyStateLabel.isHidden = true
+        previewHintLabel.text = dataSource.defaultPreviewHintText
+
+        if let cachedItems = dataSource.loadCachedItems(), !cachedItems.isEmpty {
+            applyCachedItems(cachedItems)
+            dataLoadTask = Task { [weak self] in
+                await self?.refreshFromStart(replaceVisibleContentIfIdle: true, showLoading: false)
+            }
+            return
+        }
+
+        previewHintLabel.text = dataSource.loadingHintText
+        previewLoadingView.startAnimating()
+        dataLoadTask = Task { [weak self] in
+            await self?.refreshFromStart(replaceVisibleContentIfIdle: true, showLoading: true)
+        }
+    }
+
+    @MainActor
+    private func loadMoreItemsIfNeeded(targetCount: Int, maxSourcePages: Int) async {
+        guard !isLoading else { return }
+        let activeIndex = max(focusedIndex, sequenceProvider.currentIndex)
+        guard items.count < targetCount || items.count - activeIndex - 1 < dataSource.trailingPrefetchTargetCount else { return }
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let appended = try await dataSource.loadMoreItems(targetCount: targetCount, maxSourcePages: maxSourcePages)
+            guard !appended.isEmpty else { return }
+            appendLoadedItems(appended)
+            await playContextCache.trim(keeping: sequenceProvider.neighborItems(radius: 2))
+        } catch {
+            previewLoadingView.stopAnimating()
+            emptyStateLabel.text = dataSource.loadFailureText
+            emptyStateLabel.isHidden = false
+            previewHintLabel.text = "\(error)"
+        }
+    }
+
+    private func configureSequenceProvider(with items: [FeedFlowItem]) {
+        sequenceProvider = VideoSequenceProvider(seq: items.map(\.playInfo))
+        sequenceProvider.onNeedMore = { [weak self] in
+            await self?.loadMoreItemsIfNeeded(targetCount: self?.dataSource.trailingPrefetchTargetCount ?? 8,
+                                              maxSourcePages: self?.dataSource.trailingMaxSourcePages ?? 3)
+        }
+    }
+
+    @MainActor
+    private func refreshFromStart(replaceVisibleContentIfIdle: Bool, showLoading: Bool) async {
+        do {
+            let refreshedItems = try await dataSource.refreshFromStart(targetCount: dataSource.initialTargetCount,
+                                                                       maxSourcePages: dataSource.initialMaxSourcePages)
+            guard !Task.isCancelled else { return }
+            if refreshedItems.isEmpty {
+                guard items.isEmpty else { return }
+                restoreEmptyState()
+                return
+            }
+            if items.isEmpty || replaceVisibleContentIfIdle && !hasUserInteractedSinceReload {
+                applyFreshItems(refreshedItems)
+            } else {
+                previewLoadingView.stopAnimating()
+            }
+        } catch {
+            guard !Task.isCancelled else { return }
+            if items.isEmpty {
+                previewLoadingView.stopAnimating()
+                emptyStateLabel.text = dataSource.loadFailureText
+                emptyStateLabel.isHidden = false
+                previewHintLabel.text = "\(error)"
+            } else if showLoading == false {
+                previewHintLabel.text = dataSource.refreshFailureHintText
+            }
+        }
+    }
+
+    @MainActor
+    private func applyCachedItems(_ cachedItems: [FeedFlowItem]) {
+        items = cachedItems
+        configureSequenceProvider(with: items)
+        previewLoadingView.stopAnimating()
+        guard !items.isEmpty else {
+            restoreEmptyState()
+            return
+        }
+        listCollectionView.reloadData()
+        syncSelectionFromSequenceProvider()
+    }
+
+    @MainActor
+    private func applyFreshItems(_ refreshedItems: [FeedFlowItem]) {
+        items = refreshedItems
+        configureSequenceProvider(with: items)
+        previewLoadingView.stopAnimating()
+        emptyStateLabel.isHidden = true
+        listCollectionView.reloadData()
+        syncSelectionFromSequenceProvider()
+    }
+
+    @MainActor
+    private func restoreEmptyState() {
+        previewLoadingView.stopAnimating()
+        emptyStateLabel.text = dataSource.emptyStateText
+        emptyStateLabel.isHidden = false
+        previewHintLabel.text = dataSource.emptyHintText
+    }
+
+    @MainActor
+    private func appendLoadedItems(_ appended: [FeedFlowItem]) {
+        guard !appended.isEmpty else { return }
+        let existing = Set(items.map(\.identityKey))
+        let deduped = appended.filter { !existing.contains($0.identityKey) }
+        guard !deduped.isEmpty else { return }
+
+        let start = items.count
+        items.append(contentsOf: deduped)
+        sequenceProvider.append(deduped.map(\.playInfo))
+        let indexPaths = (start..<(start + deduped.count)).map { IndexPath(item: $0, section: 0) }
+        guard listCollectionView.numberOfItems(inSection: 0) == start else {
+            listCollectionView.reloadData()
+            return
+        }
+        listCollectionView.performBatchUpdates {
+            listCollectionView.insertItems(at: indexPaths)
+        }
+    }
+
+    private func setupUI() {
+        view.addSubview(previewHostView)
+        previewHostView.addSubview(previewPlaceholderView)
+        view.addSubview(previewLoadingView)
+
+        previewHostView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        previewPlaceholderView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        previewLoadingView.hidesWhenStopped = true
+        previewLoadingView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+
+        view.addSubview(leftGradientScrimView)
+        view.addSubview(bottomGradientScrimView)
+
+        leftGradientScrimView.snp.makeConstraints { make in
+            make.top.leading.bottom.equalToSuperview()
+            make.width.equalToSuperview().multipliedBy(0.5)
+        }
+
+        bottomGradientScrimView.snp.makeConstraints { make in
+            make.leading.trailing.bottom.equalToSuperview()
+            make.height.equalToSuperview().multipliedBy(0.35)
+        }
+
+        view.addSubview(listTitleLabel)
+        view.addSubview(listCollectionView)
+
+        listTitleLabel.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(12)
+            make.leading.equalToSuperview().offset(48)
+        }
+
+        listCollectionView.snp.makeConstraints { make in
+            make.top.equalTo(listTitleLabel.snp.bottom).offset(18)
+            make.leading.equalToSuperview().offset(36)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-24)
+            make.width.equalTo(470)
+        }
+
+        view.addSubview(infoOverlayView)
+        infoOverlayView.addSubview(previewTitleLabel)
+        infoOverlayView.addSubview(previewMetaLabel)
+        infoOverlayView.addSubview(previewHintLabel)
+
+        infoOverlayView.snp.makeConstraints { make in
+            make.trailing.equalToSuperview().offset(-60)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-40)
+            make.width.equalTo(500)
+        }
+
+        previewTitleLabel.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+        }
+
+        previewMetaLabel.snp.makeConstraints { make in
+            make.top.equalTo(previewTitleLabel.snp.bottom).offset(10)
+            make.leading.trailing.equalToSuperview()
+        }
+
+        previewHintLabel.snp.makeConstraints { make in
+            make.top.equalTo(previewMetaLabel.snp.bottom).offset(8)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+
+        view.addSubview(emptyStateLabel)
+        emptyStateLabel.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.leading.trailing.equalToSuperview().inset(60)
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        installGradientLayers()
+    }
+
+    private func installGradientLayers() {
+        if leftGradientScrimView.layer.sublayers?.first(where: { $0 is CAGradientLayer }) == nil {
+            let leftGradient = CAGradientLayer()
+            leftGradient.colors = [UIColor.black.withAlphaComponent(0.35).cgColor,
+                                   UIColor.black.withAlphaComponent(0.0).cgColor]
+            leftGradient.startPoint = CGPoint(x: 0, y: 0.5)
+            leftGradient.endPoint = CGPoint(x: 1, y: 0.5)
+            leftGradientScrimView.layer.insertSublayer(leftGradient, at: 0)
+        }
+        if let leftGradient = leftGradientScrimView.layer.sublayers?.first as? CAGradientLayer {
+            leftGradient.frame = leftGradientScrimView.bounds
+        }
+
+        if bottomGradientScrimView.layer.sublayers?.first(where: { $0 is CAGradientLayer }) == nil {
+            let bottomGradient = CAGradientLayer()
+            bottomGradient.colors = [UIColor.black.withAlphaComponent(0.0).cgColor,
+                                     UIColor.black.withAlphaComponent(0.55).cgColor]
+            bottomGradient.startPoint = CGPoint(x: 0.5, y: 0)
+            bottomGradient.endPoint = CGPoint(x: 0.5, y: 1)
+            bottomGradientScrimView.layer.insertSublayer(bottomGradient, at: 0)
+        }
+        if let bottomGradient = bottomGradientScrimView.layer.sublayers?.first as? CAGradientLayer {
+            bottomGradient.frame = bottomGradientScrimView.bounds
+        }
+    }
+
+    private func restorePreviewPlaceholder(animated: Bool) {
+        let animations = {
+            self.previewPlaceholderView.alpha = 1
+            self.previewController?.view.alpha = 0
+        }
+        if animated {
+            UIView.animate(withDuration: 0.2, delay: 0, options: .curveEaseInOut, animations: animations)
+        } else {
+            animations()
+        }
+    }
+
+    private func revealPreviewPlaybackStarted(controller: VideoPlayerViewController) {
+        previewLoadingView.stopAnimating()
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+            controller.view.alpha = 1
+            self.previewPlaceholderView.alpha = 0
+        }
+    }
+
+    private func schedulePreview(for item: FeedFlowItem) {
+        previewTask?.cancel()
+        Task { [mediaWarmupManager] in
+            await mediaWarmupManager.cancelAll()
+        }
+        removePreviewController()
+        restorePreviewPlaceholder(animated: false)
+        updatePreviewTexts(with: item)
+        previewLoadingView.startAnimating()
+        emptyStateLabel.isHidden = true
+        previewTask = Task { [weak self] in
+            guard let self else { return }
+            try? await Task.sleep(nanoseconds: preloadDelayNs)
+            guard !Task.isCancelled else { return }
+            await playContextCache.preload(playInfo: item.playInfo, mode: .preview)
+            let neighboringItems = self.neighborPlayInfos(around: self.focusedIndex)
+            for neighbor in neighboringItems {
+                await playContextCache.preload(playInfo: neighbor, mode: .preview)
+            }
+            await playContextCache.trim(keeping: neighboringItems)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                guard !Task.isCancelled,
+                      self.presentedViewController == nil,
+                      self.isViewLoaded,
+                      self.view.window != nil
+                else { return }
+                guard self.items.indices.contains(self.focusedIndex),
+                      self.items[self.focusedIndex] == item
+                else { return }
+                self.installPreviewController(for: item)
+            }
+        }
+    }
+
+    private func installPreviewController(for item: FeedFlowItem) {
+        removePreviewController()
+        let controller = VideoPlayerViewController(playInfo: item.playInfo,
+                                                   playMode: .preview,
+                                                   playContextCache: playContextCache,
+                                                   previewMuted: false)
+        controller.onLoadFailure = { [weak self, weak controller] _ in
+            guard let self, let controller, self.previewController === controller else { return }
+            self.previewLoadingView.stopAnimating()
+            self.previewHintLabel.text = "预览加载失败，按确认键可直接进入播放"
+            self.restorePreviewPlaceholder(animated: false)
+        }
+        controller.onPlaybackStarted = { [weak self, weak controller] in
+            guard let self, let controller, self.previewController === controller else { return }
+            self.revealPreviewPlaybackStarted(controller: controller)
+            Task { [weak self] in
+                await self?.warmupPlaybackMedia(for: item)
+            }
+        }
+        addChild(controller)
+        controller.view.alpha = 0
+        previewHostView.addSubview(controller.view)
+        controller.view.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        controller.didMove(toParent: self)
+        controller.view.isUserInteractionEnabled = false
+        previewController = controller
+    }
+
+    private func removePreviewController() {
+        previewController?.onPlaybackStarted = nil
+        previewController?.onLoadFailure = nil
+        previewController?.stopPlayback()
+        previewController?.willMove(toParent: nil)
+        previewController?.view.removeFromSuperview()
+        previewController?.removeFromParent()
+        previewController = nil
+    }
+
+    private func suspendPreview(cancelWarmups: Bool = true) {
+        previewTask?.cancel()
+        previewTask = nil
+        previewLoadingView.stopAnimating()
+        removePreviewController()
+        restorePreviewPlaceholder(animated: false)
+        if cancelWarmups {
+            Task { [mediaWarmupManager] in
+                await mediaWarmupManager.cancelAll()
+            }
+        }
+    }
+
+    private func updatePreviewTexts(with item: FeedFlowItem) {
+        previewTitleLabel.text = item.title
+        previewMetaLabel.text = item.metaText
+        previewHintLabel.text = item.reasonText?.isEmpty == false
+            ? "\(item.reasonText ?? "") · \(dataSource.defaultPreviewHintText)"
+            : dataSource.defaultPreviewHintText
+        if let coverURL = item.coverURL {
+            UIView.transition(with: previewPlaceholderView, duration: 0.25, options: .transitionCrossDissolve) {
+                self.previewPlaceholderView.kf.setImage(with: coverURL)
+            }
+        } else {
+            UIView.transition(with: previewPlaceholderView, duration: 0.25, options: .transitionCrossDissolve) {
+                self.previewPlaceholderView.image = nil
+            }
+        }
+    }
+
+    private func neighborPlayInfos(around index: Int) -> [PlayInfo] {
+        let lower = max(0, index - 1)
+        let upper = min(items.count - 1, index + 1)
+        guard !items.isEmpty, lower <= upper else { return [] }
+        return Array(items[lower...upper]).map(\.playInfo)
+    }
+
+    private func prioritizedPlaybackWarmupInfos(for item: FeedFlowItem) -> [PlayInfo] {
+        guard let index = items.firstIndex(of: item) else { return [item.playInfo] }
+        var warmupInfos = [PlayInfo]()
+        warmupInfos.append(items[index].playInfo)
+        if items.indices.contains(index + 1) {
+            warmupInfos.append(items[index + 1].playInfo)
+        }
+        if items.indices.contains(index - 1) {
+            warmupInfos.append(items[index - 1].playInfo)
+        }
+        return warmupInfos.uniqued()
+    }
+
+    private func warmupPlaybackMedia(for item: FeedFlowItem) async {
+        let warmupInfos = prioritizedPlaybackWarmupInfos(for: item)
+        await playContextCache.trim(keeping: warmupInfos)
+        await mediaWarmupManager.retain(playInfos: warmupInfos)
+        for info in warmupInfos {
+            await playContextCache.preload(playInfo: info, mode: .regular)
+            await mediaWarmupManager.preload(playInfo: info)
+        }
+    }
+
+    private func resolvedSelectionIndex() -> Int? {
+        guard !items.isEmpty else { return nil }
+        if let lastPlayedItemIdentity,
+           let matchedIndex = items.firstIndex(where: { $0.identityKey == lastPlayedItemIdentity })
+        {
+            return matchedIndex
+        }
+        return min(sequenceProvider.currentIndex, items.count - 1)
+    }
+
+    private func ensureListCollectionViewIsSynced() {
+        guard listCollectionView.numberOfItems(inSection: 0) != items.count else { return }
+        listCollectionView.reloadData()
+        listCollectionView.layoutIfNeeded()
+    }
+
+    private func refreshVisibleListCells() {
+        listCollectionView.visibleCells.compactMap { $0 as? FeedFlowListCell }.forEach { cell in
+            guard let indexPath = listCollectionView.indexPath(for: cell),
+                  items.indices.contains(indexPath.item)
+            else { return }
+            cell.configure(with: items[indexPath.item], isCurrent: indexPath.item == focusedIndex)
+        }
+    }
+
+    private func updateSelectionFromPlayInfo(_ playInfo: PlayInfo) {
+        let identityKey = FeedFlowItem.identityKey(for: playInfo)
+        lastPlayedItemIdentity = identityKey
+        guard let matchedIndex = items.firstIndex(where: { $0.identityKey == identityKey }) else { return }
+        focusedIndex = matchedIndex
+        sequenceProvider.setCurrentIndex(matchedIndex)
+    }
+
+    private func applyReturnedPlaybackSelection(_ playInfo: PlayInfo) {
+        updateSelectionFromPlayInfo(playInfo)
+        guard isViewLoaded, view.window != nil, presentedViewController == nil else { return }
+        syncSelectionFromSequenceProvider()
+    }
+
+    private func syncSelectionFromSequenceProvider() {
+        guard let targetIndex = resolvedSelectionIndex() else { return }
+        ensureListCollectionViewIsSynced()
+        guard listCollectionView.numberOfItems(inSection: 0) > targetIndex else { return }
+        focusedIndex = targetIndex
+        sequenceProvider.setCurrentIndex(targetIndex)
+        let targetIndexPath = IndexPath(item: targetIndex, section: 0)
+        listCollectionView.selectItem(at: targetIndexPath, animated: false, scrollPosition: .centeredVertically)
+        listCollectionView.scrollToItem(at: targetIndexPath, at: .centeredVertically, animated: false)
+        refreshVisibleListCells()
+        schedulePreview(for: items[targetIndex])
+        setNeedsFocusUpdate()
+        updateFocusIfNeeded()
+    }
+
+    private func resumePreviewIfNeeded() {
+        guard previewController == nil,
+              previewTask == nil,
+              presentedViewController == nil,
+              isViewLoaded,
+              view.window != nil,
+              !items.isEmpty
+        else { return }
+        let targetIndex = min(focusedIndex, items.count - 1)
+        schedulePreview(for: items[targetIndex])
+    }
+
+    private func enterFlow(at index: Int) {
+        guard items.indices.contains(index) else { return }
+        hasUserInteractedSinceReload = true
+        isPresentingFeedFlow = true
+        focusedIndex = index
+        sequenceProvider.setCurrentIndex(index)
+        lastPlayedItemIdentity = items[index].identityKey
+        let startTimeOverride = previewStartTimeForFlowEntry(at: index)
+        suspendPreview(cancelWarmups: false)
+        let player = VideoPlayerViewController(playInfo: items[index].playInfo,
+                                               playMode: .feedFlow,
+                                               playContextCache: playContextCache,
+                                               mediaWarmupManager: mediaWarmupManager,
+                                               startTimeOverride: startTimeOverride,
+                                               feedFlowConfiguration: dataSource.playerConfiguration)
+        player.sequenceProvider = sequenceProvider
+        player.onPlayInfoChanged = { [weak self] info in
+            MainActor.callSafely {
+                self?.updateSelectionFromPlayInfo(info)
+            }
+        }
+        player.onDismissWithPlayInfo = { [weak self] info in
+            MainActor.callSafely {
+                self?.applyReturnedPlaybackSelection(info)
+            }
+        }
+        player.onItemWatched = { [weak self] playInfo, watchedSeconds in
+            self?.handleItemWatched(playInfo: playInfo, watchedSeconds: watchedSeconds)
+        }
+        present(player, animated: true)
+    }
+
+    private func previewStartTimeForFlowEntry(at index: Int) -> Int? {
+        guard let previewController,
+              items.indices.contains(index),
+              FeedFlowItem.identityKey(for: previewController.currentPlayInfo) == items[index].identityKey
+        else {
+            return nil
+        }
+        return previewController.currentPlaybackTimeInSeconds()
+    }
+
+    private func handleItemWatched(playInfo: PlayInfo, watchedSeconds: Int) {
+        let duration = playInfo.duration ?? 0
+        let isPositive = watchedSeconds >= 8 || (duration > 0 && Double(watchedSeconds) >= Double(duration) * 0.25)
+        guard isPositive else { return }
+        dataSource.didRecordPositiveWatchSignal(playInfo: playInfo, watchedSeconds: watchedSeconds)
+    }
+}
+
+extension FeedFlowBrowserViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        items.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FeedFlowListCell.reuseID, for: indexPath) as! FeedFlowListCell
+        cell.configure(with: items[indexPath.item], isCurrent: indexPath.item == focusedIndex)
+        return cell
+    }
+
+    func indexPathForPreferredFocusedView(in collectionView: UICollectionView) -> IndexPath? {
+        guard let targetIndex = resolvedSelectionIndex() else { return nil }
+        return IndexPath(item: targetIndex, section: 0)
+    }
+}
+
+extension FeedFlowBrowserViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        hasUserInteractedSinceReload = true
+        enterFlow(at: indexPath.item)
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        didUpdateFocusIn context: UICollectionViewFocusUpdateContext,
+                        with coordinator: UIFocusAnimationCoordinator)
+    {
+        guard let nextIndexPath = context.nextFocusedIndexPath,
+              items.indices.contains(nextIndexPath.item)
+        else { return }
+        hasUserInteractedSinceReload = true
+        focusedIndex = nextIndexPath.item
+        collectionView.selectItem(at: nextIndexPath, animated: true, scrollPosition: .centeredVertically)
+        sequenceProvider.setCurrentIndex(focusedIndex)
+        schedulePreview(for: items[focusedIndex])
+        refreshVisibleListCells()
+        if items.count - focusedIndex - 1 < dataSource.trailingPrefetchTargetCount {
+            Task {
+                await loadMoreItemsIfNeeded(targetCount: dataSource.trailingPrefetchTargetCount,
+                                            maxSourcePages: dataSource.trailingMaxSourcePages)
+            }
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard indexPath.item >= items.count - 4 else { return }
+        Task {
+            await loadMoreItemsIfNeeded(targetCount: dataSource.trailingPrefetchTargetCount,
+                                        maxSourcePages: dataSource.trailingMaxSourcePages)
+        }
+    }
+}
+
+final class FeedFlowListCell: BLMotionCollectionViewCell {
+    static let reuseID = String(describing: FeedFlowListCell.self)
+
+    private let blurBackgroundView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
+    private let imageView = UIImageView()
+    private let titleLabel = UILabel()
+    private let metaLabel = UILabel()
+    private let overlayView = BLOverlayView()
+    private var isCurrent = false
+
+    override func setup() {
+        super.setup()
+        scaleFactor = 1.06
+
+        contentView.addSubview(blurBackgroundView)
+        blurBackgroundView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        blurBackgroundView.layer.cornerRadius = 20
+        blurBackgroundView.layer.cornerCurve = .continuous
+        blurBackgroundView.clipsToBounds = true
+
+        blurBackgroundView.contentView.addSubview(imageView)
+        imageView.snp.makeConstraints { make in
+            make.leading.top.bottom.equalToSuperview().inset(14)
+            make.width.equalTo(170)
+        }
+        imageView.layer.cornerRadius = 14
+        imageView.layer.cornerCurve = .continuous
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFill
+
+        imageView.addSubview(overlayView)
+        overlayView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        overlayView.fontSize = 14
+
+        blurBackgroundView.contentView.addSubview(titleLabel)
+        blurBackgroundView.contentView.addSubview(metaLabel)
+
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(18)
+            make.leading.equalTo(imageView.snp.trailing).offset(18)
+            make.trailing.equalToSuperview().offset(-18)
+        }
+        titleLabel.font = .systemFont(ofSize: 28, weight: .semibold)
+        titleLabel.textColor = .white
+        titleLabel.numberOfLines = 2
+
+        metaLabel.snp.makeConstraints { make in
+            make.leading.equalTo(titleLabel)
+            make.trailing.equalTo(titleLabel)
+            make.bottom.equalToSuperview().offset(-18)
+        }
+        metaLabel.font = .systemFont(ofSize: 22, weight: .medium)
+        metaLabel.textColor = UIColor.white.withAlphaComponent(0.78)
+        metaLabel.numberOfLines = 1
+    }
+
+    func configure(with item: FeedFlowItem, isCurrent: Bool) {
+        titleLabel.text = item.title
+        metaLabel.text = item.listMetaText
+
+        self.isCurrent = isCurrent
+        if let coverURL = item.coverURL {
+            imageView.kf.setImage(with: coverURL)
+        } else {
+            imageView.image = nil
+        }
+
+        var leftItems = [DisplayOverlay.DisplayOverlayItem]()
+        var rightItems = [DisplayOverlay.DisplayOverlayItem]()
+
+        if !item.viewCountText.isEmpty && !item.viewCountText.contains(":") {
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle",
+                                                               text: item.viewCountText.replacingOccurrences(of: "观看", with: "")))
+        } else if !item.danmakuCountText.isEmpty && !item.danmakuCountText.contains(":") {
+            leftItems.append(DisplayOverlay.DisplayOverlayItem(icon: "play.rectangle",
+                                                               text: item.danmakuCountText.replacingOccurrences(of: "观看", with: "")))
+        }
+
+        if !item.durationText.isEmpty {
+            rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: item.durationText))
+        }
+
+        let overlay = DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+        overlayView.configure(overlay)
+        overlayView.isHidden = leftItems.isEmpty && rightItems.isEmpty
+
+        updateAppearance()
+    }
+
+    override func didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        super.didUpdateFocus(in: context, with: coordinator)
+        coordinator.addCoordinatedAnimations {
+            self.updateAppearance()
+        }
+    }
+
+    private func updateAppearance() {
+        blurBackgroundView.effect = UIBlurEffect(style: isFocused || isCurrent ? .light : .dark)
+        titleLabel.textColor = isFocused || isCurrent ? .black : .white
+        metaLabel.textColor = isFocused || isCurrent ? UIColor.black.withAlphaComponent(0.75) : UIColor.white.withAlphaComponent(0.78)
+    }
+}

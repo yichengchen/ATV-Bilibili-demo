@@ -155,7 +155,7 @@ enum FeaturedContentSafetyFilter {
         return matchedRule(in: texts) == nil && matchedCombination(in: texts) == nil
     }
 
-    static func allows(cachedItem: CachedRecommendedVideoItem) -> Bool {
+    static func allows(cachedItem: CachedFeedFlowItem) -> Bool {
         let texts = [
             cachedItem.title,
             cachedItem.ownerName,
