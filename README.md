@@ -20,7 +20,9 @@
 ### 增强特性 (Fork 新增)
 - **智能搜索** - B站热搜榜 + 搜索历史 + 无限滚动分页
 - **播放增强** - 循环模式、跳过片头片尾 (SponsorBlock)
-- **稳定性优化** - 安全模式防崩溃、错误处理增强
+- **港澳台解锁** - BiliRoaming 代理服务器，解除番剧区域限制
+- **一键部署** - 免费开发者账号直接部署到 Apple TV，自动检测 tvOS SDK
+- **稳定性优化** - 连续播放防崩溃、安全模式、错误处理增强
 
 ---
 
@@ -58,12 +60,25 @@
 ### 源码编译
 ```bash
 # 克隆仓库
-git clone https://github.com/yichengchen/ATV-Bilibili-demo.git
+git clone https://github.com/DISSIDIA-986/ATV-Bilibili-demo.git
 cd ATV-Bilibili-demo
 
-# 使用 Fastlane 构建
+# 使用 Fastlane 构建未签名 IPA
 fastlane build_unsign_ipa
 ```
+
+### 部署到 Apple TV（免费开发者账号）
+```bash
+# 一键部署（自动检测设备、构建、安装）
+./scripts/deploy.sh
+
+# 清理后重新构建
+./scripts/deploy.sh --clean
+
+# 查看已连接的 Apple TV
+./scripts/deploy.sh --list
+```
+> 免费开发者账号签名的应用有效期 7 天，过期后重新运行脚本即可。脚本会自动下载缺失的 tvOS SDK。
 
 ---
 
