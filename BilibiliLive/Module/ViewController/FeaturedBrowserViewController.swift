@@ -44,6 +44,7 @@ struct RecommendedVideoItem: Hashable {
 extension ApiRequest.FeedResp.Items {
     func toRecommendedVideoItem(durationLimit: FeaturedDurationLimit) -> RecommendedVideoItem? {
         guard goto == "av", can_play == 1 else { return nil }
+        guard FeaturedContentSafetyFilter.allows(feedItem: self) else { return nil }
         let aidValue = Int(param) ?? player_args?.aid ?? 0
         let cidValue = player_args?.cid ?? 0
         let durationValue = player_args?.duration ?? 0
@@ -375,7 +376,8 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
                         items: rankedItems.map(\.cachedValue),
                         accountMID: currentAccountMID,
                         personalizedEnabled: true,
-                        rankVersion: FeaturedRanker.rankVersion
+                        rankVersion: FeaturedRanker.rankVersion,
+                        contentFilterVersion: FeaturedContentSafetyFilter.version
                     )
                 }
             }
@@ -432,12 +434,15 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
                                          items: loadedItems.map(\.cachedValue),
                                          accountMID: currentAccountMID,
                                          personalizedEnabled: activePersonalizedEnabled,
-                                         rankVersion: FeaturedRanker.rankVersion)
+                                         rankVersion: FeaturedRanker.rankVersion,
+                                         contentFilterVersion: FeaturedContentSafetyFilter.version)
     }
 
     @MainActor
     private func applyCachedSnapshot(_ snapshot: FeaturedFeedCacheSnapshot) {
-        items = snapshot.items.map(RecommendedVideoItem.init(cached:))
+        items = snapshot.items
+            .filter(FeaturedContentSafetyFilter.allows(cachedItem:))
+            .map(RecommendedVideoItem.init(cached:))
         lastSourceIdx = snapshot.lastSourceIdx
         configureSequenceProvider(with: items)
         previewLoadingView.stopAnimating()
@@ -451,7 +456,9 @@ class FeaturedBrowserViewController: UIViewController, BLTabBarContentVCProtocol
 
     @MainActor
     private func applyFreshSnapshot(_ snapshot: FeaturedFeedCacheSnapshot) {
-        items = snapshot.items.map(RecommendedVideoItem.init(cached:))
+        items = snapshot.items
+            .filter(FeaturedContentSafetyFilter.allows(cachedItem:))
+            .map(RecommendedVideoItem.init(cached:))
         lastSourceIdx = snapshot.lastSourceIdx
         configureSequenceProvider(with: items)
         previewLoadingView.stopAnimating()

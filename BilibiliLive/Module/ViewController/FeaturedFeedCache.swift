@@ -30,11 +30,12 @@ struct FeaturedFeedCacheSnapshot: Codable {
     let accountMID: Int
     let personalizedEnabled: Bool
     let rankVersion: Int
+    let contentFilterVersion: Int
 
     // 向后兼容：旧快照不含新字段时解码默认值
     enum CodingKeys: String, CodingKey {
         case savedAt, durationLimit, lastSourceIdx, items
-        case accountMID, personalizedEnabled, rankVersion
+        case accountMID, personalizedEnabled, rankVersion, contentFilterVersion
     }
 
     init(from decoder: Decoder) throws {
@@ -46,10 +47,12 @@ struct FeaturedFeedCacheSnapshot: Codable {
         accountMID = try container.decodeIfPresent(Int.self, forKey: .accountMID) ?? 0
         personalizedEnabled = try container.decodeIfPresent(Bool.self, forKey: .personalizedEnabled) ?? false
         rankVersion = try container.decodeIfPresent(Int.self, forKey: .rankVersion) ?? 0
+        contentFilterVersion = try container.decodeIfPresent(Int.self, forKey: .contentFilterVersion) ?? 0
     }
 
     init(savedAt: Date, durationLimit: FeaturedDurationLimit, lastSourceIdx: Int?,
-         items: [CachedRecommendedVideoItem], accountMID: Int, personalizedEnabled: Bool, rankVersion: Int)
+         items: [CachedRecommendedVideoItem], accountMID: Int, personalizedEnabled: Bool,
+         rankVersion: Int, contentFilterVersion: Int)
     {
         self.savedAt = savedAt
         self.durationLimit = durationLimit
@@ -58,6 +61,7 @@ struct FeaturedFeedCacheSnapshot: Codable {
         self.accountMID = accountMID
         self.personalizedEnabled = personalizedEnabled
         self.rankVersion = rankVersion
+        self.contentFilterVersion = contentFilterVersion
     }
 }
 
@@ -110,7 +114,8 @@ final class FeaturedFeedCache {
         guard let data = UserDefaults.standard.data(forKey: storageKey),
               let snapshot = try? decoder.decode(FeaturedFeedCacheSnapshot.self, from: data),
               snapshot.durationLimit == durationLimit,
-              Date().timeIntervalSince(snapshot.savedAt) <= ttl
+              Date().timeIntervalSince(snapshot.savedAt) <= ttl,
+              snapshot.contentFilterVersion == FeaturedContentSafetyFilter.version
         else {
             return nil
         }
@@ -131,7 +136,8 @@ final class FeaturedFeedCache {
                                                  items: items.map(\.cachedValue),
                                                  accountMID: accountMID,
                                                  personalizedEnabled: personalizedEnabled,
-                                                 rankVersion: FeaturedRanker.rankVersion)
+                                                 rankVersion: FeaturedRanker.rankVersion,
+                                                 contentFilterVersion: FeaturedContentSafetyFilter.version)
         guard let data = try? encoder.encode(snapshot) else { return }
         UserDefaults.standard.set(data, forKey: storageKey)
     }
