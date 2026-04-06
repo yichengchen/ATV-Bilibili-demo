@@ -6,6 +6,7 @@
 - Owner: Codex + project maintainers
 - Related issue: N/A
 - Related ADR: N/A
+- Superseded by: `docs/specs/player-info-discovery-actions/spec.md` for current player-wide info panel behavior
 - Target build / release: next nightly after 2026-04-05
 
 ## Summary
@@ -76,7 +77,7 @@
   - `VideoPlayerViewModel` 继续负责生成播放器插件和切换视频。
   - `VideoPlayListPlugin` 继续负责上一条 / 下一条 / 查看详情。
 - New types or files to add:
-  - `BilibiliLive/Component/Video/Plugins/FeaturedVideoDiscoveryPlugin.swift`
+  - `BilibiliLive/Component/Video/Plugins/VideoPlayerInfoTabsPlugin.swift`
 - Migration or compatibility concerns:
   - 仅在 `playMode == .feedFlow` 挂载新插件。
   - 不修改现有设置项和持久化结构。

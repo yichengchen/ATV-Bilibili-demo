@@ -17,7 +17,7 @@
 
 - Status: Done
 - Goal: 将原先仅服务于 `精选` 的发现页签插件扩展为普通视频播放器通用插件，并统一文案为 `相关视频`。
-- Files likely to change: `BilibiliLive/Component/Video/Plugins/FeaturedVideoDiscoveryPlugin.swift`
+- Files likely to change: `BilibiliLive/Component/Video/Plugins/VideoPlayerInfoTabsPlugin.swift`
 - Risks or dependencies: 发现候选切播必须兼容“有原始序列时临时覆盖、无原始序列时直接切播”两种场景。
 - Definition of done: `博主视频` / `相关视频` 页签在插件层可独立渲染、加载并触发切播，不依赖 `精选` 专属装配。
 - Validation: 通过播放器构建验证与发现页签手工场景验证。
@@ -26,7 +26,7 @@
 
 - Status: Done
 - Goal: 在播放器信息面板新增 `互动` 页签，提供关注博主、点赞视频、收藏视频三项能力。
-- Files likely to change: `BilibiliLive/Component/Video/Plugins/FeaturedVideoDiscoveryPlugin.swift`
+- Files likely to change: `BilibiliLive/Component/Video/Plugins/VideoPlayerInfoTabsPlugin.swift`
 - Risks or dependencies: 点赞 / 收藏状态为异步补齐；收藏夹选择与取消收藏必须沿用详情页现有语义。
 - Definition of done: 互动页签可展示三张动作卡片，确认键触发对应动作，状态和计数更新符合预期。
 - Validation: 通过播放器构建验证与互动页签手工场景验证。

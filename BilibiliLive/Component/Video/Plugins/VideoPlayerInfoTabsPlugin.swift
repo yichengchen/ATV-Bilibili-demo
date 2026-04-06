@@ -1,5 +1,5 @@
 //
-//  FeaturedVideoDiscoveryPlugin.swift
+//  VideoPlayerInfoTabsPlugin.swift
 //  BilibiliLive
 //
 //  Created by OpenAI on 2026/4/5.

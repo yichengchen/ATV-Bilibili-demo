@@ -16,7 +16,7 @@ Accepted
 ## Decision
 
 - 新增共享的 `FeedFlowBrowserViewController`、`FeedFlowItem` 和 `FeedFlowDataSource`，把 feed-flow 浏览态与播放编排从页面来源中解耦。
-- 新增 `FeedFlowPlayerConfiguration`，由页面决定是否向 feed-flow 播放态注入额外 plugin；`FeaturedVideoDiscoveryPlugin` 只由 `精选` 注入。
+- 新增 `FeedFlowPlayerConfiguration`，由页面决定是否向 feed-flow 播放态注入额外 plugin；该扩展点保留给页面定制能力，而播放器信息页签已统一通用化，不再由 `精选` 单独注入。
 - `精选` 改成“薄页面 + datasource”结构，继续保留自己的过滤、排序、缓存与 discovery 行为。
 - `关注` 改为稳定的 tab 容器：
   - 默认使用新的 feed-flow 子控制器。

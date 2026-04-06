@@ -23,18 +23,18 @@
   - `BilibiliLive/Component/Video/VideoPlayerViewController.swift`
   - `BilibiliLive/Component/Video/VideoPlayerViewModel.swift`
 - Risks or dependencies:
-  - 播放器扩展点必须允许页面按需注入额外 plugin，避免把 `精选` 特有发现页签泄漏给其他页面。
+  - 播放器扩展点必须允许页面按需注入额外 plugin，避免未来页面定制能力被硬编码到所有 feed-flow 页面。
   - 退出、切页和后台场景仍需显式清理预览播放器与 warmup 任务。
 - Definition of done:
   - `FeedFlowItem`、`FeedFlowDataSource`、`FeedFlowPlayerConfiguration` 可支撑至少两个页面来源。
-  - feed-flow 播放态额外 plugin 可由页面配置，不再在播放器里硬编码 `FeaturedVideoDiscoveryPlugin`。
+  - `FeedFlowPlayerConfiguration` 保留为页面扩展点；播放器统一信息页签不依赖 feed-flow 页面单独注入。
 - Validation:
   - `fastlane build_simulator`
 
 ## Task 2: 迁移精选到共享架构
 
 - Status: Done
-- Goal: 保持 `精选` 现有过滤、排序、缓存与 discovery plugin 能力，同时让页面本身只负责组装 datasource。
+- Goal: 保持 `精选` 现有过滤、排序、缓存与统一信息页签能力，同时让页面本身只负责组装 datasource。
 - Files likely to change:
   - `BilibiliLive/Module/ViewController/FeaturedBrowserViewController.swift`
   - `BilibiliLive/Module/ViewController/FeaturedFeedCache.swift`
@@ -45,7 +45,7 @@
   - 个性化排序和内容安全过滤不能因为重构而失效。
 - Definition of done:
   - `FeaturedBrowserViewController` 只保留薄包装和 `FeaturedFeedFlowDataSource`。
-  - `精选` 仍可从缓存恢复、静默刷新，并继续注入 discovery plugin。
+  - `精选` 仍可从缓存恢复、静默刷新，并继续通过播放器统一装配显示信息页签。
 - Validation:
   - `fastlane build_simulator`
 

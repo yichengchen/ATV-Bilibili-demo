@@ -4,6 +4,7 @@
 - Status: Implemented
 - Owner: Codex + project maintainers
 - Last updated: 2026-04-05
+- Superseded by: `docs/specs/player-info-discovery-actions/tasks.md` for current player-wide info panel behavior
 
 ## Working Agreements
 
@@ -26,7 +27,7 @@
 
 - Status: Done
 - Goal: Add a feed-flow-only player plugin that contributes independent `博主视频` / `推荐视频` info tabs with up to 6 horizontal cards each.
-- Files likely to change: `BilibiliLive/Component/Video/Plugins/FeaturedVideoDiscoveryPlugin.swift`, `BilibiliLive/Component/Video/VideoPlayerViewModel.swift`
+- Files likely to change: `BilibiliLive/Component/Video/Plugins/VideoPlayerInfoTabsPlugin.swift`, `BilibiliLive/Component/Video/VideoPlayerViewModel.swift`
 - Risks or dependencies: Uploader items require async loading and must refresh custom info tabs without blocking playback or leaving stale tasks alive.
 - Definition of done: Two discovery tabs render with stable titles, async uploader refresh works, and selecting a card triggers temporary playback.
 - Validation: Covered by manual menu scenarios and build verification.

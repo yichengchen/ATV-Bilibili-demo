@@ -10,7 +10,7 @@
 
 ## Summary
 
-将 `精选` 的刷视频浏览态抽象为可复用的 `FeedFlowBrowserViewController` 与 `FeedFlowDataSource` 架构，并让 `关注` 成为首个复用方。`关注` 默认以刷视频布局打开，但用户可以在设置里关闭并回退到原有网格页；`精选` 继续保留时长过滤、内容安全过滤、个性化排序、缓存与信息面板发现页签。
+将 `精选` 的刷视频浏览态抽象为可复用的 `FeedFlowBrowserViewController` 与 `FeedFlowDataSource` 架构，并让 `关注` 成为首个复用方。`关注` 默认以刷视频布局打开，但用户可以在设置里关闭并回退到原有网格页；`精选` 继续保留时长过滤、内容安全过滤、个性化排序、缓存，并沿用播放器统一装配的信息面板页签能力。
 
 ## Problem Statement
 
@@ -19,7 +19,7 @@
 ## Goals
 
 - 抽出通用的 feed-flow 浏览框架，复用预览、正式播放、上下切换、落点恢复与清理逻辑。
-- 保持 `精选` 的特有能力不回归，包括过滤、排序、缓存和 discovery plugin。
+- 保持 `精选` 的特有能力不回归，包括过滤、排序、缓存，以及播放器统一信息页签中的发现/互动能力。
 - 为 `关注` 提供默认开启的刷视频模式，并允许在设置页动态切回旧网格。
 - 保持 `关注` tab 标识稳定，不因布局切换重建 tab 项。
 
@@ -73,7 +73,7 @@
   - `VideoPlayerViewController` / `VideoPlayerViewModel`
   - `PlayContextCache` / `PlayerMediaWarmupManager`
   - `VideoSequenceProvider`
-  - `FeaturedVideoDiscoveryPlugin`
+  - `VideoPlayerInfoTabsPlugin`
 - New types or files to add:
   - `FeedFlowBrowserViewController`
   - `FeedFlowItem`
@@ -84,6 +84,7 @@
   - `FeaturedRanker` 与 `FeaturedFeedCache` 适配共享 item。
   - `关注` tab 入口改成容器，但 `TabBarPageFactory` 与 tab 身份不变。
   - `PlayInfo` 需要支持在解析阶段补全 `aid / cid / seasonId`。
+  - `FeedFlowPlayerConfiguration` 继续保留为页面级扩展点，但当前 `精选` 的信息面板页签由播放器统一装配，不再由 `FeaturedFeedFlowDataSource` 单独注入。
 
 ## Impacted Areas
 
@@ -104,7 +105,7 @@
 ## Acceptance Criteria
 
 - [x] `精选` 与 `关注` 都可以复用同一套 feed-flow 浏览骨架。
-- [x] `精选` 的过滤、排序、缓存和 discovery plugin 行为保持可用。
+- [x] `精选` 的过滤、排序、缓存，以及统一装配的信息面板页签行为保持可用。
 - [x] `关注` 默认进入刷视频布局，并可通过设置开关回退到旧网格。
 - [x] `关注` 布局开关切换后不需要重启 app。
 - [x] feed-flow 浏览态和播放态都定义了退出、切页和后台清理行为，不残留声音或活跃播放器。
@@ -114,7 +115,7 @@
 
 - [x] `fastlane build_simulator`
 - [ ] 从 `精选` 验证缓存命中、预览、进入正式播放、返回落点和后台清理不回归
-- [ ] 从 `精选` 打开信息面板，验证 `博主视频` / `推荐视频` 发现页签仍可用
+- [ ] 从 `精选` 打开信息面板，验证 `博主视频` / `相关视频` / `互动` 页签仍可用
 - [ ] 验证 `关注` 默认进入刷视频布局，可预览、确认进入播放、上下切换并返回当前项
 - [ ] 在设置页关闭 `关注刷视频模式` 后返回 `关注`，验证旧网格与详情页链路恢复
 - [ ] 在设置页重新打开 `关注刷视频模式`，验证页面切换不出现重复子控制器或焦点错乱
