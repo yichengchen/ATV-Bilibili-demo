@@ -10,6 +10,7 @@ enum TabBarPage: String, CaseIterable, Codable {
     case live
     case feed
     case featured
+    case tvRecommend
     case hot
     case ranking
     case follows
@@ -30,6 +31,8 @@ enum TabBarPage: String, CaseIterable, Codable {
             return "推荐"
         case .featured:
             return "精选"
+        case .tvRecommend:
+            return "TV推荐"
         case .hot:
             return "热门"
         case .ranking:
@@ -69,7 +72,7 @@ enum TabBarPage: String, CaseIterable, Codable {
     }
 
     static var defaultTabBarPages: [TabBarPage] {
-        [.live, .feed, .featured, .hot, .ranking, .follows, .favorite, .personal, .search]
+        [.live, .feed, .featured, .tvRecommend, .hot, .ranking, .follows, .favorite, .personal]
     }
 
     static var allConfigurablePages: [TabBarPage] {
