@@ -17,6 +17,8 @@ class TabBarPageVCFactory {
             vc = FeedViewController()
         case .featured:
             vc = FeaturedBrowserViewController()
+        case .tvRecommend:
+            vc = TVRecommendBrowserViewController()
         case .hot:
             vc = HotViewController()
         case .ranking:
