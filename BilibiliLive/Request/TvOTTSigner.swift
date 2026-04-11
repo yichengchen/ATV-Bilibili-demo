@@ -16,7 +16,7 @@ enum TvOTTSigner {
     static let platform = "android"
     static let userAgent = "tv.danmaku.bili/\(build) CFNetwork"
 
-    static func signGETQuery(_ parameters: [String: String] = [:], accessKey: String? = ApiRequest.getToken()?.accessToken) -> String {
+    static func signGETQuery(_ parameters: [String: String] = [:], accessKey: String? = nil) -> String {
         var signedParameters = parameters
         if signedParameters["platform"] == nil {
             signedParameters["platform"] = platform
@@ -38,7 +38,7 @@ enum TvOTTSigner {
 
     static func signedURL(endpoint: String,
                           parameters: [String: String] = [:],
-                          accessKey: String? = ApiRequest.getToken()?.accessToken) -> URL?
+                          accessKey: String? = nil) -> URL?
     {
         guard var components = URLComponents(string: endpoint) else { return nil }
         components.percentEncodedQuery = signGETQuery(parameters, accessKey: accessKey)

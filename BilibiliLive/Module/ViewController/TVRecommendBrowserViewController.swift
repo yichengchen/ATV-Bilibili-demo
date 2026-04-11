@@ -8,18 +8,31 @@
 import Foundation
 import UIKit
 
-private extension TvOTTAutonomyResponse.Card {
+private extension WebTopFeedRecommendResponse.Item {
     func toTVRecommendItem() -> FeedFlowItem? {
-        guard cardType == "small_popular_ugc" else { return nil }
-        guard let jumpId, jumpId > 0 else { return nil }
+        guard goto == "av" else { return nil }
+        guard let aid = id, aid > 0 else { return nil }
+        guard let cid, cid > 0 else { return nil }
         guard let title, !title.isEmpty else { return nil }
 
-        return FeedFlowItem(aid: jumpId,
+        let durationValue = duration ?? 0
+        let coverURL = pic.flatMap(URL.init(string:))?.addSchemeIfNeed()
+        let reasonContent = rcmd_reason?.content?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let avatarURL = owner?.face.flatMap(URL.init(string:))?.addSchemeIfNeed()
+
+        return FeedFlowItem(aid: aid,
+                            cid: cid,
                             title: title,
-                            ownerName: "",
-                            coverURL: cover,
-                            reasonText: nil,
-                            identityKey: FeedFlowItem.makeIdentityKey(aid: jumpId))
+                            ownerName: owner?.name ?? "",
+                            coverURL: coverURL,
+                            avatarURL: avatarURL,
+                            duration: duration,
+                            durationText: durationValue > 0 ? TimeInterval(durationValue).timeString() : "",
+                            viewCountText: (stat?.view ?? 0).numberString(),
+                            danmakuCountText: (stat?.danmaku ?? 0).numberString(),
+                            reasonText: reasonContent?.isEmpty == false ? reasonContent : nil,
+                            identityKey: FeedFlowItem.makeIdentityKey(aid: aid))
     }
 }
 
@@ -35,39 +48,79 @@ final class TVRecommendBrowserViewController: FeedFlowBrowserViewController {
 }
 
 final class TVRecommendFeedFlowDataSource: FeedFlowDataSource {
+    private let pageSize = 12
+
+    private var nextPageIndex = 1
+    private var hasMore = true
+    private var items = [FeedFlowItem]()
+    private var seenItemKeys = Set<String>()
+
     let title = "TV推荐"
     let defaultPreviewHintText = "停留后自动预览，按确认键进入推荐视频流"
-    let loadingHintText = "正在加载TV推荐..."
-    let emptyStateText = "当前 TV 推荐视频较少，请稍后重试"
-    let emptyHintText = "云视听首页接口当前未返回推荐视频卡片"
-    let loadFailureText = "TV推荐加载失败，请稍后重试"
-    let refreshFailureHintText = "TV推荐刷新失败"
+    let loadingHintText = "正在加载推荐视频..."
+    let emptyStateText = "当前暂无可展示的推荐视频"
+    let emptyHintText = "稍后再试或切换账号刷新推荐内容"
+    let loadFailureText = "推荐视频加载失败，请稍后重试"
+    let refreshFailureHintText = "已展示现有推荐内容，后台刷新失败"
 
     var reloadToken: String {
-        "tv-ott-\(currentAccountMID)"
+        "tv-web-\(currentAccountMID)"
     }
 
     var playerConfiguration: FeedFlowPlayerConfiguration { .empty }
 
-    func reset() {}
-
-    func refreshFromStart(targetCount _: Int, maxSourcePages _: Int) async throws -> [FeedFlowItem] {
-        let response = try await TvOTTApiRequest.requestAutonomyIndex()
-        return uniqueItems(from: response.data ?? [])
+    func reset() {
+        nextPageIndex = 1
+        hasMore = true
+        items = []
+        seenItemKeys = []
     }
 
-    func loadMoreItems(targetCount _: Int, maxSourcePages _: Int) async throws -> [FeedFlowItem] {
-        []
+    func refreshFromStart(targetCount: Int, maxSourcePages: Int) async throws -> [FeedFlowItem] {
+        reset()
+        let loadedItems = try await loadMoreUntilTarget(targetCount: targetCount, maxSourcePages: maxSourcePages)
+        items = loadedItems
+        return loadedItems
+    }
+
+    func loadMoreItems(targetCount: Int, maxSourcePages: Int) async throws -> [FeedFlowItem] {
+        let appended = try await loadMoreUntilTarget(targetCount: targetCount, maxSourcePages: maxSourcePages)
+        items.append(contentsOf: appended)
+        return appended
     }
 
     private var currentAccountMID: Int {
         ApiRequest.getToken()?.mid ?? 0
     }
 
-    private func uniqueItems(from cards: [TvOTTAutonomyResponse.Card]) -> [FeedFlowItem] {
-        var seenIdentityKeys = Set<String>()
-        return cards
-            .compactMap { $0.toTVRecommendItem() }
-            .filter { seenIdentityKeys.insert($0.identityKey).inserted }
+    private func loadMoreUntilTarget(targetCount: Int, maxSourcePages: Int) async throws -> [FeedFlowItem] {
+        guard hasMore else { return [] }
+
+        var pagesScanned = 0
+        var accepted = [FeedFlowItem]()
+
+        while accepted.count < targetCount, pagesScanned < maxSourcePages, hasMore {
+            let pageIndex = nextPageIndex
+            let response = try await WebRequest.requestTopFeedRecommend(pageIndex: pageIndex, pageSize: pageSize)
+            nextPageIndex += 1
+            pagesScanned += 1
+
+            let pageItems = response.item
+            let newItems = pageItems
+                .compactMap { $0.toTVRecommendItem() }
+                .filter { seenItemKeys.insert($0.identityKey).inserted }
+
+            #if DEBUG
+                Logger.debug("[TVRecommend] page=\(pageIndex) raw=\(pageItems.count) accepted=\(newItems.count) totalSeen=\(seenItemKeys.count)")
+            #endif
+
+            if pageItems.isEmpty || newItems.isEmpty {
+                hasMore = false
+            }
+
+            accepted.append(contentsOf: newItems)
+        }
+
+        return accepted
     }
 }

@@ -43,6 +43,7 @@ enum NoCookieSession {
 enum WebRequest {
     enum EndPoint {
         static let related = "https://api.bilibili.com/x/web-interface/archive/related"
+        static let topFeedRecommend = "https://api.bilibili.com/x/web-interface/wbi/index/top/feed/rcmd"
         static let logout = "https://passport.bilibili.com/login/exit/v2"
         static let info = "https://api.bilibili.com/x/web-interface/view"
         static let fav = "https://api.bilibili.com/x/v3/fav/resource/list"
@@ -317,6 +318,25 @@ extension WebRequest {
         try await request(url: "https://api.bilibili.com/x/v2/history")
     }
 
+    static func requestTopFeedRecommend(pageIndex: Int, pageSize: Int = 12) async throws -> WebTopFeedRecommendResponse {
+        let safePageIndex = max(pageIndex, 1)
+        let safePageSize = min(max(pageSize, 1), 30)
+        let fetchRow = 1 + (safePageIndex - 1) * safePageSize
+
+        #if DEBUG
+            Logger.debug("[WebTopFeed] request page=\(safePageIndex) pageSize=\(safePageSize) fetchRow=\(fetchRow)")
+        #endif
+
+        return try await request(url: EndPoint.topFeedRecommend,
+                                 parameters: ["fresh_type": 4,
+                                              "ps": safePageSize,
+                                              "fresh_idx": safePageIndex,
+                                              "fresh_idx_1h": safePageIndex,
+                                              "brush": safePageIndex,
+                                              "fetch_row": fetchRow,
+                                              "web_location": 1430650])
+    }
+
     static func requestPlayerInfo(aid: Int, cid: Int) async throws -> PlayerInfo {
         try await request(url: EndPoint.playerInfo, parameters: ["aid": aid, "cid": cid])
     }
@@ -579,6 +599,35 @@ extension WebRequest {
     static func requestDanmuList(cid: Int, segmentIdx: Int) async throws -> DmSegMobileReply {
         try await requestPB(url: EndPoint.danmuList, parameters: ["type": 1, "oid": cid, "segment_index": segmentIdx])
     }
+}
+
+struct WebTopFeedRecommendResponse: Codable, Hashable {
+    struct Item: Codable, Hashable {
+        struct Stat: Codable, Hashable {
+            let view: Int?
+            let danmaku: Int?
+        }
+
+        struct RecommendReason: Codable, Hashable {
+            let reason_type: Int?
+            let content: String?
+        }
+
+        let id: Int?
+        let bvid: String?
+        let cid: Int?
+        let goto: String?
+        let uri: String?
+        let pic: String?
+        let title: String?
+        let duration: Int?
+        let owner: VideoOwner?
+        let stat: Stat?
+        let rcmd_reason: RecommendReason?
+    }
+
+    let item: [Item]
+    let mid: Int?
 }
 
 // MARK: - User
