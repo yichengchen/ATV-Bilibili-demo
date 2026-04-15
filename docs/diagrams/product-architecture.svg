@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 750" width="960" height="750">
+  <style>
+    text { font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+  </style>
+  <defs>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/></marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#16a34a"/></marker>
+    <marker id="arrow-purple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#9333ea"/></marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#ea580c"/></marker>
+    <filter id="shadow"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.1"/></filter>
+  </defs>
+
+  <rect width="960" height="750" fill="#ffffff"/>
+  <text x="480" y="36" text-anchor="middle" font-size="20" font-weight="600" fill="#111827">BiliBili tvOS 客户端 — 产品架构图</text>
+  <text x="480" y="56" text-anchor="middle" font-size="12" fill="#6b7280">ATV-Bilibili-demo · Fork Enhanced Version</text>
+
+  <!-- User Layer -->
+  <rect x="30" y="75" width="900" height="70" rx="10" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="50" y="95" font-size="11" font-weight="600" fill="#2563eb">用户层 · User Layer</text>
+  <rect x="60" y="105" width="120" height="32" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="120" y="126" text-anchor="middle" font-size="12" font-weight="500" fill="#111827">🍎 Apple TV</text>
+  <rect x="210" y="105" width="120" height="32" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="270" y="126" text-anchor="middle" font-size="12" font-weight="500" fill="#111827">📱 QR 扫码登录</text>
+  <rect x="360" y="105" width="120" height="32" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="420" y="126" text-anchor="middle" font-size="12" font-weight="500" fill="#111827">🎮 Siri Remote</text>
+  <rect x="510" y="105" width="130" height="32" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="575" y="126" text-anchor="middle" font-size="12" font-weight="500" fill="#111827">📺 DLNA 投屏设备</text>
+  <rect x="670" y="105" width="130" height="32" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="735" y="126" text-anchor="middle" font-size="12" font-weight="500" fill="#111827">👤 多账号管理</text>
+
+  <!-- Navigation Layer -->
+  <rect x="30" y="165" width="900" height="100" rx="10" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="50" y="185" font-size="11" font-weight="600" fill="#9333ea">导航层 · Tab Navigation (10 Tabs)</text>
+  <rect x="60" y="195" width="80" height="28" rx="5" fill="#fee2e2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="100" y="213" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">直播</text>
+  <rect x="155" y="195" width="80" height="28" rx="5" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="195" y="213" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">推荐</text>
+  <rect x="250" y="195" width="80" height="28" rx="5" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="290" y="213" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">热门</text>
+  <rect x="345" y="195" width="80" height="28" rx="5" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="385" y="213" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">排行榜</text>
+  <rect x="440" y="195" width="80" height="28" rx="5" fill="#dcfce7" stroke="#86efac" stroke-width="1"/>
+  <text x="480" y="213" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">搜索</text>
+  <rect x="540" y="232" width="80" height="28" rx="5" fill="#fed7aa" stroke="#fdba74" stroke-width="1"/>
+  <text x="580" y="250" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">历史</text>
+  <rect x="635" y="232" width="80" height="28" rx="5" fill="#fed7aa" stroke="#fdba74" stroke-width="1"/>
+  <text x="675" y="250" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">追番/剧</text>
+  <rect x="730" y="232" width="80" height="28" rx="5" fill="#fed7aa" stroke="#fdba74" stroke-width="1"/>
+  <text x="770" y="250" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">收藏</text>
+  <rect x="825" y="232" width="80" height="28" rx="5" fill="#e9d5ff" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="865" y="250" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">个人</text>
+
+  <!-- Core Feature Layer -->
+  <rect x="30" y="285" width="900" height="180" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="50" y="305" font-size="11" font-weight="600" fill="#16a34a">功能层 · Core Features</text>
+  <rect x="50" y="315" width="200" height="140" rx="8" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="150" y="335" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">🎬 视频播放</text>
+  <text x="65" y="355" font-size="11" fill="#6b7280">• HDR / 杜比视界</text>
+  <text x="65" y="372" font-size="11" fill="#6b7280">• 弹幕显示 + 防挡</text>
+  <text x="65" y="389" font-size="11" fill="#6b7280">• SponsorBlock 跳广告</text>
+  <text x="65" y="406" font-size="11" fill="#6b7280">• 画质选择 (4K/1080P)</text>
+  <text x="65" y="423" font-size="11" fill="#6b7280">• 循环/连播/倍速</text>
+  <text x="65" y="440" font-size="11" fill="#6b7280">• 播放列表管理</text>
+  <rect x="270" y="315" width="200" height="140" rx="8" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="370" y="335" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">📡 直播</text>
+  <text x="285" y="355" font-size="11" fill="#6b7280">• 分区浏览</text>
+  <text x="285" y="372" font-size="11" fill="#6b7280">• 实时弹幕 (WebSocket)</text>
+  <text x="285" y="389" font-size="11" fill="#6b7280">• 清晰度切换</text>
+  <text x="285" y="406" font-size="11" fill="#6b7280">• Brotli 解压</text>
+  <rect x="490" y="315" width="200" height="140" rx="8" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="590" y="335" text-anchor="middle" font-size="13" font-weight="600" fill="#111827">🔍 搜索</text>
+  <text x="505" y="355" font-size="11" fill="#6b7280">• 热搜榜 (30分钟缓存)</text>
+  <text x="505" y="372" font-size="11" fill="#6b7280">• 搜索历史</text>
+  <text x="505" y="389" font-size="11" fill="#6b7280">• 无限滚动分页</text>
+  <text x="505" y="406" font-size="11" fill="#6b7280">• 搜索结果详情</text>
+  <rect x="710" y="315" width="200" height="140" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="810" y="335" text-anchor="middle" font-size="13" font-weight="600" fill="#ea580c">⭐ Fork 增强</text>
+  <text x="725" y="355" font-size="11" fill="#6b7280">• 港澳台区域解锁</text>
+  <text x="725" y="372" font-size="11" fill="#6b7280">• BiliRoaming 代理</text>
+  <text x="725" y="389" font-size="11" fill="#6b7280">• DLNA 投屏</text>
+  <text x="725" y="406" font-size="11" fill="#6b7280">• 一键部署脚本</text>
+  <text x="725" y="423" font-size="11" fill="#6b7280">• 连播防崩溃</text>
+  <text x="725" y="440" font-size="11" fill="#6b7280">• 多账号切换</text>
+
+  <!-- Plugin Layer -->
+  <rect x="30" y="485" width="900" height="85" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="50" y="505" font-size="11" font-weight="600" fill="#2563eb">插件层 · Player Plugin System</text>
+  <rect x="60" y="515" width="105" height="28" rx="5" fill="#dbeafe" stroke="#d1d5db" stroke-width="1"/>
+  <text x="112" y="533" text-anchor="middle" font-size="10" font-weight="500" fill="#111827">DanmuView</text>
+  <rect x="175" y="515" width="105" height="28" rx="5" fill="#dbeafe" stroke="#d1d5db" stroke-width="1"/>
+  <text x="227" y="533" text-anchor="middle" font-size="10" font-weight="500" fill="#111827">SpeedChanger</text>
+  <rect x="300" y="515" width="105" height="28" rx="5" fill="#dcfce7" stroke="#d1d5db" stroke-width="1"/>
+  <text x="352" y="533" text-anchor="middle" font-size="10" font-weight="500" fill="#111827">SponsorSkip</text>
+  <rect x="420" y="515" width="105" height="28" rx="5" fill="#dcfce7" stroke="#d1d5db" stroke-width="1"/>
+  <text x="472" y="533" text-anchor="middle" font-size="10" font-weight="500" fill="#111827">QualitySelect</text>
+  <rect x="545" y="515" width="105" height="28" rx="5" fill="#e9d5ff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="597" y="533" text-anchor="middle" font-size="10" font-weight="500" fill="#111827">VideoPlayList</text>
+  <rect x="670" y="515" width="105" height="28" rx="5" fill="#fed7aa" stroke="#d1d5db" stroke-width="1"/>
+  <text x="722" y="533" text-anchor="middle" font-size="10" font-weight="500" fill="#111827">BUpnp/DLNA</text>
+  <rect x="790" y="515" width="105" height="28" rx="5" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+  <text x="842" y="533" text-anchor="middle" font-size="10" font-weight="500" fill="#111827">Debug</text>
+  <line x1="150" y1="455" x2="150" y2="515" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+  <!-- Backend Layer -->
+  <rect x="30" y="590" width="900" height="75" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="50" y="610" font-size="11" font-weight="600" fill="#dc2626">服务层 · Backend Services</text>
+  <rect x="60" y="620" width="150" height="36" rx="6" fill="#fee2e2" stroke="#d1d5db" stroke-width="1" filter="url(#shadow)"/>
+  <text x="135" y="634" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">B站 TV API</text>
+  <text x="135" y="648" text-anchor="middle" font-size="9" fill="#6b7280">appkey 签名</text>
+  <rect x="230" y="620" width="150" height="36" rx="6" fill="#fee2e2" stroke="#d1d5db" stroke-width="1" filter="url(#shadow)"/>
+  <text x="305" y="634" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">B站 Web API</text>
+  <text x="305" y="648" text-anchor="middle" font-size="9" fill="#6b7280">WBI 签名</text>
+  <rect x="400" y="620" width="150" height="36" rx="6" fill="#fff7ed" stroke="#d1d5db" stroke-width="1" filter="url(#shadow)"/>
+  <text x="475" y="634" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">BiliRoaming</text>
+  <text x="475" y="648" text-anchor="middle" font-size="9" fill="#6b7280">区域代理</text>
+  <rect x="570" y="620" width="150" height="36" rx="6" fill="#f0fdf4" stroke="#d1d5db" stroke-width="1" filter="url(#shadow)"/>
+  <text x="645" y="634" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">SponsorBlock</text>
+  <text x="645" y="648" text-anchor="middle" font-size="9" fill="#6b7280">广告时间戳</text>
+  <rect x="740" y="620" width="150" height="36" rx="6" fill="#faf5ff" stroke="#d1d5db" stroke-width="1" filter="url(#shadow)"/>
+  <text x="815" y="634" text-anchor="middle" font-size="11" font-weight="500" fill="#111827">UPNP/DLNA</text>
+  <text x="815" y="648" text-anchor="middle" font-size="9" fill="#6b7280">投屏协议</text>
+
+  <!-- Storage Layer -->
+  <rect x="30" y="685" width="900" height="55" rx="10" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="50" y="705" font-size="11" font-weight="600" fill="#6b7280">存储层 · Local Storage</text>
+  <rect x="200" y="708" width="130" height="24" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="265" y="724" text-anchor="middle" font-size="10" fill="#6b7280">UserDefaults</text>
+  <rect x="370" y="708" width="130" height="24" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="435" y="724" text-anchor="middle" font-size="10" fill="#6b7280">HTTPCookieStorage</text>
+  <rect x="570" y="708" width="130" height="24" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="635" y="724" text-anchor="middle" font-size="10" fill="#6b7280">Kingfisher Cache</text>
+  <rect x="750" y="708" width="130" height="24" rx="4" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="815" y="724" text-anchor="middle" font-size="10" fill="#6b7280">Search History</text>
+
+  <!-- Legend -->
+</svg>

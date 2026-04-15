@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 800" width="960" height="800">
+  <style>
+    text { font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+  </style>
+  <defs>
+    <marker id="arr-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/></marker>
+    <marker id="arr-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#16a34a"/></marker>
+    <marker id="arr-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#ea580c"/></marker>
+    <marker id="arr-purple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#9333ea"/></marker>
+    <marker id="arr-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#dc2626"/></marker>
+    <filter id="shd"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.1"/></filter>
+  </defs>
+
+  <rect width="960" height="800" fill="#ffffff"/>
+  <text x="480" y="36" text-anchor="middle" font-size="20" font-weight="600" fill="#111827">BiliBili tvOS 客户端 — 系统架构图</text>
+  <text x="480" y="56" text-anchor="middle" font-size="12" fill="#6b7280">Swift · tvOS · AVKit · Plugin Architecture · SPM Dependencies</text>
+
+  <!-- Presentation Layer -->
+  <rect x="25" y="75" width="910" height="130" rx="10" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="45" y="95" font-size="11" font-weight="600" fill="#9333ea">Presentation Layer · UIKit + tvOS</text>
+  <rect x="45" y="105" width="120" height="40" rx="6" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="105" y="122" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">AppDelegate</text>
+  <text x="105" y="136" text-anchor="middle" font-size="9" fill="#6b7280">Bootstrap + Init</text>
+  <rect x="185" y="105" width="140" height="40" rx="6" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="255" y="122" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">BLTabBarVC</text>
+  <text x="255" y="136" text-anchor="middle" font-size="9" fill="#6b7280">10-Tab Navigator</text>
+  <rect x="345" y="105" width="120" height="40" rx="6" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="405" y="122" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">LoginVC</text>
+  <text x="405" y="136" text-anchor="middle" font-size="9" fill="#6b7280">QR Code Auth</text>
+  <rect x="485" y="105" width="200" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="585" y="122" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">Feature ViewControllers</text>
+  <text x="585" y="136" text-anchor="middle" font-size="9" fill="#6b7280">Feed/Hot/Rank/Follows/Fav/Search</text>
+  <rect x="705" y="105" width="120" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="765" y="122" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">SettingsVC</text>
+  <text x="765" y="136" text-anchor="middle" font-size="9" fill="#6b7280">UserDefaults</text>
+  <rect x="45" y="155" width="170" height="32" rx="5" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="130" y="175" text-anchor="middle" font-size="10" fill="#6b7280">FeedCollectionVC + Cells</text>
+  <rect x="235" y="155" width="170" height="32" rx="5" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="320" y="175" text-anchor="middle" font-size="10" fill="#6b7280">CategoryVC + SegmentVC</text>
+  <rect x="425" y="155" width="170" height="32" rx="5" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="510" y="175" text-anchor="middle" font-size="10" fill="#6b7280">PersonalVC + AccountSwitch</text>
+  <rect x="615" y="155" width="170" height="32" rx="5" fill="#ffffff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="700" y="175" text-anchor="middle" font-size="10" fill="#6b7280">SearchResultVC + HotCells</text>
+
+  <!-- Player Engine -->
+  <rect x="25" y="220" width="910" height="155" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="45" y="240" font-size="11" font-weight="600" fill="#2563eb">Player Engine · AVKit + Plugin System</text>
+  <rect x="340" y="250" width="200" height="50" rx="8" fill="#dbeafe" stroke="#60a5fa" stroke-width="2" filter="url(#shd)"/>
+  <text x="440" y="270" text-anchor="middle" font-size="13" font-weight="600" fill="#1e40af">CommonPlayerVC</text>
+  <text x="440" y="286" text-anchor="middle" font-size="10" fill="#3b82f6">AVPlayer + Plugin Lifecycle</text>
+  <rect x="55" y="255" width="140" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="125" y="272" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">VideoPlayerVC</text>
+  <text x="125" y="286" text-anchor="middle" font-size="9" fill="#6b7280">PlayInfo(aid,cid,epid)</text>
+  <rect x="690" y="255" width="140" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="760" y="272" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">LivePlayerVC</text>
+  <text x="760" y="286" text-anchor="middle" font-size="9" fill="#6b7280">LivePlayerVM</text>
+  <line x1="195" y1="275" x2="330" y2="275" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <line x1="690" y1="275" x2="550" y2="275" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <rect x="580" y="255" width="90" height="40" rx="6" fill="#faf5ff" stroke="#c4b5fd" stroke-width="1.5"/>
+  <text x="625" y="272" text-anchor="middle" font-size="10" font-weight="600" fill="#7c3aed">ViewModel</text>
+  <text x="625" y="286" text-anchor="middle" font-size="9" fill="#9333ea">NewVideo..</text>
+  <rect x="45" y="310" width="870" height="55" rx="6" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="60" y="327" font-size="10" font-weight="600" fill="#2563eb">Plugins (CommonPlayerPlugin protocol)</text>
+  <rect x="55" y="335" width="100" height="24" rx="4" fill="#dbeafe" stroke="#d1d5db" stroke-width="1"/>
+  <text x="105" y="351" text-anchor="middle" font-size="9" fill="#111827">DanmuView</text>
+  <rect x="170" y="335" width="100" height="24" rx="4" fill="#dbeafe" stroke="#d1d5db" stroke-width="1"/>
+  <text x="220" y="351" text-anchor="middle" font-size="9" fill="#111827">SpeedChanger</text>
+  <rect x="285" y="335" width="100" height="24" rx="4" fill="#dcfce7" stroke="#d1d5db" stroke-width="1"/>
+  <text x="335" y="351" text-anchor="middle" font-size="9" fill="#111827">SponsorSkip</text>
+  <rect x="400" y="335" width="100" height="24" rx="4" fill="#dcfce7" stroke="#d1d5db" stroke-width="1"/>
+  <text x="450" y="351" text-anchor="middle" font-size="9" fill="#111827">QualitySel</text>
+  <rect x="515" y="335" width="100" height="24" rx="4" fill="#e9d5ff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="565" y="351" text-anchor="middle" font-size="9" fill="#111827">VideoPlayList</text>
+  <rect x="630" y="335" width="100" height="24" rx="4" fill="#fed7aa" stroke="#d1d5db" stroke-width="1"/>
+  <text x="680" y="351" text-anchor="middle" font-size="9" fill="#111827">BUpnp</text>
+  <rect x="745" y="335" width="100" height="24" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+  <text x="795" y="351" text-anchor="middle" font-size="9" fill="#111827">URLPlay</text>
+  <rect x="855" y="335" width="100" height="24" rx="4" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1"/>
+  <text x="905" y="351" text-anchor="middle" font-size="9" fill="#111827">Debug</text>
+  <line x1="440" y1="300" x2="440" y2="330" stroke="#2563eb" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <rect x="415" y="308" width="50" height="14" rx="2" fill="#ffffff" opacity="0.95"/>
+  <text x="440" y="318" text-anchor="middle" font-size="9" fill="#2563eb">plugins</text>
+
+  <!-- Networking Layer -->
+  <rect x="25" y="390" width="910" height="145" rx="10" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="45" y="410" font-size="11" font-weight="600" fill="#16a34a">Networking Layer · Alamofire + Protobuf</text>
+  <rect x="50" y="420" width="180" height="55" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="140" y="440" text-anchor="middle" font-size="12" font-weight="600" fill="#111827">ApiRequest</text>
+  <text x="140" y="455" text-anchor="middle" font-size="9" fill="#6b7280">TV API · appkey+MD5 签名</text>
+  <text x="140" y="467" text-anchor="middle" font-size="9" fill="#6b7280">Login · Token Refresh</text>
+  <rect x="260" y="420" width="180" height="55" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="350" y="440" text-anchor="middle" font-size="12" font-weight="600" fill="#111827">WebRequest</text>
+  <text x="350" y="455" text-anchor="middle" font-size="9" fill="#6b7280">Web API · WBI 签名</text>
+  <text x="350" y="467" text-anchor="middle" font-size="9" fill="#6b7280">Video/Live/Danmu/User</text>
+  <rect x="470" y="420" width="140" height="55" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="540" y="440" text-anchor="middle" font-size="12" font-weight="600" fill="#111827">SearchRequest</text>
+  <text x="540" y="455" text-anchor="middle" font-size="9" fill="#6b7280">热搜 + 分页搜索</text>
+  <rect x="640" y="420" width="130" height="55" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="705" y="440" text-anchor="middle" font-size="12" font-weight="600" fill="#111827">SponsorBlock</text>
+  <text x="705" y="455" text-anchor="middle" font-size="9" fill="#6b7280">sponsor.ajay.app</text>
+  <rect x="800" y="420" width="120" height="55" rx="8" fill="#f9fafb" stroke="#d1d5db" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="860" y="440" text-anchor="middle" font-size="12" font-weight="600" fill="#111827">CookieManager</text>
+  <text x="860" y="455" text-anchor="middle" font-size="9" fill="#6b7280">CSRF · buvid3</text>
+  <rect x="50" y="485" width="410" height="40" rx="6" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+  <text x="60" y="503" font-size="10" font-weight="600" fill="#ea580c">⭐ Area Unlock:</text>
+  <text x="155" y="503" font-size="10" fill="#6b7280">BiliRoaming Proxy → Android API Sign → URL Rewrite → Region Bypass</text>
+  <text x="60" y="518" font-size="9" fill="#9ca3af">bili.nepnep.moe / bilibili.suysker.xyz / bili.lli.cx / custom</text>
+  <rect x="490" y="485" width="200" height="40" rx="6" fill="#f9fafb" stroke="#d1d5db" stroke-width="1"/>
+  <text x="590" y="503" text-anchor="middle" font-size="10" font-weight="600" fill="#111827">SwiftProtobuf</text>
+  <text x="590" y="518" text-anchor="middle" font-size="9" fill="#6b7280">dm.pb.swift · dmView.pb.swift</text>
+  <rect x="720" y="485" width="200" height="40" rx="6" fill="#f9fafb" stroke="#d1d5db" stroke-width="1"/>
+  <text x="820" y="503" text-anchor="middle" font-size="10" font-weight="600" fill="#111827">AccountManager</text>
+  <text x="820" y="518" text-anchor="middle" font-size="9" fill="#6b7280">Multi-account · Token Refresh</text>
+
+  <!-- DLNA Layer -->
+  <rect x="25" y="550" width="440" height="85" rx="10" fill="#fff7ed" stroke="#fed7aa" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="45" y="570" font-size="11" font-weight="600" fill="#ea580c">DLNA / Casting · UPNP + CocoaAsyncSocket</text>
+  <rect x="45" y="580" width="140" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="115" y="597" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">BiliBiliUpnpDMR</text>
+  <text x="115" y="611" text-anchor="middle" font-size="9" fill="#6b7280">HTTP Server (Swifter)</text>
+  <rect x="205" y="580" width="120" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="265" y="597" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">QRCastVC</text>
+  <text x="265" y="611" text-anchor="middle" font-size="9" fill="#6b7280">Casting UI</text>
+  <rect x="345" y="580" width="100" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5" filter="url(#shd)"/>
+  <text x="395" y="597" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">NVASocket</text>
+  <text x="395" y="611" text-anchor="middle" font-size="9" fill="#6b7280">Network IO</text>
+
+  <rect x="490" y="550" width="445" height="85" rx="10" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="510" y="570" font-size="11" font-weight="600" fill="#6b7280">Vendor / Custom Components</text>
+  <rect x="510" y="580" width="150" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/>
+  <text x="585" y="597" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">DanmakuKit</text>
+  <text x="585" y="611" text-anchor="middle" font-size="9" fill="#6b7280">AsyncLayer + Track + Pool</text>
+  <rect x="680" y="580" width="120" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/>
+  <text x="740" y="597" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">BrotliDecomp</text>
+  <text x="740" y="611" text-anchor="middle" font-size="9" fill="#6b7280">Live Danmu 解压</text>
+  <rect x="820" y="580" width="100" height="40" rx="6" fill="#ffffff" stroke="#d1d5db" stroke-width="1.5"/>
+  <text x="870" y="597" text-anchor="middle" font-size="11" font-weight="600" fill="#111827">Extensions</text>
+  <text x="870" y="611" text-anchor="middle" font-size="9" fill="#6b7280">UIKit + Swift</text>
+
+  <rect x="25" y="655" width="910" height="60" rx="10" fill="#fef2f2" stroke="#fecaca" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="45" y="675" font-size="11" font-weight="600" fill="#dc2626">External Services</text>
+  <rect x="55" y="685" width="130" height="22" rx="4" fill="#fee2e2" stroke="#d1d5db" stroke-width="1"/>
+  <text x="120" y="700" text-anchor="middle" font-size="9" fill="#6b7280">api.bilibili.com</text>
+  <rect x="200" y="685" width="130" height="22" rx="4" fill="#fee2e2" stroke="#d1d5db" stroke-width="1"/>
+  <text x="265" y="700" text-anchor="middle" font-size="9" fill="#6b7280">api.live.bilibili.com</text>
+  <rect x="380" y="685" width="130" height="22" rx="4" fill="#fff7ed" stroke="#d1d5db" stroke-width="1"/>
+  <text x="445" y="700" text-anchor="middle" font-size="9" fill="#6b7280">BiliRoaming Proxies</text>
+  <rect x="555" y="685" width="130" height="22" rx="4" fill="#f0fdf4" stroke="#d1d5db" stroke-width="1"/>
+  <text x="620" y="700" text-anchor="middle" font-size="9" fill="#6b7280">sponsor.ajay.app</text>
+  <rect x="710" y="685" width="130" height="22" rx="4" fill="#faf5ff" stroke="#d1d5db" stroke-width="1"/>
+  <text x="775" y="700" text-anchor="middle" font-size="9" fill="#6b7280">UPNP Discovery</text>
+
+  <rect x="25" y="725" width="910" height="55" rx="10" fill="#f0f9ff" stroke="#bfdbfe" stroke-width="1" stroke-dasharray="6,3"/>
+  <text x="45" y="745" font-size="11" font-weight="600" fill="#2563eb">SPM Dependencies</text>
+  <rect x="55" y="753" width="100" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="105" y="767" text-anchor="middle" font-size="9" fill="#1e40af">Alamofire</text>
+  <rect x="165" y="753" width="100" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="215" y="767" text-anchor="middle" font-size="9" fill="#1e40af">SwiftyJSON</text>
+  <rect x="275" y="753" width="100" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="325" y="767" text-anchor="middle" font-size="9" fill="#1e40af">Kingfisher</text>
+  <rect x="385" y="753" width="100" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="435" y="767" text-anchor="middle" font-size="9" fill="#1e40af">SnapKit</text>
+  <rect x="495" y="753" width="100" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="545" y="767" text-anchor="middle" font-size="9" fill="#1e40af">CocoaAsyncSocket</text>
+  <rect x="605" y="753" width="100" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="655" y="767" text-anchor="middle" font-size="9" fill="#1e40af">CocoaLumberjack</text>
+  <rect x="715" y="753" width="100" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="765" y="767" text-anchor="middle" font-size="9" fill="#1e40af">SwiftyXMLParser</text>
+  <rect x="825" y="753" width="100" height="20" rx="3" fill="#dbeafe" stroke="#93c5fd" stroke-width="1"/>
+  <text x="875" y="767" text-anchor="middle" font-size="9" fill="#1e40af">SwiftProtobuf</text>
+
+  <!-- Data flow arrows -->
+  <path d="M 255,187 L 255,220 L 340,250" stroke="#2563eb" stroke-width="1.5" fill="none" marker-end="url(#arr-blue)"/>
+  <line x1="350" y1="365" x2="350" y2="410" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <rect x="320" y="378" width="60" height="14" rx="2" fill="#ffffff" opacity="0.95"/>
+  <text x="350" y="389" text-anchor="middle" font-size="9" fill="#16a34a">API calls</text>
+  <line x1="140" y1="475" x2="120" y2="680" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arr-red)"/>
+  <line x1="350" y1="475" x2="265" y2="680" stroke="#dc2626" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arr-red)"/>
+  <line x1="115" y1="620" x2="775" y2="680" stroke="#ea580c" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arr-orange)"/>
+
+  <!-- Legend removed for cleanliness -->
+</svg>

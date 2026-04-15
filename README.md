@@ -52,6 +52,20 @@
 
 ---
 
+## 架构
+
+<p align="center">
+  <img src="docs/diagrams/product-architecture.png" width="90%" />
+</p>
+<p align="center"><em>产品架构图 — 功能模块与分层</em></p>
+
+<p align="center">
+  <img src="docs/diagrams/system-architecture.png" width="90%" />
+</p>
+<p align="center"><em>系统架构图 — 技术组件与数据流</em></p>
+
+---
+
 ## 安装
 
 ### 未签名 IPA
