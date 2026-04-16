@@ -84,13 +84,13 @@ fastlane build_unsign_ipa
 ### 部署到 Apple TV（免费开发者账号）
 ```bash
 # 一键部署（自动检测设备、构建、安装）
-./scripts/deploy.sh
+./scripts/deploy_to_appletv.sh
 
 # 清理后重新构建
-./scripts/deploy.sh --clean
+./scripts/deploy_to_appletv.sh --clean
 
 # 查看已连接的 Apple TV
-./scripts/deploy.sh --list
+./scripts/deploy_to_appletv.sh --list
 ```
 > 免费开发者账号签名的应用有效期 7 天，过期后重新运行脚本即可。脚本会自动下载缺失的 tvOS SDK。
 
