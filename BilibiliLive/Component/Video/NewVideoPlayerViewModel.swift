@@ -333,10 +333,10 @@ class VideoPlayerViewModel {
                mask.fps > 0
             {
                 let maskProvider = BMaskProvider(info: mask, videoSize: CGSize(width: video.width ?? 0, height: video.height ?? 0))
-                plugins.append(MaskViewPugin(maskView: danmu.danMuView, maskProvider: maskProvider))
+                plugins.append(MaskViewPlugin(maskView: danmu.danMuView, maskProvider: maskProvider))
             } else if Settings.vnMask {
                 let maskProvider = VMaskProvider()
-                plugins.append(MaskViewPugin(maskView: danmu.danMuView, maskProvider: maskProvider))
+                plugins.append(MaskViewPlugin(maskView: danmu.danMuView, maskProvider: maskProvider))
             }
         }
 

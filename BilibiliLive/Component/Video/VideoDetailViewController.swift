@@ -43,7 +43,7 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var favButton: BLCustomButton!
     @IBOutlet var pageCollectionView: UICollectionView!
     @IBOutlet var recommandCollectionView: UICollectionView!
-    @IBOutlet var replysCollectionView: UICollectionView!
+    @IBOutlet var repliesCollectionView: UICollectionView!
     @IBOutlet var repliesCollectionViewHeightConstraints: NSLayoutConstraint!
     @IBOutlet var ugcCollectionView: UICollectionView!
 
@@ -68,7 +68,7 @@ class VideoDetailViewController: UIViewController {
     private var isBangumi = false
     private var startTime = 0
     private var pages = [VideoPage]()
-    private var replys: Replys?
+    private var replies: Replies?
     private var subTitles: [SubtitleData]?
 
     private var allUgcEpisodes = [VideoDetail.Info.UgcSeason.UgcVideoInfo]()
@@ -139,7 +139,7 @@ class VideoDetailViewController: UIViewController {
         ])
         focusGuide.preferredFocusEnvironments = [dislikeButton]
 
-        replysCollectionView.publisher(for: \.contentSize).sink { [weak self] newSize in
+        repliesCollectionView.publisher(for: \.contentSize).sink { [weak self] newSize in
             self?.repliesCollectionViewHeightConstraints.constant = newSize.height
             self?.view.setNeedsLayout()
         }.store(in: &subscriptions)
@@ -238,9 +238,9 @@ class VideoDetailViewController: UIViewController {
             }
         }
 
-        WebRequest.requestReplys(aid: aid) { [weak self] replys in
-            self?.replys = replys
-            self?.replysCollectionView.reloadData()
+        WebRequest.requestReplies(aid: aid) { [weak self] replies in
+            self?.replies = replies
+            self?.repliesCollectionView.reloadData()
         }
 
         WebRequest.requestLikeStatus(aid: aid) { [weak self] isLiked in
@@ -507,8 +507,8 @@ extension VideoDetailViewController: UICollectionViewDelegate {
                 player.nextProvider = nextProvider
             }
             present(player, animated: true, completion: nil)
-        case replysCollectionView:
-            guard let reply = replys?.replies?[indexPath.item] else { return }
+        case repliesCollectionView:
+            guard let reply = replies?.replies?[indexPath.item] else { return }
             let detail = ReplyDetailViewController(reply: reply)
             present(detail, animated: true)
         case ugcCollectionView:
@@ -544,8 +544,8 @@ extension VideoDetailViewController: UICollectionViewDataSource {
         switch collectionView {
         case pageCollectionView:
             return pages.count
-        case replysCollectionView:
-            return replys?.replies?.count ?? 0
+        case repliesCollectionView:
+            return replies?.replies?.count ?? 0
         case ugcCollectionView:
             return allUgcEpisodes.count
         case recommandCollectionView:
@@ -566,11 +566,11 @@ extension VideoDetailViewController: UICollectionViewDataSource {
                 cell.titleLabel.text = page.part
             }
             return cell
-        case replysCollectionView:
+        case repliesCollectionView:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ReplyCell.self), for: indexPath) as? ReplyCell else {
                 return UICollectionViewCell()
             }
-            if let reply = replys?.replies?[indexPath.item] {
+            if let reply = replies?.replies?[indexPath.item] {
                 cell.config(replay: reply)
             }
             return cell

@@ -569,9 +569,9 @@ extension WebRequest {
         }
     }
 
-    static func requestReplys(aid: Int, complete: ((Replys) -> Void)?) {
+    static func requestReplies(aid: Int, complete: ((Replies) -> Void)?) {
         request(url: "https://api.bilibili.com/x/v2/reply", parameters: ["type": 1, "oid": aid, "sort": 1, "nohot": 0]) {
-            (result: Result<Replys, RequestError>) in
+            (result: Result<Replies, RequestError>) in
             if let details = try? result.get() {
                 complete?(details)
             }
@@ -911,7 +911,7 @@ struct SubtitleData: Codable, Hashable {
     var subtitleContents: [SubtitleContent]?
 }
 
-struct Replys: Codable, Hashable {
+struct Replies: Codable, Hashable {
     struct Reply: Codable, Hashable {
         struct Member: Codable, Hashable {
             let uname: String

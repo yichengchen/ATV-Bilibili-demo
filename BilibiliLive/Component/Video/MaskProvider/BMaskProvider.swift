@@ -171,7 +171,7 @@ class BMaskProvider: MaskProvider {
         return false
     }
 
-    func setVideoOutout(ouput: AVPlayerItemVideoOutput) {}
+    func setVideoOutput(output: AVPlayerItemVideoOutput) {}
     func preferFPS() -> Int {
         return info.fps
     }

@@ -351,7 +351,7 @@
                                                                                 <constraint firstItem="ahl-Fa-Qpg" firstAttribute="top" secondItem="OK2-zU-GFt" secondAttribute="top" id="sP8-5F-KyD"/>
                                                                             </constraints>
                                                                         </view>
-                                                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1fg-AS-8jn" userLabel="Replys">
+                                                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1fg-AS-8jn" userLabel="Replies">
                                                                             <rect key="frame" x="188" y="0.0" width="158" height="50"/>
                                                                             <subviews>
                                                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="list.bullet.rectangle" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="FAZ-U1-ig0">
@@ -801,7 +801,7 @@
                         <outlet property="playCountLabel" destination="ahl-Fa-Qpg" id="q6V-be-wNj"/>
                         <outlet property="recommandCollectionView" destination="nw1-cq-9yk" id="w8m-bc-mWQ"/>
                         <outlet property="repliesCollectionViewHeightConstraints" destination="dCt-K6-G5Q" id="ZfP-oq-I5s"/>
-                        <outlet property="replysCollectionView" destination="zj0-CY-pLt" id="8h4-LO-bUs"/>
+                        <outlet property="repliesCollectionView" destination="zj0-CY-pLt" id="8h4-LO-bUs"/>
                         <outlet property="scrollView" destination="Dm8-CL-kxU" id="R6I-to-71J"/>
                         <outlet property="titleLabel" destination="kwE-Zo-p5T" id="3Fx-I9-hrS"/>
                         <outlet property="ugcCollectionView" destination="m2m-Xp-hi5" id="gzJ-A2-7q5"/>

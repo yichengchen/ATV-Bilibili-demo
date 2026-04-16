@@ -15,9 +15,9 @@ class ReplyDetailViewController: UIViewController {
     private var imageStackView: UIStackView!
     private var buttonStackView: UIStackView!
 
-    private let reply: Replys.Reply
+    private let reply: Replies.Reply
 
-    init(reply: Replys.Reply) {
+    init(reply: Replies.Reply) {
         self.reply = reply
         super.init(nibName: nil, bundle: nil)
     }

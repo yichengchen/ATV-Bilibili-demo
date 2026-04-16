@@ -14,7 +14,7 @@ class ReplyCell: UICollectionViewCell {
     @IBOutlet var userNameLabel: UILabel!
     @IBOutlet var contenLabel: UILabel!
 
-    func config(replay: Replys.Reply) {
+    func config(replay: Replies.Reply) {
         avatarImageView.kf.setImage(
             with: URL(string: replay.member.avatar),
             options: [

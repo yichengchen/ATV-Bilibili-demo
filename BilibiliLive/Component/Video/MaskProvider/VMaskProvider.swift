@@ -95,8 +95,8 @@ class VMaskProvider: MaskProvider {
         return true
     }
 
-    func setVideoOutout(ouput: AVPlayerItemVideoOutput) {
-        videoOutput = ouput
+    func setVideoOutput(output: AVPlayerItemVideoOutput) {
+        videoOutput = output
     }
 
     func preferFPS() -> Int {

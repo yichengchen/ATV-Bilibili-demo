@@ -24,10 +24,10 @@ extension DisplayData {
     var overlay: DisplayOverlay? { return nil }
 }
 
-struct AnyDispplayData: Hashable {
+struct AnyDisplayData: Hashable {
     let data: any DisplayData
 
-    static func == (lhs: AnyDispplayData, rhs: AnyDispplayData) -> Bool {
+    static func == (lhs: AnyDisplayData, rhs: AnyDisplayData) -> Bool {
         func eq<T: Equatable>(lhs: T, rhs: any Equatable) -> Bool {
             lhs == rhs as? T
         }
@@ -103,7 +103,7 @@ class FeedCollectionViewController: UIViewController {
 
     var displayDatas: [any DisplayData] {
         set {
-            _displayData = newValue.map { AnyDispplayData(data: $0) }.uniqued()
+            _displayData = newValue.map { AnyDisplayData(data: $0) }.uniqued()
             finished = false
         }
         get {
@@ -111,9 +111,9 @@ class FeedCollectionViewController: UIViewController {
         }
     }
 
-    private var _displayData = [AnyDispplayData]() {
+    private var _displayData = [AnyDisplayData]() {
         didSet {
-            var snapshot = NSDiffableDataSourceSnapshot<Section, AnyDispplayData>()
+            var snapshot = NSDiffableDataSourceSnapshot<Section, AnyDisplayData>()
             snapshot.appendSections(Section.allCases)
             snapshot.appendItems(_displayData, toSection: .main)
             dataSource.apply(snapshot)
@@ -122,7 +122,7 @@ class FeedCollectionViewController: UIViewController {
 
     private var isLoading = false
 
-    typealias DisplayCellRegistration = UICollectionView.CellRegistration<FeedCollectionViewCell, AnyDispplayData>
+    typealias DisplayCellRegistration = UICollectionView.CellRegistration<FeedCollectionViewCell, AnyDisplayData>
     private lazy var dataSource = makeDataSource()
 
     // MARK: - Public
@@ -137,7 +137,7 @@ class FeedCollectionViewController: UIViewController {
 
     func appendData(displayData: [any DisplayData]) {
         isLoading = false
-        _displayData.append(contentsOf: displayData.map { AnyDispplayData(data: $0) }.filter({ !_displayData.contains($0) }))
+        _displayData.append(contentsOf: displayData.map { AnyDisplayData(data: $0) }.filter({ !_displayData.contains($0) }))
         if displayData.count < pageSize - 5 || displayData.count == 0 {
             finished = true
             return
@@ -209,8 +209,8 @@ class FeedCollectionViewController: UIViewController {
         return section
     }
 
-    private func makeDataSource() -> UICollectionViewDiffableDataSource<Section, AnyDispplayData> {
-        let dataSource = UICollectionViewDiffableDataSource<Section, AnyDispplayData>(collectionView: collectionView, cellProvider: makeCellRegistration().cellProvider)
+    private func makeDataSource() -> UICollectionViewDiffableDataSource<Section, AnyDisplayData> {
+        let dataSource = UICollectionViewDiffableDataSource<Section, AnyDisplayData>(collectionView: collectionView, cellProvider: makeCellRegistration().cellProvider)
 
         let supplementaryRegistration = UICollectionView.SupplementaryRegistration<TitleSupplementaryView>(elementKind: TitleSupplementaryView.reuseIdentifier) {
             [weak self] supplementaryView, string, indexPath in

@@ -1,5 +1,5 @@
 //
-//  MaskViewPugin.swift
+//  MaskViewPlugin.swift
 //  BilibiliLive
 //
 //  Created by yicheng on 2024/5/25.
@@ -8,7 +8,7 @@
 import AVKit
 import UIKit
 
-class MaskViewPugin: NSObject, CommonPlayerPlugin {
+class MaskViewPlugin: NSObject, CommonPlayerPlugin {
     weak var maskView: UIView?
     var maskProvider: MaskProvider
     private var observer: Any?
@@ -49,6 +49,6 @@ class MaskViewPugin: NSObject, CommonPlayerPlugin {
         let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBuffAttributes)
         videoItem.add(videoOutput)
         self.videoOutput = videoOutput
-        maskProvider.setVideoOutout(ouput: videoOutput)
+        maskProvider.setVideoOutput(output: videoOutput)
     }
 }

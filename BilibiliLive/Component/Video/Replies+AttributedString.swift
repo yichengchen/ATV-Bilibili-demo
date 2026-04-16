@@ -1,5 +1,5 @@
 //
-//  Replys+AttritubedString.swift
+//  Replies+AttributedString.swift
 //  BilibiliLive
 //
 //  Created by yicheng on 9/11/2024.
@@ -8,7 +8,7 @@
 import Kingfisher
 import UIKit
 
-extension Replys.Reply {
+extension Replies.Reply {
     func createAttributedString(displayView: UIView) -> NSAttributedString? {
         guard let emote = content.emote, !emote.isEmpty else {
             return nil

@@ -177,7 +177,7 @@ class LivePlayerViewModel {
         try? await danMuProvider?.start()
         var plugins: [CommonPlayerPlugin] = [danmuPlugin]
         if Settings.danmuMask, Settings.vnMask {
-            let plugin = MaskViewPugin(maskView: danmuPlugin.danMuView, maskProvider: VMaskProvider())
+            let plugin = MaskViewPlugin(maskView: danmuPlugin.danMuView, maskProvider: VMaskProvider())
             plugins.append(plugin)
         }
 
