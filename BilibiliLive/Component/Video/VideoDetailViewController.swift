@@ -212,7 +212,7 @@ class VideoDetailViewController: UIViewController {
                 let info = try await WebRequest.requestBangumiInfo(epid: epid)
                 seasonId = info.season_id
                 subType = info.type
-                if let epi = info.episodes.first(where: { $0.id == epid }) ?? info.episodes.first {
+                if let epi = info.findEpisodeById(epid) ?? info.episodes.first {
                     aid = epi.aid
                     cid = epi.cid
                     updatePlayProgressIfNeeded(progress: info.user_status?.progress, episode: epi)

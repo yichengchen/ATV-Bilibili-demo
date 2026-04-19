@@ -933,6 +933,20 @@ struct BangumiInfo: Codable, Hashable {
     let episodes: [Episode] // 正片剧集列表
     let user_status: UserStatus?
     let section: [Section]?
+
+    func findEpisodeById(_ epid: Int) -> Episode? {
+        if let epi = episodes.first(where: { $0.id == epid }) {
+            return epi
+        }
+
+        for sec in section ?? [] {
+            if let epi = sec.episodes.first(where: { $0.id == epid }) {
+                return epi
+            }
+        }
+
+        return nil
+    }
 }
 
 struct BangumiSeasonView: Codable, Hashable {
