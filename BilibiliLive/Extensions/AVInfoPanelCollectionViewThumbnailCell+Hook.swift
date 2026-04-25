@@ -6,40 +6,174 @@
 //
 
 import Foundation
+import ObjectiveC
 import UIKit
 
 class AVInfoPanelCollectionViewThumbnailCellHook {
     static func start() {
-        UICollectionViewCell.swizzAVInfoPanelCollectionViewThumbnailCell()
+        UICollectionViewCell.startAVInfoPanelSwizzle()
     }
 }
 
+extension UICollectionViewCell {
+    static let infoActionFocusedNotification = Notification.Name("AVInfoPanelActionFocused")
+}
+
 private extension UICollectionViewCell {
+    private static var avInfoPanelActionTitleKey: UInt8 = 0
+    private static let infoPanelClassNameMarker = "AVInfoPanel"
+    private static var swizzledMethodKeys = Set<String>()
+
+    static func startAVInfoPanelSwizzle() {
+        swizzAVInfoPanelCollectionViewThumbnailCell()
+    }
+
     static func swizzAVInfoPanelCollectionViewThumbnailCell() {
-        let swizzledClass: AnyClass = NSClassFromString("AVInfoPanelCollectionViewThumbnailCell")!
-        let originalSelector = NSSelectorFromString("setTitle:")
+        let didUpdateFocusSelector = #selector(didUpdateFocus(in:with:))
+        let swizzledDidUpdateFocusSelector = #selector(swizz_didUpdateFocus(in:with:))
+        let setTitleSelector = NSSelectorFromString("setTitle:")
+        let swizzledSetTitleSelector = #selector(swizz_setTitle(_:))
 
-        let swizzledSelector = #selector(swizz_setTitle(_:))
-        let originalSelector2 = NSSelectorFromString("didUpdateFocusInContext:withAnimationCoordinator:")
-        let swizzledSelector2 = #selector(swizz_didUpdateFocusInContext(_:withAnimationCoordinator:))
+        for targetClass in avInfoPanelCellClasses() {
+            swizzleMethodIfNeeded(on: targetClass,
+                                  originalSelector: didUpdateFocusSelector,
+                                  swizzledSelector: swizzledDidUpdateFocusSelector)
+            swizzleMethodIfNeeded(on: targetClass,
+                                  originalSelector: setTitleSelector,
+                                  swizzledSelector: swizzledSetTitleSelector)
+        }
+    }
 
-        guard let originalMethod = class_getInstanceMethod(swizzledClass, originalSelector),
-              let swizzledMethod = class_getInstanceMethod(self, swizzledSelector),
-              let originalMethod2 = class_getInstanceMethod(swizzledClass, originalSelector2),
-              let swizzledMethod2 = class_getInstanceMethod(self, swizzledSelector2)
+    static func avInfoPanelCellClasses() -> [AnyClass] {
+        let expectedClassCount = Int(objc_getClassList(nil, 0))
+        guard expectedClassCount > 0 else { return [] }
 
+        let classBuffer = UnsafeMutablePointer<AnyClass?>.allocate(capacity: expectedClassCount)
+        defer { classBuffer.deallocate() }
+
+        let autoreleasingClassBuffer = AutoreleasingUnsafeMutablePointer<AnyClass>(classBuffer)
+        let actualClassCount = Int(objc_getClassList(autoreleasingClassBuffer, Int32(expectedClassCount)))
+
+        let matchedClasses = UnsafeBufferPointer(start: classBuffer, count: actualClassCount)
+            .compactMap { $0 }
+            .filter { targetClass in
+                let className = NSStringFromClass(targetClass)
+                return className.contains(infoPanelClassNameMarker) &&
+                    isSubclass(targetClass, of: UICollectionViewCell.self)
+            }
+
+        return matchedClasses
+            .filter { candidateClass in
+                !matchedClasses.contains { otherClass in
+                    otherClass !== candidateClass && isSubclass(otherClass, of: candidateClass)
+                }
+            }
+            .sorted { NSStringFromClass($0) < NSStringFromClass($1) }
+    }
+
+    static func isSubclass(_ targetClass: AnyClass, of parentClass: AnyClass) -> Bool {
+        var currentClass: AnyClass? = targetClass
+        while let candidateClass = currentClass {
+            if candidateClass == parentClass {
+                return true
+            }
+            currentClass = class_getSuperclass(candidateClass)
+        }
+        return false
+    }
+
+    static func swizzleMethodIfNeeded(on targetClass: AnyClass,
+                                      originalSelector: Selector,
+                                      swizzledSelector: Selector)
+    {
+        let swizzleKey = "\(NSStringFromClass(targetClass))::\(NSStringFromSelector(originalSelector))"
+        guard !swizzledMethodKeys.contains(swizzleKey) else { return }
+        guard let originalMethod = class_getInstanceMethod(targetClass, originalSelector),
+              let baseSwizzledMethod = class_getInstanceMethod(UICollectionViewCell.self, swizzledSelector)
         else { return }
-        method_exchangeImplementations(originalMethod, swizzledMethod)
-        method_exchangeImplementations(originalMethod2, swizzledMethod2)
+
+        class_addMethod(targetClass,
+                        swizzledSelector,
+                        method_getImplementation(baseSwizzledMethod),
+                        method_getTypeEncoding(baseSwizzledMethod))
+
+        guard let targetSwizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector) else { return }
+
+        let didAddOriginalMethod = class_addMethod(targetClass,
+                                                   originalSelector,
+                                                   method_getImplementation(targetSwizzledMethod),
+                                                   method_getTypeEncoding(targetSwizzledMethod))
+
+        if didAddOriginalMethod {
+            class_replaceMethod(targetClass,
+                                swizzledSelector,
+                                method_getImplementation(originalMethod),
+                                method_getTypeEncoding(originalMethod))
+        } else {
+            method_exchangeImplementations(originalMethod, targetSwizzledMethod)
+        }
+
+        swizzledMethodKeys.insert(swizzleKey)
     }
 
     @objc func swizz_setTitle(_ title: String) {
+        // 调用原实现 (已被交换)
         swizz_setTitle(title)
+        avInfoPanelActionTitle = title
         contentView.subviews.compactMap { $0 as? UILabel }.forEach { $0.textColor = .white }
     }
 
-    @objc func swizz_didUpdateFocusInContext(_ selected: Any, withAnimationCoordinator: Any) {
-        swizz_didUpdateFocusInContext(selected, withAnimationCoordinator: withAnimationCoordinator)
-        contentView.subviews.compactMap { $0 as? UILabel }.forEach { $0.textColor = .white }
+    @objc func swizz_didUpdateFocus(in context: UIFocusUpdateContext, with coordinator: UIFocusAnimationCoordinator) {
+        // 调用原实现
+        swizz_didUpdateFocus(in: context, with: coordinator)
+
+        let className = NSStringFromClass(type(of: self))
+        guard className.contains("AVInfoPanel") else { return }
+
+        // 强制白色文字 (视觉一致性)
+        recursiveApplyWhiteText(to: self)
+
+        guard isFocused else { return }
+
+        // 尝试多种方式提取标题
+        let title = avInfoPanelActionTitle ??
+            accessibilityLabel ??
+            recursiveFindTitle(in: self)
+
+        if let title = title {
+            NotificationCenter.default.post(name: Self.infoActionFocusedNotification,
+                                            object: nil,
+                                            userInfo: ["title": title])
+        }
+    }
+
+    private func recursiveApplyWhiteText(to view: UIView) {
+        if let label = view as? UILabel {
+            label.textColor = .white
+        }
+        for subview in view.subviews {
+            recursiveApplyWhiteText(to: subview)
+        }
+    }
+
+    private func recursiveFindTitle(in view: UIView) -> String? {
+        if let label = view as? UILabel, let text = label.text, !text.isEmpty {
+            return text
+        }
+        for subview in view.subviews {
+            if let found = recursiveFindTitle(in: subview) {
+                return found
+            }
+        }
+        return nil
+    }
+
+    var avInfoPanelActionTitle: String? {
+        get {
+            objc_getAssociatedObject(self, &Self.avInfoPanelActionTitleKey) as? String
+        }
+        set {
+            objc_setAssociatedObject(self, &Self.avInfoPanelActionTitleKey, newValue, .OBJC_ASSOCIATION_COPY_NONATOMIC)
+        }
     }
 }

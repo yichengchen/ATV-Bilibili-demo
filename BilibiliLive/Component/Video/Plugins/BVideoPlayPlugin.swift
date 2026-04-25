@@ -10,22 +10,37 @@ import AVKit
 class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     private weak var playerVC: AVPlayerViewController?
     private var playerDelegate: BilibiliVideoResourceLoaderDelegate?
+    private let playInfo: PlayInfo
     private let playData: PlayerDetailData
+    private let reportWatchHistory: Bool
+    private let minimizeStalling: Bool
+    private let isMuted: Bool
+    private let mediaWarmupManager: PlayerMediaWarmupManager?
     private var currentQualityId: Int?
     private var currentPlaybackTime: Double = 0
+    private var loadTask: Task<Void, Never>?
+    private var loadGeneration = 0
 
-    init(detailData: PlayerDetailData) {
+    init(playInfo: PlayInfo,
+         detailData: PlayerDetailData,
+         reportWatchHistory: Bool = true,
+         minimizeStalling: Bool = true,
+         isMuted: Bool = false,
+         mediaWarmupManager: PlayerMediaWarmupManager? = nil)
+    {
+        self.playInfo = playInfo
         playData = detailData
+        self.reportWatchHistory = reportWatchHistory
+        self.minimizeStalling = minimizeStalling
+        self.isMuted = isMuted
+        self.mediaWarmupManager = mediaWarmupManager
         currentQualityId = playData.videoPlayURLInfo.quality
     }
 
     func playerDidLoad(playerVC: AVPlayerViewController) {
         self.playerVC = playerVC
         playerVC.player = nil
-        playerVC.appliesPreferredDisplayCriteriaAutomatically = Settings.contentMatch
-        Task {
-            try? await playmedia(urlInfo: playData.videoPlayURLInfo, playerInfo: playData.playerInfo)
-        }
+        startLoad(urlInfo: playData.videoPlayURLInfo, playerInfo: playData.playerInfo)
     }
 
     func playerWillStart(player: AVPlayer) {
@@ -35,36 +50,116 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     }
 
     func playerDidDismiss(playerVC: AVPlayerViewController) {
+        guard reportWatchHistory else { return }
         guard let currentTime = playerVC.player?.currentTime().seconds, currentTime > 0 else { return }
         WebRequest.reportWatchHistory(aid: playData.aid, cid: playData.cid, currentTime: Int(currentTime), epid: playData.epid, seasonId: playData.seasonId, subType: playData.subType)
     }
 
-    @MainActor
-    private func playmedia(urlInfo: VideoPlayURLInfo, playerInfo: PlayerInfo?, maxQuality: Int? = nil, streamIndex: Int? = nil, isQualitySwitch: Bool = false) async throws {
-        let playURL = URL(string: BilibiliVideoResourceLoaderDelegate.URLs.play)!
-        let headers: [String: String] = [
-            "User-Agent": Keys.userAgent,
-            "Referer": Keys.referer(for: playData.aid),
-        ]
-        let asset = AVURLAsset(url: playURL, options: ["AVURLAssetHTTPHeaderFieldsKey": headers])
-        playerDelegate = BilibiliVideoResourceLoaderDelegate()
-        playerDelegate?.setBilibili(info: urlInfo, subtitles: playerInfo?.subtitle?.subtitles ?? [], aid: playData.aid, maxQuality: maxQuality, streamIndex: streamIndex)
+    func playerWillCleanUp(playerVC: AVPlayerViewController) {
+        invalidatePendingLoad(tearingDown: true)
+    }
 
-        // 只在初次加载时设置 appliesPreferredDisplayCriteriaAutomatically，切换画质时跳过
-        if !isQualitySwitch {
-            if Settings.contentMatchOnlyInHDR {
-                if playerDelegate?.isHDR != true {
-                    playerVC?.appliesPreferredDisplayCriteriaAutomatically = false
-                }
+    func playerDidCleanUp(player: AVPlayer) {
+        player.pause()
+        player.replaceCurrentItem(with: nil)
+    }
+
+    private func startLoad(urlInfo: VideoPlayURLInfo,
+                           playerInfo: PlayerInfo?,
+                           maxQuality: Int? = nil,
+                           streamIndex: Int? = nil,
+                           isQualitySwitch: Bool = false)
+    {
+        let generation = beginLoadGeneration()
+        loadTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await self.playmedia(urlInfo: urlInfo,
+                                         playerInfo: playerInfo,
+                                         generation: generation,
+                                         maxQuality: maxQuality,
+                                         streamIndex: streamIndex,
+                                         isQualitySwitch: isQualitySwitch)
+            } catch is CancellationError {
+                return
+            } catch {
+                Logger.warn("[player] Failed to prepare media: \(error)")
             }
         }
+    }
 
-        asset.resourceLoader.setDelegate(playerDelegate, queue: DispatchQueue(label: "loader"))
-        let playable = try await asset.load(.isPlayable)
-        if !playable {
-            throw "加载资源失败"
+    private func beginLoadGeneration() -> Int {
+        loadTask?.cancel()
+        loadTask = nil
+        loadGeneration += 1
+        return loadGeneration
+    }
+
+    private func invalidatePendingLoad(tearingDown: Bool) {
+        loadTask?.cancel()
+        loadTask = nil
+        loadGeneration += 1
+        playerDelegate = nil
+        if tearingDown {
+            playerVC = nil
         }
-        await prepare(toPlay: asset)
+    }
+
+    private func ensureActiveLoad(_ generation: Int) throws -> AVPlayerViewController {
+        guard !Task.isCancelled,
+              loadGeneration == generation,
+              let playerVC
+        else {
+            throw CancellationError()
+        }
+        return playerVC
+    }
+
+    @MainActor
+    private func playmedia(urlInfo: VideoPlayURLInfo,
+                           playerInfo: PlayerInfo?,
+                           generation: Int,
+                           maxQuality: Int? = nil,
+                           streamIndex: Int? = nil,
+                           isQualitySwitch: Bool = false) async throws
+    {
+        let playerVC = try ensureActiveLoad(generation)
+        let prepared = try await preparedMedia(urlInfo: urlInfo,
+                                               playerInfo: playerInfo,
+                                               maxQuality: maxQuality,
+                                               streamIndex: streamIndex,
+                                               isQualitySwitch: isQualitySwitch)
+        let delegate = prepared.delegate
+        let asset = prepared.asset
+        playerDelegate = delegate
+
+        // AVKit 不允许在同一场全屏播放里反复切换该属性，因此只在首次装配资源时计算一次。
+        if !isQualitySwitch {
+            playerVC.appliesPreferredDisplayCriteriaAutomatically = shouldApplyContentMatch(delegate: delegate)
+        }
+
+        try ensureActiveLoad(generation)
+        await prepare(toPlay: asset, generation: generation)
+    }
+
+    private func preparedMedia(urlInfo: VideoPlayURLInfo,
+                               playerInfo: PlayerInfo?,
+                               maxQuality: Int?,
+                               streamIndex: Int?,
+                               isQualitySwitch: Bool) async throws -> PreparedPlayerMedia
+    {
+        if !isQualitySwitch,
+           maxQuality == nil,
+           streamIndex == nil,
+           let mediaWarmupManager
+        {
+            return try await mediaWarmupManager.preparedMedia(for: playInfo)
+        }
+        return try await PlayerMediaFactory.prepare(aid: playData.aid,
+                                                    urlInfo: urlInfo,
+                                                    playerInfo: playerInfo,
+                                                    maxQuality: maxQuality,
+                                                    streamIndex: streamIndex)
     }
 
     @MainActor
@@ -80,28 +175,65 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
 
         // 重新加载视频，使用新的画质
         do {
-            try await playmedia(urlInfo: playData.videoPlayURLInfo, playerInfo: playData.playerInfo, maxQuality: qualityId, streamIndex: streamIndex, isQualitySwitch: true)
+            let generation = beginLoadGeneration()
+            try await playmedia(urlInfo: playData.videoPlayURLInfo,
+                                playerInfo: playData.playerInfo,
+                                generation: generation,
+                                maxQuality: qualityId,
+                                streamIndex: streamIndex,
+                                isQualitySwitch: true)
 
             // 恢复播放位置并继续播放
-            if let newPlayer = playerVC?.player {
-                await newPlayer.seek(to: CMTime(seconds: currentPlaybackTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
-                newPlayer.play()
-            }
+            guard loadGeneration == generation,
+                  !Task.isCancelled,
+                  playerVC != nil,
+                  let newPlayer = playerVC?.player
+            else { return }
+            await newPlayer.seek(to: CMTime(seconds: currentPlaybackTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+            guard loadGeneration == generation, !Task.isCancelled else { return }
+            newPlayer.play()
+        } catch is CancellationError {
+            return
         } catch {
             Logger.warn("[quality] Failed to switch quality: \(error)")
         }
     }
 
+    private func shouldApplyContentMatch(delegate: BilibiliVideoResourceLoaderDelegate) -> Bool {
+        guard Settings.contentMatch else { return false }
+        guard Settings.contentMatchOnlyInHDR else { return true }
+        return delegate.isHDR == true
+    }
+
     @MainActor
-    func prepare(toPlay asset: AVURLAsset) async {
+    func prepare(toPlay asset: AVURLAsset, generation: Int) async {
+        guard loadGeneration == generation,
+              !Task.isCancelled,
+              let playerVC
+        else { return }
         let playerItem = AVPlayerItem(asset: asset)
 
         // 设置 preferredPeakBitRate 为一个很高的值，让 AVPlayer 优先选择高码率流
         // 0 表示无限制，让 AVPlayer 根据网络条件自动选择最高可用码率
         playerItem.preferredPeakBitRate = 0
 
+        // 激进缓冲策略：要求底层播放器尽可能多地缓存后面 30 秒的视频数据，避免弱网波动引起频繁 stall 卡顿
+        playerItem.preferredForwardBufferDuration = 30.0
+
         let player = AVPlayer(playerItem: playerItem)
-        playerVC?.player = nil
-        playerVC?.player = player
+        player.automaticallyWaitsToMinimizeStalling = minimizeStalling
+        player.isMuted = isMuted
+        guard loadGeneration == generation, !Task.isCancelled else {
+            player.pause()
+            player.replaceCurrentItem(with: nil)
+            return
+        }
+        playerVC.player = nil
+        guard loadGeneration == generation, !Task.isCancelled else {
+            player.pause()
+            player.replaceCurrentItem(with: nil)
+            return
+        }
+        playerVC.player = player
     }
 }

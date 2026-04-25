@@ -1,0 +1,69 @@
+name: Bug report
+description: Report a reproducible problem with enough detail for investigation and a follow-up spec if needed.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for actionable bugs. If the fix is non-trivial, create a follow-up spec before implementation.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Primary area
+      options:
+        - Login / account
+        - Tabbar / navigation
+        - Feed / discovery
+        - Player / playback
+        - Danmaku
+        - Live
+        - Request / API
+        - DLNA / casting
+        - Build / release / CI
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Build or commit
+      description: Provide the release, nightly, or commit SHA if known.
+      placeholder: nightly / commit SHA / local branch
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Focus ...
+        3. Press ...
+        4. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: focus_notes
+    attributes:
+      label: tvOS focus and remote notes
+      description: If relevant, describe initial focus, directional navigation, and which remote buttons were used.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs, screenshots, or videos
+      description: Paste logs or attach media if available.
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and regression risk
+      description: Mention whether this affects all videos, a specific page, a logged-in state, or a recent regression.

@@ -37,7 +37,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private var playlists = [String]()
     private var subtitles = [String: String]()
     private var videoInfo = [PlaybackInfo]()
-    private var segmentInfoCache = SidxDownloader()
+    private let segmentInfoCache = SidxDownloader.shared
     private var hasAudioInMasterListAdded = false
     private var audioRenditionIndex = 0
     private(set) var playInfo: VideoPlayURLInfo?
@@ -380,6 +380,11 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         Logger.debug("masterPlaylist: \(masterPlaylist)")
     }
 
+    func prewarmPrimaryVideoIndex() async {
+        guard let firstVideo = videoInfo.first else { return }
+        _ = await segmentInfoCache.sidx(from: firstVideo.info)
+    }
+
     private func reportError(_ loadingRequest: AVAssetResourceLoadingRequest, withErrorCode error: Int) {
         loadingRequest.finishLoading(with: NSError(domain: NSURLErrorDomain, code: error, userInfo: nil))
     }
@@ -522,15 +527,24 @@ extension VideoPlayURLInfo.DashInfo.DashMediaInfo {
 }
 
 actor SidxDownloader {
+    static let shared = SidxDownloader(maxEntries: 32)
+
     private enum CacheEntry {
         case inProgress(Task<SidxParseUtil.Sidx?, Never>)
         case ready(SidxParseUtil.Sidx?)
     }
 
+    private let maxEntries: Int
     private var cache: [VideoPlayURLInfo.DashInfo.DashMediaInfo: CacheEntry] = [:]
+    private var accessOrder: [VideoPlayURLInfo.DashInfo.DashMediaInfo] = []
+
+    init(maxEntries: Int = 16) {
+        self.maxEntries = maxEntries
+    }
 
     func sidx(from info: VideoPlayURLInfo.DashInfo.DashMediaInfo) async -> SidxParseUtil.Sidx? {
         if let cached = cache[info] {
+            touch(info)
             switch cached {
             case let .ready(sidx):
                 Logger.debug("sidx cache hit \(info.id)")
@@ -546,11 +560,25 @@ actor SidxDownloader {
         }
 
         cache[info] = .inProgress(task)
+        touch(info)
 
         let sidx = await task.value
         cache[info] = .ready(sidx)
+        trimToCapacity()
         Logger.debug("get sidx \(info.id)")
         return sidx
+    }
+
+    private func touch(_ info: VideoPlayURLInfo.DashInfo.DashMediaInfo) {
+        accessOrder.removeAll { $0 == info }
+        accessOrder.append(info)
+    }
+
+    private func trimToCapacity() {
+        while cache.count > maxEntries, let oldest = accessOrder.first {
+            accessOrder.removeFirst()
+            cache[oldest] = nil
+        }
     }
 
     private func downloadSidx(info: VideoPlayURLInfo.DashInfo.DashMediaInfo) async -> SidxParseUtil.Sidx? {

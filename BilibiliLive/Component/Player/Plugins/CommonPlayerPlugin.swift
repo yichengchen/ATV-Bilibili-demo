@@ -14,6 +14,7 @@ protocol CommonPlayerPlugin: NSObject {
 
     func playerDidLoad(playerVC: AVPlayerViewController)
     func playerDidDismiss(playerVC: AVPlayerViewController)
+    func playerWillCleanUp(playerVC: AVPlayerViewController)
     func playerDidChange(player: AVPlayer)
     func playerItemDidChange(playerItem: AVPlayerItem)
 
@@ -21,6 +22,7 @@ protocol CommonPlayerPlugin: NSObject {
     func playerDidStart(player: AVPlayer)
     func playerDidPause(player: AVPlayer)
     func playerDidEnd(player: AVPlayer)
+    func playerDidStall(player: AVPlayer)
     func playerDidFail(player: AVPlayer)
     func playerDidCleanUp(player: AVPlayer)
 }
@@ -33,11 +35,13 @@ extension CommonPlayerPlugin {
     func playerDidStart(player: AVPlayer) {}
     func playerDidPause(player: AVPlayer) {}
     func playerDidEnd(player: AVPlayer) {}
+    func playerDidStall(player: AVPlayer) {}
     func playerDidFail(player: AVPlayer) {}
     func playerDidCleanUp(player: AVPlayer) {}
 
     func playerDidLoad(playerVC: AVPlayerViewController) {}
     func playerDidDismiss(playerVC: AVPlayerViewController) {}
+    func playerWillCleanUp(playerVC: AVPlayerViewController) {}
     func playerDidChange(player: AVPlayer) {}
     func playerItemDidChange(playerItem: AVPlayerItem) {}
 }

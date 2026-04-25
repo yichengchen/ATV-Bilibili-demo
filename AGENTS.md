@@ -14,6 +14,61 @@ fastlane build_unsign_ipa
 
 There is no test suite. Build verification happens through the Xcode project. Use Xcode directly for development and debugging.
 
+## SDD Workflow
+
+This repository uses lightweight spec-driven development for non-trivial work.
+
+**Create or update a spec before coding** when a change affects user-visible behavior, tvOS focus interactions, navigation, playback, danmaku, request signing, authentication, persistence, CI, or release behavior.
+
+**Spec location:** `docs/specs/<feature-slug>/spec.md`
+
+**Task breakdown location:** `docs/specs/<feature-slug>/tasks.md`
+
+Use the templates in `docs/specs/_template/`.
+
+### Spec expectations
+
+Each spec should stay short and executable. Include:
+
+- Problem statement
+- Goals and non-goals
+- Entry point and user flow
+- tvOS focus and remote behavior
+- Exit, dismiss, and app-background teardown behavior for playback or audio-related flows
+- Loading, empty, error, and success states
+- Data or API implications
+- Impacted modules
+- Acceptance criteria
+- Manual validation steps
+
+### Implementation flow
+
+For non-trivial work, follow this order:
+
+1. Clarify or draft the spec
+2. Break the work into small tasks in `tasks.md`
+3. Implement one task at a time
+4. Run the most relevant build verification
+5. Update the spec, tasks, and any ADRs to match the final behavior
+
+### ADR guidance
+
+Create an ADR in `docs/adr/` for durable technical decisions, especially when changing:
+
+- Playback architecture or player plugin boundaries
+- Request signing, authentication, or token refresh behavior
+- Navigation, tab factory behavior, or module boundaries
+- Persistence formats or settings migrations
+- Third-party dependencies or build pipeline behavior
+
+### Verification expectations
+
+- Use `fastlane build_simulator` for most feature work and UI changes.
+- Use `fastlane build_unsign_ipa` when packaging, CI, or release behavior changes.
+- Because there is no automated test suite, every spec and PR should include a manual validation checklist.
+- For playback, preview, danmaku, or other audio-producing changes, manual validation must cover dismiss / Back / Menu, switching away from the page, and Home / app backgrounding, and confirm there is no residual audio and no leaked player instance left running.
+- If build verification cannot be run, explain why and record the remaining risk.
+
 ## Architecture
 
 The app uses a layered architecture with a factory-based navigation system:
@@ -107,6 +162,8 @@ playerVC.updateMenus()   // rebuilds AVPlayerViewController info panel menus fro
 | `playerDidCleanUp` | Player teardown |
 | `addViewToPlayerOverlay(container:)` | Add UI on top of video |
 | `addMenuItems(current:)` | Contribute items to info panel menu |
+
+Lifecycle rule: any player or preview flow that creates `AVPlayer`, observers, async tasks, delegates, or audio-producing plugins must define how those resources are torn down on dismiss, page exit, and app background unless explicit background playback is part of the feature.
 
 **Existing plugins** (all in `Component/Player/`):
 

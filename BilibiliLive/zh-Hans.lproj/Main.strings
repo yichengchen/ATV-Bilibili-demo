@@ -32,8 +32,8 @@
 /* Class = "UILabel"; text = "Label"; ObjectID = "mSu-k1-tYD"; */
 "mSu-k1-tYD.text" = "Label";
 
-/* Class = "UILabel"; text = "推荐视频"; ObjectID = "vBp-Ow-fTv"; */
-"vBp-Ow-fTv.text" = "推荐视频";
+/* Class = "UILabel"; text = "相关视频"; ObjectID = "vBp-Ow-fTv"; */
+"vBp-Ow-fTv.text" = "相关视频";
 
 /* Class = "UILabel"; text = "Label"; ObjectID = "vCf-l0-gRG"; */
 "vCf-l0-gRG.text" = "Label";
