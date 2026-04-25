@@ -212,7 +212,7 @@ class VideoDetailViewController: UIViewController {
                 let info = try await WebRequest.requestBangumiInfo(epid: epid)
                 seasonId = info.season_id
                 subType = info.type
-                if let epi = info.episodes.first(where: { $0.id == epid }) ?? info.episodes.first {
+                if let epi = info.findEpisodeById(epid) ?? info.episodes.first {
                     aid = epi.aid
                     cid = epi.cid
                     updatePlayProgressIfNeeded(progress: info.user_status?.progress, episode: epi)
@@ -235,12 +235,12 @@ class VideoDetailViewController: UIViewController {
                     updatePlayProgressIfNeeded(progress: info.user_status?.progress, episode: epi)
                 }
             }
-            if !isBangumi, cid == 0, let page = data.View.pages?.first {
-                cid = page.cid
-            }
-            if !isBangumi, cid > 0, let page = data.View.pages?.first(where: { $0.cid == cid }) {
-                let playInfo = try await WebRequest.requestPlayerInfo(aid: aid, cid: cid)
-                if playInfo.last_play_cid == cid {
+            if !isBangumi {
+                let playInfo = try await WebRequest.requestPlayerInfo(aid: aid, cid: cid == 0 ? data.View.cid : cid)
+                if cid == 0 {
+                    cid = playInfo.last_play_cid > 0 ? playInfo.last_play_cid : data.View.cid
+                }
+                if playInfo.last_play_cid == cid, let page = data.View.pages?.first(where: { $0.cid == cid }) {
                     playTimeInSecond = playInfo.playTimeInSecond
                     lastPlayCid = playInfo.last_play_cid
                     lastPlayTitle = page.part
