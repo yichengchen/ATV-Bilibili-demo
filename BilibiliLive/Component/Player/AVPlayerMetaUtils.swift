@@ -7,6 +7,7 @@
 
 import AVKit
 import Kingfisher
+import MediaPlayer
 
 enum AVPlayerMetaUtils {
     static func setPlayerInfo(title: String?, subTitle: String?, desp: String?, pic: URL?, player: AVPlayer) async {
@@ -22,9 +23,14 @@ enum AVPlayerMetaUtils {
             player.currentItem?.externalMetadata = metas
         }
 
+        var nowPlayingInfo: [String: Any] = [
+            MPMediaItemPropertyTitle: title ?? "",
+            MPMediaItemPropertyArtist: subTitle ?? "",
+        ]
+
         if let pic = pic,
            let resource = try? await KingfisherManager.shared.retrieveImage(
-               with: Kingfisher.ImageResource(downloadURL: pic),
+               with: Kingfisher.KF.ImageResource(downloadURL: pic),
                options: [
                    .onlyLoadFirstFrame,
                    .processor(DownsamplingImageProcessor(size: CGSize(width: 640, height: 360))),
@@ -37,7 +43,12 @@ enum AVPlayerMetaUtils {
             MainActor.callSafely {
                 player.currentItem?.externalMetadata = metas
             }
+
+            let artwork = MPMediaItemArtwork(boundsSize: resource.image.size) { _ in resource.image }
+            nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
         }
+
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
 
     static func createMetadataItem(for identifier: AVMetadataIdentifier, value: Any?) -> AVMetadataItem? {

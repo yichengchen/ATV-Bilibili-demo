@@ -480,8 +480,8 @@ enum BVideoUrlUtils {
         }
         return
             urls.sorted { lhs, rhs in
-                let lhsIsPCDN = lhs.contains("szbdyd.com") || lhs.contains("mcdn.bilivideo.cn")
-                let rhsIsPCDN = rhs.contains("szbdyd.com") || rhs.contains("mcdn.bilivideo.cn")
+                let lhsIsPCDN = hasPort(lhs)
+                let rhsIsPCDN = hasPort(rhs)
                 switch (lhsIsPCDN, rhsIsPCDN) {
                 case (true, false): return false
                 case (false, true): return true
@@ -489,6 +489,13 @@ enum BVideoUrlUtils {
                 case (false, false): return lhs > rhs
                 }
             }
+    }
+
+    static func hasPort(_ urlString: String) -> Bool {
+        guard let components = URLComponents(string: urlString) else {
+            return false
+        }
+        return components.port != nil
     }
 
     static func convertVTTFormate(_ time: CGFloat) -> String {
