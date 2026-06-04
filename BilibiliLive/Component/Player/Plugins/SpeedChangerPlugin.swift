@@ -106,6 +106,7 @@ extension PlaySpeed: Equatable {
         PlaySpeed(name: "1X", value: 1),
         PlaySpeed(name: "1.25X", value: 1.25),
         PlaySpeed(name: "1.5X", value: 1.5),
+        PlaySpeed(name: "1.75X", value: 1.75),
         PlaySpeed(name: "2X", value: 2),
     ]
 }
