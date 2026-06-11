@@ -16,13 +16,19 @@ import MarqueeLabel
 import SnapKit
 import TVUIKit
 
+private struct PageRange {
+    let startIndex: Int
+    let endIndex: Int
+
+    var title: String {
+        "\(startIndex + 1) - \(endIndex + 1)"
+    }
+}
+
 class VideoDetailViewController: UIViewController {
-    private var loadingView = UIActivityIndicatorView()
     @IBOutlet var backgroundImageView: UIImageView!
     @IBOutlet var effectContainerView: UIVisualEffectView!
-
     @IBOutlet var titleLabel: UILabel!
-
     @IBOutlet var upButton: BLCustomTextButton!
     @IBOutlet var followButton: BLCustomButton!
     @IBOutlet var coverImageView: UIImageView!
@@ -31,7 +37,6 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var coinButton: BLCustomButton!
     @IBOutlet var noteView: NoteDetailView!
     @IBOutlet var dislikeButton: BLCustomButton!
-
     @IBOutlet var actionButtonSpaceView: UIView!
     @IBOutlet var durationLabel: UILabel!
     @IBOutlet var playCountLabel: UILabel!
@@ -46,11 +51,27 @@ class VideoDetailViewController: UIViewController {
     @IBOutlet var replysCollectionView: UICollectionView!
     @IBOutlet var repliesCollectionViewHeightConstraints: NSLayoutConstraint!
     @IBOutlet var ugcCollectionView: UICollectionView!
-
     @IBOutlet var pageView: UIView!
-
     @IBOutlet var ugcLabel: UILabel!
     @IBOutlet var ugcView: UIView!
+
+    private var loadingView = UIActivityIndicatorView()
+
+    private var pageCollectionViewTopToTitleConstraint: Constraint?
+    private var pageCollectionViewTopToRangeConstraint: Constraint?
+    private let pageRangeSize = 20
+    private var pageRanges = [PageRange]()
+    private lazy var pageRangeCollectionView: UICollectionView = {
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makePageRangeCollectionViewLayout())
+        collectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: BLTextOnlyCollectionViewCell.self))
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.backgroundColor = .clear
+        collectionView.clipsToBounds = false
+        collectionView.isHidden = true
+        return collectionView
+    }()
+
     private var epid = 0
     private var seasonId = 0
     private var aid = 0
@@ -101,10 +122,11 @@ class VideoDetailViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        Task { await fetchData() }
 
         pageCollectionView.register(BLTextOnlyCollectionViewCell.self, forCellWithReuseIdentifier: String(describing: BLTextOnlyCollectionViewCell.self))
         pageCollectionView.collectionViewLayout = makePageCollectionViewLayout()
+        pageCollectionView.clipsToBounds = false
+        setupPageRangeCollectionView()
         recommandCollectionView.register(RelatedVideoCell.self, forCellWithReuseIdentifier: String(describing: RelatedVideoCell.self))
         ugcCollectionView.register(RelatedVideoCell.self, forCellWithReuseIdentifier: String(describing: RelatedVideoCell.self))
         recommandCollectionView.collectionViewLayout = makeRelatedVideoCollectionViewLayout()
@@ -139,6 +161,8 @@ class VideoDetailViewController: UIViewController {
             self?.repliesCollectionViewHeightConstraints.constant = newSize.height
             self?.view.setNeedsLayout()
         }.store(in: &subscriptions)
+
+        Task { await fetchData() }
     }
 
     override var preferredFocusedView: UIView? {
@@ -155,6 +179,58 @@ class VideoDetailViewController: UIViewController {
         playTimeInSecond = lastTime
         lastPlayCid = episode.cid
         lastPlayTitle = episode.title + " " + episode.long_title
+    }
+
+    private func setupPageRangeCollectionView() {
+        let titleLabel = pageView.subviews.compactMap { $0 as? UILabel }.first { $0.text == "视频选集" }!
+
+        pageView.addSubview(pageRangeCollectionView)
+
+        let storyboardTopConstraints = pageView.constraints.filter { constraint in
+            (constraint.firstItem as? UICollectionView) === pageCollectionView && constraint.firstAttribute == .top
+        }
+        storyboardTopConstraints.forEach { $0.isActive = false }
+
+        let storyboardHeightConstraints = (pageView.constraints + pageCollectionView.constraints).filter { constraint in
+            (constraint.firstItem as? UICollectionView) === pageCollectionView && constraint.firstAttribute == .height
+        }
+        storyboardHeightConstraints.forEach { $0.isActive = false }
+
+        pageRangeCollectionView.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.top.equalTo(titleLabel.snp.bottom).offset(30)
+            make.height.equalTo(90)
+        }
+        pageCollectionView.snp.makeConstraints { make in
+            pageCollectionViewTopToTitleConstraint = make.top.equalTo(titleLabel.snp.bottom).offset(30).constraint
+            pageCollectionViewTopToRangeConstraint = make.top.equalTo(pageRangeCollectionView.snp.bottom).offset(30).constraint
+            make.height.equalTo(150)
+        }
+        pageCollectionViewTopToRangeConstraint?.deactivate()
+    }
+
+    private func updatePageRanges() {
+        guard pages.count >= pageRangeSize else {
+            pageRanges = []
+            setPageRangeCollectionViewHidden(true)
+            return
+        }
+
+        pageRanges = stride(from: 0, to: pages.count, by: pageRangeSize).map { startIndex in
+            PageRange(startIndex: startIndex, endIndex: min(startIndex + pageRangeSize, pages.count) - 1)
+        }
+        setPageRangeCollectionViewHidden(false)
+    }
+
+    private func setPageRangeCollectionViewHidden(_ isHidden: Bool) {
+        pageRangeCollectionView.isHidden = isHidden
+        if isHidden {
+            pageCollectionViewTopToRangeConstraint?.deactivate()
+            pageCollectionViewTopToTitleConstraint?.activate()
+        } else {
+            pageCollectionViewTopToTitleConstraint?.deactivate()
+            pageCollectionViewTopToRangeConstraint?.activate()
+        }
     }
 
     private func setupLoading() {
@@ -194,6 +270,7 @@ class VideoDetailViewController: UIViewController {
         backgroundImageView.alpha = 0
         setupLoading()
         pageView.isHidden = true
+        setPageRangeCollectionViewHidden(true)
         ugcView.isHidden = true
         do {
             if seasonId > 0 {
@@ -358,6 +435,8 @@ class VideoDetailViewController: UIViewController {
         if !isBangumi {
             pages = data.View.pages ?? []
         }
+        updatePageRanges()
+        pageRangeCollectionView.reloadData()
         if pages.count > 1 {
             pageCollectionView.reloadData()
             pageView.isHidden = false
@@ -511,6 +590,9 @@ class VideoDetailViewController: UIViewController {
 extension VideoDetailViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch collectionView {
+        case pageRangeCollectionView:
+            let range = pageRanges[indexPath.item]
+            pageCollectionView.scrollToItem(at: IndexPath(item: range.startIndex, section: 0), at: .left, animated: true)
         case pageCollectionView:
             let page = pages[indexPath.item]
             let player = VideoPlayerViewController(playInfo: PlayInfo(aid: isBangumi ? page.page : aid, cid: page.cid, epid: page.epid, seasonId: seasonId, subType: subType, lastPlayCid: lastPlayCid, playTimeInSecond: playTimeInSecond, title: page.part))
@@ -556,6 +638,8 @@ extension VideoDetailViewController: UICollectionViewDelegate {
 extension VideoDetailViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch collectionView {
+        case pageRangeCollectionView:
+            return pageRanges.count
         case pageCollectionView:
             return pages.count
         case replysCollectionView:
@@ -571,6 +655,10 @@ extension VideoDetailViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         switch collectionView {
+        case pageRangeCollectionView:
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as! BLTextOnlyCollectionViewCell
+            cell.titleLabel.text = pageRanges[indexPath.item].title
+            return cell
         case pageCollectionView:
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "BLTextOnlyCollectionViewCell", for: indexPath) as! BLTextOnlyCollectionViewCell
             let page = pages[indexPath.item]
@@ -618,7 +706,22 @@ extension VideoDetailViewController {
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                   heightDimension: .fractionalHeight(1.0))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.14), heightDimension: .fractionalHeight(1))
+            let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(300), heightDimension: .absolute(150))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            let section = NSCollectionLayoutSection(group: group)
+            section.orthogonalScrollingBehavior = .continuous
+            section.interGroupSpacing = 40
+            return section
+        }
+    }
+
+    func makePageRangeCollectionViewLayout() -> UICollectionViewLayout {
+        UICollectionViewCompositionalLayout {
+            _, _ in
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                  heightDimension: .fractionalHeight(1.0))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(200), heightDimension: .fractionalHeight(1))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
             let section = NSCollectionLayoutSection(group: group)
             section.orthogonalScrollingBehavior = .continuous
