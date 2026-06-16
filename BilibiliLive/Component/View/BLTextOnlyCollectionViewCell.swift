@@ -27,6 +27,7 @@ class BLTextOnlyCollectionViewCell: BLMotionCollectionViewCell {
             make.top.bottom.lessThanOrEqualToSuperview().inset(8)
         }
         titleLabel.textColor = .white
+        titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 2
         titleLabel.font = UIFont.systemFont(ofSize: 26, weight: .medium)
         effectView.layer.cornerRadius = 16
