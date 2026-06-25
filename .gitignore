@@ -88,3 +88,7 @@ iOSInjectionProject/
 
 # End of https://www.toptal.com/developers/gitignore/api/swift
 fastlane/README.md
+.gradle
+.idea
+Android/code/local.properties
+Android/code/app/release

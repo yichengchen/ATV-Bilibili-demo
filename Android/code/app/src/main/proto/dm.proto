@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package dm;
+
+option java_package = "com.bilibili.tv.data.proto";
+option java_outer_classname = "DmProto";
+
+message DanmakuElem {
+    int64 id = 1;
+    int32 progress = 2;
+    int32 mode = 3;
+    int32 fontsize = 4;
+    uint32 color = 5;
+    string mid_hash = 6;
+    string content = 7;
+    int64 ctime = 8;
+    int32 weight = 9;
+    string action = 10;
+    int32 pool = 11;
+    string id_str = 12;
+    int32 attr = 13;
+    string animation = 14;
+    DmColorfulType colorful = 15;
+}
+
+enum DmColorfulType {
+    NONE_TYPE = 0;
+    VIP_GRADUAL_COLOR = 60001;
+}
+
+message DanmakuAIFlag {
+    message DanmakuFlag {
+        int64 dmid = 1;
+        uint32 flag = 2;
+    }
+    repeated DanmakuFlag dm_flags = 1;
+}
+
+message DmSegMobileReply {
+    repeated DanmakuElem elems = 1;
+    int32 state = 2;
+}

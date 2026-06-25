@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bili_blue">#FF00A1D6</color>
+    <color name="bili_pink">#FFFB7299</color>
+    <color name="bg_dark">#FF0D0D0D</color>
+    <color name="surface_dark">#FF17181A</color>
+</resources>
