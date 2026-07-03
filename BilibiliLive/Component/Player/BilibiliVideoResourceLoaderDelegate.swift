@@ -127,14 +127,14 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     }
 
     private func getVideoPlayList(info: PlaybackInfo) async -> String {
-        let segment = await segmentInfoCache.sidx(from: info.info)
+        let sidxResult = await segmentInfoCache.sidx(from: info.info)
         let inits = info.info.segment_base.initialization.components(separatedBy: "-")
         guard let moovIdxStr = inits.last,
               let moovIdx = Int(moovIdxStr),
               let moovOffset = inits.first,
               let offsetStr = info.info.segment_base.index_range.components(separatedBy: "-").last,
               var offset = Int(offsetStr),
-              let segment = segment
+              let sidxResult = sidxResult
         else {
             return """
             #EXTM3U
@@ -149,6 +149,10 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             """
         }
 
+        // 使用 sidx 实际下载成功的 URL——它已经完成了对 CDN 可用性的探测，
+        // 首选 CDN 挂掉时 segment 会整体切到探测成功的备用 URL
+        let segment = sidxResult.sidx
+        let segmentURL = sidxResult.url
         var playList = """
         #EXTM3U
         #EXT-X-VERSION:7
@@ -156,7 +160,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         #EXT-X-MEDIA-SEQUENCE:1
         #EXT-X-INDEPENDENT-SEGMENTS
         #EXT-X-PLAYLIST-TYPE:VOD
-        #EXT-X-MAP:URI="\(info.url)",BYTERANGE="\(moovIdx + 1)@\(moovOffset)"
+        #EXT-X-MAP:URI="\(segmentURL)",BYTERANGE="\(moovIdx + 1)@\(moovOffset)"
 
         """
         offset += 1
@@ -164,7 +168,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             let segStr = """
             #EXTINF:\(Double(segInfo.duration) / Double(segment.timescale)),
             #EXT-X-BYTERANGE:\(segInfo.size)@\(offset)
-            \(info.url)
+            \(segmentURL)
 
             """
             playList.append(segStr)
@@ -377,6 +381,15 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
 
         masterPlaylist.append("\n#EXT-X-ENDLIST\n")
 
+        // 预取 AVPlayer 大概率首选流（排序后第一条视频 + 默认音频）的 sidx，
+        // 与 master playlist 加载并行，缩短起播链路；actor 内有 in-progress 去重
+        let prefetchTargets = [videos.first, info.dash.audio?.first].compactMap { $0 }
+        for target in prefetchTargets {
+            Task.detached { [segmentInfoCache] in
+                _ = await segmentInfoCache.sidx(from: target)
+            }
+        }
+
         Logger.debug("masterPlaylist: \(masterPlaylist)")
     }
 
@@ -400,9 +413,9 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             return false
         }
 
-        DispatchQueue.main.async {
-            self.handleCustomPlaylistRequest(loadingRequest)
-        }
+        // 直接在 loader 串行队列处理，避免被主线程（弹幕渲染等）阻塞。
+        // playlist 相关状态在 setBilibili 中写入且发生在 setDelegate 之前，此处只读，无竞争。
+        handleCustomPlaylistRequest(loadingRequest)
         return true
     }
 }
@@ -478,24 +491,44 @@ enum BVideoUrlUtils {
         if let backup {
             urls.append(contentsOf: backup)
         }
-        return
-            urls.sorted { lhs, rhs in
-                let lhsIsPCDN = hasPort(lhs)
-                let rhsIsPCDN = hasPort(rhs)
-                switch (lhsIsPCDN, rhsIsPCDN) {
-                case (true, false): return false
-                case (false, true): return true
-                case (true, true): fallthrough
-                case (false, false): return lhs > rhs
-                }
-            }
+        // 按 tier 优选，同 tier 保持 API 返回顺序（enumerated + offset 实现稳定排序）
+        return urls.enumerated()
+            .sorted { (tier($0.element), $0.offset) < (tier($1.element), $1.offset) }
+            .map(\.element)
     }
 
-    static func hasPort(_ urlString: String) -> Bool {
+    // PCDN 特征：带端口，或已知的 P2P CDN 域名（部分 PCDN 域名不带端口，仅靠端口判断会漏）
+    static func isPCDN(_ urlString: String) -> Bool {
         guard let components = URLComponents(string: urlString) else {
             return false
         }
-        return components.port != nil
+        if components.port != nil {
+            return true
+        }
+        guard let host = components.host?.lowercased() else {
+            return false
+        }
+        return host.hasSuffix("szbdyd.com") || host.hasSuffix("mcdn.bilivideo.cn")
+    }
+
+    // CDN 质量分级：upos 主力节点最稳，akam 镜像走海外线路国内慢，PCDN 只作最后备援
+    private static func tier(_ urlString: String) -> Int {
+        if isPCDN(urlString) {
+            return 100
+        }
+        guard let host = URLComponents(string: urlString)?.host?.lowercased() else {
+            return 50
+        }
+        if host.hasPrefix("upos-"), host.hasSuffix(".bilivideo.com") {
+            return host.contains("akam") ? 30 : 0
+        }
+        if host.hasSuffix(".akamaized.net") {
+            return 40
+        }
+        if host.hasSuffix(".bilivideo.com") {
+            return 10
+        }
+        return 20
     }
 
     static func convertVTTFormate(_ time: CGFloat) -> String {
@@ -529,14 +562,28 @@ extension VideoPlayURLInfo.DashInfo.DashMediaInfo {
 }
 
 actor SidxDownloader {
-    private enum CacheEntry {
-        case inProgress(Task<SidxParseUtil.Sidx?, Never>)
-        case ready(SidxParseUtil.Sidx?)
+    struct SidxResult {
+        let sidx: SidxParseUtil.Sidx
+        let url: String
     }
+
+    private enum CacheEntry {
+        case inProgress(Task<SidxResult?, Never>)
+        case ready(SidxResult?)
+    }
+
+    // sidx 只有几 KB，用短超时的独立 Session，避免默认 60s 超时把起播卡死
+    private static let session: Session = {
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = 6
+        config.timeoutIntervalForResource = 10
+        config.headers = HTTPHeaders(["User-Agent": Keys.userAgent])
+        return Session(configuration: config)
+    }()
 
     private var cache: [VideoPlayURLInfo.DashInfo.DashMediaInfo: CacheEntry] = [:]
 
-    func sidx(from info: VideoPlayURLInfo.DashInfo.DashMediaInfo) async -> SidxParseUtil.Sidx? {
+    func sidx(from info: VideoPlayURLInfo.DashInfo.DashMediaInfo) async -> SidxResult? {
         if let cached = cache[info] {
             switch cached {
             case let .ready(sidx):
@@ -560,16 +607,19 @@ actor SidxDownloader {
         return sidx
     }
 
-    private func downloadSidx(info: VideoPlayURLInfo.DashInfo.DashMediaInfo) async -> SidxParseUtil.Sidx? {
+    private func downloadSidx(info: VideoPlayURLInfo.DashInfo.DashMediaInfo) async -> SidxResult? {
         let range = info.segment_base.index_range
-        let url = info.playableURLs.first ?? info.base_url
-        if let res = try? await AF.request(url,
-                                           headers: ["Range": "bytes=\(range)",
-                                                     "Referer": "https://www.bilibili.com/"])
-            .serializingData().result.get()
-        {
-            let segment = SidxParseUtil.processIndexData(data: res)
-            return segment
+        for url in info.playableURLs.prefix(3) {
+            if let res = try? await Self.session.request(url,
+                                                         headers: ["Range": "bytes=\(range)",
+                                                                   "Referer": "https://www.bilibili.com/"])
+                .serializingData().result.get(),
+                let segment = SidxParseUtil.processIndexData(data: res),
+                !segment.segments.isEmpty
+            {
+                return SidxResult(sidx: segment, url: url)
+            }
+            Logger.warn("sidx download failed on \(url), try next url")
         }
         return nil
     }
