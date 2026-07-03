@@ -401,12 +401,12 @@ enum ApiRequest {
         }
     }
 
-    static func requestUpSpaceVideo(mid: Int, lastAid: Int?, pageSize: Int = 20) async throws -> [UpSpaceListData] {
+    static func requestUpSpaceVideo(mid: Int, lastAid: Int?, pageSize: Int = 20, order: String = "pubdate") async throws -> [UpSpaceListData] {
         struct Resp: Codable {
             let item: [UpSpaceListData]
         }
 
-        var param: Parameters = ["vmid": mid, "ps": pageSize, "actionKey": "appkey", "disable_rcmd": 0, "fnval": 976, "fnver": 0, "force_host": 0, "fourk": 1, "order": "pubdate", "player_net": 1, "qn": 120]
+        var param: Parameters = ["vmid": mid, "ps": pageSize, "actionKey": "appkey", "disable_rcmd": 0, "fnval": 976, "fnver": 0, "force_host": 0, "fourk": 1, "order": order, "player_net": 1, "qn": 120]
         if let lastAid {
             param["aid"] = lastAid
         }
