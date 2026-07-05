@@ -14,6 +14,7 @@ class UpSpaceViewController: StandardVideoCollectionViewController<ApiRequest.Up
     var mid: Int!
 
     private var lastAid: Int?
+    private var sortByPlayCount = false
     private var info: WebRequest.UpSpaceInfo?
     private var relation: WebRequest.UpSpaceRelation?
     private let blockedMessageLabel = UILabel()
@@ -37,6 +38,11 @@ class UpSpaceViewController: StandardVideoCollectionViewController<ApiRequest.Up
             headerView.followButton.isHidden = self?.relation?.is_blocked ?? false
             headerView.onBlockTapped = { [weak self, weak headerView] isBlocked in
                 headerView?.followButton.isHidden = isBlocked
+                self?.reloadData()
+            }
+            headerView.sortButton.isOn = self?.sortByPlayCount ?? false
+            headerView.onSortTapped = { [weak self] byPlayCount in
+                self?.sortByPlayCount = byPlayCount
                 self?.reloadData()
             }
         }
@@ -82,7 +88,7 @@ class UpSpaceViewController: StandardVideoCollectionViewController<ApiRequest.Up
             return []
         }
 
-        let res = try await ApiRequest.requestUpSpaceVideo(mid: mid, lastAid: lastAid)
+        let res = try await ApiRequest.requestUpSpaceVideo(mid: mid, lastAid: lastAid, order: sortByPlayCount ? "click" : "pubdate")
         lastAid = res.last?.aid
         return res
     }

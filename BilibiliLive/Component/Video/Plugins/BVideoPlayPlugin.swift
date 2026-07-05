@@ -100,6 +100,9 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
         // 0 表示无限制，让 AVPlayer 根据网络条件自动选择最高可用码率
         playerItem.preferredPeakBitRate = 0
 
+        // 前向缓冲 60s，扛住 CDN 吞吐抖动减少卡顿（4K HDR ~25Mbps × 60s ≈ 190MB，可接受）
+        playerItem.preferredForwardBufferDuration = 60
+
         let player = AVPlayer(playerItem: playerItem)
         playerVC?.player = nil
         playerVC?.player = player
