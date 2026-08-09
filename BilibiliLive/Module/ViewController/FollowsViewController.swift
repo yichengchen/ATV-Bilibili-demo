@@ -343,7 +343,6 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
                                 ownerName: ownerName,
                                 coverURL: pic,
                                 avatarURL: avatar,
-                                duration: modules.module_dynamic.major?.archive?.duration_text?.durationInSeconds,
                                 durationText: modules.module_dynamic.major?.archive?.duration_text ?? "",
                                 viewCountText: modules.module_dynamic.major?.archive?.stat?.play ?? "",
                                 danmakuCountText: modules.module_dynamic.major?.archive?.stat?.danmaku ?? "",
@@ -432,24 +431,5 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
                 }
             }
         }
-    }
-}
-
-private extension String {
-    var durationInSeconds: Int? {
-        let parts = split(separator: ":").compactMap { Int($0) }
-        guard !parts.isEmpty else { return nil }
-        var total = 0
-        for (index, value) in parts.reversed().enumerated() {
-            switch index {
-            case 0:
-                total += value
-            case 1:
-                total += value * 60
-            default:
-                total += value * 3600
-            }
-        }
-        return total
     }
 }
