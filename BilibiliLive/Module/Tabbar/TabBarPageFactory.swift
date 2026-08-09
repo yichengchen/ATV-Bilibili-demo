@@ -16,7 +16,9 @@ class TabBarPageVCFactory {
         case .feed:
             vc = FeedViewController()
         case .tvRecommend:
-            vc = TVRecommendBrowserViewController()
+            let tvRecommendVC = TVRecommendBrowserViewController()
+            tvRecommendVC.modalPresentationStyle = .fullScreen
+            vc = tvRecommendVC
         case .hot:
             vc = HotViewController()
         case .ranking:

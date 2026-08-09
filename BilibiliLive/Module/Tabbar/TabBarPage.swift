@@ -61,7 +61,7 @@ enum TabBarPage: String, CaseIterable, Codable {
 
     var requirePresentInPersonalPage: Bool {
         switch self {
-        case .favorite, .search, .followBangumi:
+        case .favorite, .search, .followBangumi, .tvRecommend:
             return true
         default:
             return false
@@ -69,7 +69,7 @@ enum TabBarPage: String, CaseIterable, Codable {
     }
 
     static var defaultTabBarPages: [TabBarPage] {
-        [.live, .feed, .hot, .ranking, .follows, .favorite, .personal, .search, .tvRecommend]
+        [.live, .feed, .hot, .ranking, .follows, .favorite, .personal, .search]
     }
 
     static var allConfigurablePages: [TabBarPage] {
