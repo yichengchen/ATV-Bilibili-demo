@@ -161,6 +161,9 @@ class SettingsViewController: UIViewController {
                 {
                     Settings.featuredDurationLimit = $0
                 }
+                Toggle(title: "沉浸式推荐内容安全过滤",
+                       setting: Settings.featuredContentSafetyFilterEnabled,
+                       onChange: Settings.featuredContentSafetyFilterEnabled.toggle())
             }
 
             SectionModel(title: "音视频") {

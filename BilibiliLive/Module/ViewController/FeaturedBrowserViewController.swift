@@ -4,6 +4,11 @@ import UIKit
 private extension ApiRequest.FeedResp.Items {
     func toFeaturedFeedFlowItem(durationLimit: FeaturedDurationLimit) -> FeedFlowItem? {
         guard goto == "av", can_play == 1 else { return nil }
+        if Settings.featuredContentSafetyFilterEnabled,
+           !FeaturedContentSafetyFilter.allows(feedItem: self)
+        {
+            return nil
+        }
 
         let aidValue = Int(param) ?? player_args?.aid ?? 0
         let cidValue = player_args?.cid ?? 0
@@ -45,7 +50,9 @@ final class FeaturedFeedFlowDataSource: FeedFlowDataSource {
     let emptyHintText = "可以在设置里调整沉浸式视频时长上限"
     let loadFailureText = "推荐加载失败，请稍后重试"
 
-    var reloadToken: String { Settings.featuredDurationLimit.title }
+    var reloadToken: String {
+        "\(Settings.featuredDurationLimit.title)-\(Settings.featuredContentSafetyFilterEnabled)-\(FeaturedContentSafetyFilter.version)"
+    }
 
     private var durationLimit = Settings.featuredDurationLimit
     private var lastSourceIdx: Int?
