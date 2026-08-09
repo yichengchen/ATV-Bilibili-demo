@@ -203,12 +203,14 @@ final class FollowsFeedFlowDataSource: FeedFlowDataSource {
 
         while accepted.count < targetCount, pagesScanned < maxSourcePages, resolvedHasMore {
             try Task.checkCancellation()
+            let requestedOffset = resolvedOffset
             let info = try await WebRequest.requestFollowsFeed(offset: resolvedOffset, page: resolvedPage)
             try Task.checkCancellation()
             pagesScanned += 1
             resolvedPage += 1
             resolvedOffset = info.offset
-            resolvedHasMore = info.has_more
+            let madeProgress = !info.videoFeeds.isEmpty || info.offset != requestedOffset
+            resolvedHasMore = info.has_more && madeProgress
 
             let newItems = info.videoFeeds
                 .compactMap(\.feedFlowItem)
