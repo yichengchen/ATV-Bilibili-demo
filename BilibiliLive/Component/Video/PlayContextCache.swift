@@ -66,7 +66,7 @@ actor PlayContextCache {
     }
 
     func context(for playInfo: PlayInfo, mode: PlayContextMode) async throws -> PlayContextSnapshot {
-        let resolvedPlayInfo = try await resolvePlayInfo(playInfo)
+        let resolvedPlayInfo = try await PlayInfoResolver.resolve(playInfo)
         let entryKey = PlayContextEntryKey(contextKey: resolvedPlayInfo.contextKey, mode: mode)
 
         if var cached = entries[entryKey] {
@@ -169,9 +169,5 @@ actor PlayContextCache {
             accessOrder.removeAll { $0 == key }
             entries[key] = nil
         }
-    }
-
-    private func resolvePlayInfo(_ playInfo: PlayInfo) async throws -> PlayInfo {
-        try await PlayInfoResolver.resolve(playInfo)
     }
 }

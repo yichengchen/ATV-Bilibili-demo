@@ -10,7 +10,8 @@ import ObjectiveC
 import UIKit
 
 class AVInfoPanelCollectionViewThumbnailCellHook {
-    static func start() {
+    @discardableResult
+    static func start() -> Bool {
         UICollectionViewCell.startAVInfoPanelSwizzle()
     }
 }
@@ -24,24 +25,29 @@ private extension UICollectionViewCell {
     private static let infoPanelClassNameMarker = "AVInfoPanel"
     private static var swizzledMethodKeys = Set<String>()
 
-    static func startAVInfoPanelSwizzle() {
+    static func startAVInfoPanelSwizzle() -> Bool {
         swizzAVInfoPanelCollectionViewThumbnailCell()
     }
 
-    static func swizzAVInfoPanelCollectionViewThumbnailCell() {
+    static func swizzAVInfoPanelCollectionViewThumbnailCell() -> Bool {
         let didUpdateFocusSelector = #selector(didUpdateFocus(in:with:))
         let swizzledDidUpdateFocusSelector = #selector(swizz_didUpdateFocus(in:with:))
         let setTitleSelector = NSSelectorFromString("setTitle:")
         let swizzledSetTitleSelector = #selector(swizz_setTitle(_:))
+        var installedFocusHook = false
 
         for targetClass in avInfoPanelCellClasses() {
-            swizzleMethodIfNeeded(on: targetClass,
-                                  originalSelector: didUpdateFocusSelector,
-                                  swizzledSelector: swizzledDidUpdateFocusSelector)
-            swizzleMethodIfNeeded(on: targetClass,
-                                  originalSelector: setTitleSelector,
-                                  swizzledSelector: swizzledSetTitleSelector)
+            if swizzleMethodIfNeeded(on: targetClass,
+                                     originalSelector: didUpdateFocusSelector,
+                                     swizzledSelector: swizzledDidUpdateFocusSelector)
+            {
+                installedFocusHook = true
+            }
+            _ = swizzleMethodIfNeeded(on: targetClass,
+                                      originalSelector: setTitleSelector,
+                                      swizzledSelector: swizzledSetTitleSelector)
         }
+        return installedFocusHook
     }
 
     static func avInfoPanelCellClasses() -> [AnyClass] {
@@ -84,20 +90,20 @@ private extension UICollectionViewCell {
 
     static func swizzleMethodIfNeeded(on targetClass: AnyClass,
                                       originalSelector: Selector,
-                                      swizzledSelector: Selector)
+                                      swizzledSelector: Selector) -> Bool
     {
         let swizzleKey = "\(NSStringFromClass(targetClass))::\(NSStringFromSelector(originalSelector))"
-        guard !swizzledMethodKeys.contains(swizzleKey) else { return }
+        guard !swizzledMethodKeys.contains(swizzleKey) else { return false }
         guard let originalMethod = class_getInstanceMethod(targetClass, originalSelector),
               let baseSwizzledMethod = class_getInstanceMethod(UICollectionViewCell.self, swizzledSelector)
-        else { return }
+        else { return false }
 
         class_addMethod(targetClass,
                         swizzledSelector,
                         method_getImplementation(baseSwizzledMethod),
                         method_getTypeEncoding(baseSwizzledMethod))
 
-        guard let targetSwizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector) else { return }
+        guard let targetSwizzledMethod = class_getInstanceMethod(targetClass, swizzledSelector) else { return false }
 
         let didAddOriginalMethod = class_addMethod(targetClass,
                                                    originalSelector,
@@ -114,6 +120,7 @@ private extension UICollectionViewCell {
         }
 
         swizzledMethodKeys.insert(swizzleKey)
+        return true
     }
 
     @objc func swizz_setTitle(_ title: String) {

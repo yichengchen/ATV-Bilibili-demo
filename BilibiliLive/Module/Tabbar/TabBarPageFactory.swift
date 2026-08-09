@@ -14,7 +14,7 @@ class TabBarPageVCFactory {
         case .live:
             vc = LiveViewController()
         case .feed:
-            vc = FeedViewController()
+            vc = RecommendViewController()
         case .tvRecommend:
             let tvRecommendVC = TVRecommendBrowserViewController()
             tvRecommendVC.modalPresentationStyle = .fullScreen

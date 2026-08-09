@@ -8,11 +8,9 @@
 import AVKit
 
 class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
-    private let previousActionIdentifierPrefix = "play.previous"
     private let nextActionIdentifierPrefix = "play.next"
     private weak var playerVC: AVPlayerViewController?
     var onPlayEnd: (() -> Void)?
-    var onPlayPreviousWithInfo: ((PlayInfo) -> Void)?
     var onPlayNextWithInfo: ((PlayInfo) -> Void)?
     var onShowCurrentDetail: ((PlayInfo) -> Void)?
 
@@ -38,8 +36,7 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
         }
 
         if let next {
-            let title = actionTitle(prefix: "下一条", playInfo: next)
-            let nextAction = UIAction(title: title,
+            let nextAction = UIAction(title: "下一条",
                                       image: UIImage(systemName: "forward.end.fill"),
                                       identifier: .init(rawValue: "\(nextActionIdentifierPrefix).\(next.sequenceKey)"))
             { [weak self] _ in
@@ -103,23 +100,6 @@ class VideoPlayListPlugin: NSObject, CommonPlayerPlugin {
                 }
             }
         }
-    }
-
-    private func playPrevious() {
-        let previous = sequenceProvider.map { provider in
-            MainActor.assumeIsolated { provider.movePrevious() }
-        } ?? nil
-        if let previous {
-            Task { @MainActor in
-                self.onPlayPreviousWithInfo?(previous)
-            }
-        }
-    }
-
-    private func actionTitle(prefix: String, playInfo: PlayInfo) -> String {
-        // 由于 tvOS 系统信息面板容量有限，标题过长会导致部分按钮被截断丢弃。
-        // 所以我们现在只返回简短的前缀，例如 "上一条" / "下一条"
-        return prefix
     }
 
     @discardableResult

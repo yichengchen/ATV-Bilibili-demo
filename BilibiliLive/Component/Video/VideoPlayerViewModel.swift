@@ -26,8 +26,9 @@ struct PlayerDetailData {
     }
 }
 
+@MainActor
 class VideoPlayerViewModel {
-    var onPluginReady = PassthroughSubject<[CommonPlayerPlugin], String>()
+    let loadResult = PassthroughSubject<Result<[CommonPlayerPlugin], String>, Never>()
     var onExit: (() -> Void)?
     var onPlayInfoChanged: ((PlayInfo) -> Void)?
     var onShowDetail: ((PlayInfo) -> Void)?
@@ -39,11 +40,11 @@ class VideoPlayerViewModel {
     private let mediaWarmupManager: PlayerMediaWarmupManager?
     private let previewMuted: Bool
     private let startTimeOverride: Int?
-    private let startTimeOverrideSequenceKey: String
-    private let danmuProvider = VideoDanmuProvider(enableDanmuFilter: Settings.enableDanmuFilter,
-                                                   enableDanmuRemoveDup: Settings.enableDanmuRemoveDup)
+    private let startTimeOverrideContentIdentity: String
     private var videoDetail: VideoDetail?
     private var cancellable = Set<AnyCancellable>()
+    private var loadTask: Task<Void, Never>?
+    private var loadGeneration = 0
 
     init(playInfo: PlayInfo,
          playMode: VideoPlayerMode = .regular,
@@ -58,58 +59,92 @@ class VideoPlayerViewModel {
         self.mediaWarmupManager = mediaWarmupManager
         self.previewMuted = previewMuted
         self.startTimeOverride = startTimeOverride
-        startTimeOverrideSequenceKey = playInfo.sequenceKey
+        startTimeOverrideContentIdentity = playInfo.contentIdentity
     }
 
     var currentPlayInfo: PlayInfo {
         playInfo
     }
 
-    func load() async {
+    func load() {
+        startLoad(for: playInfo)
+    }
+
+    func cancelLoading() {
+        loadTask?.cancel()
+        loadTask = nil
+        loadGeneration += 1
+    }
+
+    private func startLoad(for requestedPlayInfo: PlayInfo) {
+        loadTask?.cancel()
+        loadGeneration += 1
+        let generation = loadGeneration
+        let task = Task { [weak self] in
+            guard let self else { return }
+            await performLoad(for: requestedPlayInfo, generation: generation)
+        }
+        loadTask = task
+    }
+
+    private func performLoad(for requestedPlayInfo: PlayInfo, generation: Int) async {
+        defer {
+            if loadGeneration == generation {
+                loadTask = nil
+            }
+        }
         do {
-            let data = try await loadVideoInfo()
-            guard !Task.isCancelled else { return }
-            let plugin = await generatePlayerPlugin(data)
-            guard !Task.isCancelled else { return }
-            onPluginReady.send(plugin)
+            let (resolvedPlayInfo, data) = try await loadVideoInfo(for: requestedPlayInfo)
+            guard !Task.isCancelled, loadGeneration == generation else { return }
+
+            let danmuProvider = VideoDanmuProvider(enableDanmuFilter: Settings.enableDanmuFilter,
+                                                   enableDanmuRemoveDup: Settings.enableDanmuRemoveDup)
+            await danmuProvider.initVideo(cid: data.cid, startPos: data.playerStartPos ?? 0)
+            guard !Task.isCancelled, loadGeneration == generation else { return }
+
+            playInfo = resolvedPlayInfo
+            videoDetail = data.detail
+            BiliBiliUpnpDMR.shared.sendVideoSwitch(aid: resolvedPlayInfo.aid, cid: data.cid)
+            cancellable.removeAll()
+            let plugins = generatePlayerPlugin(data,
+                                               playInfo: resolvedPlayInfo,
+                                               danmuProvider: danmuProvider)
+            guard !Task.isCancelled, loadGeneration == generation else { return }
+            loadResult.send(.success(plugins))
         } catch is CancellationError {
             return
         } catch let err {
-            guard !Task.isCancelled else { return }
-            onPluginReady.send(completion: .failure(err.localizedDescription))
+            guard !Task.isCancelled, loadGeneration == generation else { return }
+            loadResult.send(.failure(err.localizedDescription))
         }
     }
 
-    private func loadVideoInfo() async throws -> PlayerDetailData {
-        try await initPlayInfo()
-        let data = try await fetchVideoData()
-        await danmuProvider.initVideo(cid: data.cid, startPos: data.playerStartPos ?? 0)
-        return data
+    private func loadVideoInfo(for playInfo: PlayInfo) async throws -> (PlayInfo, PlayerDetailData) {
+        let resolvedPlayInfo = try await PlayInfoResolver.resolve(playInfo)
+        try Task.checkCancellation()
+        let data = try await fetchVideoData(for: resolvedPlayInfo)
+        try Task.checkCancellation()
+        return (resolvedPlayInfo, data)
     }
 
-    private func initPlayInfo() async throws {
-        playInfo = try await PlayInfoResolver.resolve(playInfo)
-        BiliBiliUpnpDMR.shared.sendVideoSwitch(aid: playInfo.aid, cid: playInfo.cid ?? 0)
+    private func fetchVideoDetail(aid: Int, existing: VideoDetail?) async -> VideoDetail? {
+        if let existing { return existing }
+        return try? await WebRequest.requestDetailVideo(aid: aid)
     }
 
-    private func updateVideoDetailIfNeeded() async {
-        if videoDetail == nil || videoDetail?.View.aid != playInfo.aid {
-            videoDetail = try? await WebRequest.requestDetailVideo(aid: playInfo.aid)
-        }
-    }
-
-    private func fetchVideoData() async throws -> PlayerDetailData {
+    private func fetchVideoData(for playInfo: PlayInfo) async throws -> PlayerDetailData {
         assert(playInfo.isCidVaild)
+        let existingVideoDetail = videoDetail?.View.aid == playInfo.aid ? videoDetail : nil
         if !playInfo.isBangumi, let playContextCache {
             let cached = try await playContextCache.context(for: playInfo, mode: playContextMode)
-            videoDetail = cached.detail ?? videoDetail
+            let resolvedDetail = cached.detail ?? existingVideoDetail
 
             var detail = PlayerDetailData(aid: playInfo.aid,
                                           cid: cached.cid,
                                           epid: playInfo.epid,
                                           seasonId: playInfo.seasonId,
                                           subType: playInfo.subType,
-                                          detail: cached.detail ?? videoDetail,
+                                          detail: resolvedDetail,
                                           clips: nil,
                                           playerInfo: cached.playerInfo,
                                           videoPlayURLInfo: cached.videoPlayURLInfo)
@@ -119,14 +154,15 @@ class VideoPlayerViewModel {
             detail.playerStartPos = resolvedPlayerStartPos(cid: cached.cid,
                                                            duration: cached.videoPlayURLInfo.dash.duration,
                                                            lastPlayCid: lastPlayCid,
-                                                           playTimeInSecond: playTimeInSecond)
+                                                           playTimeInSecond: playTimeInSecond,
+                                                           playInfo: playInfo)
             return detail
         }
 
         let aid = playInfo.aid
         let cid = playInfo.cid!
         async let infoReq = try? WebRequest.requestPlayerInfo(aid: aid, cid: cid)
-        async let detailUpdate: () = updateVideoDetailIfNeeded()
+        async let detailReq = fetchVideoDetail(aid: aid, existing: existingVideoDetail)
         do {
             let playData: VideoPlayURLInfo
             var clipInfos: [VideoPlayURLInfo.ClipInfo]?
@@ -137,7 +173,7 @@ class VideoPlayerViewModel {
                 } catch let err as RequestError {
                     if case let .statusFail(code, _) = err,
                        code == -404 || code == -10403,
-                       let data = try await fetchAreaLimitPcgVideoData()
+                       let data = try await fetchAreaLimitPcgVideoData(for: playInfo)
                     {
                         playData = data
                     } else {
@@ -151,16 +187,17 @@ class VideoPlayerViewModel {
             }
 
             let info = await infoReq
-            _ = await detailUpdate
+            let resolvedDetail = await detailReq
 
-            var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, seasonId: playInfo.seasonId, subType: playInfo.subType, detail: videoDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
+            var detail = PlayerDetailData(aid: playInfo.aid, cid: playInfo.cid!, epid: playInfo.epid, seasonId: playInfo.seasonId, subType: playInfo.subType, detail: resolvedDetail, clips: clipInfos, playerInfo: info, videoPlayURLInfo: playData)
 
             let last_play_cid = playInfo.lastPlayCid ?? info?.last_play_cid ?? 0
             let playTimeInSecond = playInfo.playTimeInSecond ?? info?.playTimeInSecond ?? 0
             detail.playerStartPos = resolvedPlayerStartPos(cid: cid,
                                                            duration: playData.dash.duration,
                                                            lastPlayCid: last_play_cid,
-                                                           playTimeInSecond: playTimeInSecond)
+                                                           playTimeInSecond: playTimeInSecond,
+                                                           playInfo: playInfo)
 
             return detail
 
@@ -178,18 +215,17 @@ class VideoPlayerViewModel {
     private func updatePlayInfo(_ newPlayInfo: PlayInfo) {
         playInfo = newPlayInfo
         onPlayInfoChanged?(newPlayInfo)
-        Task {
-            await load()
-        }
+        startLoad(for: newPlayInfo)
     }
 
     private func resolvedPlayerStartPos(cid: Int,
                                         duration: Int,
                                         lastPlayCid: Int,
-                                        playTimeInSecond: Int) -> Int?
+                                        playTimeInSecond: Int,
+                                        playInfo: PlayInfo) -> Int?
     {
         if let startTimeOverride,
-           startTimeOverrideSequenceKey == playInfo.sequenceKey,
+           startTimeOverrideContentIdentity == playInfo.contentIdentity,
            duration - startTimeOverride > 5
         {
             return startTimeOverride
@@ -203,8 +239,8 @@ class VideoPlayerViewModel {
         return nil
     }
 
-    func retryCurrent() async {
-        await load()
+    func retryCurrent() {
+        load()
     }
 
     func playNextFromSequence() async -> Bool {
@@ -214,7 +250,7 @@ class VideoPlayerViewModel {
     }
 
     func playPreviousFromSequence() async -> Bool {
-        guard let previous = await sequenceProvider?.movePrevious() else { return false }
+        guard let previous = sequenceProvider?.movePrevious() else { return false }
         updatePlayInfo(previous)
         return true
     }
@@ -231,27 +267,35 @@ class VideoPlayerViewModel {
 
     func preloadNeighborsIfNeeded() async {
         guard playMode == .feedFlow, let playContextCache, let sequenceProvider else { return }
-        let current = await sequenceProvider.current() ?? currentPlayInfo
+        let current = sequenceProvider.current() ?? currentPlayInfo
         let priority = [current,
-                        await sequenceProvider.peekNext(),
-                        await sequenceProvider.peekPrevious()].compactMap { $0 }.uniqued()
+                        sequenceProvider.peekNext(),
+                        sequenceProvider.peekPrevious()].compactMap { $0 }.uniqued()
         for info in priority {
+            guard !Task.isCancelled else { return }
             await playContextCache.preload(playInfo: info, mode: .regular)
         }
+        guard !Task.isCancelled else { return }
         await playContextCache.trim(keeping: priority)
-        await mediaWarmupManager?.retain(playInfos: priority)
         for info in priority {
+            guard !Task.isCancelled else { return }
             await mediaWarmupManager?.preload(playInfo: info)
         }
     }
 
-    @MainActor private func generatePlayerPlugin(_ data: PlayerDetailData) async -> [CommonPlayerPlugin] {
+    private func generatePlayerPlugin(_ data: PlayerDetailData,
+                                      playInfo: PlayInfo,
+                                      danmuProvider: VideoDanmuProvider) -> [CommonPlayerPlugin]
+    {
         let playplugin = BVideoPlayPlugin(playInfo: playInfo,
                                           detailData: data,
                                           reportWatchHistory: playMode != .preview,
                                           minimizeStalling: true,
                                           isMuted: playMode == .preview && previewMuted,
                                           mediaWarmupManager: playMode == .feedFlow ? mediaWarmupManager : nil)
+        playplugin.onLoadFailure = { [weak self] message in
+            self?.loadResult.send(.failure(message))
+        }
 
         if playMode == .preview {
             return [playplugin]
@@ -273,9 +317,6 @@ class VideoPlayerViewModel {
             guard self?.playMode == .regular else { return }
             self?.onExit?()
         }
-        playlist.onPlayPreviousWithInfo = { [weak self] info in
-            self?.updatePlayInfo(info)
-        }
         playlist.onPlayNextWithInfo = {
             [weak self] info in
             guard let self else { return }
@@ -287,6 +328,16 @@ class VideoPlayerViewModel {
 
         // SpeedChangerPlugin creates the shared settings menu that later plugins extend.
         var plugins: [CommonPlayerPlugin] = [playSpeed, playplugin, danmu, upnp, debug, playlist]
+
+        if !data.isBangumi, let detail = data.detail {
+            let infoTabs = VideoPlayerInfoTabsPlugin(detail: detail,
+                                                     currentPlayInfo: playInfo,
+                                                     sequenceProvider: sequenceProvider)
+            infoTabs.onSelectDiscovery = { [weak self] info in
+                self?.playTemporaryOverride(info)
+            }
+            plugins.append(infoTabs)
+        }
 
         // 添加画质选择器插件
         let qualitySelector = BVideoQualityPlugin(detailData: data) { [weak playplugin] qualityId, streamIndex in
@@ -351,7 +402,7 @@ class VideoPlayerViewModel {
 
 // 港澳台解锁
 extension VideoPlayerViewModel {
-    private func fetchAreaLimitPcgVideoData() async throws -> VideoPlayURLInfo? {
+    private func fetchAreaLimitPcgVideoData(for playInfo: PlayInfo) async throws -> VideoPlayURLInfo? {
         guard Settings.areaLimitUnlock else { return nil }
         guard let epid = playInfo.epid, epid > 0 else { return nil }
 

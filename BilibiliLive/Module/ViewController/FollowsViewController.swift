@@ -6,11 +6,91 @@
 //
 
 import Alamofire
+import SnapKit
 import SwiftyJSON
 import UIKit
 
-class FollowsViewController: StandardVideoCollectionViewController<DynamicFeedData> {
+final class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
+    private enum LayoutMode {
+        case feedFlow
+        case grid
+    }
+
+    private var currentMode: LayoutMode?
+    private var currentContentViewController: UIViewController?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .clear
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(handleLayoutModeDidChange),
+                                               name: .followsLayoutModeDidChange,
+                                               object: nil)
+        syncLayoutIfNeeded(force: true)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        syncLayoutIfNeeded(force: false)
+    }
+
+    override var preferredFocusEnvironments: [UIFocusEnvironment] {
+        currentContentViewController?.preferredFocusEnvironments ?? [view]
+    }
+
+    func reloadData() {
+        if let content = currentContentViewController as? BLTabBarContentVCProtocol {
+            content.reloadData()
+        } else {
+            syncLayoutIfNeeded(force: true)
+        }
+    }
+
+    @objc private func handleLayoutModeDidChange() {
+        guard isViewLoaded else { return }
+        syncLayoutIfNeeded(force: true)
+    }
+
+    private func syncLayoutIfNeeded(force: Bool) {
+        let targetMode: LayoutMode = Settings.followsFeedFlowEnabled ? .feedFlow : .grid
+        guard force || currentMode != targetMode else { return }
+
+        let targetViewController: UIViewController
+        switch targetMode {
+        case .feedFlow:
+            targetViewController = FollowsFeedFlowViewController()
+        case .grid:
+            targetViewController = FollowsGridViewController()
+        }
+
+        transition(to: targetViewController)
+        currentMode = targetMode
+    }
+
+    private func transition(to targetViewController: UIViewController) {
+        let previousViewController = currentContentViewController
+        addChild(targetViewController)
+        view.addSubview(targetViewController.view)
+        targetViewController.view.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        targetViewController.didMove(toParent: self)
+        currentContentViewController = targetViewController
+
+        guard let previousViewController else { return }
+        previousViewController.willMove(toParent: nil)
+        previousViewController.view.removeFromSuperview()
+        previousViewController.removeFromParent()
+    }
+}
+
+final class FollowsGridViewController: StandardVideoCollectionViewController<DynamicFeedData> {
     var lastOffset = ""
+    private var nextSourcePage = 1
 
     override func setupCollectionView() {
         super.setupCollectionView()
@@ -20,17 +100,148 @@ class FollowsViewController: StandardVideoCollectionViewController<DynamicFeedDa
     override func request(page: Int) async throws -> [DynamicFeedData] {
         if page == 1 {
             lastOffset = ""
+            nextSourcePage = 1
         }
-        let info = try await WebRequest.requestFollowsFeed(offset: lastOffset, page: page)
-        lastOffset = info.offset
-        Logger.debug("request page\(page) get count:\(info.videoFeeds.count) next offset:\(info.offset)")
-        return info.videoFeeds
+
+        for _ in 0..<6 {
+            try Task.checkCancellation()
+            let requestedOffset = lastOffset
+            let info = try await WebRequest.requestFollowsFeed(offset: requestedOffset, page: nextSourcePage)
+            try Task.checkCancellation()
+            nextSourcePage += 1
+            lastOffset = info.offset
+            Logger.debug("request page\(nextSourcePage - 1) get count:\(info.videoFeeds.count) next offset:\(info.offset)")
+            if !info.videoFeeds.isEmpty || !info.has_more || info.offset == requestedOffset {
+                return info.videoFeeds
+            }
+        }
+        return []
     }
 
     override func goDetail(with feed: DynamicFeedData) {
         let epid = feed.modules.module_dynamic.major?.pgc?.epid
         let detailVC = VideoDetailViewController.create(aid: feed.aid, cid: feed.cid, epid: epid)
         detailVC.present(from: self)
+    }
+}
+
+final class FollowsFeedFlowViewController: FeedFlowBrowserViewController {
+    init() {
+        super.init(dataSource: FollowsFeedFlowDataSource())
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+final class FollowsFeedFlowDataSource: FeedFlowDataSource {
+    let title = "关注"
+    let defaultPreviewHintText = "停留后自动预览，按确认键进入视频流"
+    let loadingHintText = "正在加载关注视频..."
+    let emptyStateText = "当前关注区暂无可播放视频"
+    let emptyHintText = "可以在设置中关闭关注刷视频模式"
+    let loadFailureText = "关注加载失败，请稍后重试"
+    let autoReloadInterval: TimeInterval? = 60 * 60
+
+    var reloadToken: String {
+        "\(ApiRequest.getToken()?.mid ?? 0)"
+    }
+
+    private var lastOffset = ""
+    private var nextPage = 1
+    private var hasMore = true
+    private var seenItemKeys = Set<String>()
+
+    private struct LoadResult {
+        let items: [FeedFlowItem]
+        let lastOffset: String
+        let nextPage: Int
+        let hasMore: Bool
+        let seenItemKeys: Set<String>
+    }
+
+    func reset() {
+        lastOffset = ""
+        nextPage = 1
+        hasMore = true
+        seenItemKeys = []
+    }
+
+    func refreshFromStart(targetCount: Int, maxSourcePages: Int) async throws -> [FeedFlowItem] {
+        let result = try await loadMoreUntilTarget(targetCount: targetCount,
+                                                   maxSourcePages: maxSourcePages,
+                                                   startingOffset: "",
+                                                   startingPage: 1,
+                                                   startingHasMore: true,
+                                                   seenItemKeys: [])
+        commit(result)
+        return result.items
+    }
+
+    func loadMoreItems(targetCount: Int, maxSourcePages: Int) async throws -> [FeedFlowItem] {
+        let result = try await loadMoreUntilTarget(targetCount: targetCount,
+                                                   maxSourcePages: maxSourcePages,
+                                                   startingOffset: lastOffset,
+                                                   startingPage: nextPage,
+                                                   startingHasMore: hasMore,
+                                                   seenItemKeys: seenItemKeys)
+        commit(result)
+        return result.items
+    }
+
+    private func loadMoreUntilTarget(targetCount: Int,
+                                     maxSourcePages: Int,
+                                     startingOffset: String,
+                                     startingPage: Int,
+                                     startingHasMore: Bool,
+                                     seenItemKeys: Set<String>) async throws -> LoadResult
+    {
+        guard startingHasMore else {
+            return LoadResult(items: [],
+                              lastOffset: startingOffset,
+                              nextPage: startingPage,
+                              hasMore: false,
+                              seenItemKeys: seenItemKeys)
+        }
+
+        var pagesScanned = 0
+        var accepted = [FeedFlowItem]()
+        var resolvedOffset = startingOffset
+        var resolvedPage = startingPage
+        var resolvedHasMore = startingHasMore
+        var resolvedSeenItemKeys = seenItemKeys
+
+        while accepted.count < targetCount, pagesScanned < maxSourcePages, resolvedHasMore {
+            try Task.checkCancellation()
+            let requestedOffset = resolvedOffset
+            let info = try await WebRequest.requestFollowsFeed(offset: resolvedOffset, page: resolvedPage)
+            try Task.checkCancellation()
+            pagesScanned += 1
+            resolvedPage += 1
+            resolvedOffset = info.offset
+            resolvedHasMore = info.has_more && info.offset != requestedOffset
+
+            let newItems = info.videoFeeds
+                .compactMap(\.feedFlowItem)
+                .filter { resolvedSeenItemKeys.insert($0.identityKey).inserted }
+            accepted.append(contentsOf: newItems)
+        }
+
+        try Task.checkCancellation()
+        return LoadResult(items: accepted,
+                          lastOffset: resolvedOffset,
+                          nextPage: resolvedPage,
+                          hasMore: resolvedHasMore,
+                          seenItemKeys: resolvedSeenItemKeys)
+    }
+
+    private func commit(_ result: LoadResult) {
+        lastOffset = result.lastOffset
+        nextPage = result.nextPage
+        hasMore = result.hasMore
+        seenItemKeys = result.seenItemKeys
     }
 }
 
@@ -41,9 +252,9 @@ extension WebRequest {
         let update_num: Int
         let update_baseline: String
         let has_more: Bool
+
         var videoFeeds: [DynamicFeedData] {
-            return items
-                .filter({ $0.aid != 0 || $0.modules.module_dynamic.major?.pgc != nil })
+            items.filter { $0.aid != 0 || $0.modules.module_dynamic.major?.pgc?.epid != nil }
         }
 
         enum CodingKeys: String, CodingKey {
@@ -67,15 +278,14 @@ extension WebRequest {
     }
 
     static func requestFollowsFeed(offset: String, page: Int) async throws -> DynamicFeedInfo {
-        var param: [String: Any] = ["type": "all", "timezone_offset": "-480", "page": page]
-        if let offsetNum = Int(offset) {
-            param["offset"] = offsetNum
+        var parameters: [String: Any] = ["type": "all", "timezone_offset": "-480", "page": page]
+        if let offset = Int(offset) {
+            parameters["offset"] = offset
         }
-        let res: DynamicFeedInfo = try await request(url: "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/all", parameters: param)
-        if res.videoFeeds.isEmpty, res.has_more {
-            return try await requestFollowsFeed(offset: res.offset, page: page)
-        }
-        return res
+        return try await request(
+            url: "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/all",
+            parameters: parameters
+        )
     }
 }
 
@@ -87,26 +297,26 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
         return 0
     }
 
-    var cid: Int { return 0 }
+    var cid: Int { 0 }
 
     var title: String {
-        return modules.module_dynamic.major?.archive?.title ?? modules.module_dynamic.major?.pgc?.title ?? ""
+        modules.module_dynamic.major?.archive?.title ?? modules.module_dynamic.major?.pgc?.title ?? ""
     }
 
     var ownerName: String {
-        return modules.module_author.name
+        modules.module_author.name
     }
 
     var pic: URL? {
-        return URL(string: modules.module_dynamic.major?.archive?.cover ?? "") ?? modules.module_dynamic.major?.pgc?.cover
+        URL(string: modules.module_dynamic.major?.archive?.cover ?? "") ?? modules.module_dynamic.major?.pgc?.cover
     }
 
     var avatar: URL? {
-        return URL(string: modules.module_author.face)
+        URL(string: modules.module_author.face)
     }
 
     var date: String? {
-        return modules.module_author.pub_time
+        modules.module_author.pub_time
     }
 
     var overlay: DisplayOverlay? {
@@ -124,6 +334,33 @@ struct DynamicFeedData: Codable, PlayableData, DisplayData {
             rightItems.append(DisplayOverlay.DisplayOverlayItem(icon: nil, text: durationText))
         }
         return DisplayOverlay(leftItems: leftItems, rightItems: rightItems)
+    }
+
+    var feedFlowItem: FeedFlowItem? {
+        if aid > 0 {
+            return FeedFlowItem(aid: aid,
+                                title: title,
+                                ownerName: ownerName,
+                                coverURL: pic,
+                                avatarURL: avatar,
+                                durationText: modules.module_dynamic.major?.archive?.duration_text ?? "",
+                                viewCountText: modules.module_dynamic.major?.archive?.stat?.play ?? "",
+                                danmakuCountText: modules.module_dynamic.major?.archive?.stat?.danmaku ?? "",
+                                reasonText: date)
+        }
+
+        if let epid = modules.module_dynamic.major?.pgc?.epid, epid > 0 {
+            return FeedFlowItem(aid: 0,
+                                epid: epid,
+                                title: title,
+                                ownerName: ownerName,
+                                coverURL: pic,
+                                avatarURL: avatar,
+                                durationText: "",
+                                reasonText: date)
+        }
+
+        return nil
     }
 
     let type: String
