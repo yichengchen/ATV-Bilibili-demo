@@ -90,6 +90,7 @@ final class FollowsViewController: UIViewController, BLTabBarContentVCProtocol {
 
 final class FollowsGridViewController: StandardVideoCollectionViewController<DynamicFeedData> {
     var lastOffset = ""
+    private var nextSourcePage = 1
 
     override func setupCollectionView() {
         super.setupCollectionView()
@@ -99,11 +100,22 @@ final class FollowsGridViewController: StandardVideoCollectionViewController<Dyn
     override func request(page: Int) async throws -> [DynamicFeedData] {
         if page == 1 {
             lastOffset = ""
+            nextSourcePage = 1
         }
-        let info = try await WebRequest.requestFollowsFeed(offset: lastOffset, page: page)
-        lastOffset = info.offset
-        Logger.debug("request page\(page) get count:\(info.videoFeeds.count) next offset:\(info.offset)")
-        return info.videoFeeds
+
+        for _ in 0 ..< 6 {
+            try Task.checkCancellation()
+            let requestedOffset = lastOffset
+            let info = try await WebRequest.requestFollowsFeed(offset: requestedOffset, page: nextSourcePage)
+            try Task.checkCancellation()
+            nextSourcePage += 1
+            lastOffset = info.offset
+            Logger.debug("request page\(nextSourcePage - 1) get count:\(info.videoFeeds.count) next offset:\(info.offset)")
+            if !info.videoFeeds.isEmpty || !info.has_more || info.offset == requestedOffset {
+                return info.videoFeeds
+            }
+        }
+        return []
     }
 
     override func goDetail(with feed: DynamicFeedData) {
@@ -209,8 +221,7 @@ final class FollowsFeedFlowDataSource: FeedFlowDataSource {
             pagesScanned += 1
             resolvedPage += 1
             resolvedOffset = info.offset
-            let madeProgress = !info.videoFeeds.isEmpty || info.offset != requestedOffset
-            resolvedHasMore = info.has_more && madeProgress
+            resolvedHasMore = info.has_more && info.offset != requestedOffset
 
             let newItems = info.videoFeeds
                 .compactMap(\.feedFlowItem)
@@ -266,28 +277,15 @@ extension WebRequest {
         }
     }
 
-    static func requestFollowsFeed(offset: String, page: Int, maxSkippedPages: Int = 5) async throws -> DynamicFeedInfo {
-        var currentOffset = offset
-        var currentPage = page
-        var skippedPages = 0
-
-        while true {
-            try Task.checkCancellation()
-            var param: [String: Any] = ["type": "all", "timezone_offset": "-480", "page": currentPage]
-            if let offsetNum = Int(currentOffset) {
-                param["offset"] = offsetNum
-            }
-            let response: DynamicFeedInfo = try await request(
-                url: "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/all",
-                parameters: param
-            )
-            try Task.checkCancellation()
-            guard response.videoFeeds.isEmpty, response.has_more else { return response }
-            guard skippedPages < maxSkippedPages, response.offset != currentOffset else { return response }
-            skippedPages += 1
-            currentOffset = response.offset
-            currentPage += 1
+    static func requestFollowsFeed(offset: String, page: Int) async throws -> DynamicFeedInfo {
+        var parameters: [String: Any] = ["type": "all", "timezone_offset": "-480", "page": page]
+        if let offset = Int(offset) {
+            parameters["offset"] = offset
         }
+        return try await request(
+            url: "https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/all",
+            parameters: parameters
+        )
     }
 }
 
