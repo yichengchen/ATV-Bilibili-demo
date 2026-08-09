@@ -20,6 +20,7 @@ enum TabBarPage: String, CaseIterable, Codable {
     case toView
     case history
     case weeklyWatch
+    case tvRecommend
 
     var title: String {
         switch self {
@@ -27,6 +28,8 @@ enum TabBarPage: String, CaseIterable, Codable {
             return "直播"
         case .feed:
             return "推荐"
+        case .tvRecommend:
+            return "TV推荐"
         case .hot:
             return "热门"
         case .ranking:
