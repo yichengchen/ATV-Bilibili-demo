@@ -27,7 +27,6 @@ private extension WebTopFeedRecommendResponse.Item {
                             ownerName: owner?.name ?? "",
                             coverURL: coverURL,
                             avatarURL: avatarURL,
-                            duration: duration,
                             durationText: durationValue > 0 ? TimeInterval(durationValue).timeString() : "",
                             viewCountText: (stat?.view ?? 0).numberString(),
                             danmakuCountText: (stat?.danmaku ?? 0).numberString(),
