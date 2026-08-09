@@ -67,6 +67,7 @@ actor PlayerMediaWarmupManager {
     private var prepared = [String: PreparedPlayerMedia]()
     private var inFlight = [String: InFlightEntry]()
     private var accessOrder = [String]()
+    private var cancellationGeneration = 0
 
     init(playContextCache: PlayContextCache) {
         self.playContextCache = playContextCache
@@ -77,7 +78,11 @@ actor PlayerMediaWarmupManager {
     }
 
     func preparedMedia(for playInfo: PlayInfo) async throws -> PreparedPlayerMedia {
-        let key = playInfo.sequenceKey
+        let generation = cancellationGeneration
+        let resolvedPlayInfo = try await PlayInfoResolver.resolve(playInfo)
+        try Task.checkCancellation()
+        guard cancellationGeneration == generation else { throw CancellationError() }
+        let key = resolvedPlayInfo.sequenceKey
         if let cached = prepared[key] {
             touch(key)
             return cached
@@ -89,10 +94,10 @@ actor PlayerMediaWarmupManager {
         let token = UUID()
         let task = Task<PreparedPlayerMedia, Error> {
             try Task.checkCancellation()
-            let snapshot = try await playContextCache.context(for: playInfo, mode: .regular)
+            let snapshot = try await playContextCache.context(for: resolvedPlayInfo, mode: .regular)
             try Task.checkCancellation()
             return try await PlayerMediaFactory.prepare(
-                aid: playInfo.aid,
+                aid: resolvedPlayInfo.aid,
                 urlInfo: snapshot.videoPlayURLInfo,
                 playerInfo: snapshot.playerInfo
             )
@@ -126,17 +131,8 @@ actor PlayerMediaWarmupManager {
         }
     }
 
-    func retain(playInfos: [PlayInfo]) {
-        let allowedKeys = Set(playInfos.map(\.sequenceKey))
-        for (key, entry) in inFlight where !allowedKeys.contains(key) {
-            entry.task.cancel()
-            inFlight[key] = nil
-        }
-        prepared = prepared.filter { allowedKeys.contains($0.key) }
-        accessOrder.removeAll { !allowedKeys.contains($0) }
-    }
-
     func cancelAll() {
+        cancellationGeneration += 1
         inFlight.values.forEach { $0.task.cancel() }
         inFlight.removeAll()
         prepared.removeAll()

@@ -16,7 +16,6 @@ struct FeedFlowItem: Hashable {
     let ownerName: String
     let coverURL: URL?
     let avatarURL: URL?
-    let duration: Int?
     let durationText: String
     let viewCountText: String
     let danmakuCountText: String
@@ -31,7 +30,6 @@ struct FeedFlowItem: Hashable {
          ownerName: String,
          coverURL: URL?,
          avatarURL: URL? = nil,
-         duration: Int? = nil,
          durationText: String = "",
          viewCountText: String = "",
          danmakuCountText: String = "",
@@ -47,7 +45,6 @@ struct FeedFlowItem: Hashable {
         self.ownerName = ownerName
         self.coverURL = coverURL
         self.avatarURL = avatarURL
-        self.duration = duration
         self.durationText = durationText
         self.viewCountText = viewCountText
         self.danmakuCountText = danmakuCountText
@@ -63,8 +60,7 @@ struct FeedFlowItem: Hashable {
                  subType: subType,
                  title: title,
                  ownerName: ownerName,
-                 coverURL: coverURL,
-                 duration: duration)
+                 coverURL: coverURL)
     }
 
     var metaText: String {
@@ -111,7 +107,6 @@ protocol FeedFlowDataSource: AnyObject {
     func reset()
     func refreshFromStart(targetCount: Int, maxSourcePages: Int) async throws -> [FeedFlowItem]
     func loadMoreItems(targetCount: Int, maxSourcePages: Int) async throws -> [FeedFlowItem]
-    func didRecordPositiveWatchSignal(playInfo: PlayInfo, watchedSeconds: Int)
 }
 
 extension FeedFlowDataSource {
@@ -125,5 +120,4 @@ extension FeedFlowDataSource {
     var initialMaxSourcePages: Int { 5 }
     var trailingPrefetchTargetCount: Int { 8 }
     var trailingMaxSourcePages: Int { 3 }
-    func didRecordPositiveWatchSignal(playInfo: PlayInfo, watchedSeconds: Int) {}
 }
