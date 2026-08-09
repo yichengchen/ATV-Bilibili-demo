@@ -105,6 +105,9 @@ enum Settings {
     @UserDefault("Settings.ui.sideMenuAutoSelectChange", defaultValue: false)
     static var sideMenuAutoSelectChange: Bool
 
+    @UserDefault("Settings.followsFeedFlowEnabled", defaultValue: false)
+    static var followsFeedFlowEnabled: Bool
+
     @UserDefaultCodable("Settings.SponsorBlockType", defaultValue: SponsorBlockType.none)
     static var enableSponsorBlock: SponsorBlockType
 

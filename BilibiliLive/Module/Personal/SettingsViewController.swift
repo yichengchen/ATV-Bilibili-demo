@@ -150,6 +150,15 @@ class SettingsViewController: UIViewController {
                 }
             }
 
+            SectionModel(title: "关注页面") {
+                Toggle(title: "关注刷视频模式",
+                       setting: Settings.followsFeedFlowEnabled,
+                       onChange: Settings.followsFeedFlowEnabled.toggle())
+                { _ in
+                    NotificationCenter.default.post(name: .followsLayoutModeDidChange, object: nil)
+                }
+            }
+
             SectionModel(title: "音视频") {
                 Actions(title: "最高画质", message: "4k以上需要大会员",
                         current: Settings.mediaQuality.desp,
