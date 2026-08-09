@@ -51,7 +51,7 @@ final class FeaturedFeedFlowDataSource: FeedFlowDataSource {
     let loadFailureText = "推荐加载失败，请稍后重试"
 
     var reloadToken: String {
-        "\(Settings.featuredDurationLimit.title)-\(Settings.featuredContentSafetyFilterEnabled)-\(FeaturedContentSafetyFilter.version)"
+        "\(Settings.featuredDurationLimit.title)-\(Settings.featuredContentSafetyFilterEnabled)"
     }
 
     private var durationLimit = Settings.featuredDurationLimit

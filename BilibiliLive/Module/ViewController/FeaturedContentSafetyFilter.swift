@@ -8,8 +8,6 @@
 import Foundation
 
 enum FeaturedContentSafetyFilter {
-    static let version = 4
-
     private static let rawKeywords = [
         "擦边",
         "纯欲",
@@ -82,57 +80,19 @@ enum FeaturedContentSafetyFilter {
 
     private static let personaRules = makeRules([
         "甜妹",
-        "纯欲",
-        "甜欲",
-        "纯御",
-        "御姐",
         "学姐",
         "姐姐",
-        "姐感",
-        "妻感",
-        "钓系",
-        "电子女友",
-        "女秘书",
         "秘书",
-        "女仆",
-        "兔女郎",
         "猫娘",
-        "小妈",
-        "辣妹",
         "jk",
         "制服",
     ])
 
     private static let clothingRules = makeRules([
-        "黑丝",
-        "白丝",
-        "灰丝",
-        "肉丝",
-        "油丝",
-        "厚黑",
-        "厚白",
-        "亮丝",
-        "丝袜",
-        "网袜",
-        "连裤袜",
-        "过膝袜",
-        "吊带袜",
-        "渔网袜",
         "红底高跟",
         "透明高跟",
         "细高跟",
-        "包臀",
-        "包臀裙",
-        "超短裙",
-        "露腰",
-        "露背",
         "微透",
-        "比基尼",
-        "泳装",
-        "写真",
-        "私房",
-        "美腿",
-        "玉足",
     ])
 
     static func allows(feedItem: ApiRequest.FeedResp.Items) -> Bool {
