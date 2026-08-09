@@ -69,7 +69,7 @@ enum TabBarPage: String, CaseIterable, Codable {
     }
 
     static var defaultTabBarPages: [TabBarPage] {
-        [.live, .feed, .hot, .ranking, .follows, .favorite, .personal, .search]
+        [.live, .feed, .hot, .ranking, .follows, .favorite, .personal, .search, .tvRecommend]
     }
 
     static var allConfigurablePages: [TabBarPage] {
