@@ -288,6 +288,16 @@ class VideoPlayerViewModel {
         // SpeedChangerPlugin creates the shared settings menu that later plugins extend.
         var plugins: [CommonPlayerPlugin] = [playSpeed, playplugin, danmu, upnp, debug, playlist]
 
+        if !data.isBangumi, let detail = data.detail {
+            let infoTabs = VideoPlayerInfoTabsPlugin(detail: detail,
+                                                     currentPlayInfo: playInfo,
+                                                     sequenceProvider: sequenceProvider)
+            infoTabs.onSelectDiscovery = { [weak self] info in
+                self?.playTemporaryOverride(info)
+            }
+            plugins.append(infoTabs)
+        }
+
         // 添加画质选择器插件
         let qualitySelector = BVideoQualityPlugin(detailData: data) { [weak playplugin] qualityId, streamIndex in
             Task { @MainActor in
