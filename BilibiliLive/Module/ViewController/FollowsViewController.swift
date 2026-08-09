@@ -103,7 +103,7 @@ final class FollowsGridViewController: StandardVideoCollectionViewController<Dyn
             nextSourcePage = 1
         }
 
-        for _ in 0 ..< 6 {
+        for _ in 0..<6 {
             try Task.checkCancellation()
             let requestedOffset = lastOffset
             let info = try await WebRequest.requestFollowsFeed(offset: requestedOffset, page: nextSourcePage)
