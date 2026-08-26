@@ -419,7 +419,12 @@ class VideoDetailViewController: UIViewController {
             }
         }
 
-        avatarImageView.kf.setImage(with: data.avatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
+        let resizedAvatar: URL? = if let avatar = data.avatar {
+            avatar.deletingLastPathComponent().appending(component: avatar.lastPathComponent + "@240w_240h.jpg")
+        } else {
+            nil
+        }
+        avatarImageView.kf.setImage(with: resizedAvatar, options: [.processor(DownsamplingImageProcessor(size: CGSize(width: 80, height: 80))), .processor(RoundCornerImageProcessor(radius: .widthFraction(0.5))), .cacheSerializer(FormatIndicatedCacheSerializer.png)])
 
         coverImageView.kf.setImage(with: data.pic)
         backgroundImageView.kf.setImage(with: data.pic)
