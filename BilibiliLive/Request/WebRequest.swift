@@ -689,6 +689,10 @@ extension WebRequest {
     }
 }
 
+extension WebRequest.UpSpaceInfo : AvatarProviding {
+    var avatar: URL? { face }
+}
+
 struct HistoryData: DisplayData, Codable {
     struct HistoryPage: Codable, Hashable {
         let cid: Int

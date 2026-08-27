@@ -9,7 +9,7 @@ import SnapKit
 import TVUIKit
 import UIKit
 
-protocol DisplayData: Hashable {
+protocol DisplayData: Hashable, AvatarProviding {
     var title: String { get }
     var ownerName: String { get }
     var pic: URL? { get }
