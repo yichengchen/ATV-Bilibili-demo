@@ -12,7 +12,9 @@ import UIKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    var window: UIWindow?
+    var window: UIWindow? {
+        sceneDelegate?.window
+    }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         Logger.setup()
@@ -21,23 +23,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         AccountManager.shared.bootstrap()
         BiliBiliUpnpDMR.shared.start()
         URLSession.shared.configuration.headers.add(.userAgent("BiLiBiLi AppleTV Client/1.0.0 (github/yichengchen/ATV-Bilibili-live-demo)"))
-        window = UIWindow()
-        if ApiRequest.isLogin() {
-            if let expireDate = ApiRequest.getToken()?.expireDate {
-                let now = Date()
-                if expireDate.timeIntervalSince(now) < 60 * 60 * 30 {
-                    ApiRequest.refreshToken()
-                }
-            } else {
-                ApiRequest.refreshToken()
-            }
-            window?.rootViewController = BLTabBarViewController()
-        } else {
-            window?.rootViewController = LoginViewController.create()
-        }
         WebRequest.requestIndex()
-        window?.makeKeyAndVisible()
         return true
+    }
+
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -45,35 +36,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func showLogin() {
-        replaceRootViewController(with: LoginViewController.create(), animated: false)
+        sceneDelegate?.showLogin()
     }
 
     func showTabBar() {
-        replaceRootViewController(with: BLTabBarViewController(), animated: false)
+        sceneDelegate?.showTabBar()
     }
 
     func resetTabBar() {
-        replaceRootViewController(with: BLTabBarViewController(), animated: true)
+        sceneDelegate?.resetTabBar()
     }
 
     static var shared: AppDelegate {
         return UIApplication.shared.delegate as! AppDelegate
     }
 
-    private func replaceRootViewController(with viewController: UIViewController, animated: Bool) {
-        guard let window else { return }
-        if animated, let snapshot = window.snapshotView(afterScreenUpdates: false) {
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-            viewController.view.addSubview(snapshot)
-            UIView.animate(withDuration: 0.25, animations: {
-                snapshot.alpha = 0
-            }, completion: { _ in
-                snapshot.removeFromSuperview()
-            })
-        } else {
-            window.rootViewController = viewController
-            window.makeKeyAndVisible()
-        }
+    private var sceneDelegate: SceneDelegate? {
+        UIApplication.shared.connectedScenes.compactMap { $0.delegate as? SceneDelegate }.first
     }
 }
