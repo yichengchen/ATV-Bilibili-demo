@@ -106,7 +106,9 @@ struct CDNHostStats: Sendable {
 struct MediaRangeDiagnostics: Sendable {
     var transportMode: MediaTransportMode
     var activeHosts: Int
-    var effectiveMbps: Double
+    /// 各 host 历史实测吞吐之和：多 host 并行时近似聚合上限，单 host 时即其实测值。
+    /// 它是估计值，不是端到端实测的聚合吞吐，不得直接作为性能验收的吞吐结论。
+    var estimatedAggregateMbps: Double
     var activeSubrequests: Int
     var failures: Int
     var retries: Int
@@ -242,6 +244,9 @@ actor MediaRangeDownloader {
     private let maxRetriesPerSubrange = 2
     private let hedgingDelayNanoseconds: UInt64 = 1_000_000_000 // 1s
     private let singleRequestMemoryCap: Int64 = 16 * 1024 * 1024
+    /// 跨 CDN 等价性采样长度：候选 host 首次参与拼接前，与参照源比对该字节数。
+    /// 有界（每 host 每媒体一次），新鲜度由调用方轮转保证。
+    private let equivalenceSampleBytes: Int64 = 32 * 1024
 
     private let candidates: [String]
     private let referer: String
@@ -262,6 +267,16 @@ actor MediaRangeDownloader {
     /// AIMD 自适应并发上限：成功且无竞速/失败时 +1，失败时减半；
     /// 范围 [1, maxConcurrentPerMedia]，初始 2。仅调节并发数，不共享 CDN 排名。
     private var adaptiveConcurrency = 2
+    /// 已通过跨 CDN 等价性采样的 host（本媒体流内有效）。未采样 host 的字节
+    /// 不得参与拼接，防止不同版本内容混入同一 Range 解码。
+    private var equivalenceVerifiedHosts = Set<String>()
+    /// 同一 host 的并发验证任务合并：后来者直接并入等待，不重复采样。
+    private var verifyTasks = [String: Task<Void, Error>]()
+    /// SIDX 锚点：播放列表生成时从 sidx 探测 URL 取回的 (索引区间, 原始字节)，
+    /// 作为等价性验证的可信参照（免去第二路采样）。缺失时退化为双边采样。
+    private var trustAnchor: (range: MediaByteRange, bytes: Data)?
+    /// 锚点过期标记：一旦确认过期则永久丢弃，转双边采样。
+    private var anchorDiscarded = false
 
     private var session: URLSession?
 
@@ -349,7 +364,7 @@ actor MediaRangeDownloader {
         return MediaRangeDiagnostics(
             transportMode: mode,
             activeHosts: activeHosts,
-            effectiveMbps: mbps,
+            estimatedAggregateMbps: mbps,
             activeSubrequests: activeSubrequests,
             failures: failureCount,
             retries: retryCount,
@@ -365,6 +380,14 @@ actor MediaRangeDownloader {
 
     func knownTotal() -> Int64? {
         knownTotalLength
+    }
+
+    /// 设置 SIDX 信任锚点（播放列表生成时调用，幂等覆盖同一值）。
+    /// 锚点仅用于等价性验证的参照，不参与媒体数据交付。
+    func setTrustAnchor(range: MediaByteRange, bytes: Data) {
+        if trustAnchor == nil {
+            trustAnchor = (range, bytes)
+        }
     }
 
     func updateKnownTotal(_ total: Int64?) {
@@ -442,22 +465,15 @@ actor MediaRangeDownloader {
         // 而非全部挤在首选 host 上等 Hedging 救援。统计出现后 orderedHosts 本身已排序。
         // AIMD 当前上限快照（本请求内固定，避免中途抖动）
         let concurrencyLimit = max(1, min(maxConcurrentPerMedia, adaptiveConcurrency))
+        // 本请求的独立在途计数：同一下载器可同时服务多个 Range 请求，
+        // 调度槽位必须按请求隔离；共享的 activeSubrequests 仅作诊断，
+        // 跨请求的真实网络并发上限由 MediaDownloadBudget 负责。
+        var inFlight = 0
+        // 异常退出（失败/取消）时把本请求未扣减的诊断计数一次性归还；
+        // 成功路径 inFlight 已归零，此处为无操作。
+        defer { activeSubrequests = max(0, activeSubrequests - inFlight) }
         do {
             try await withThrowingTaskGroup(of: (Int, Data).self) { group in
-                // 初始填充
-                while nextToStart < subranges.count, activeSubrequests < concurrencyLimit {
-                    if pendingBytes >= maxBufferedBytes { break }
-                    let index = nextToStart
-                    let sub = subranges[index]
-                    let hosts = hostsForSubrange(index)
-                    nextToStart += 1
-                    activeSubrequests += 1
-                    group.addTask {
-                        defer { Task { await self.noteSubrequestDone() } }
-                        let data = try await self.fetchSubrangeWithHedging(sub, allowHedging: true, candidateHosts: hosts)
-                        return (index, data)
-                    }
-                }
                 while nextToDeliver < subranges.count {
                     if Task.isCancelled {
                         group.cancelAll()
@@ -475,29 +491,36 @@ actor MediaRangeDownloader {
                         pendingBytes -= Int64(ready.count)
                         pending[nextToDeliver] = nil
                         nextToDeliver += 1
-                        // 背压释放后补充新任务
-                        while nextToStart < subranges.count, activeSubrequests < concurrencyLimit {
-                            if pendingBytes >= maxBufferedBytes { break }
-                            let index = nextToStart
-                            let sub = subranges[index]
-                            let hosts = hostsForSubrange(index)
-                            nextToStart += 1
-                            activeSubrequests += 1
-                            group.addTask {
-                                defer { Task { await self.noteSubrequestDone() } }
-                                let data = try await self.fetchSubrangeWithHedging(sub, allowHedging: true, candidateHosts: hosts)
-                                return (index, data)
-                            }
-                        }
                         continue
                     }
-                    // first-completion：工作内联，取消即作用于下载本身
+                    // 按本请求的独立计数补充在途任务（背压：已完成未交付超限则暂停）
+                    while nextToStart < subranges.count,
+                          inFlight < concurrencyLimit,
+                          pendingBytes < maxBufferedBytes
+                    {
+                        let index = nextToStart
+                        let sub = subranges[index]
+                        let hosts = hostsForSubrange(index)
+                        nextToStart += 1
+                        inFlight += 1
+                        activeSubrequests += 1
+                        group.addTask {
+                            let data = try await self.fetchSubrangeWithHedging(sub, allowHedging: true, candidateHosts: hosts)
+                            return (index, data)
+                        }
+                    }
+                    // first-completion：工作内联，取消即作用于下载本身。
+                    // next() 返回即同步扣减本请求计数，不经延迟的 Task 跳转，
+                    // 调度器看到的槽位永远是最新的。
                     guard let (index, data) = try await group.next() else {
                         throw MediaRangeError.truncated
                     }
+                    inFlight -= 1
+                    activeSubrequests = max(0, activeSubrequests - 1)
                     // 长度校验：必须是请求子区间的准确长度
                     guard Int64(data.count) == subranges[index].length else {
                         group.cancelAll()
+                        failureCount += 1
                         throw MediaRangeError.truncated
                     }
                     pending[index] = data
@@ -516,16 +539,11 @@ actor MediaRangeDownloader {
             adjustConcurrencyAfterStream(failuresBefore: failuresBefore, hedgesBefore: hedgesBefore, succeeded: false)
             pipe.fail(MediaRangeError.cancelled)
         } catch {
-            if (error as? MediaRangeError) != .budgetExhausted {
-                failureCount += 1
-            }
+            // 失败计数已在成因处恰好记一次（recordFailure/isolateHosts/等价性验证），
+            // 此处不再重复累加，保证诊断诚实；取消与预算耗尽本就不计入 CDN 失败。
             adjustConcurrencyAfterStream(failuresBefore: failuresBefore, hedgesBefore: hedgesBefore, succeeded: false)
             pipe.fail(error)
         }
-    }
-
-    private func noteSubrequestDone() {
-        activeSubrequests = max(0, activeSubrequests - 1)
     }
 
     /// 子区间首选 host 轮转：把第 index 个子区间优先分配给第 (index % hosts) 个 host，
@@ -562,7 +580,7 @@ actor MediaRangeDownloader {
     }
 
     private enum HedgeOutcome: Sendable {
-        case data(lane: HedgeLane, data: Data)
+        case data(lane: HedgeLane, data: Data, host: String)
         case failed(lane: HedgeLane)
         case hedgeTimer
         case compareTimer
@@ -597,7 +615,10 @@ actor MediaRangeDownloader {
         let hosts = candidateHosts ?? orderedHosts()
         guard !hosts.isEmpty else { throw MediaRangeError.unsatisfiable(total: knownTotalLength) }
         if !allowHedging || hosts.count == 1 || subrange.length < subrangeMinBytes {
-            return try await fetchSubrangeWithRetry(subrange, hosts: hosts)
+            // 单路：无竞速，交付前仍需过等价性门控（单 host/代理模式内直接通过）。
+            let (data, host) = try await fetchSubrangeWithRetry(subrange, hosts: hosts)
+            try await ensureHostVerified(host, hosts: hosts)
+            return data
         }
         // Slow-Request Hedging：主请求慢时在另一 CDN 启动竞争。
         // 触发考虑 TTFB、已接收字节/吞吐、剩余字节与播放紧迫度（此处用固定 1s 延迟
@@ -607,8 +628,8 @@ actor MediaRangeDownloader {
         return try await withThrowingTaskGroup(of: HedgeOutcome.self) { group in
             group.addTask {
                 do {
-                    let data = try await self.fetchSubrangeWithRetry(subrange, hosts: hosts)
-                    return .data(lane: .primary, data: data)
+                    let (data, host) = try await self.fetchSubrangeWithRetry(subrange, hosts: hosts)
+                    return .data(lane: .primary, data: data, host: host)
                 } catch is CancellationError {
                     // 外部取消或组取消：向上传播，保证及时退出；
                     // 计时哨兵不走此路径（sleep 封装在独立子任务内）。
@@ -635,12 +656,14 @@ actor MediaRangeDownloader {
             var secondaryFailed = false
             var winnerLane: HedgeLane?
             var winnerData: Data?
+            var winnerHost: String?
             while let outcome = try await group.next() {
                 switch outcome {
-                case let .data(lane, data):
+                case let .data(lane, data, host):
                     if winnerData == nil {
                         winnerLane = lane
                         winnerData = data
+                        winnerHost = host
                         if secondaryStarted {
                             // 备路已启动：给落选者短宽限以完成并做字节级比较
                             group.addTask {
@@ -653,14 +676,16 @@ actor MediaRangeDownloader {
                                 }
                             }
                         } else {
-                            // 备路尚未启动：直接采用，无冗余
+                            // 备路尚未启动：先停计时器，再过等价性门控后交付
                             group.cancelAll()
+                            try await ensureHostVerified(host, hosts: hosts)
                             return data
                         }
                     } else {
                         // 落选者在宽限内完成：必须来自另一 lane，与胜者逐字节比较
                         if lane == winnerLane {
                             group.cancelAll()
+                            try await ensureHostVerified(winnerHost!, hosts: hosts)
                             return winnerData!
                         }
                         if data != winnerData {
@@ -669,12 +694,14 @@ actor MediaRangeDownloader {
                         }
                         addExtra(Int64(data.count))
                         group.cancelAll()
+                        try await ensureHostVerified(winnerHost!, hosts: hosts)
                         return winnerData!
                     }
                 case let .failed(lane):
                     if winnerData != nil {
                         // 胜者已定，落选者失败可忽略
                         group.cancelAll()
+                        try await ensureHostVerified(winnerHost!, hosts: hosts)
                         return winnerData!
                     }
                     if lane == .primary {
@@ -704,8 +731,8 @@ actor MediaRangeDownloader {
                         // 第二路：排除首选 host，优先不同 host
                         group.addTask {
                             do {
-                                let data = try await self.fetchSubrangeWithRetry(subrange, hosts: alternate)
-                                return .data(lane: .secondary, data: data)
+                                let (data, host) = try await self.fetchSubrangeWithRetry(subrange, hosts: alternate)
+                                return .data(lane: .secondary, data: data, host: host)
                             } catch is CancellationError {
                                 if Task.isCancelled { throw CancellationError() }
                                 errorBox.set(CancellationError(), for: .secondary)
@@ -717,24 +744,26 @@ actor MediaRangeDownloader {
                         }
                     }
                 case .compareTimer:
-                    // 比较宽限到期：落选者未完成，直接采用胜者
+                    // 比较宽限到期：落选者未完成，门控胜者后交付
                     // （落选者被 cancelAll 中止，已传输的部分字节已在其中止路径计入 extra）
                     group.cancelAll()
-                    if let winnerData {
+                    if let winnerData, let winnerHost {
+                        try await ensureHostVerified(winnerHost, hosts: hosts)
                         return winnerData
                     }
                     continue
                 }
             }
-            // 组耗尽仍无结果（理论不可达）：按失败处理
-            if let winnerData {
+            // 组耗尽仍无结果（理论不可达）：按失败处理；若意外持有胜者仍需过门控
+            if let winnerData, let winnerHost {
+                try await ensureHostVerified(winnerHost, hosts: hosts)
                 return winnerData
             }
             throw errorBox.error(for: .primary) ?? MediaRangeError.truncated
         }
     }
 
-    private func fetchSubrangeWithRetry(_ subrange: MediaByteRange, hosts: [String]) async throws -> Data {
+    private func fetchSubrangeWithRetry(_ subrange: MediaByteRange, hosts: [String]) async throws -> (data: Data, host: String) {
         var lastError: Error = MediaRangeError.unsatisfiable(total: knownTotalLength)
         let attempts = min(hosts.count, maxRetriesPerSubrange + 1)
         for attempt in 0..<attempts {
@@ -743,7 +772,7 @@ actor MediaRangeDownloader {
             guard let urlString = urlString(forHost: host) else { continue }
             do {
                 let data = try await fetchAttempt(subrange: subrange, urlString: urlString, host: host)
-                return data
+                return (data, host)
             } catch is CancellationError {
                 throw CancellationError()
             } catch {
@@ -755,10 +784,113 @@ actor MediaRangeDownloader {
         throw lastError
     }
 
+    /// 跨 CDN 等价性门控：serving host 的字节只有在其通过验证后才允许拼接。
+    /// 已验证则直接通过；否则加入（或并入）该 host 的验证任务并等待。
+    /// 验证本身见 verifyHostEquivalence。单 host/非加速模式直接通过。
+    private func ensureHostVerified(_ host: String, hosts: [String]) async throws {
+        guard mode == .accelerated, hosts.count > 1 else { return }
+        if equivalenceVerifiedHosts.contains(host) { return }
+        if let existing = verifyTasks[host] {
+            return try await existing.value
+        }
+        let task = Task<Void, Error> {
+            try await self.verifyHostEquivalence(host, hosts: hosts)
+        }
+        verifyTasks[host] = task
+        defer { verifyTasks[host] = nil }
+        return try await task.value
+    }
+
+    /// 小范围重叠采样：候选 host 的字节在首次参与拼接前必须先证明与同资源
+    /// 其他来源一致。验证源优先使用 SIDX 锚点（播放列表生成时已从 sidx 探测
+    /// URL 取回的索引字节，无需第二次网络往返）；无锚点时退化为与参照源的
+    /// 双边采样（已验证者优先，否则为第一个其他候选）。
+    /// - 通过：记为已验证，采样流量计入 extra（与后续整取重叠/纯开销）。
+    /// - 锚点冲突且尚无已验证 host：视为锚点过期，丢弃锚点后走双边采样。
+    /// - 锚点冲突但已有已验证 host，或双边冲突：无法确定正确来源，
+    ///   按 mismatch 终止（不隔离任何一方，由播放器级恢复回退直连）；
+    ///   失败计数恰好记一次。
+    /// - 参照源取样失败：结论不定，允许本次通行但不标记（下次再验）。
+    /// - host 自身取样失败：直接透出，由重试循环换 host。
+    private func verifyHostEquivalence(_ host: String, hosts: [String]) async throws {
+        try Task.checkCancellation()
+        if let anchor = trustAnchor, !anchorDiscarded {
+            guard let hostURL = urlString(forHost: host) else { return }
+            let sample: Data
+            do {
+                sample = try await fetchAttempt(subrange: anchor.range, urlString: hostURL, host: host)
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                throw error
+            }
+            addExtra(Int64(sample.count))
+            if sample == anchor.bytes {
+                equivalenceVerifiedHosts.insert(host)
+                return
+            }
+            // 锚点冲突：已有已验证 host 说明锚点可信，冲突来自该 host；
+            // 否则更可能是锚点过期，丢弃锚点转双边采样。
+            if !equivalenceVerifiedHosts.isEmpty {
+                failureCount += 1
+                throw MediaRangeError.mismatch
+            }
+            anchorDiscarded = true
+        }
+        // 双边采样：样本区间固定为文件起始 32KiB（各子区间共享结论）；
+        // 文件更小时 416 即结论不定，直接放行不标记。
+        let sampleEnd: Int64 = equivalenceSampleBytes - 1
+        guard let sampleRange = try? MediaByteRange(start: 0, end: sampleEnd) else { return }
+        guard let hostURL = urlString(forHost: host) else { return }
+        let reference = hosts.first(where: { $0 != host && equivalenceVerifiedHosts.contains($0) })
+            ?? hosts.first(where: { $0 != host })
+        guard let refHost = reference, let refURL = urlString(forHost: refHost) else { return }
+        // 先取 host 自身样本：失败说明该源不可用，直接透出走换源重试
+        let hostSample: Data
+        do {
+            hostSample = try await fetchAttempt(subrange: sampleRange, urlString: hostURL, host: host)
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            if isInconclusiveSampleError(error) { return }
+            throw error
+        }
+        // 再取参照样本：失败则结论不定，本次放行但不标记
+        let refSample: Data
+        do {
+            refSample = try await fetchAttempt(subrange: sampleRange, urlString: refURL, host: refHost)
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            return
+        }
+        // 两份样本均为已验证的 206 准确字节，此时比较才有意义
+        addExtra(Int64(hostSample.count) + Int64(refSample.count))
+        guard hostSample == refSample else {
+            failureCount += 1
+            throw MediaRangeError.mismatch
+        }
+        equivalenceVerifiedHosts.insert(host)
+        equivalenceVerifiedHosts.insert(refHost)
+    }
+
+    /// 采样区间超出文件尾（416/越界）属于结论不定，不应记为失败或冲突。
+    private func isInconclusiveSampleError(_ error: Error) -> Bool {
+        if let e = error as? MediaRangeError {
+            switch e {
+            case .unsatisfiable, .upstream(416):
+                return true
+            default:
+                return false
+            }
+        }
+        return false
+    }
+
     private func urlString(forHost host: String) -> String? {
         // 同一媒体流内可交换的 CDN 候选：host 匹配的第一个 URL。
-        // 不同 URL 若不能证明同一字节一致性，不得交换——此处候选均来自同一
-        // DashMediaInfo.playableURLs，视为同一资源的不同 CDN 镜像。
+        // 字节一致性由等价性采样（verifyHostEquivalence）与重叠比较强制保证，
+        // 未验证的 host 不得参与拼接，而非默认信任。
         for url in candidates {
             if URLComponents(string: url)?.host == host {
                 return url

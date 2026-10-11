@@ -232,6 +232,15 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         let segment = sidxResult.sidx
         let segmentURL = sidxResult.url
         currentSegmentHost = URLComponents(string: segmentURL)?.host
+        // sidx 索引字节作为跨 CDN 等价性验证的信任锚点：它是播放前已从探测
+        // 成功的 URL 取回的原始字节，后续各 CDN 的同区间样本必须与之逐字节一致。
+        // 锚点设置与媒体请求并发进行，先到的下载请求可能回退为双边采样，不影响正确性。
+        if let anchorRange = Self.indexRange(info.info),
+           sidxResult.indexBytes.count == anchorRange.length,
+           let downloader = proxyRegistry.downloader(for: info.info)
+        {
+            await downloader.setTrustAnchor(range: anchorRange, bytes: sidxResult.indexBytes)
+        }
         // 代理启用且媒体已成功注册时，用本地 HTTP URL 替换 CDN 地址；
         // 保留原 Range、分段持续时间和全部 HLS 标签。SIDX 失败回退分支保持直连。
         let mediaURL = mediaTransportURL(for: info.info) ?? segmentURL
@@ -597,6 +606,17 @@ private extension BilibiliVideoResourceLoaderDelegate {
 
     // MARK: - 本地媒体代理
 
+    /// 解析 DASH segment_base.index_range（"start-end"），供信任锚点使用。
+    private static func indexRange(_ media: VideoPlayURLInfo.DashInfo.DashMediaInfo) -> MediaByteRange? {
+        let parts = media.segment_base.index_range.components(separatedBy: "-")
+        guard parts.count == 2,
+              let start = Int64(parts[0].trimmingCharacters(in: .whitespaces)),
+              let end = Int64(parts[1].trimmingCharacters(in: .whitespaces)),
+              let range = try? MediaByteRange(start: start, end: end)
+        else { return nil }
+        return range
+    }
+
     /// 为当前会话已注册的媒体流生成本地 URL；未注册/不可用时返回 nil（调用方回退直连）。
     func mediaTransportURL(for media: VideoPlayURLInfo.DashInfo.DashMediaInfo) -> String? {
         guard transportMode != .direct, proxyAvailable, httpPort > 0 else { return nil }
@@ -622,11 +642,13 @@ private extension BilibiliVideoResourceLoaderDelegate {
 
     /// Swifter 同步 handler（运行在后台连接队列，禁止阻塞主线程）。
     /// 响应头发送前完成元信息验证；206 发送后只允许补齐剩余字节或截断触发播放器级恢复。
+    /// 注意：handler 只持有注册表的不可变元信息快照（锁内一次性拷贝），
+    /// 不直接读取可变的 Entry，避免与 totalLength 更新竞争。
     private func handleMediaProxyRequest(_ req: HttpRequest) -> HttpResponse {
         guard let mediaID = req.params[":id"], !mediaID.isEmpty else {
             return HttpResponse.badRequest(nil)
         }
-        guard let entry = proxyRegistry.entry(for: mediaID) else {
+        guard let entry = proxyRegistry.snapshot(for: mediaID) else {
             return HttpResponse.notFound(nil)
         }
         let method = req.method.uppercased()
@@ -683,7 +705,7 @@ private extension BilibiliVideoResourceLoaderDelegate {
         }
     }
 
-    private func serveVerifiedRange(_ range: MediaByteRange, entry: MediaProxyRegistry.Entry, mediaID: String) -> HttpResponse {
+    private func serveVerifiedRange(_ range: MediaByteRange, entry: MediaProxyRegistry.MediaSnapshot, mediaID: String) -> HttpResponse {
         // 首次请求时 total 通常未知，按 RFC 以 * 声明；AVPlayer 在当前 HLS 链路
         // 是否接受 bytes start-end/* 仍需真机验证（见验收 P2）。后续请求复用已缓存的 total。
         let headers = MediaRangeResponseHeaders.partialContent(range: range, totalLength: entry.totalLength)
@@ -741,9 +763,9 @@ private extension BilibiliVideoResourceLoaderDelegate {
         case .proxy: modeText = "proxy"
         case .accelerated: modeText = "accel"
         }
-        // 不输出 URL 查询参数/签名/Cookie
-        return String(format: "accel mode:%@ hosts:%d %.1fMbps sub:%d fail:%d retry:%d ratio:%.2f%@",
-                      modeText, diag.activeHosts, diag.effectiveMbps,
+        // 不输出 URL 查询参数/签名/Cookie；Mbps 为估计聚合值，仅供参考
+        return String(format: "accel mode:%@ hosts:%d est %.1fMbps sub:%d fail:%d retry:%d ratio:%.2f%@",
+                      modeText, diag.activeHosts, diag.estimatedAggregateMbps,
                       diag.activeSubrequests, diag.failures, diag.retries,
                       diag.redundancyRatio,
                       diag.downgradedToDirect ? " downgraded" : "")
@@ -752,8 +774,19 @@ private extension BilibiliVideoResourceLoaderDelegate {
 
 /// 当前播放会话内的媒体代理注册表（同步线程安全）。
 /// 媒体 ID 映射到当前会话已注册的媒体流及其 CDN 候选；不接受外部 URL，不跨会话共享。
+/// 对外只提供不可变的元信息快照：totalLength 的写入（锁内）与读取（快照拷贝）
+/// 不会竞争；downloader 自身是 actor，跨线程引用安全。
 final class MediaProxyRegistry: @unchecked Sendable {
-    final class Entry {
+    /// 不可变的单次请求视图。downloader 为 actor 引用，可在 handler 线程使用；
+    /// totalLength/candidates 为读取时刻的拷贝。
+    struct MediaSnapshot {
+        let candidates: [String]
+        let referer: String
+        let downloader: MediaRangeDownloader
+        let totalLength: Int64?
+    }
+
+    private final class Entry {
         let candidates: [String]
         let referer: String
         let downloader: MediaRangeDownloader
@@ -762,6 +795,11 @@ final class MediaProxyRegistry: @unchecked Sendable {
             self.candidates = candidates
             self.referer = referer
             self.downloader = downloader
+        }
+
+        func snapshot() -> MediaSnapshot {
+            MediaSnapshot(candidates: candidates, referer: referer,
+                          downloader: downloader, totalLength: totalLength)
         }
     }
 
@@ -784,10 +822,19 @@ final class MediaProxyRegistry: @unchecked Sendable {
         return idByMedia[media]
     }
 
-    func entry(for id: String) -> Entry? {
+    /// 锁内一次性拷贝，后续读取不再触碰共享可变状态。
+    func snapshot(for id: String) -> MediaSnapshot? {
         lock.lock()
         defer { lock.unlock() }
-        return entries[id]
+        return entries[id]?.snapshot()
+    }
+
+    /// 取指定媒体的下载器引用（actor，跨线程使用安全），用于设置信任锚点等。
+    func downloader(for media: VideoPlayURLInfo.DashInfo.DashMediaInfo) -> MediaRangeDownloader? {
+        lock.lock()
+        defer { lock.unlock() }
+        guard let id = idByMedia[media] else { return nil }
+        return entries[id]?.downloader
     }
 
     func updateTotalLength(_ total: Int64, for id: String) {
@@ -869,6 +916,8 @@ actor SidxDownloader {
     struct SidxResult {
         let sidx: SidxParseUtil.Sidx
         let url: String
+        /// 索引区间的原始字节（等价性验证的信任锚点，不参与播放数据）。
+        let indexBytes: Data
     }
 
     private enum CacheEntry {
@@ -984,7 +1033,7 @@ actor SidxDownloader {
                 !segment.segments.isEmpty
             {
                 Logger.info("sidx ok in \(elapsedMs(since: start))ms from \(host)")
-                return SidxResult(sidx: segment, url: url)
+                return SidxResult(sidx: segment, url: url, indexBytes: res)
             }
             Logger.warn("sidx download failed in \(elapsedMs(since: start))ms on \(host), try next url")
         }

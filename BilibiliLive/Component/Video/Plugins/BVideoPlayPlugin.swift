@@ -36,10 +36,36 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     /// 加速不可恢复时的播放器级直连恢复次数（有界，避免无限重试）。
     private var acceleratedRecoveryAttempts = 0
     private let maxAcceleratedRecoveries = 1
-    /// 加速模式下持续等待（waitingToPlay）的日志周期计数；下载器负责普通卡顿，
-    /// 只有长时间无进展（如 12 个 5s 周期≈60s）才视为不可恢复并回退。
-    private var acceleratedWaitingStreak = 0
-    private let acceleratedWaitingLimit = 12
+    /// 单调时钟记录的连续等待起点（systemUptime 秒）。nil 表示当前不在等待。
+    /// 日志周期 5s 且需两次不健康采样才计数一次，周期计数实际对应约 120s；
+    /// 以单调时长为准，60s 到即回退，不依赖双层计数。
+    private var acceleratedWaitingSince: TimeInterval?
+
+    /// 加速等待看门狗：isWaiting 为真且非用户暂停时累计单调时长，
+    /// 满 60s 触发一次有界直连恢复；任何进展（或用户暂停）即清零。
+    /// 由 checkStallHealth 与无 access log 的起播阶段共同驱动。
+    private func noteAcceleratedWaiting(isWaiting: Bool) {
+        guard transportMode == .accelerated else {
+            acceleratedWaitingSince = nil
+            return
+        }
+        guard isWaiting, !isUserPaused else {
+            acceleratedWaitingSince = nil
+            return
+        }
+        let now = ProcessInfo.processInfo.systemUptime
+        if let since = acceleratedWaitingSince {
+            if now - since >= 60 {
+                acceleratedWaitingSince = nil
+                Logger.info("[cdn] 加速模式持续等待超 60s，尝试直连恢复")
+                Task { @MainActor [weak self] in
+                    await self?.recoverAcceleratedToDirect()
+                }
+            }
+        } else {
+            acceleratedWaitingSince = now
+        }
+    }
 
     // 运行时 CDN 健康检测：只在真实卡顿时换 host，不用 observed/indicated 比特率比
     // （indicated 常是峰值 BANDWIDTH，播放流畅时 observed 低于它完全正常）
@@ -172,7 +198,12 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
         guard let player = playerVC?.player,
               let item = player.currentItem,
               let event = item.accessLog()?.events.last
-        else { return }
+        else {
+            // 起播尚无 access log 时 checkStallHealth 不会执行，这里的等待看门狗
+            // 同样需要覆盖，否则首帧卡死时 60s 回退永远不触发。
+            noteAcceleratedWaiting(isWaiting: playerVC?.player?.timeControlStatus == .waitingToPlayAtSpecifiedRate)
+            return
+        }
         // event.uri 是内部 variant playlist 的地址（我们用的是自定义 atv://dash/N scheme），
         // 解析出来的 host 恒为 "dash"，跟实际连的 CDN 无关；真实 host 记录在 playerDelegate 里。
         let host = playerDelegate?.currentSegmentHost ?? "-"
@@ -243,20 +274,9 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
 
         // 加速模式已在下载器内做 CDN 调度、竞速和隔离，不再重复起播测速/换 host；
         // 只有整体不可恢复时才走有限的播放器级直连恢复，避免两层同时竞争控制权。
-        // 因此普通 waiting/stall 一律交由下载器：仅累计等待 streak 供长时无进展兜底。
+        // 因此普通 waiting/stall 一律交由下载器：长时无进展由单调时钟看门狗兜底。
         if transportMode == .accelerated {
-            if isWaitingToPlay {
-                acceleratedWaitingStreak += 1
-            } else {
-                acceleratedWaitingStreak = 0
-            }
-            if acceleratedWaitingStreak >= acceleratedWaitingLimit {
-                acceleratedWaitingStreak = 0
-                Logger.info("[cdn] 加速模式持续等待超 60s，尝试直连恢复")
-                Task { @MainActor [weak self] in
-                    await self?.recoverAcceleratedToDirect()
-                }
-            }
+            noteAcceleratedWaiting(isWaiting: isWaitingToPlay)
             return
         }
         let requiredMbps = Double(playerDelegate?.primaryVideoBandwidth ?? 0) / 1_000_000
@@ -415,7 +435,7 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
                            isQualitySwitch: Bool = false)
     {
         acceleratedRecoveryAttempts = 0
-        acceleratedWaitingStreak = 0
+        acceleratedWaitingSince = nil
         transportMode = Settings.multiCDNEnabled ? .accelerated : .direct
         let generation = beginLoadGeneration()
         loadTask = Task { @MainActor [weak self] in
