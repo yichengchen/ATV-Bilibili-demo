@@ -57,12 +57,33 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private(set) var primaryVideoBandwidth = 0
     /// 最近一次生成媒体播放列表时实际选用的分片 host
     private(set) var currentSegmentHost: String?
+    /// 实际传输模式（内部执行模式，非用户设置）。默认 .direct 保持原行为。
+    private(set) var transportMode: MediaTransportMode = .direct
+    /// 本地代理是否可用（服务器启动成功且已注册媒体）。不可用时播放列表回退直连。
+    private(set) var proxyAvailable = false
+    /// 媒体代理注册表（线程安全，Swifter 同步 handler 与播放列表生成并发访问）。
+    private let proxyRegistry = MediaProxyRegistry()
+    private let diagLock = NSLock()
+    private var _accelerationText = ""
     /// 播放中途检测到当前 host 吞吐撑不住时，外部（BVideoPlayPlugin）指定的优先 host，
     /// sidx 探测会把它排到候选队首，覆盖默认 URL 顺序
     private var preferredHost: String?
     deinit {
         cancelPendingIndexLoads()
         httpServer.stop()
+    }
+
+    /// 加速诊断文本（同步读取，供 DebugPlugin 展示；敏感签名已剔除）。
+    var accelerationDebugInfo: String {
+        diagLock.lock()
+        defer { diagLock.unlock() }
+        return _accelerationText
+    }
+
+    private func updateAccelerationText(_ text: String) {
+        diagLock.lock()
+        _accelerationText = text
+        diagLock.unlock()
     }
 
     var infoDebugText: String {
@@ -79,6 +100,9 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         playlists.removeAll()
         audioRenditionIndex = 0
         hasAudioInMasterListAdded = false
+        proxyAvailable = false
+        proxyRegistry.removeAll()
+        updateAccelerationText("")
         masterPlaylist = """
         #EXTM3U
         #EXT-X-VERSION:6
@@ -202,6 +226,9 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         let segment = sidxResult.sidx
         let segmentURL = sidxResult.url
         currentSegmentHost = URLComponents(string: segmentURL)?.host
+        // 代理启用且媒体已成功注册时，用本地 HTTP URL 替换 CDN 地址；
+        // 保留原 Range、分段持续时间和全部 HLS 标签。SIDX 失败回退分支保持直连。
+        let mediaURL = mediaTransportURL(for: info.info) ?? segmentURL
         var playList = """
         #EXTM3U
         #EXT-X-VERSION:7
@@ -209,7 +236,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         #EXT-X-MEDIA-SEQUENCE:1
         #EXT-X-INDEPENDENT-SEGMENTS
         #EXT-X-PLAYLIST-TYPE:VOD
-        #EXT-X-MAP:URI="\(segmentURL)",BYTERANGE="\(moovIdx + 1)@\(moovOffset)"
+        #EXT-X-MAP:URI="\(mediaURL)",BYTERANGE="\(moovIdx + 1)@\(moovOffset)"
 
         """
         offset += 1
@@ -217,7 +244,7 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             let segStr = """
             #EXTINF:\(Double(segInfo.duration) / Double(segment.timescale)),
             #EXT-X-BYTERANGE:\(segInfo.size)@\(offset)
-            \(segmentURL)
+            \(mediaURL)
 
             """
             playList.append(segStr)
@@ -316,11 +343,14 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
         playlists.append(playList)
     }
 
-    func setBilibili(info: VideoPlayURLInfo, subtitles: [SubtitleData], aid: Int, maxQuality: Int? = nil, streamIndex: Int? = nil, preferredHost: String? = nil) {
+    func setBilibili(info: VideoPlayURLInfo, subtitles: [SubtitleData], aid: Int, maxQuality: Int? = nil, streamIndex: Int? = nil, preferredHost: String? = nil, transportMode: MediaTransportMode = .direct) {
         playInfo = info
         self.aid = aid
         self.preferredHost = preferredHost
+        self.transportMode = transportMode
         reset()
+        // reset() 会清 proxyAvailable；恢复本会话的模式（reset 后设置，避免被清掉）
+        self.transportMode = transportMode
         hasSubtitle = subtitles.count > 0
         var videos = info.dash.video
         if Settings.preferAvc {
@@ -411,10 +441,23 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             addAudioPlayBackInfo(info: firstAudio, url: firstUrl, duration: info.dash.duration)
         }
 
-        if hasSubtitle {
-            try? httpServer.start(0)
-            bindHttpServer()
-            httpPort = (try? httpServer.port()) ?? 0
+        if hasSubtitle || transportMode != .direct {
+            // 只使用当前实例的 Server，不为媒体另建监听器；限制 loopback，动态端口。
+            httpServer.listenAddressIPv4 = "127.0.0.1"
+            do {
+                try httpServer.start(0, forceIPv4: true)
+                bindHttpServer()
+                httpPort = (try? httpServer.port()) ?? 0
+                // 注册当前会话的媒体流及其 CDN 候选（播放列表生成时用本地 URL）。
+                if transportMode != .direct, httpPort > 0 {
+                    registerProxyMedia(aid: aid)
+                    proxyAvailable = true
+                }
+            } catch {
+                // 监听器启动失败则保持原来的直连模式
+                Logger.warn("media proxy http server failed, fallback direct: \(error)")
+                proxyAvailable = false
+            }
         }
         for subtitle in subtitles {
             if let url = subtitle.url {
@@ -538,6 +581,216 @@ private extension BilibiliVideoResourceLoaderDelegate {
             }
             return HttpResponse.notFound()
         }
+        // 只接受当前播放会话媒体标识的 /media/:id，不接受请求直接指定外部 URL，
+        // 不将带签名的真实 CDN URL 编码到本地路径中。
+        httpServer["/media/:id"] = { [weak self] req in
+            guard let self else { return HttpResponse.internalServerError(nil) }
+            return self.handleMediaProxyRequest(req)
+        }
+    }
+
+    // MARK: - 本地媒体代理
+
+    /// 为当前会话已注册的媒体流生成本地 URL；未注册/不可用时返回 nil（调用方回退直连）。
+    func mediaTransportURL(for media: VideoPlayURLInfo.DashInfo.DashMediaInfo) -> String? {
+        guard transportMode != .direct, proxyAvailable, httpPort > 0 else { return nil }
+        guard let id = proxyRegistry.id(for: media) else { return nil }
+        return "http://127.0.0.1:\(httpPort)/media/\(id)"
+    }
+
+    private func registerProxyMedia(aid: Int) {
+        let referer = Keys.referer(for: aid)
+        // 同一 DashMediaInfo 的多 CDN URL 共享同一媒体 ID；不同清晰度/codec/音视频轨道
+        // 因 DashMediaInfo 不同而自然隔离，不会共用错误标识。
+        var seen = Set<VideoPlayURLInfo.DashInfo.DashMediaInfo>()
+        for entry in videoInfo {
+            let media = entry.info
+            guard seen.insert(media).inserted else { continue }
+            let candidates = media.playableURLs
+            guard !candidates.isEmpty else { continue }
+            let mode: MediaTransportMode = transportMode == .accelerated ? .accelerated : .proxy
+            let downloader = MediaRangeDownloader(candidates: candidates, referer: referer, mode: mode)
+            proxyRegistry.register(media: media, candidates: candidates, referer: referer, downloader: downloader)
+        }
+    }
+
+    /// Swifter 同步 handler（运行在后台连接队列，禁止阻塞主线程）。
+    /// 响应头发送前完成元信息验证；206 发送后只允许补齐剩余字节或截断触发播放器级恢复。
+    private func handleMediaProxyRequest(_ req: HttpRequest) -> HttpResponse {
+        guard let mediaID = req.params[":id"], !mediaID.isEmpty else {
+            return HttpResponse.badRequest(nil)
+        }
+        guard let entry = proxyRegistry.entry(for: mediaID) else {
+            return HttpResponse.notFound(nil)
+        }
+        let method = req.method.uppercased()
+        if method == "HEAD" {
+            // 返回与当前可用元信息一致的头，不传 body
+            let headers = MediaRangeResponseHeaders.head(totalLength: entry.totalLength)
+            return HttpResponse.raw(200, "OK", headers, nil)
+        }
+        guard method == "GET" else {
+            return HttpResponse.badRequest(nil)
+        }
+        let rangeHeader = req.headers["range"]
+        let parsed = MediaRangeParsing.parse(header: rangeHeader, fileLength: entry.totalLength)
+        switch parsed {
+        case .missing:
+            // 无 Range 的整文件请求：302 重定向回原 CDN（经实机确认的降级），不伪造 206
+            if let fallback = entry.candidates.first, URL(string: fallback) != nil {
+                return HttpResponse.movedTemporarily(fallback)
+            }
+            return HttpResponse.badRequest(nil)
+        case .multiUnsupported:
+            let headers = MediaRangeResponseHeaders.rangeNotSatisfiable(totalLength: entry.totalLength)
+            return HttpResponse.raw(416, "Range Not Satisfiable", headers, nil)
+        case .invalid:
+            return HttpResponse.badRequest(nil)
+        case let .unsatisfiable(total):
+            let headers = MediaRangeResponseHeaders.rangeNotSatisfiable(totalLength: total ?? entry.totalLength)
+            return HttpResponse.raw(416, "Range Not Satisfiable", headers, nil)
+        case .openEnded, .suffix:
+            // 需 total 归一化；未知 total 时走直连重定向降级，不阻塞等待探测
+            if let total = entry.totalLength {
+                let normalized = MediaRangeParsing.normalizeUnbounded(parsed, fileLength: total)
+                if case let .single(range) = normalized {
+                    return serveVerifiedRange(range, entry: entry, mediaID: mediaID)
+                }
+                let headers = MediaRangeResponseHeaders.rangeNotSatisfiable(totalLength: total)
+                return HttpResponse.raw(416, "Range Not Satisfiable", headers, nil)
+            }
+            if let fallback = entry.candidates.first {
+                return HttpResponse.movedTemporarily(fallback)
+            }
+            return HttpResponse.badRequest(nil)
+        case let .single(range):
+            // 超出安全容量的请求降级直连（PR2 的流式输出仍以 16MiB 为单请求上限）
+            if range.length > 16 * 1024 * 1024 {
+                if let fallback = entry.candidates.first {
+                    return HttpResponse.movedTemporarily(fallback)
+                }
+                return HttpResponse.badRequest(nil)
+            }
+            return serveVerifiedRange(range, entry: entry, mediaID: mediaID)
+        }
+    }
+
+    private func serveVerifiedRange(_ range: MediaByteRange, entry: MediaProxyRegistry.Entry, mediaID: String) -> HttpResponse {
+        let headers = MediaRangeResponseHeaders.partialContent(range: range, totalLength: entry.totalLength)
+        let downloader = entry.downloader
+        let candidates = entry.candidates
+        weak var weakSelf = self
+        return HttpResponse.raw(206, "Partial Content", headers) { writer in
+            let pipe = MediaBytePipe()
+            let streamTask = Task {
+                await downloader.stream(range: range, to: pipe)
+            }
+            // 后台同步排空：不阻塞主线程或 URLSession 回调线程
+            assert(!Thread.isMainThread, "media proxy writer must not run on main thread")
+            do {
+                while true {
+                    let chunk: Data?
+                    do {
+                        chunk = try pipe.readSync(maxLength: 64 * 1024, timeout: 30)
+                    } catch {
+                        streamTask.cancel()
+                        throw error
+                    }
+                    guard let chunk else { break }
+                    do {
+                        try writer.write(chunk)
+                    } catch {
+                        // 读取方关闭/超时/写入失败：立即取消生产者（幂等），截断连接
+                        streamTask.cancel()
+                        throw error
+                    }
+                }
+            } catch {
+                streamTask.cancel()
+                // 206 已发送：不能改写状态码，只能截断；播放器级恢复由 BVideoPlayPlugin 触发
+                throw error
+            }
+            // 成功交付后异步更新诊断与 total 缓存（不阻塞 writer）
+            Task { [weakSelf, downloader, candidates, mediaID] in
+                if let total = await downloader.knownTotal() {
+                    weakSelf?.proxyRegistry.updateTotalLength(total, for: mediaID)
+                }
+                if let diag = await weakSelf?.buildAccelerationText(downloader: downloader) {
+                    weakSelf?.updateAccelerationText(diag)
+                }
+                _ = candidates
+            }
+        }
+    }
+
+    private func buildAccelerationText(downloader: MediaRangeDownloader) async -> String {
+        let diag = await downloader.diagnostics()
+        let modeText: String
+        switch diag.transportMode {
+        case .direct: modeText = "direct"
+        case .proxy: modeText = "proxy"
+        case .accelerated: modeText = "accel"
+        }
+        // 不输出 URL 查询参数/签名/Cookie
+        return String(format: "accel mode:%@ hosts:%d %.1fMbps sub:%d fail:%d retry:%d ratio:%.2f%@",
+                      modeText, diag.activeHosts, diag.effectiveMbps,
+                      diag.activeSubrequests, diag.failures, diag.retries,
+                      diag.redundancyRatio,
+                      diag.downgradedToDirect ? " downgraded" : "")
+    }
+}
+
+/// 当前播放会话内的媒体代理注册表（同步线程安全）。
+/// 媒体 ID 映射到当前会话已注册的媒体流及其 CDN 候选；不接受外部 URL，不跨会话共享。
+final class MediaProxyRegistry: @unchecked Sendable {
+    final class Entry {
+        let candidates: [String]
+        let referer: String
+        let downloader: MediaRangeDownloader
+        var totalLength: Int64?
+        init(candidates: [String], referer: String, downloader: MediaRangeDownloader) {
+            self.candidates = candidates
+            self.referer = referer
+            self.downloader = downloader
+        }
+    }
+
+    private let lock = NSLock()
+    private var entries = [String: Entry]()
+    private var idByMedia = [VideoPlayURLInfo.DashInfo.DashMediaInfo: String]()
+
+    func register(media: VideoPlayURLInfo.DashInfo.DashMediaInfo, candidates: [String], referer: String, downloader: MediaRangeDownloader) {
+        lock.lock()
+        defer { lock.unlock() }
+        if idByMedia[media] != nil { return }
+        let id = UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
+        idByMedia[media] = id
+        entries[id] = Entry(candidates: candidates, referer: referer, downloader: downloader)
+    }
+
+    func id(for media: VideoPlayURLInfo.DashInfo.DashMediaInfo) -> String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return idByMedia[media]
+    }
+
+    func entry(for id: String) -> Entry? {
+        lock.lock()
+        defer { lock.unlock() }
+        return entries[id]
+    }
+
+    func updateTotalLength(_ total: Int64, for id: String) {
+        lock.lock()
+        defer { lock.unlock() }
+        entries[id]?.totalLength = total
+    }
+
+    func removeAll() {
+        lock.lock()
+        entries.removeAll()
+        idByMedia.removeAll()
+        lock.unlock()
     }
 }
 

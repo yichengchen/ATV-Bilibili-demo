@@ -57,6 +57,9 @@ enum Settings {
     @UserDefault("Settings.preferAvc", defaultValue: false)
     static var preferAvc: Bool
 
+    @UserDefault("Settings.multiCDNEnabled", defaultValue: false)
+    static var multiCDNEnabled: Bool
+
     @UserDefault("Settings.danmuMask", defaultValue: true)
     static var danmuMask: Bool
 
