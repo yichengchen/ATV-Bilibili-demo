@@ -36,6 +36,10 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     /// 加速不可恢复时的播放器级直连恢复次数（有界，避免无限重试）。
     private var acceleratedRecoveryAttempts = 0
     private let maxAcceleratedRecoveries = 1
+    /// 加速模式下持续等待（waitingToPlay）的日志周期计数；下载器负责普通卡顿，
+    /// 只有长时间无进展（如 12 个 5s 周期≈60s）才视为不可恢复并回退。
+    private var acceleratedWaitingStreak = 0
+    private let acceleratedWaitingLimit = 12
 
     // 运行时 CDN 健康检测：只在真实卡顿时换 host，不用 observed/indicated 比特率比
     // （indicated 常是峰值 BANDWIDTH，播放流畅时 observed 低于它完全正常）
@@ -73,7 +77,7 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     /// 供 DebugPlugin 浮层显示的网络诊断信息
     var networkDebugInfo: String {
         var lines = [String]()
-        if let mode = playerDelegate?.transportMode, mode != .direct {
+        if let mode = playerDelegate?.effectiveTransportMode, mode != .direct {
             lines.append("transport: \(mode == .accelerated ? "accel" : "proxy")")
         }
         if let host = playerDelegate?.currentSegmentHost {
@@ -239,9 +243,19 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
 
         // 加速模式已在下载器内做 CDN 调度、竞速和隔离，不再重复起播测速/换 host；
         // 只有整体不可恢复时才走有限的播放器级直连恢复，避免两层同时竞争控制权。
+        // 因此普通 waiting/stall 一律交由下载器：仅累计等待 streak 供长时无进展兜底。
         if transportMode == .accelerated {
-            Task { @MainActor [weak self] in
-                await self?.recoverAcceleratedToDirect()
+            if isWaitingToPlay {
+                acceleratedWaitingStreak += 1
+            } else {
+                acceleratedWaitingStreak = 0
+            }
+            if acceleratedWaitingStreak >= acceleratedWaitingLimit {
+                acceleratedWaitingStreak = 0
+                Logger.info("[cdn] 加速模式持续等待超 60s，尝试直连恢复")
+                Task { @MainActor [weak self] in
+                    await self?.recoverAcceleratedToDirect()
+                }
             }
             return
         }
@@ -401,6 +415,7 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
                            isQualitySwitch: Bool = false)
     {
         acceleratedRecoveryAttempts = 0
+        acceleratedWaitingStreak = 0
         transportMode = Settings.multiCDNEnabled ? .accelerated : .direct
         let generation = beginLoadGeneration()
         loadTask = Task { @MainActor [weak self] in
@@ -476,7 +491,9 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
         let delegate = prepared.delegate
         let asset = prepared.asset
         playerDelegate = delegate
-        transportMode = delegate.transportMode
+        // 以实际传输模式为准：代理启动失败时播放列表已回退直连 URI，
+        // 此时不得按加速处理（否则卡顿会被误送入加速恢复流程）。
+        transportMode = delegate.effectiveTransportMode
 
         // AVKit 不允许在同一场全屏播放里反复切换该属性，因此只在首次装配资源时计算一次。
         if !isQualitySwitch {
@@ -504,7 +521,7 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
            let mediaWarmupManager
         {
             let prepared = try await mediaWarmupManager.preparedMedia(for: playInfo)
-            transportMode = prepared.delegate.transportMode
+            transportMode = prepared.delegate.effectiveTransportMode
             return prepared
         }
         lastStalls = 0
@@ -548,10 +565,16 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
             Logger.info("[cdn] 用户已暂停，取消加速直连恢复")
             return
         }
+        // 起播失败时 currentTime 为 0：用已知的起始位置恢复，不直接放弃回退
         let currentTime = player.currentTime().seconds
-        guard currentTime > 0 else { return }
+        if currentTime > 0 {
+            currentPlaybackTime = currentTime
+        } else if let startPos = playData.playerStartPos, startPos > 0 {
+            currentPlaybackTime = Double(startPos)
+        } else {
+            currentPlaybackTime = 0
+        }
         acceleratedRecoveryAttempts += 1
-        currentPlaybackTime = currentTime
         Logger.info("[cdn] 加速传输不可恢复，第 \(acceleratedRecoveryAttempts) 次回退直连")
 
         let commonVC = playerVC?.parent as? CommonPlayerViewController
@@ -571,7 +594,10 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
                                 isQualitySwitch: true,
                                 forceTransport: .direct)
             if let newPlayer = playerVC?.player {
-                await newPlayer.seek(to: CMTime(seconds: currentPlaybackTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                // 起播失败恢复时位置为 0，无需 seek，直接按原意图播放
+                if currentPlaybackTime > 0 {
+                    await newPlayer.seek(to: CMTime(seconds: currentPlaybackTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                }
                 if shouldResume {
                     newPlayer.play()
                 } else {

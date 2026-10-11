@@ -56,6 +56,9 @@ enum MediaRangeError: Error, Equatable, Sendable {
     case truncated
     case mismatch
     case cancelled
+    /// 全局并发预算在有界等待后仍无槽位。调用方不得无许可发送，
+    /// 应按失败传播（由播放器级恢复做有预算的降级）。
+    case budgetExhausted
 
     enum UnboundedKind: Sendable, Equatable {
         case openEnded(start: Int64)

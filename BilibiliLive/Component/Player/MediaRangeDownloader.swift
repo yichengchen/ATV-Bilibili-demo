@@ -13,77 +13,54 @@ import Foundation
 
 /// 所有活动媒体会话共享的总并发预算。
 /// 只计数在途子请求数量，不记录任何 CDN 吞吐状态。
+/// 许可与释放通过 BudgetPermit token 一一绑定：一次获取最多释放一次，
+/// 未持许可的请求不得发送，避免绕过上限或重复释放破坏计数。
 actor MediaDownloadBudget {
     static let shared = MediaDownloadBudget()
 
-    /// 同时进行的全局请求上限（初始建议 12，内部参数）。
+    /// 同时进行的全局请求上限（内部参数，实测调整）。
     private let globalMax = 12
-    /// 同 host 上限（初始建议 4，内部参数）。
+    /// 同 host 上限（内部参数，实测调整）。
     private let perHostMax = 4
 
-    private var globalActive = 0
+    /// 已发出的有效许可集合；释放时必须持有对应 token，否则忽略。
+    private var outstanding = Set<BudgetPermit>()
     private var perHostActive = [String: Int]()
-    private var waiters = [CheckedContinuation<String, Error>]()
 
-    /// 获取一个发送槽位（按 host 记账，返回实际获批的 host）。
-    /// 阻塞等待直到有槽位或任务取消。
-    func acquire(host: String) async throws -> String {
-        if canGrant(host: host) {
-            grant(host: host)
-            return host
-        }
-        let granted: String = try await withCheckedThrowingContinuation { continuation in
-            waiters.append(continuation)
-        }
-        // 被唤醒后由 release 路径已记账；这里仅做取消检查
-        try Task.checkCancellation()
-        return granted
-    }
-
-    func release(host: String) {
-        globalActive = max(0, globalActive - 1)
-        let current = perHostActive[host, default: 1]
-        if current <= 1 {
-            perHostActive[host] = nil
-        } else {
-            perHostActive[host] = current - 1
-        }
-        drainWaiters()
-    }
-
-    private func canGrant(host: String) -> Bool {
-        if globalActive >= globalMax { return false }
-        if (perHostActive[host] ?? 0) >= perHostMax { return false }
-        return true
-    }
-
-    private func grant(host: String) {
-        globalActive += 1
+    /// 立即尝试获取许可；无槽位时返回 nil（由调用方有界等待后重试）。
+    func tryAcquireNow(host: String) -> BudgetPermit? {
+        guard outstanding.count < globalMax,
+              (perHostActive[host] ?? 0) < perHostMax
+        else { return nil }
+        let permit = BudgetPermit(host: host)
+        outstanding.insert(permit)
         perHostActive[host, default: 0] += 1
+        return permit
     }
 
-    private func drainWaiters() {
-        // 简单策略：按等待顺序尝试用“最先等待者期望的 host”无法获知，
-        // 因此这里不做精确 host 匹配；调用方在 acquire 前已选定 host，
-        // 释放后唤醒队首，由其重试时重新竞争（若仍无槽位则继续等待）。
-        // 为避免复杂性，acquire 采用“立即尝试，失败则短暂等待后重试”由调用方循环，
-        // 此处仅保留延续队列用于唤醒。实际实现见 acquireWithRetry。
-        while !waiters.isEmpty {
-            let continuation = waiters.removeFirst()
-            // 用空实现唤醒，调用方循环会重新尝试 canGrant。
-            // 注意：此处无法直接记账，调用方唤醒后需再次竞争。
-            continuation.resume(returning: "")
-            break
+    /// 释放许可。同一 token 只生效一次；未知 token 直接忽略。
+    func release(_ permit: BudgetPermit) {
+        guard outstanding.remove(permit) != nil else { return }
+        let host = permit.host
+        if let current = perHostActive[host] {
+            if current <= 1 {
+                perHostActive[host] = nil
+            } else {
+                perHostActive[host] = current - 1
+            }
         }
     }
+}
 
-    /// 带取消与超时的竞争获取。返回是否成功获批并已记账。
-    func tryAcquireNow(host: String) -> Bool {
-        if canGrant(host: host) {
-            grant(host: host)
-            return true
-        }
-        return false
+/// 并发预算许可 token。一次获取、最多释放一次，不可伪造（仅预算 actor 可创建）。
+struct BudgetPermit: Hashable, Sendable {
+    /// 内部记账用的 host（URL host 小写形式）。
+    let host: String
+    private let id: UUID
+    /// 仅 MediaDownloadBudget 可创建。
+    fileprivate init(host: String) {
+        self.host = host
+        id = UUID()
     }
 }
 
@@ -277,8 +254,14 @@ actor MediaRangeDownloader {
     private var extraBytes: Int64 = 0
     private var failureCount = 0
     private var retryCount = 0
+    private var hedgedCount = 0
     private var activeSubrequests = 0
+    /// 当前实际在途的子请求按 host 计数（诊断用，与累计统计 hostStats.keys 区分）。
+    private var activeHostCounts = [String: Int]()
     private var downgradedToDirect = false
+    /// AIMD 自适应并发上限：成功且无竞速/失败时 +1，失败时减半；
+    /// 范围 [1, maxConcurrentPerMedia]，初始 2。仅调节并发数，不共享 CDN 排名。
+    private var adaptiveConcurrency = 2
 
     private var session: URLSession?
 
@@ -358,10 +341,11 @@ actor MediaRangeDownloader {
     }
 
     func diagnostics() -> MediaRangeDiagnostics {
-        let activeHosts = Set(hostStats.keys).count
-        let totalBytes = hostStats.values.reduce(Int64(0)) { $0 + $1.totalBytes }
-        let totalTime = hostStats.values.reduce(TimeInterval(0)) { $0 + $1.totalTransferTime }
-        let mbps: Double = (totalTime > 0 && totalBytes > 0) ? Double(totalBytes) * 8 / totalTime / 1_000_000 : 0
+        // activeHosts 必须是当前实际在途的 host 数，而非累计出现过的 host 数。
+        let activeHosts = activeHostCounts.count
+        // 有效总吞吐按各 host 实测吞吐求和：多 host 并行时体现聚合，
+        // 单 host 串行时退化为该 host 的实测值。累计字节/累计时间之比会低估并行吞吐。
+        let mbps = hostStats.values.compactMap(\.estimatedMbps).reduce(0, +)
         return MediaRangeDiagnostics(
             transportMode: mode,
             activeHosts: activeHosts,
@@ -438,158 +422,179 @@ actor MediaRangeDownloader {
 
     // MARK: 并发流式
 
+    //
+    //  单一 TaskGroup 协调器：子区间下载工作以内联子任务形式运行，
+    //  group.next() 即真正的 first-completion 通知。选出首个完成即交付或继续，
+    //  落选者在 cancelAll 后因工作内联、可取消而迅速退出——不存在只取消
+    //  Task.value 等待者、底层下载继续跑的情况。
+
     private func streamConcurrent(parentRange: MediaByteRange, subranges: [MediaByteRange], to pipe: MediaBytePipe) async {
         // 有序交付状态（仅本请求内有效）
         var pending = [Int: Data]()
         var pendingBytes: Int64 = 0
         var nextToDeliver = 0
         var nextToStart = 0
-        var inFlight = [Int: Task<Data, Error>]()
+        // 本次 stream 的 outcome 快照（AIMD 用）：开始前记录，结束后比较
+        let failuresBefore = failureCount
+        let hedgesBefore = hedgedCount
 
-        func startNext() {
-            while nextToStart < subranges.count, inFlight.count < maxConcurrentPerMedia {
-                // 背压：已完成未交付缓冲超限则暂停新任务
-                if pendingBytes >= maxBufferedBytes { break }
-                let index = nextToStart
-                let sub = subranges[index]
-                nextToStart += 1
-                activeSubrequests += 1
-                let task = Task<Data, Error> {
-                    defer {
-                        Task { await self.decrementActive() }
+        // 子区间初始分配按 host 轮转：无统计时各子区间即分散到不同 CDN，
+        // 而非全部挤在首选 host 上等 Hedging 救援。统计出现后 orderedHosts 本身已排序。
+        // AIMD 当前上限快照（本请求内固定，避免中途抖动）
+        let concurrencyLimit = max(1, min(maxConcurrentPerMedia, adaptiveConcurrency))
+        do {
+            try await withThrowingTaskGroup(of: (Int, Data).self) { group in
+                // 初始填充
+                while nextToStart < subranges.count, activeSubrequests < concurrencyLimit {
+                    if pendingBytes >= maxBufferedBytes { break }
+                    let index = nextToStart
+                    let sub = subranges[index]
+                    let hosts = hostsForSubrange(index)
+                    nextToStart += 1
+                    activeSubrequests += 1
+                    group.addTask {
+                        defer { Task { await self.noteSubrequestDone() } }
+                        let data = try await self.fetchSubrangeWithHedging(sub, allowHedging: true, candidateHosts: hosts)
+                        return (index, data)
                     }
-                    return try await self.fetchSubrangeWithHedging(sub, allowHedging: true)
                 }
-                inFlight[index] = task
-            }
-        }
-
-        startNext()
-        while nextToDeliver < subranges.count {
-            if Task.isCancelled {
-                for task in inFlight.values {
-                    task.cancel()
-                }
-                pipe.fail(MediaRangeError.cancelled)
-                return
-            }
-            // 优先等待最早未交付的分块（播放截止时间优先），避免队尾拖慢整体
-            if let ready = pending[nextToDeliver] {
-                do {
-                    try await pipe.write(ready)
-                } catch {
-                    for task in inFlight.values {
-                        task.cancel()
+                while nextToDeliver < subranges.count {
+                    if Task.isCancelled {
+                        group.cancelAll()
+                        throw CancellationError()
                     }
-                    pipe.fail(error)
-                    return
+                    // 优先交付已就绪的最早分块（播放截止时间优先）
+                    if let ready = pending[nextToDeliver] {
+                        do {
+                            try await pipe.write(ready)
+                        } catch {
+                            group.cancelAll()
+                            throw error
+                        }
+                        deliveredBytes += Int64(ready.count)
+                        pendingBytes -= Int64(ready.count)
+                        pending[nextToDeliver] = nil
+                        nextToDeliver += 1
+                        // 背压释放后补充新任务
+                        while nextToStart < subranges.count, activeSubrequests < concurrencyLimit {
+                            if pendingBytes >= maxBufferedBytes { break }
+                            let index = nextToStart
+                            let sub = subranges[index]
+                            let hosts = hostsForSubrange(index)
+                            nextToStart += 1
+                            activeSubrequests += 1
+                            group.addTask {
+                                defer { Task { await self.noteSubrequestDone() } }
+                                let data = try await self.fetchSubrangeWithHedging(sub, allowHedging: true, candidateHosts: hosts)
+                                return (index, data)
+                            }
+                        }
+                        continue
+                    }
+                    // first-completion：工作内联，取消即作用于下载本身
+                    guard let (index, data) = try await group.next() else {
+                        throw MediaRangeError.truncated
+                    }
+                    // 长度校验：必须是请求子区间的准确长度
+                    guard Int64(data.count) == subranges[index].length else {
+                        group.cancelAll()
+                        throw MediaRangeError.truncated
+                    }
+                    pending[index] = data
+                    pendingBytes += Int64(data.count)
                 }
-                deliveredBytes += Int64(ready.count)
-                pendingBytes -= Int64(ready.count)
-                pending[nextToDeliver] = nil
-                nextToDeliver += 1
-                startNext()
-                continue
             }
-            // 等待任意在途任务完成
-            guard !inFlight.isEmpty else {
-                // 无在途但仍有未交付：说明之前失败已直接返回，此处兜底
+            // 完整覆盖校验
+            guard nextToDeliver == subranges.count else {
                 pipe.fail(MediaRangeError.truncated)
+                adjustConcurrencyAfterStream(failuresBefore: failuresBefore, hedgesBefore: hedgesBefore, succeeded: false)
                 return
             }
-            // 取最早索引的任务优先等待（救援尾块优先）
-            let sortedKeys = inFlight.keys.sorted()
-            // 简单策略：等待全部中的第一个完成
-            let completed: (Int, Result<Data, Error>)?
-            do {
-                completed = await waitForFirst(inFlight)
-            } catch {
-                for task in inFlight.values {
-                    task.cancel()
-                }
-                pipe.fail(error)
-                return
+            adjustConcurrencyAfterStream(failuresBefore: failuresBefore, hedgesBefore: hedgesBefore, succeeded: true)
+            pipe.close()
+        } catch is CancellationError {
+            adjustConcurrencyAfterStream(failuresBefore: failuresBefore, hedgesBefore: hedgesBefore, succeeded: false)
+            pipe.fail(MediaRangeError.cancelled)
+        } catch {
+            if (error as? MediaRangeError) != .budgetExhausted {
+                failureCount += 1
             }
-            guard let (index, result) = completed else {
-                for task in inFlight.values {
-                    task.cancel()
-                }
-                pipe.fail(MediaRangeError.truncated)
-                return
-            }
-            inFlight[index] = nil
-            switch result {
-            case let .success(data):
-                // 长度校验：必须是请求子区间的准确长度
-                let expected = subranges[index].length
-                guard Int64(data.count) == expected else {
-                    for task in inFlight.values {
-                        task.cancel()
-                    }
-                    pipe.fail(MediaRangeError.truncated)
-                    return
-                }
-                pending[index] = data
-                pendingBytes += Int64(data.count)
-                // 覆盖完整性由 nextToDeliver 顺序保证，不存在缺口或重复交付
-                _ = sortedKeys
-                startNext()
-            case let .failure(error):
-                let isCancelled = (error is CancellationError) || (error as? MediaBytePipe.PipeError != nil)
-                if !isCancelled {
-                    failureCount += 1
-                }
-                for task in inFlight.values {
-                    task.cancel()
-                }
-                if error is CancellationError {
-                    pipe.fail(MediaRangeError.cancelled)
-                } else {
-                    pipe.fail(error)
-                }
-                return
-            }
+            adjustConcurrencyAfterStream(failuresBefore: failuresBefore, hedgesBefore: hedgesBefore, succeeded: false)
+            pipe.fail(error)
         }
-        // 完整覆盖校验
-        guard nextToDeliver == subranges.count else {
-            pipe.fail(MediaRangeError.truncated)
-            return
-        }
-        pipe.close()
     }
 
-    private func decrementActive() {
+    private func noteSubrequestDone() {
         activeSubrequests = max(0, activeSubrequests - 1)
     }
 
-    /// 等待一组任务中最先完成的一个，返回其索引与结果。
-    private func waitForFirst(_ tasks: [Int: Task<Data, Error>]) async -> (Int, Result<Data, Error>)? {
-        await withTaskGroup(of: (Int, Result<Data, Error>).self) { group in
-            for (index, task) in tasks {
-                group.addTask {
-                    do {
-                        let value = try await task.value
-                        return (index, .success(value))
-                    } catch is CancellationError {
-                        return (index, .failure(CancellationError()))
-                    } catch {
-                        return (index, .failure(error))
-                    }
-                }
-            }
-            if let first = await group.next() {
-                group.cancelAll()
-                return first
-            }
-            return nil
+    /// 子区间首选 host 轮转：把第 index 个子区间优先分配给第 (index % hosts) 个 host，
+    /// 使首轮并发即分散到不同 CDN，实现聚合；之后按实测统计排序。
+    private func hostsForSubrange(_ index: Int) -> [String] {
+        let base = orderedHosts()
+        guard base.count > 1 else { return base }
+        let r = index % base.count
+        return Array(base[r...] + base[..<r])
+    }
+
+    /// AIMD：干净成功（无新增失败、无竞速）则 +1 试探；失败则减半。
+    /// 缓冲背压（pendingBytes 上限暂停新任务）独立于该调节，始终生效。
+    private func adjustConcurrencyAfterStream(failuresBefore: Int, hedgesBefore: Int, succeeded: Bool) {
+        if succeeded, failureCount == failuresBefore, hedgedCount == hedgesBefore {
+            adaptiveConcurrency = min(maxConcurrentPerMedia, adaptiveConcurrency + 1)
+        } else if !succeeded {
+            adaptiveConcurrency = max(1, adaptiveConcurrency / 2)
         }
+        // 成功但发生过竞速/失败：保持当前上限不变
     }
 
     // MARK: 子区间获取（含竞速与重试）
 
-    private func fetchSubrangeWithHedging(_ subrange: MediaByteRange, allowHedging: Bool) async throws -> Data {
+    //
+    //  单一 TaskGroup 协调器：主路与备路的下载工作以内联子任务运行，
+    //  group.next() 即真正的 first-completion 通知。胜者选出后 cancelAll
+    //  直接取消落选者的下载工作（fetch 内各处检查取消并使用可取消的
+    //  URLSession 异步接口），不存在只取消 Task.value 等待者的情况。
+
+    private enum HedgeLane: Sendable {
+        case primary
+        case secondary
+    }
+
+    private enum HedgeOutcome: Sendable {
+        case data(lane: HedgeLane, data: Data)
+        case failed(lane: HedgeLane)
+        case hedgeTimer
+        case compareTimer
+    }
+
+    /// 跨 Task 传递子任务的原始错误（TaskGroup 元素须 Sendable，Error 不是）。
+    /// 每个 hedging 操作独占一个 box，不存在并发操作间的串扰。
+    private final class HedgeErrorBox: @unchecked Sendable {
+        private let lock = NSLock()
+        private var errors = [HedgeLane: Error]()
+        func set(_ error: Error, for lane: HedgeLane) {
+            lock.lock()
+            errors[lane] = error
+            lock.unlock()
+        }
+
+        func error(for lane: HedgeLane) -> Error? {
+            lock.lock()
+            defer { lock.unlock() }
+            return errors[lane]
+        }
+    }
+
+    private func fetchSubrangeWithHedging(
+        _ subrange: MediaByteRange,
+        allowHedging: Bool,
+        candidateHosts: [String]? = nil
+    ) async throws -> Data {
         try Task.checkCancellation()
-        let hosts = orderedHosts()
+        // candidateHosts 由调用方按轮转/统计排好序，原样采用，不再二次排序，
+        // 保证初始分配即分散；nil 时回退到当前统计排序。
+        let hosts = candidateHosts ?? orderedHosts()
         guard !hosts.isEmpty else { throw MediaRangeError.unsatisfiable(total: knownTotalLength) }
         if !allowHedging || hosts.count == 1 || subrange.length < subrangeMinBytes {
             return try await fetchSubrangeWithRetry(subrange, hosts: hosts)
@@ -597,127 +602,135 @@ actor MediaRangeDownloader {
         // Slow-Request Hedging：主请求慢时在另一 CDN 启动竞争。
         // 触发考虑 TTFB、已接收字节/吞吐、剩余字节与播放紧迫度（此处用固定 1s 延迟
         // + 剩余长度门限近似；首字节与吞吐在 fetchAttempt 内实测并记入统计）。
-        // 使用显式 Task 而非嵌套 group，避免 inout group 被 escaping 闭包捕获。
-        let primary = Task<Data, Error> {
-            try await self.fetchSubrangeWithRetry(subrange, hosts: hosts)
-        }
-        // 主路与延迟哨兵竞争：1s 内完成则直接采用，不启动第二路
-        if let early = try await raceWithDelay(task: primary, delayNanoseconds: hedgingDelayNanoseconds) {
-            return early
-        }
-        try Task.checkCancellation()
-        retryCount += 1
         let alternate = alternateHosts(excludingFirstOf: hosts)
-        let secondary = Task<Data, Error> {
-            try await self.fetchSubrangeWithRetry(subrange, hosts: alternate)
-        }
-        defer {
-            primary.cancel()
-            secondary.cancel()
-        }
-        // 两路竞争，首个成功者胜出
-        let winner: Data = try await raceTasks(primary: primary, secondary: secondary)
-        // 若另一路也在短宽限内完成，比较重叠字节；超时则直接采用胜者。
-        // 字节级比较：冲突则隔离并拒绝交付。
-        if let other = await secondResultIfReady(primary: primary, secondary: secondary, winner: winner) {
-            if other != winner {
-                isolateHosts(hosts, reason: "overlap-mismatch")
-                throw MediaRangeError.mismatch
-            } else {
-                addExtra(Int64(other.count))
-            }
-        }
-        return winner
-    }
-
-    /// 主任务与延迟竞争：任务先完成则返回其值（成功/失败均直接透出），
-    /// 延迟先到则返回 nil（调用方启动第二路）。哨兵 cancelled 不计入失败。
-    private func raceWithDelay(task: Task<Data, Error>, delayNanoseconds: UInt64) async throws -> Data? {
-        try await withThrowingTaskGroup(of: Data?.self) { group in
+        let errorBox = HedgeErrorBox()
+        return try await withThrowingTaskGroup(of: HedgeOutcome.self) { group in
             group.addTask {
-                try await task.value
+                do {
+                    let data = try await self.fetchSubrangeWithRetry(subrange, hosts: hosts)
+                    return .data(lane: .primary, data: data)
+                } catch is CancellationError {
+                    // 外部取消或组取消：向上传播，保证及时退出；
+                    // 计时哨兵不走此路径（sleep 封装在独立子任务内）。
+                    if Task.isCancelled { throw CancellationError() }
+                    errorBox.set(CancellationError(), for: .primary)
+                    return .failed(lane: .primary)
+                } catch {
+                    errorBox.set(error, for: .primary)
+                    return .failed(lane: .primary)
+                }
             }
             group.addTask {
-                try await Task.sleep(nanoseconds: delayNanoseconds)
-                return nil // 延迟到期哨兵
+                do {
+                    try await Task.sleep(nanoseconds: self.hedgingDelayNanoseconds)
+                    return .hedgeTimer
+                } catch {
+                    if Task.isCancelled { throw CancellationError() }
+                    // 极少见：sleep 非取消失败，视为计时到期处理
+                    return .hedgeTimer
+                }
             }
-            guard let first = try await group.next() else {
-                group.cancelAll()
-                return nil
-            }
-            group.cancelAll()
-            if Task.isCancelled {
-                throw CancellationError()
-            }
-            return first // nil 表示延迟先到；Data 表示主路已完成（含抛错透出由 try 传播）
-        }
-    }
-
-    /// 两路任务竞争：首个成功者胜出；一路失败则等待另一路；两路皆败则抛出。
-    private func raceTasks(primary: Task<Data, Error>, secondary: Task<Data, Error>) async throws -> Data {
-        try await withThrowingTaskGroup(of: Data.self) { group in
-            group.addTask { try await primary.value }
-            group.addTask { try await secondary.value }
-            var lastError: Error = MediaRangeError.truncated
-            while let result = await group.nextResult() {
-                switch result {
-                case let .success(data):
-                    group.cancelAll()
-                    return data
-                case let .failure(error):
-                    if error is CancellationError, Task.isCancelled {
+            var secondaryStarted = false
+            var primaryFailed = false
+            var secondaryFailed = false
+            var winnerLane: HedgeLane?
+            var winnerData: Data?
+            while let outcome = try await group.next() {
+                switch outcome {
+                case let .data(lane, data):
+                    if winnerData == nil {
+                        winnerLane = lane
+                        winnerData = data
+                        if secondaryStarted {
+                            // 备路已启动：给落选者短宽限以完成并做字节级比较
+                            group.addTask {
+                                do {
+                                    try await Task.sleep(nanoseconds: 100_000_000)
+                                    return .compareTimer
+                                } catch {
+                                    if Task.isCancelled { throw CancellationError() }
+                                    return .compareTimer
+                                }
+                            }
+                        } else {
+                            // 备路尚未启动：直接采用，无冗余
+                            group.cancelAll()
+                            return data
+                        }
+                    } else {
+                        // 落选者在宽限内完成：必须来自另一 lane，与胜者逐字节比较
+                        if lane == winnerLane {
+                            group.cancelAll()
+                            return winnerData!
+                        }
+                        if data != winnerData {
+                            isolateHosts(hosts, reason: "overlap-mismatch")
+                            throw MediaRangeError.mismatch
+                        }
+                        addExtra(Int64(data.count))
                         group.cancelAll()
-                        throw CancellationError()
+                        return winnerData!
                     }
-                    lastError = error
-                    // 另一路仍在跑则继续等；组空则两路皆败
+                case let .failed(lane):
+                    if winnerData != nil {
+                        // 胜者已定，落选者失败可忽略
+                        group.cancelAll()
+                        return winnerData!
+                    }
+                    if lane == .primary {
+                        primaryFailed = true
+                    } else {
+                        secondaryFailed = true
+                    }
+                    if !secondaryStarted {
+                        // 主路在备路启动前即失败：重试已在 fetchSubrangeWithRetry 内耗尽，
+                        // 直接传播原始错误，不等待计时器
+                        group.cancelAll()
+                        throw errorBox.error(for: lane) ?? MediaRangeError.truncated
+                    }
+                    if primaryFailed, secondaryFailed {
+                        group.cancelAll()
+                        throw errorBox.error(for: .primary) ?? MediaRangeError.truncated
+                    }
+                // 另一路仍在跑，继续等待
+                case .hedgeTimer:
+                    if winnerData != nil {
+                        continue
+                    }
+                    if !secondaryStarted {
+                        secondaryStarted = true
+                        retryCount += 1
+                        hedgedCount += 1
+                        // 第二路：排除首选 host，优先不同 host
+                        group.addTask {
+                            do {
+                                let data = try await self.fetchSubrangeWithRetry(subrange, hosts: alternate)
+                                return .data(lane: .secondary, data: data)
+                            } catch is CancellationError {
+                                if Task.isCancelled { throw CancellationError() }
+                                errorBox.set(CancellationError(), for: .secondary)
+                                return .failed(lane: .secondary)
+                            } catch {
+                                errorBox.set(error, for: .secondary)
+                                return .failed(lane: .secondary)
+                            }
+                        }
+                    }
+                case .compareTimer:
+                    // 比较宽限到期：落选者未完成，直接采用胜者
+                    // （落选者被 cancelAll 中止，已传输的部分字节已在其中止路径计入 extra）
+                    group.cancelAll()
+                    if let winnerData {
+                        return winnerData
+                    }
                     continue
                 }
             }
-            throw lastError
-        }
-    }
-
-    /// 短宽限内若另一路也已完成则返回其数据（用于重叠一致性比较），否则 nil。
-    /// 只捕获 Task 引用（非 inout），不捕获 group。
-    private func secondResultIfReady(primary: Task<Data, Error>, secondary: Task<Data, Error>, winner: Data) async -> Data? {
-        await withTaskGroup(of: Data?.self) { group in
-            group.addTask {
-                // 100ms 宽限：另一路若已完成则取值比较，超时放弃
-                try? await Task.sleep(nanoseconds: 100_000_000)
-                return nil
+            // 组耗尽仍无结果（理论不可达）：按失败处理
+            if let winnerData {
+                return winnerData
             }
-            group.addTask {
-                // 取尚未被消费的另一路结果：通过比较 winner 无法判定哪一路胜出，
-                // 因此尝试读取两路中“非胜者”的值——若其已完成则返回，否则挂起直到宽限任务先完成。
-                // 为避免挂起过久，这里用串行尝试：先检查 secondary，再检查 primary，
-                // 任一完成且与 winner 长度相同但内容待比较。
-                // 注意：Task.value 会等待未完成的任务，因此依赖宽限任务先返回来取消本组。
-                // 若两路都未在宽限内完成，本函数返回 nil。
-                let s: Data? = try? await secondary.value
-                if let s, s.count == winner.count { return s }
-                let p: Data? = try? await primary.value
-                if let p, p.count == winner.count, p != winner { return p }
-                return s ?? p
-            }
-            var result: Data?
-            for await value in group {
-                if let value {
-                    result = value
-                    break
-                } else {
-                    // 宽限到期
-                    break
-                }
-            }
-            group.cancelAll()
-            // 若取到的就是胜者本身（常见），视为无“另一路”可比较
-            if let result, result == winner {
-                // 无法区分来源时不误报 extra；返回 nil 跳过比较
-                // （胜者已通过 Content-Range/total/长度三重校验）
-                return nil
-            }
-            return result
+            throw errorBox.error(for: .primary) ?? MediaRangeError.truncated
         }
     }
 
@@ -805,15 +818,23 @@ actor MediaRangeDownloader {
 
     private func fetchAttempt(subrange: MediaByteRange, urlString: String, host: String) async throws -> Data {
         try Task.checkCancellation()
-        // 全局预算：按 host 记账，释放必须配对
-        let grantedHost: String
-        if await MediaDownloadBudget.shared.tryAcquireNow(host: host) {
-            grantedHost = host
+        // 全局预算：许可 token 一一绑定，defer 恰好释放一次。
+        // 有界等待超时直接抛 budgetExhausted，绝不无许可发送。
+        let permit: BudgetPermit
+        if let acquired = await MediaDownloadBudget.shared.tryAcquireNow(host: host) {
+            permit = acquired
         } else {
-            // 等待槽位（有界等待，可取消）
-            grantedHost = try await waitForBudget(host: host)
+            permit = try await waitForBudget(host: host)
         }
-        defer { Task { await MediaDownloadBudget.shared.release(host: grantedHost) } }
+        // 诊断用实际在途 host 计数（与累计统计区分），退出时配对扣减
+        activeHostCounts[host, default: 0] += 1
+        defer {
+            if let current = self.activeHostCounts[host] {
+                self.activeHostCounts[host] = current > 1 ? current - 1 : nil
+            }
+            let permit = permit
+            Task { await MediaDownloadBudget.shared.release(permit) }
+        }
 
         let session = ensureSession()
         var request = URLRequest(url: URL(string: urlString)!)
@@ -896,8 +917,13 @@ actor MediaRangeDownloader {
                 }
             }
         } catch is CancellationError {
+            // 被取消前已传输的字节计入 extra（上游流量真实发生但未交付），
+            // 保证诊断的冗余比例可信；取消本身不计入 CDN 健康失败。
+            addExtra(Int64(data.count))
             throw CancellationError()
         } catch {
+            // 传输中断前已读取的部分同样计入 extra（未交付的上游流量）
+            addExtra(Int64(data.count))
             await recordFailure(host: host, category: .truncated)
             throw MediaRangeError.truncated
         }
@@ -911,17 +937,18 @@ actor MediaRangeDownloader {
         return data
     }
 
-    private func waitForBudget(host: String) async throws -> String {
+    /// 有界等待预算许可。超时不再无许可通行，而是抛 budgetExhausted，
+    /// 由上层按失败传播（播放器级恢复做有预算的降级），并保持 release 配对。
+    private func waitForBudget(host: String) async throws -> BudgetPermit {
         // 有界等待：最多 10s，每 50ms 重试一次，可取消
         let deadline = Date().addingTimeInterval(10)
         while true {
             try Task.checkCancellation()
-            if await MediaDownloadBudget.shared.tryAcquireNow(host: host) {
-                return host
+            if let permit = await MediaDownloadBudget.shared.tryAcquireNow(host: host) {
+                return permit
             }
             if Date() > deadline {
-                // 降级为直接使用当前 host（不记账），避免永久等待
-                return host
+                throw MediaRangeError.budgetExhausted
             }
             try await Task.sleep(nanoseconds: 50_000_000)
         }

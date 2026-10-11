@@ -59,6 +59,12 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
     private(set) var currentSegmentHost: String?
     /// 实际传输模式（内部执行模式，非用户设置）。默认 .direct 保持原行为。
     private(set) var transportMode: MediaTransportMode = .direct
+    /// 播放器实际生效的传输模式：代理启动失败时播放列表已回退直连 URI，
+    /// 此时按 .direct 处理，避免错误进入加速恢复流程。
+    var effectiveTransportMode: MediaTransportMode {
+        transportMode == .direct ? .direct : (proxyAvailable ? transportMode : .direct)
+    }
+
     /// 本地代理是否可用（服务器启动成功且已注册媒体）。不可用时播放列表回退直连。
     private(set) var proxyAvailable = false
     /// 媒体代理注册表（线程安全，Swifter 同步 handler 与播放列表生成并发访问）。
@@ -636,7 +642,9 @@ private extension BilibiliVideoResourceLoaderDelegate {
         let parsed = MediaRangeParsing.parse(header: rangeHeader, fileLength: entry.totalLength)
         switch parsed {
         case .missing:
-            // 无 Range 的整文件请求：302 重定向回原 CDN（经实机确认的降级），不伪造 206
+            // 无 Range 的整文件请求：307 重定向回原 CDN，不伪造 206。
+            // 注意：Swifter 的 movedTemporarily 实际发送 307；AVPlayer 是否保留
+            // Range 语义跟随跳转仍需真机验证（见验收 P2）。
             if let fallback = entry.candidates.first, URL(string: fallback) != nil {
                 return HttpResponse.movedTemporarily(fallback)
             }
@@ -676,6 +684,8 @@ private extension BilibiliVideoResourceLoaderDelegate {
     }
 
     private func serveVerifiedRange(_ range: MediaByteRange, entry: MediaProxyRegistry.Entry, mediaID: String) -> HttpResponse {
+        // 首次请求时 total 通常未知，按 RFC 以 * 声明；AVPlayer 在当前 HLS 链路
+        // 是否接受 bytes start-end/* 仍需真机验证（见验收 P2）。后续请求复用已缓存的 total。
         let headers = MediaRangeResponseHeaders.partialContent(range: range, totalLength: entry.totalLength)
         let downloader = entry.downloader
         let candidates = entry.candidates
