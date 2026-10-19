@@ -8,6 +8,10 @@
 import UIKit
 
 class HotViewController: StandardVideoCollectionViewController<VideoDetail.Info> {
+    override func supportVideoQuickActions() -> Bool {
+        return true
+    }
+
     override func request(page: Int) async throws -> [VideoDetail.Info] {
         return try await WebRequest.requestHotVideo(page: page).list
     }
