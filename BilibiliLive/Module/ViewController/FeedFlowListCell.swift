@@ -10,6 +10,8 @@ import UIKit
 final class FeedFlowListCell: BLMotionCollectionViewCell {
     static let reuseID = String(describing: FeedFlowListCell.self)
 
+    var onLongPress: (() -> Void)?
+
     private let blurBackgroundView = UIVisualEffectView(effect: UIBlurEffect(style: .dark))
     private let imageView = UIImageView()
     private let titleLabel = UILabel()
@@ -20,6 +22,8 @@ final class FeedFlowListCell: BLMotionCollectionViewCell {
     override func setup() {
         super.setup()
         scaleFactor = 1.06
+        let longpress = UILongPressGestureRecognizer(target: self, action: #selector(actionLongPress(sender:)))
+        addGestureRecognizer(longpress)
 
         contentView.addSubview(blurBackgroundView)
         blurBackgroundView.snp.makeConstraints { make in
@@ -101,6 +105,16 @@ final class FeedFlowListCell: BLMotionCollectionViewCell {
         coordinator.addCoordinatedAnimations {
             self.updateAppearance()
         }
+    }
+
+    @objc private func actionLongPress(sender: UILongPressGestureRecognizer) {
+        guard sender.state == .began else { return }
+        onLongPress?()
+    }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        onLongPress = nil
     }
 
     private func updateAppearance() {

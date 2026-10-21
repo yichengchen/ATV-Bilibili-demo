@@ -69,6 +69,10 @@ class RankingVideoContentViewController: StandardVideoCollectionViewController<V
         return false
     }
 
+    override func supportVideoQuickActions() -> Bool {
+        return true
+    }
+
     override func request(page: Int) async throws -> [VideoDetail.Info] {
         return try await WebRequest.requestRank(for: info.rid)
     }

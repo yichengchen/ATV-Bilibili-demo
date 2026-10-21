@@ -45,10 +45,22 @@ class StandardVideoCollectionViewController<T: PlayableData>: UIViewController, 
             [weak self] in
             self?.loadMore()
         }
+        if supportVideoQuickActions() {
+            collectionVC.didLongPress = {
+                [weak self] record in
+                guard let self, let record = record as? T else { return }
+                VideoQuickActionMenu.shared.present(aid: record.aid, title: record.title, from: self)
+            }
+        }
     }
 
     func supportPullToLoad() -> Bool {
         return true
+    }
+
+    /// 长按视频时是否弹出视频快捷操作菜单（加入稍后再看 / 收藏视频 / 不感兴趣）
+    func supportVideoQuickActions() -> Bool {
+        return false
     }
 
     func request(page: Int) async throws -> [T] {

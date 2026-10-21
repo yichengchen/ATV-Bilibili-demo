@@ -717,7 +717,12 @@ extension FeedFlowBrowserViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FeedFlowListCell.reuseID, for: indexPath) as! FeedFlowListCell
-        cell.configure(with: items[indexPath.item], isCurrent: indexPath.item == focusedIndex)
+        let item = items[indexPath.item]
+        cell.configure(with: item, isCurrent: indexPath.item == focusedIndex)
+        cell.onLongPress = { [weak self] in
+            guard let self else { return }
+            VideoQuickActionMenu.shared.present(aid: item.aid, title: item.title, from: self)
+        }
         return cell
     }
 

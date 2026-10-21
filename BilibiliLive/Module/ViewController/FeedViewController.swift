@@ -13,6 +13,10 @@ class FeedViewController: StandardVideoCollectionViewController<ApiRequest.FeedR
         collectionVC.pageSize = 1
     }
 
+    override func supportVideoQuickActions() -> Bool {
+        return true
+    }
+
     override func request(page: Int) async throws -> [ApiRequest.FeedResp.Items] {
         if page == 1 {
             return try await ApiRequest.getFeeds()
