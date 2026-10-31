@@ -169,7 +169,10 @@ class VideoPlayerViewController: CommonPlayerViewController {
         }
     }
 
-    var data: VideoDetail?
+    var data: VideoDetail? {
+        didSet { viewModel.useInitialVideoDetail(data) }
+    }
+
     var sequenceProvider: VideoSequenceProvider?
     var onLoadFailure: ((String) -> Void)?
     var onPlaybackStarted: (() -> Void)?

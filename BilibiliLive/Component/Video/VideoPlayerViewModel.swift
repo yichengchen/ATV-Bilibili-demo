@@ -44,6 +44,7 @@ class VideoPlayerViewModel {
     private var videoDetail: VideoDetail?
     private var cancellable = Set<AnyCancellable>()
     private var loadTask: Task<Void, Never>?
+    private var danmuLoadTask: Task<Void, Never>?
     private var loadGeneration = 0
 
     init(playInfo: PlayInfo,
@@ -66,17 +67,26 @@ class VideoPlayerViewModel {
         playInfo
     }
 
+    func useInitialVideoDetail(_ detail: VideoDetail?) {
+        guard loadTask == nil, detail?.View.aid == playInfo.aid else { return }
+        videoDetail = detail
+    }
+
     func load() {
         startLoad(for: playInfo)
     }
 
     func cancelLoading() {
+        danmuLoadTask?.cancel()
+        danmuLoadTask = nil
         loadTask?.cancel()
         loadTask = nil
         loadGeneration += 1
     }
 
     private func startLoad(for requestedPlayInfo: PlayInfo) {
+        danmuLoadTask?.cancel()
+        danmuLoadTask = nil
         loadTask?.cancel()
         loadGeneration += 1
         let generation = loadGeneration
@@ -99,7 +109,15 @@ class VideoPlayerViewModel {
 
             let danmuProvider = VideoDanmuProvider(enableDanmuFilter: Settings.enableDanmuFilter,
                                                    enableDanmuRemoveDup: Settings.enableDanmuRemoveDup)
-            await danmuProvider.initVideo(cid: data.cid, startPos: data.playerStartPos ?? 0)
+            // Previews do not install a danmaku plugin. For other modes, install
+            // an initialized provider without blocking media setup on its requests.
+            if playMode != .preview {
+                let startPos = data.playerStartPos ?? 0
+                danmuProvider.prepareVideo(cid: data.cid, startPos: startPos)
+                danmuLoadTask = Task {
+                    await danmuProvider.loadInitialDanmu(startPos: startPos)
+                }
+            }
             guard !Task.isCancelled, loadGeneration == generation else { return }
 
             playInfo = resolvedPlayInfo
