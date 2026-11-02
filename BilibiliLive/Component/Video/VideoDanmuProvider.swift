@@ -37,6 +37,9 @@ struct Danmu: Codable {
 }
 
 class VideoDanmuProvider: DanmuProviderProtocol {
+    // Playback time callbacks and asynchronous initial/segment requests can overlap.
+    private let stateLock = NSRecursiveLock()
+    private var videoGeneration = 0
     private var cid: Int!
     private let enableDanmuFilter: Bool
     private let enableDanmuRemoveDup: Bool
@@ -67,29 +70,42 @@ class VideoDanmuProvider: DanmuProviderProtocol {
     }
 
     func initVideo(cid id: Int, startPos: Int) async {
-        cid = id
-        upDanmus.removeAll()
-        segmentDanmus.removeAll(keepingCapacity: true)
-        segmentStatuses.removeAll(keepingCapacity: true)
-        lastTime = 0
-        lastSegmentIdx = 0
-        upDanmuIdx = 0
-        danmuIdx = 0
+        prepareVideo(cid: id, startPos: startPos)
+        await loadInitialDanmu(startPos: startPos)
+    }
 
+    func prepareVideo(cid id: Int, startPos: Int) {
+        stateLock.withLock {
+            videoGeneration += 1
+            cid = id
+            upDanmus.removeAll()
+            segmentDanmus.removeAll(keepingCapacity: true)
+            segmentStatuses.removeAll(keepingCapacity: true)
+            lastTime = 0
+            lastSegmentIdx = 0
+            upDanmuIdx = 0
+            danmuIdx = 0
+            // Reserve before the loading task starts so early time callbacks do
+            // not send a duplicate request for the initial segment.
+            segmentStatuses[getSegmentIdx(time: TimeInterval(startPos))] = true
+        }
+    }
+
+    func loadInitialDanmu(startPos: Int) async {
+        guard !Task.isCancelled else { return }
         async let view: () = fetchDanmuView()
-        let segmentIdx = getSegmentIdx(time: TimeInterval(startPos))
-        segmentStatuses[segmentIdx] = true
         async let list: () = fetchDanmuList(getSegmentIdx(time: TimeInterval(startPos)))
         await view
         await list
     }
 
     func fetchDanmuView() async {
+        let context = stateLock.withLock { (cid: cid!, generation: videoGeneration) }
         var reply: DmWebViewReply
         do {
-            reply = try await WebRequest.requestDanmuWebView(cid: cid)
+            reply = try await WebRequest.requestDanmuWebView(cid: context.cid)
         } catch let err {
-            Logger.warn("[dm] cid:\(cid!) requestDanmuWebView error: \(err)")
+            Logger.warn("[dm] cid:\(context.cid) requestDanmuWebView error: \(err)")
             return
         }
 
@@ -97,18 +113,25 @@ class VideoDanmuProvider: DanmuProviderProtocol {
             .filter { $0.command == "#UP#" }
             .map { Danmu(upDm: $0) }
         dms.sort { $0.time < $1.time }
-        upDanmus = dms
+        stateLock.withLock {
+            guard !Task.isCancelled, videoGeneration == context.generation else { return }
+            upDanmus = dms
+        }
 
-        Logger.debug("[dm] cid:\(cid!) up danmu cnt: \(dms.count)")
+        Logger.debug("[dm] cid:\(context.cid) up danmu cnt: \(dms.count)")
     }
 
     func fetchDanmuList(_ idx: Int) async {
+        let context = stateLock.withLock { (cid: cid!, generation: videoGeneration) }
         var reply: DmSegMobileReply
         do {
-            reply = try await WebRequest.requestDanmuList(cid: cid, segmentIdx: idx)
+            reply = try await WebRequest.requestDanmuList(cid: context.cid, segmentIdx: idx)
         } catch let err {
-            segmentStatuses[idx] = nil // 等待下次重试
-            Logger.warn("[dm] cid:\(cid!) sidx:\(idx) requestDanmuList error: \(err)")
+            stateLock.withLock {
+                guard videoGeneration == context.generation else { return }
+                segmentStatuses[idx] = nil // 等待下次重试
+            }
+            Logger.warn("[dm] cid:\(context.cid) sidx:\(idx) requestDanmuList error: \(err)")
             return
         }
 
@@ -129,9 +152,12 @@ class VideoDanmuProvider: DanmuProviderProtocol {
         var models = dms
             .map { Danmu(dm: $0) }
         models.sort { $0.time < $1.time }
-        segmentDanmus[idx] = models
+        stateLock.withLock {
+            guard !Task.isCancelled, videoGeneration == context.generation else { return }
+            segmentDanmus[idx] = models
+        }
 
-        Logger.debug("[dm] cid:\(cid!) sidx:\(idx) danmu cnt: \(dms.count)")
+        Logger.debug("[dm] cid:\(context.cid) sidx:\(idx) danmu cnt: \(dms.count)")
     }
 
     private let advancedDuration = 30 // 提前x秒加载下段弹幕
@@ -164,6 +190,8 @@ class VideoDanmuProvider: DanmuProviderProtocol {
     }
 
     func playerTimeChange(time: TimeInterval) {
+        stateLock.lock()
+        defer { stateLock.unlock() }
         guard cid != nil else { return }
 
         fetchMoreDanmuInBackground(time: time)
