@@ -22,6 +22,7 @@ class LiveDanMuProvider: DanmuProviderProtocol {
     private var danmuSet = Set<String>()
     private var danmuSetClearTimer: Timer?
     private let brotliDcompressor = BrotliDecompressor()
+    var historyStore: LiveDanmuHistoryStore?
 
     init(roomID: Int, removeDup: Bool) {
         self.roomID = roomID
@@ -64,6 +65,9 @@ class LiveDanMuProvider: DanmuProviderProtocol {
         heartBeatTimer?.invalidate()
         danmuSet.removeAll()
         danmuSetClearTimer?.invalidate()
+        if let historyStore {
+            DispatchQueue.main.async { historyStore.saveNow() }
+        }
     }
 
     private func setupHeartBeat() {
@@ -134,6 +138,7 @@ extension LiveDanMuProvider {
                 let cmd = json["cmd"].stringValue
                 switch cmd {
                 case "DANMU_MSG":
+                    recordHistory(LiveDanmuHistoryItem(danmuMsgInfo: json["info"]))
                     if let str = json["info"][1].string {
                         let model = DanmakuTextCellModel(str: str)
                         sentDanmuModel(model)
@@ -148,6 +153,7 @@ extension LiveDanMuProvider {
                         }
                     }
                 case "SUPER_CHAT_MESSAGE":
+                    recordHistory(LiveDanmuHistoryItem(superChat: json["data"]))
                     if let str = json["data"]["message"].string {
                         let model = DanmakuTextCellModel(str: str)
                         model.type = .top
@@ -158,6 +164,15 @@ extension LiveDanMuProvider {
                     break
                 }
             }
+    }
+
+    private func recordHistory(_ item: LiveDanmuHistoryItem?) {
+        guard let item, let historyStore else { return }
+        if Thread.isMainThread {
+            historyStore.append(item)
+        } else {
+            DispatchQueue.main.async { historyStore.append(item) }
+        }
     }
 
     private func sentDanmuModel(_ model: DanmakuTextCellModel) {
