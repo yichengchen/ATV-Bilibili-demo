@@ -189,9 +189,11 @@ extension CommonPlayerViewController {
     }
 
     private func observePlayerItem(_ playerItem: AVPlayerItem) {
-        statusObserver = playerItem.observe(\.status, options: [.new, .old]) {
+        // An item can already be ready when its player is installed (for example,
+        // after preroll). Observe its current state as well as later changes.
+        statusObserver = playerItem.observe(\.status, options: [.initial, .new, .old]) {
             [weak self] item, _ in
-            guard let self, let player = playerVC.player else { return }
+            guard let self, let player = playerVC.player, player.currentItem === item else { return }
             switch item.status {
             case .readyToPlay:
                 isEnd = false
