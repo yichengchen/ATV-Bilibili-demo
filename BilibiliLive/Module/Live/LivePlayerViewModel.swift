@@ -114,6 +114,7 @@ class LivePlayerViewModel {
     private let room: LiveRoom
     private var danMuProvider: LiveDanMuProvider?
     private var retryCount = 0
+    private var liveTime: String?
 
     private func refreshRoomsID() async throws {
         let info = try await WebRequest.requestLiveRoomInit(roomID: roomID)
@@ -121,6 +122,7 @@ class LivePlayerViewModel {
             throw LiveError.noLiving
         }
         roomID = info.room_id
+        liveTime = info.live_time
     }
 
     private func initPlayer() async throws {
@@ -174,8 +176,14 @@ class LivePlayerViewModel {
         danMuProvider = LiveDanMuProvider(roomID: roomID, removeDup: Settings.enableDanmuRemoveDup)
         let danmuPlugin = DanmuViewPlugin(provider: danMuProvider!)
 
+        // Retrieve only the history for the current broadcast session
+        let sessionKey = liveTime.flatMap { $0.hasPrefix("0000") ? nil : $0 } ?? "unknown"
+        let historyStore = LiveDanmuHistoryStore(roomID: roomID, sessionKey: sessionKey)
+        danMuProvider?.historyStore = historyStore
+        Task { await historyStore.loadRemoteHistory() }
+
         try? await danMuProvider?.start()
-        var plugins: [CommonPlayerPlugin] = [danmuPlugin]
+        var plugins: [CommonPlayerPlugin] = [danmuPlugin, LiveDanmuHistoryPlugin(store: historyStore)]
         if Settings.danmuMask, Settings.vnMask {
             let plugin = MaskViewPugin(maskView: danmuPlugin.danMuView, maskProvider: VMaskProvider())
             plugins.append(plugin)
@@ -215,6 +223,7 @@ extension WebRequest {
     struct LiveRoomInit: Codable {
         var live_status: Int
         var room_id: Int
+        var live_time: String?
     }
 
     static func requestLiveRoomInit(roomID: Int) async throws -> LiveRoomInit {
