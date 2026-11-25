@@ -381,13 +381,65 @@ enum StreamMenuFormatting {
         return "\(specParts.joined(separator: " ")) · \(codecBitrate)"
     }
 
-    static func sortVODStreams(_ streams: [VODStreamCandidate]) -> [VODStreamCandidate] {
-        streams.sorted { lhs, rhs in
-            if lhs.id != rhs.id {
-                return lhs.id > rhs.id
+    static func vodCodecRank(_ codecs: String, preferAvc: Bool = false) -> Int {
+        let lower = codecs.lowercased()
+        if preferAvc {
+            if lower.hasPrefix("avc") {
+                return 3
             }
-            if lhs.bandwidth != rhs.bandwidth {
-                return lhs.bandwidth > rhs.bandwidth
+            if lower.hasPrefix("dvh1") || lower.hasPrefix("dvhe") || lower.hasPrefix("hev") || lower.hasPrefix("hvc") {
+                return 2
+            }
+            if lower.hasPrefix("av01") {
+                return 0
+            }
+            return 1
+        } else {
+            if lower.hasPrefix("dvh1") || lower.hasPrefix("dvhe") {
+                return 3
+            }
+            if lower.hasPrefix("hev") || lower.hasPrefix("hvc") {
+                return 2
+            }
+            if lower.hasPrefix("avc") {
+                return 1
+            }
+            return 0
+        }
+    }
+
+    static func isPreferredVODStream(
+        lhsId: Int,
+        lhsCodecs: String,
+        lhsBandwidth: Int,
+        rhsId: Int,
+        rhsCodecs: String,
+        rhsBandwidth: Int,
+        preferAvc: Bool = false
+    ) -> Bool {
+        if lhsId != rhsId {
+            return lhsId > rhsId
+        }
+        let lhsCodec = vodCodecRank(lhsCodecs, preferAvc: preferAvc)
+        let rhsCodec = vodCodecRank(rhsCodecs, preferAvc: preferAvc)
+        if lhsCodec != rhsCodec {
+            return lhsCodec > rhsCodec
+        }
+        return lhsBandwidth > rhsBandwidth
+    }
+
+    static func sortVODStreams(_ streams: [VODStreamCandidate], preferAvc: Bool = false) -> [VODStreamCandidate] {
+        streams.sorted { lhs, rhs in
+            if lhs.id != rhs.id || vodCodecRank(lhs.codecs, preferAvc: preferAvc) != vodCodecRank(rhs.codecs, preferAvc: preferAvc) || lhs.bandwidth != rhs.bandwidth {
+                return isPreferredVODStream(
+                    lhsId: lhs.id,
+                    lhsCodecs: lhs.codecs,
+                    lhsBandwidth: lhs.bandwidth,
+                    rhsId: rhs.id,
+                    rhsCodecs: rhs.codecs,
+                    rhsBandwidth: rhs.bandwidth,
+                    preferAvc: preferAvc
+                )
             }
             return lhs.streamIndex < rhs.streamIndex
         }

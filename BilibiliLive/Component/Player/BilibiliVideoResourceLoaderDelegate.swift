@@ -388,11 +388,18 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             // 用户选择了具体的流，直接使用该流
             videos = [info.dash.video[streamIndex]]
         } else if let maxQuality = maxQuality {
-            // 用户选择了画质，保留该画质的最高码率流
+            // 用户选择了画质，按编码优先级（默认 HEVC 优先）及码率选择最优流
             // （手动切画质时一般会带 streamIndex，走上面精确选流；这里是无 streamIndex 的兜底）
-            let matchingStreams = videos.filter { $0.id == maxQuality }
-            if let highestBandwidthStream = matchingStreams.max(by: { $0.bandwidth < $1.bandwidth }) {
-                videos = [highestBandwidthStream]
+            let preferAvc = Settings.preferAvc
+            let matchingStreams = videos.filter { $0.id == maxQuality }.sorted { lhs, rhs in
+                StreamMenuFormatting.isPreferredVODStream(
+                    lhsId: lhs.id, lhsCodecs: lhs.codecs, lhsBandwidth: lhs.bandwidth,
+                    rhsId: rhs.id, rhsCodecs: rhs.codecs, rhsBandwidth: rhs.bandwidth,
+                    preferAvc: preferAvc
+                )
+            }
+            if let preferredStream = matchingStreams.first {
+                videos = [preferredStream]
             } else {
                 videos = matchingStreams
             }
@@ -419,9 +426,15 @@ class BilibiliVideoResourceLoaderDelegate: NSObject, AVAssetResourceLoaderDelega
             videos = highQualityVideos + fallbackVideos + emergencyVideos
         }
 
-        // 按 bandwidth 降序排序（码率最高的优先，让 AVPlayer 优先选择）
-        // 这样可以确保在同一画质等级下，AVPlayer 会选择码率最高的流
-        videos.sort { $0.bandwidth > $1.bandwidth }
+        // 按画质等级降序，同画质按编码优先级（默认 HEVC 优先，开启 Avc优先 时 AVC 优先）及码率降序排序
+        let preferAvc = Settings.preferAvc
+        videos.sort { lhs, rhs in
+            StreamMenuFormatting.isPreferredVODStream(
+                lhsId: lhs.id, lhsCodecs: lhs.codecs, lhsBandwidth: lhs.bandwidth,
+                rhsId: rhs.id, rhsCodecs: rhs.codecs, rhsBandwidth: rhs.bandwidth,
+                preferAvc: preferAvc
+            )
+        }
 
         collectCDNCandidates(from: videos.first)
 

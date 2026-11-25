@@ -54,7 +54,7 @@ class BVideoQualityPlugin: NSObject, CommonPlayerPlugin {
             )
         }
 
-        availableQualities = StreamMenuFormatting.sortVODStreams(candidates).map { candidate in
+        availableQualities = StreamMenuFormatting.sortVODStreams(candidates, preferAvc: Settings.preferAvc).map { candidate in
             let groupTitle = candidate.fallbackDescription ?? "画质 \(candidate.id)"
             return QualityOption(
                 id: candidate.id,

@@ -402,8 +402,15 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
         if let streamIndex, streamIndex < info.dash.video.count {
             videos = [info.dash.video[streamIndex]]
         } else if let maxQuality {
-            let matching = videos.filter { $0.id == maxQuality }
-            if let best = matching.max(by: { $0.bandwidth < $1.bandwidth }) {
+            let preferAvc = Settings.preferAvc
+            let matching = videos.filter { $0.id == maxQuality }.sorted { lhs, rhs in
+                StreamMenuFormatting.isPreferredVODStream(
+                    lhsId: lhs.id, lhsCodecs: lhs.codecs, lhsBandwidth: lhs.bandwidth,
+                    rhsId: rhs.id, rhsCodecs: rhs.codecs, rhsBandwidth: rhs.bandwidth,
+                    preferAvc: preferAvc
+                )
+            }
+            if let best = matching.first {
                 videos = [best]
             } else {
                 videos = matching
@@ -415,7 +422,14 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
                 videos = videos.filter { $0.id == highest }
             }
         }
-        videos.sort { $0.bandwidth > $1.bandwidth }
+        let preferAvc = Settings.preferAvc
+        videos.sort { lhs, rhs in
+            StreamMenuFormatting.isPreferredVODStream(
+                lhsId: lhs.id, lhsCodecs: lhs.codecs, lhsBandwidth: lhs.bandwidth,
+                rhsId: rhs.id, rhsCodecs: rhs.codecs, rhsBandwidth: rhs.bandwidth,
+                preferAvc: preferAvc
+            )
+        }
         guard let primary = videos.first else { return [] }
         var seenHosts = Set<String>()
         return primary.playableURLs.filter { url in
