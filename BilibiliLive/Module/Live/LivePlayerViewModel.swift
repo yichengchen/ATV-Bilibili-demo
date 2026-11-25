@@ -34,6 +34,7 @@ class LivePlayerViewModel {
 
     private let playPlugin = URLPlayPlugin(referer: Keys.liveReferer, isLive: true)
     private let debugPlugin = DebugPlugin()
+    private var linePlugin: LineCandidatesPlugin?
 
     func start() {
         playPlugin.onPlayFail = { [weak self] in
@@ -45,44 +46,43 @@ class LivePlayerViewModel {
         }
 
         onPluginReady?([playPlugin, debugPlugin])
-        Task {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
             do {
                 try await refreshRoomsID()
                 try await initPlayer()
 
                 let danmu = await initDanmu()
-                let linePlugin = LineCandidatesPlugin(candidates: playInfos) { [weak self] url in
+                let linePlugin = LineCandidatesPlugin(candidates: allPlayInfos) { [weak self] url in
                     self?.playPlugin.play(urlString: url)
                 }
-                self.onPluginReady?(danmu + [linePlugin])
+                self.linePlugin = linePlugin
+                onPluginReady?(danmu + [linePlugin])
 
                 if let info = await fetchDespInfo() {
                     let subtitle = "\(room.ownerName)·\(info.parent_area_name) \(info.area_name)"
                     let desp = "\(info.description)\nTags:\(info.tags ?? "")"
                     let infoPlugin = BVideoInfoPlugin(title: info.title, subTitle: subtitle, desp: desp, pic: room.pic, viewPoints: nil)
-                    self.onPluginReady?([infoPlugin])
+                    onPluginReady?([infoPlugin])
                 } else {
                     let infoPlugin = BVideoInfoPlugin(title: room.title, subTitle: nil, desp: nil, pic: room.pic, viewPoints: nil)
-                    self.onPluginReady?([infoPlugin])
+                    onPluginReady?([infoPlugin])
                 }
             } catch let err {
-                await MainActor.run {
-                    onError?(String(describing: err))
-                }
+                onError?(String(describing: err))
             }
         }
     }
 
     func playerDidFailToPlay() {
-        Task {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
             do {
                 playInfos = Array(playInfos.dropFirst())
                 if playInfos.isEmpty {
                     retryCount += 1
                     if retryCount > 3 {
-                        await MainActor.run {
-                            onError?("播放失败")
-                        }
+                        onError?("播放失败")
                         return
                     }
                     try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -92,9 +92,7 @@ class LivePlayerViewModel {
                     try await playFirstInfo()
                 }
             } catch let err {
-                await MainActor.run {
-                    onError?(err.localizedDescription)
-                }
+                onError?(err.localizedDescription)
             }
         }
     }
@@ -126,38 +124,13 @@ class LivePlayerViewModel {
     }
 
     private func initPlayer() async throws {
-        allPlayInfos = []
-
-        let streams = try await WebRequest.requestLiveStreams(roomID: roomID)
-
-        for stream in streams {
-            for content in stream.format {
-                let formate = content.formatName
-                let codecs = content.codec
-                for codec in codecs {
-                    let qn = codec.currentQn
-                    let baseUrl = codec.baseurl
-                    for url_info in codec.urlInfo {
-                        let host = url_info.host
-                        let extra = url_info.extra
-                        let url = "\(host)\(baseUrl)\(extra)"
-                        let playInfo = LivePlayUrlInfo(formate: formate, url: url, current_qn: qn, codec_name: codec.codecName)
-                        allPlayInfos.append(playInfo)
-                    }
-                }
-            }
-        }
-
-        allPlayInfos.sort { a, b in
-            return a.current_qn ?? 0 > b.current_qn ?? 0
-        }
-
-        allPlayInfos.sort { a, b in
-            return a.formate == "fmp4"
-        }
-
-        Logger.debug("all info arry:\(playInfos)")
+        let playurl = try await WebRequest.requestLivePlayUrl(roomID: roomID)
+        allPlayInfos = playurl.buildSortedCandidates()
+        Logger.debug("all info arry:\(allPlayInfos)")
         playInfos = allPlayInfos
+        await MainActor.run {
+            linePlugin?.updateCandidates(allPlayInfos)
+        }
         try await playFirstInfo()
     }
 
@@ -193,13 +166,6 @@ class LivePlayerViewModel {
     }
 }
 
-struct LivePlayUrlInfo {
-    let formate: String?
-    let url: String
-    let current_qn: Int?
-    let codec_name: String?
-}
-
 extension WebRequest.EndPoint {
     static let liveRoomInfo = "https://api.live.bilibili.com/room/v1/Room/get_info"
     static let liveRoomStream = "https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo"
@@ -230,17 +196,12 @@ extension WebRequest {
         return try await request(url: EndPoint.liveRoomInfo, parameters: ["id": roomID])
     }
 
-    static func requestLiveStreams(roomID: Int) async throws -> [LiveStream] {
+    static func requestLivePlayUrl(roomID: Int) async throws -> LivePlayUrlPayload {
         struct LiveRoomStreamInfo: Codable {
             let playurl_info: PlayUrlInfo
 
             struct PlayUrlInfo: Codable {
-                let playurl: PlayUrl
-            }
-
-            struct PlayUrl: Codable {
-                let cid: Int
-                let stream: [LiveStream]
+                let playurl: LivePlayUrlPayload
             }
         }
         let info: LiveRoomStreamInfo = try await request(url: EndPoint.liveRoomStream,
@@ -248,47 +209,11 @@ extension WebRequest {
                                                                       "protocol": "1",
                                                                       "format": "0,1,2",
                                                                       "codec": "0,1",
-                                                                      "qn": "10000",
+                                                                      "qn": "30000",
                                                                       "platform": "web",
                                                                       "ptype": "8",
                                                                       "dolby": "5",
                                                                       "panorama": 1])
-        return info.playurl_info.playurl.stream
-    }
-}
-
-struct LiveStream: Codable {
-    let format: [Format]
-    let protocol_name: String
-
-    struct Format: Codable {
-        let formatName: String
-        let codec: [Codec]
-        let masterurl: String
-
-        enum CodingKeys: String, CodingKey {
-            case formatName = "format_name"
-            case codec
-            case masterurl = "master_url"
-        }
-
-        struct Codec: Codable {
-            let urlInfo: [URLInfo]
-            let codecName: String
-            let currentQn: Int
-            let baseurl: String
-
-            enum CodingKeys: String, CodingKey {
-                case urlInfo = "url_info"
-                case codecName = "codec_name"
-                case currentQn = "current_qn"
-                case baseurl = "base_url"
-            }
-
-            struct URLInfo: Codable {
-                let host: String
-                let extra: String
-            }
-        }
+        return info.playurl_info.playurl
     }
 }
