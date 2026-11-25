@@ -16,6 +16,7 @@ class LineCandidatesPlugin: NSObject, CommonPlayerPlugin {
 
     init(candidates: [LivePlayUrlInfo], onLineCandidateChange: @escaping (String) -> Void) {
         self.candidates = candidates
+        currentUrl = candidates.first?.url
         self.onLineCandidateChange = onLineCandidateChange
         super.init()
     }
@@ -26,17 +27,34 @@ class LineCandidatesPlugin: NSObject, CommonPlayerPlugin {
 
     func updateCandidates(_ candidates: [LivePlayUrlInfo]) {
         self.candidates = candidates
+        if !candidates.contains(where: { StreamMenuFormatting.isSameStreamURL($0.url, currentUrl) }) {
+            currentUrl = candidates.first?.url
+        }
         (playerVC?.parent as? CommonPlayerViewController)?.updateMenus()
     }
 
     func playerDidLoad(playerVC: AVPlayerViewController) {
         self.playerVC = playerVC
-        if let player = playerVC.player, player.rate > 0 {
-            scheduleFPSProbeIfNeeded(for: player)
+        if let player = playerVC.player {
+            if let url = currentURL(of: player) {
+                currentUrl = url
+            }
+            if player.rate > 0 {
+                scheduleFPSProbeIfNeeded(for: player)
+            }
+        }
+    }
+
+    func playerDidChange(player: AVPlayer) {
+        if let url = currentURL(of: player) {
+            currentUrl = url
         }
     }
 
     func playerDidStart(player: AVPlayer) {
+        if let url = currentURL(of: player) {
+            currentUrl = url
+        }
         scheduleFPSProbeIfNeeded(for: player)
     }
 
@@ -58,6 +76,9 @@ class LineCandidatesPlugin: NSObject, CommonPlayerPlugin {
                 currentUrl = url
             }
         }
+        if currentUrl == nil {
+            currentUrl = candidates.first?.url
+        }
 
         let actions = candidates.enumerated().map { idx, info in
             let title = StreamMenuFormatting.formatLiveCandidateTitle(
@@ -65,7 +86,8 @@ class LineCandidatesPlugin: NSObject, CommonPlayerPlugin {
                 candidate: info,
                 measuredFPS: measuredFPSByURL[info.url]
             )
-            return UIAction(title: title, state: self.currentUrl == info.url ? .on : .off) { [weak self] _ in
+            let isSelected = StreamMenuFormatting.isSameStreamURL(self.currentUrl, info.url)
+            return UIAction(title: title, state: isSelected ? .on : .off) { [weak self] _ in
                 self?.switchLineCandidate(info.url)
             }
         }
@@ -131,6 +153,8 @@ class LineCandidatesPlugin: NSObject, CommonPlayerPlugin {
     }
 
     private func switchLineCandidate(_ url: String) {
+        currentUrl = url
+        (playerVC?.parent as? CommonPlayerViewController)?.updateMenus()
         onLineCandidateChange?(url)
     }
 }

@@ -647,11 +647,11 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
     func switchQuality(to qualityId: Int, streamIndex: Int?) async {
         guard let player = playerVC?.player else { return }
 
-        let currentTime = player.currentTime().seconds
-        guard currentTime > 0 else { return }
+        let rawTime = player.currentTime().seconds
+        let safeTime = (rawTime.isFinite && rawTime > 0) ? rawTime : 0
 
         // 保存当前播放位置
-        currentPlaybackTime = currentTime
+        currentPlaybackTime = safeTime
         currentQualityId = qualityId
 
         // 重新加载视频，使用新的画质
@@ -670,8 +670,10 @@ class BVideoPlayPlugin: NSObject, CommonPlayerPlugin {
                   playerVC != nil,
                   let newPlayer = playerVC?.player
             else { return }
-            await newPlayer.seek(to: CMTime(seconds: currentPlaybackTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
-            guard loadGeneration == generation, !Task.isCancelled else { return }
+            if currentPlaybackTime > 0 {
+                await newPlayer.seek(to: CMTime(seconds: currentPlaybackTime, preferredTimescale: 1), toleranceBefore: .zero, toleranceAfter: .zero)
+                guard loadGeneration == generation, !Task.isCancelled else { return }
+            }
             newPlayer.play()
         } catch is CancellationError {
             return

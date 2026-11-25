@@ -428,6 +428,56 @@ enum StreamMenuFormatting {
         return lhsBandwidth > rhsBandwidth
     }
 
+    static func initialVODStreamIndex(
+        streams: [VODStreamCandidate],
+        qualityLimit: Int,
+        preferAvc: Bool = false
+    ) -> Int? {
+        guard !streams.isEmpty else { return nil }
+        var filtered = streams
+        if preferAvc {
+            let grouped = Dictionary(grouping: filtered, by: \.id)
+            for (qualityId, items) in grouped {
+                if items.contains(where: { !isHevcFamily($0.codecs) }) {
+                    filtered.removeAll { $0.id == qualityId && isHevcFamily($0.codecs) }
+                }
+            }
+        }
+        let withinLimit = filtered.filter { $0.id <= qualityLimit }
+        let pool = withinLimit.isEmpty ? filtered : withinLimit
+        return sortVODStreams(pool, preferAvc: preferAvc).first?.streamIndex
+    }
+
+    static func parseDashStreamIndex(fromURI uri: String?) -> Int? {
+        guard let uri,
+              let components = URLComponents(string: uri),
+              components.scheme == "atv",
+              components.host == "dash",
+              let value = components.queryItems?.first(where: { $0.name == "streamIndex" })?.value,
+              let index = Int(value),
+              index >= 0
+        else {
+            return nil
+        }
+        return index
+    }
+
+    static func isSameStreamURL(_ lhs: String?, _ rhs: String?) -> Bool {
+        guard let lhs, let rhs, !lhs.isEmpty, !rhs.isEmpty else { return false }
+        if lhs == rhs { return true }
+        guard let lhsNormalized = URL(string: lhs)?.absoluteString,
+              let rhsNormalized = URL(string: rhs)?.absoluteString
+        else {
+            return false
+        }
+        return lhsNormalized == rhsNormalized
+    }
+
+    private static func isHevcFamily(_ codecs: String) -> Bool {
+        let lower = codecs.lowercased()
+        return lower.hasPrefix("hev") || lower.hasPrefix("hvc") || lower.hasPrefix("dvh1") || lower.hasPrefix("dvhe")
+    }
+
     static func sortVODStreams(_ streams: [VODStreamCandidate], preferAvc: Bool = false) -> [VODStreamCandidate] {
         streams.sorted { lhs, rhs in
             if lhs.id != rhs.id || vodCodecRank(lhs.codecs, preferAvc: preferAvc) != vodCodecRank(rhs.codecs, preferAvc: preferAvc) || lhs.bandwidth != rhs.bandwidth {
